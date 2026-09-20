@@ -169,21 +169,25 @@ public final class Dictionaries {
         }
 
         List<Dictionary> fromTheUser = new ArrayList<>();
-        Map<Dictionary, Path> whereEachCameFrom = new java.util.LinkedHashMap<>();
+        // A list of pairs rather than a map from the dictionary, because a dictionary is an
+        // interface: one implemented as a record would answer equal to another holding the same
+        // values, and two files would quietly become one.
+        List<ReadFromAFile> read = new ArrayList<>();
         for (Path location : locations) {
             for (Path file : filesUnder(location, problems)) {
                 read(file, problems).ifPresent(dictionary -> {
                     Dictionary named = underTheNamesTheRunPrints(dictionary, model, file, problems);
                     fromTheUser.add(named);
-                    whereEachCameFrom.put(named, file);
+                    read.add(new ReadFromAFile(named, file));
                 });
             }
         }
         // Judged once every file has been read. Which operations are given a body whole is a fact
         // about the lists this run holds, not about the file a particular entry was written in.
         Set<String> givenAWholeBody = operationsGivenAWholeBody(fromTheUser);
-        whereEachCameFrom.forEach((dictionary, file) ->
-                reportEntriesNothingWouldUse(dictionary, model, file, givenAWholeBody, problems));
+        read.forEach(held ->
+                reportEntriesNothingWouldUse(held.dictionary(), model, held.file(), givenAWholeBody,
+                        problems));
         reportNamesUsedTwice(fromTheUser, problems);
         return new Found(carried, fromTheUser, problems);
     }
@@ -316,11 +320,22 @@ public final class Dictionaries {
         }
     }
 
-    /** The operations some list this run holds gives a whole body for. */
+    /** One list, and the file it was read from. */
+    private record ReadFromAFile(Dictionary dictionary, Path file) {
+    }
+
+    /**
+     * The operations some list this run holds gives a whole body for.
+     *
+     * <p>Not the lists that push at the API: those feed requests of their own rather than ordinary
+     * ones, so a body in one of them is not what an ordinary request would be sent, and blaming an
+     * entry on it would be pointing at the wrong thing.
+     */
     private static Set<String> operationsGivenAWholeBody(List<Dictionary> dictionaries) {
         Set<String> given = new java.util.LinkedHashSet<>();
         for (Dictionary dictionary : dictionaries) {
             if (dictionary instanceof ValueDictionary values
+                    && !dictionary.name().equals(RandomTestCaseGenerator.PUSHES_AT_THE_API)
                     && values.keyedBy() == ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
                 values.entriesByOperation().forEach((operation, entries) -> {
                     if (entries.containsKey(ValueRequest.THE_BODY)) {
@@ -345,13 +360,11 @@ public final class Dictionaries {
      * usually a file that has fallen behind the document it was written for. It names a parameter
      * or a piece of a body that operation does not have, which is usually a misspelling - or a
      * property written under its own name where it should carry the way down to it. It is for a
-     * place the document settles by itself: a parameter whose whole list of allowed values it
-     * declares, or a property it says the API only ever sends back. Or it names a piece of a body
-     * in a file that also supplies that whole body, which is what gets sent.
+     * place the document settles by itself, which {@link WhereAValueCanGo} works out. Or it names a
+     * piece of a body that some list this run holds supplies whole, which is what gets sent.
      *
-     * <p>Where the document runs out - a shape written in a way the parser could not read, one that
-     * contains itself - nothing below that point is judged: being unable to name something is not
-     * the same as knowing it is wrong.
+     * <p>What cannot be judged is left alone, and {@link WhereAValueCanGo} says what that is: being
+     * unable to name something is not the same as knowing it is wrong.
      */
     private static void reportEntriesNothingWouldUse(Dictionary dictionary, ApiModel model,
             Path file, Set<String> givenAWholeBody, List<String> problems) {
@@ -408,7 +421,7 @@ public final class Dictionaries {
         if (!places.has(place)) {
             return Optional.of("no such parameter or piece of a body in that operation");
         }
-        if (theWholeBodyIsGiven && place.startsWith(ValueRequest.THE_BODY + ValueRequest.STEP)) {
+        if (theWholeBodyIsGiven && WhereAValueCanGo.isInsideTheBody(place)) {
             return Optional.of("a piece of a body that is supplied whole, which is sent instead");
         }
         return places.whyNothingWouldUseIt(place);

@@ -355,7 +355,8 @@ body as a whole. Measured against the priority corpus, that is under half of wha
 about. Counting every place a request has - each parameter, each body, and every path inside either
 of them, which is what `WhereAValueCanGo` now enumerates - the five documents have **553 places**
 between them, and a list could fill **247**: the 200 parameter names and the 47 bodies. Everything
-else loaded and did nothing. It is worst where the parameters are few and the bodies large:
+else loaded and did nothing. It fills **435** now, the remaining 118 being places the document
+settles by itself. It is worst where the parameters are few and the bodies large:
 notebook-manager 7 places of 37, gestao-hospital 35 of 111, pet-clinic 41 of 109.
 
 The other half was not refused. It loaded, sat in the file looking useful, and did nothing, which is
@@ -390,8 +391,9 @@ A parameter has pieces too, and they are named the same way: `tags[]` for every 
 parameter, `filter.city` for a property of an object one. Nothing here is special to bodies; bodies
 are only where most of the pieces are.
 
-**This changes what four of the five keyings do, and the record should say so.** Only
-`operationAndParameter` is untouched, because for a parameter or a whole body the path is the name.
+**This changes what four of the five keyings do, and the record should say so.** No file means
+anything different by what it says - `operationAndParameter` reads exactly as it did, because for a
+parameter or a whole body the path is the name - but what four of them cover grows.
 A list keyed by `type`, by `format` or by `name`, and the `any` bucket, are now asked for every piece
 of every body as well as for the top of it, so a file written against 2.7a reaches further than it
 used to — a `type`-keyed list of two surnames fills every piece of text in every body as well as
@@ -431,11 +433,16 @@ restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operatio
 ```
 
 Four things earn a line: an operation the document does not have; a place the operation does not
-have; a place the document settles by itself, which is one whose whole list of allowed values it
-declares or a property it says the API only ever sends back; and a piece of a body that some list
-this run holds supplies whole. All four are knowable from the document, so they are said before a
-request is sent rather than after a run has been spent on them. Of the 553 places in the priority
-corpus, 26 are ones the document settles.
+have; a place the document settles by itself; and a piece of a body that some list this run holds
+supplies whole. All four are knowable from the document, so they are said before a request is sent
+rather than after a run has been spent on them.
+
+A document settles a place three ways, and the third is the commonest by far: it declares the whole
+list of values that place accepts, it says the API only ever sends that property back, or **it writes
+the whole body out in full** as a sample - in which case that body is sent as the author wrote it and
+nothing inside it is ever asked for. Of the 553 places in the priority corpus, **118 are settled**,
+and 92 of those are the pieces of kafka-rest-proxy's twelve bodies, every one of which the document
+exemplifies. Somebody generating a file for that API learns that before the run rather than after.
 
 A fifth line says when one file writes one operation under both of the names it answers to. That is
 what accepting two spellings costs: the duplicate-key check cannot see it, because the two keys are
@@ -472,6 +479,14 @@ willing the API would be to receive it.
 - **A place the document settles is now named as such wherever it is**, inside a body as well as on
   a parameter, because what fills the inside of an object is the same ordered list of sources that
   fills a parameter.
+- **A pointer to a shape is followed before anybody is asked about it.** Asking first handed every
+  source a shape with nothing in it, so a closed list of allowed values on the far side of a pointer
+  looked like no list at all and a dictionary answered over it - which is the one thing §4 says
+  nothing may do. Found by review, with the check and the behaviour disagreeing about it, which is
+  what made it visible.
+- **A choice between shapes settles nothing**, however closed one of its branches is: what is asked
+  about is the choice, whose own list of values is empty, so a list somebody wrote is used there and
+  is not reported as dead.
 - **The shape of a generated file changes.** Anybody producing one from a specification should write
   `body.city` where they used to write `city`, and `body` only when the object has to be coherent as a
   whole. The format document says so in as many words.

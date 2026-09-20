@@ -267,8 +267,8 @@ class DictionariesTest {
     }
 
     @Test
-    @DisplayName("an entry for a parameter whose whole list of values the document declares is "
-            + "named as one nothing will ever draw on")
+    @DisplayName("an entry for a place whose whole list of values the document declares is named "
+            + "as one nothing will ever draw on")
     void entries_for_a_closed_list_are_reported(@TempDir Path directory) throws IOException {
         Files.writeString(directory.resolve("ids.yaml"), """
                 version: 1
@@ -405,12 +405,15 @@ class DictionariesTest {
                 .contains("3 of its 4 entries will never be used");
     }
 
-    @Test
     @DisplayName("a piece of a body is named as unused when any list this run holds gives that "
-            + "body whole, file boundaries being nothing to do with it")
-    void pieces_of_a_body_given_whole_in_another_file_are_reported(@TempDir Path directory)
-            throws IOException {
-        Files.writeString(directory.resolve("a-whole.yaml"), """
+            + "body whole, whichever of the two files is read first")
+    @org.junit.jupiter.params.ParameterizedTest(name = "{0} read first")
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"whole", "pieces"})
+    void pieces_of_a_body_given_whole_in_another_file_are_reported(String readFirst,
+            @TempDir Path directory) throws IOException {
+        // A directory is read in name order, so the name is how the order is chosen here.
+        boolean wholeFirst = readFirst.equals("whole");
+        Files.writeString(directory.resolve((wholeFirst ? "a" : "b") + "-whole.yaml"), """
                 version: 1
                 name: whole
                 keyedBy: operationAndParameter
@@ -418,7 +421,7 @@ class DictionariesTest {
                   addOwner:
                     body: [{city: Seville}]
                 """);
-        Files.writeString(directory.resolve("b-pieces.yaml"), """
+        Files.writeString(directory.resolve((wholeFirst ? "b" : "a") + "-pieces.yaml"), """
                 version: 1
                 name: pieces
                 keyedBy: operationAndParameter
@@ -430,25 +433,28 @@ class DictionariesTest {
         assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
                 .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
                 .describedAs("the precedence is between the lists a run holds, so the report has "
-                        + "to be too")
-                .contains("b-pieces.yaml")
+                        + "to be too, and it cannot depend on which file was read first")
+                .contains("-pieces.yaml")
                 .contains("supplied whole");
     }
 
-    @Test
     @DisplayName("one operation written under both of the names it answers to is said out loud, "
-            + "and the entries under its identifier are the ones kept")
-    void one_operation_written_both_ways_is_reported(@TempDir Path directory) throws IOException {
+            + "and the entries under its identifier are the ones kept, whichever came first")
+    @org.junit.jupiter.params.ParameterizedTest(name = "{0} first")
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"POST /owners", "addOwner"})
+    void one_operation_written_both_ways_is_reported(String first, @TempDir Path directory)
+            throws IOException {
+        String second = first.equals("addOwner") ? "POST /owners" : "addOwner";
         Files.writeString(directory.resolve("ids.yaml"), """
                 version: 1
                 name: ids
                 keyedBy: operationAndParameter
                 values:
-                  POST /owners:
-                    body.city: [fromMethodAndPath]
-                  addOwner:
-                    body.city: [fromTheIdentifier]
-                """);
+                  "%s":
+                    body.city: [%s]
+                  "%s":
+                    body.city: [%s]
+                """.formatted(first, valueUnder(first), second, valueUnder(second)));
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_CLINIC);
 
@@ -544,6 +550,97 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("a closed list inside a body settles that place too, whether the document writes "
+            + "it there or points at a shape that has one")
+    void a_closed_list_inside_a_body_is_reported(@TempDir Path directory) throws IOException {
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/pets")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                ObjectSchema.of(Map.of(
+                                        "status", oneOf("available", "sold"),
+                                        "kind", new io.restest.core.schema.SchemaReference(
+                                                io.restest.core.schema.SchemaMetadata.none(),
+                                                "Kind"))),
+                                true))))
+                .withSchemas(Map.of("Kind", oneOf("dog", "cat")));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /pets:
+                    body.status: [neverSent]
+                    body.kind: [neverSentEither]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), pets).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("a list of allowed values on the far side of a pointer is still a "
+                        + "list of allowed values")
+                .contains("2 for a place whose whole list of values the document declares")
+                .contains("body.status in POST /pets")
+                .contains("body.kind in POST /pets");
+    }
+
+    @Test
+    @DisplayName("a choice between shapes settles nothing, however closed one of its branches is")
+    void a_choice_between_shapes_is_not_reported(@TempDir Path directory) throws IOException {
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/pets")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                ObjectSchema.of(Map.of("label",
+                                        new io.restest.core.schema.ChoiceSchema(
+                                                io.restest.core.schema.SchemaMetadata.none(),
+                                                List.of(oneOf("red", "blue"),
+                                                        StringSchema.of())))),
+                                true))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /pets:
+                    body.label: [green]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), pets).problems())
+                .describedAs("what is asked about is the choice, whose own list of values is "
+                        + "empty, so this entry is used and must not be called dead")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a body the document writes out in full is sent as written, so the entries for "
+            + "its pieces are named as ones nothing will use")
+    void pieces_of_a_body_the_document_shows_in_full_are_reported(@TempDir Path directory)
+            throws IOException {
+        ApiModel owners = ApiModel.of("Owners", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/owners")
+                        .withRequestBody(new io.restest.core.model.RequestBodyModel(true,
+                                Map.of("application/json", new io.restest.core.model.BodyContent(
+                                        ObjectSchema.of(Map.of("city", StringSchema.of())),
+                                        List.of(io.restest.core.json.JsonValue.object(Map.of(
+                                                "city", io.restest.core.json.JsonValue
+                                                        .of("Madison")))))),
+                                java.util.Optional.empty()))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /owners:
+                    body.city: [Seville]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), owners).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("the sample is sent as the author wrote it, so the request is never "
+                        + "taken apart and nothing inside it is asked for")
+                .contains("writes out in full")
+                .contains("body.city in POST /owners");
+    }
+
+    @Test
     @DisplayName("two lists answering to one name is said out loud, because a name is how a plan "
             + "picks one and how a report names one")
     void two_lists_with_one_name_are_reported(@TempDir Path directory) throws IOException {
@@ -589,6 +686,11 @@ class DictionariesTest {
                 ParameterLocation.QUERY, StringSchema.of())))
                 .describedAs("Norway is a country, not the word false")
                 .containsExactly(JsonValue.of("NO"), JsonValue.of("SE"), JsonValue.of("ON"));
+    }
+
+    /** Which value goes under which spelling, so that the one that wins names itself. */
+    private static String valueUnder(String spelling) {
+        return spelling.equals("addOwner") ? "fromTheIdentifier" : "fromMethodAndPath";
     }
 
     private static void write(Path file, String name, String keyedBy) throws IOException {

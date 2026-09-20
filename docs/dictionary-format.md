@@ -117,11 +117,16 @@ Inside an operation, a key names **one place a value goes**:
 | Key | Means |
 |---|---|
 | `ownerId` | the parameter of that name, wherever the document puts it — path, query string, header, cookie |
+| `tags[]` | every element of the parameter `tags`, where the document declares it a list |
+| `filter.city` | the property `city` of the parameter `filter`, where the document declares it an object |
 | `body` | the whole request body, as one value |
 | `body.city` | the property `city` at the top of the body |
 | `body.owner.email` | the property `email` of the object under `owner` |
 | `body.tags[].label` | the `label` of **every** element of the list `tags` |
 | `body[]` | every element, when the body is itself a list |
+
+A parameter has pieces just as a body does, and they are written the same way. Most of the pieces in
+most APIs are in the body, which is why the examples lean that way.
 
 `[]` stands for every element because there is no one element a value could be meant for: a list of
 values is drawn from each time an element is built.
@@ -175,6 +180,11 @@ values:
 **A list per piece is the one to reach for.** RESTest still assembles the body, so what the document
 says still applies around your values — the formats it declares, the lists of allowed values, which
 optional properties to include this time — and the body varies from request to request.
+
+One thing to know before writing a list per piece: **where the document offers a whole sample body
+of its own, that sample is what gets sent**, and nothing inside it is ever asked for, so entries for
+its pieces do nothing. The run says so when it reads your file. It is commoner than it sounds — all
+twelve of kafka-rest-proxy's bodies are written out in full in its document.
 
 **A whole body is for when the object only makes sense as a whole**: when one field constrains
 another, when the body is not an object at all (a bare list, a single word), or when you have a
@@ -250,6 +260,7 @@ Five things earn a mention:
 | a place whose whole list of values the document declares | an `enum`, which nothing overrides, wherever it is |
 | a property the document says the API only ever sends back | `readOnly`, which is never ours to send |
 | a piece of a body that is supplied whole | some list gives that operation a whole body, and that is what gets sent |
+| a piece of a body the document itself writes out in full | the document offers a whole sample body, which is sent as the author wrote it |
 
 A line of its own appears when one file writes one operation under both of the names it answers to.
 The entries under the `operationId` are the ones kept.

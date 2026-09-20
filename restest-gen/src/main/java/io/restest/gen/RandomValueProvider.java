@@ -180,7 +180,12 @@ public final class RandomValueProvider implements ValueProvider {
         if (depth > HARD_DEPTH) {
             return Optional.empty();
         }
-        if (depth > 0) {
+        // Nobody is asked about a pointer to a shape, only about the shape it points at. What is on
+        // the far side is followed first, a few lines down, and the question is put again there.
+        // Asking here would hand every answerer a shape with nothing in it: a closed list of
+        // allowed values behind a pointer would look like no list at all, and a source that should
+        // have deferred to it would answer instead.
+        if (depth > 0 && !(schema instanceof SchemaReference)) {
             Optional<GeneratedValue> known = inside.offer(request.about(schema));
             if (known.isPresent()) {
                 return Optional.of(known.get().value());

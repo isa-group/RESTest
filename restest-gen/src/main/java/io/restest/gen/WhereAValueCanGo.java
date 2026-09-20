@@ -70,6 +70,10 @@ final class WhereAValueCanGo {
     static final String ONLY_EVER_RETURNED =
             "a property the document says the API only ever sends back";
 
+    /** Why nothing inside a body is asked for when the document shows that body in full. */
+    static final String A_BODY_SHOWN_IN_FULL =
+            "a piece of a body the document itself writes out in full, which is sent as written";
+
     private final Set<String> places;
     private final Set<String> whereAnyNameIsPossible;
     private final Map<String, String> thatNothingWouldUse;
@@ -104,14 +108,22 @@ final class WhereAValueCanGo {
             // none of them.
             Map<String, String> judgement = declared.size() == 1 ? unused : new LinkedHashMap<>();
             declared.forEach(parameter -> walk(name, parameter.schema(), parameter.location(),
-                    model, places, open, judgement, Optional.empty(), 0, new LinkedHashSet<>()));
+                    model, places, open, judgement, Optional.empty(), true, 0,
+                    new LinkedHashSet<>()));
         });
 
         body(operation, model).ifPresent(schema -> {
             places.add(ValueRequest.THE_BODY);
             walk(ValueRequest.THE_BODY, schema, ParameterLocation.BODY, model, places, open, unused,
-                    Optional.empty(), 0, new LinkedHashSet<>());
+                    Optional.empty(), true, 0, new LinkedHashSet<>());
         });
+        // A body the document writes out in full is sent as written, so the request is never taken
+        // apart and nothing inside it is ever asked for. The body itself is a different matter: a
+        // list written for it is asked before the document's sample and wins.
+        if (theDocumentShowsTheBodyInFull(operation)) {
+            places.stream().filter(WhereAValueCanGo::isInsideTheBody)
+                    .forEach(place -> unused.putIfAbsent(place, A_BODY_SHOWN_IN_FULL));
+        }
         return new WhereAValueCanGo(places, open, unused);
     }
 
@@ -129,6 +141,11 @@ final class WhereAValueCanGo {
                 || whereAnyNameIsPossible.stream().anyMatch(prefix -> isUnder(place, prefix));
     }
 
+    /** Whether this place is a piece of the request body rather than the body itself. */
+    static boolean isInsideTheBody(String place) {
+        return isUnder(place, ValueRequest.THE_BODY);
+    }
+
     private static boolean isUnder(String place, String prefix) {
         return place.startsWith(prefix + ValueRequest.STEP)
                 || place.startsWith(prefix + ValueRequest.EVERY_ELEMENT);
@@ -142,6 +159,17 @@ final class WhereAValueCanGo {
      */
     Optional<String> whyNothingWouldUseIt(String place) {
         return Optional.ofNullable(thatNothingWouldUse.get(place));
+    }
+
+    /** Whether the document offers a whole body of its own for the media type that would be sent. */
+    private static boolean theDocumentShowsTheBodyInFull(Operation operation) {
+        return operation.requestBody()
+                .flatMap(declared -> RequestBuilder.mediaTypeToSend(declared)
+                        .flatMap(declared::contentFor))
+                .filter(content -> content.examples().stream()
+                        .anyMatch(sample -> RequestBuilder.canBeSentFrom(sample,
+                                ParameterLocation.BODY)))
+                .isPresent();
     }
 
     private static Optional<CanonicalSchema> body(Operation operation, ApiModel model) {
@@ -163,7 +191,8 @@ final class WhereAValueCanGo {
      */
     private static void walk(String path, CanonicalSchema declared, ParameterLocation where,
             ApiModel model, Set<String> places, Set<String> open, Map<String, String> unused,
-            Optional<String> inherited, int depth, Set<String> shapesAlreadyEntered) {
+            Optional<String> inherited, boolean itsOwnListSettlesIt, int depth,
+            Set<String> shapesAlreadyEntered) {
         if (depth > AS_DEEP_AS_ITEMS_GO) {
             open.add(path);
             return;
@@ -176,7 +205,8 @@ final class WhereAValueCanGo {
             return;
         }
         CanonicalSchema schema = resolved(declared, model);
-        Optional<String> carried = inherited.or(() -> settledByTheDocument(schema, where));
+        Optional<String> carried = inherited.or(() -> itsOwnListSettlesIt
+                ? settledByTheDocument(schema, where) : Optional.empty());
         carried.ifPresent(why -> unused.putIfAbsent(path, why));
         switch (schema) {
             case ObjectSchema object -> object.properties().forEach((name, property) -> {
@@ -190,17 +220,20 @@ final class WhereAValueCanGo {
                 Optional<String> why =
                         property.metadata().access() == SchemaMetadata.Access.READ_ONLY
                                 ? Optional.of(ONLY_EVER_RETURNED) : carried;
-                walk(below, property, where, model, places, open, unused, why, depth + 1,
+                walk(below, property, where, model, places, open, unused, why, true, depth + 1,
                         new LinkedHashSet<>(shapesAlreadyEntered));
             });
             case ArraySchema list -> {
                 String element = path + ValueRequest.EVERY_ELEMENT;
                 places.add(element);
-                walk(element, list.items(), where, model, places, open, unused, carried, depth + 1,
-                        shapesAlreadyEntered);
+                walk(element, list.items(), where, model, places, open, unused, carried, true,
+                        depth + 1, shapesAlreadyEntered);
             }
+            // Every alternative's names are names this place can have, but none of their lists of
+            // allowed values settles it: what is asked about is the choice, whose own list is
+            // empty, so a list of allowed values on one branch of it decides nothing.
             case ChoiceSchema choice -> choice.alternatives().forEach(one ->
-                    walk(path, one, where, model, places, open, unused, carried, depth + 1,
+                    walk(path, one, where, model, places, open, unused, carried, false, depth + 1,
                             new LinkedHashSet<>(shapesAlreadyEntered)));
             case AnySchema ignored -> open.add(path);
             case io.restest.core.schema.UnsupportedSchema ignored -> open.add(path);

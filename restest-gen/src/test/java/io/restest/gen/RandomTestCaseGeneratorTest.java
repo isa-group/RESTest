@@ -745,6 +745,58 @@ class RandomTestCaseGeneratorTest {
                         .contains(JsonValue.of("urgent")));
     }
 
+    @Test
+    @DisplayName("a closed list of values on the far side of a pointer still beats a list somebody "
+            + "wrote, inside a body as it does everywhere else")
+    void a_closed_list_behind_a_pointer_is_still_a_closed_list() {
+        Operation addPet = Operation.of(HttpMethod.POST, "/pets")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                        "status", new SchemaReference(SchemaMetadata.none(), "PetStatus")),
+                        Set.of("status")), true));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(addPet)).withSchemas(Map.of("PetStatus",
+                new StringSchema(SchemaMetadata.none().withEnumeration(
+                        List.of(JsonValue.of("available"), JsonValue.of("sold"))),
+                        Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty())));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(pets, 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"POST /pets": {"body.status": ["neverSent"]}}}""", "ours")), 0);
+
+        for (int draw = 0; draw < 20; draw++) {
+            JsonValue body = generator.generate(addPet).orElseThrow().body().orElseThrow().value();
+            assertThat(((JsonValue.JsonObject) body).member("status"))
+                    .describedAs("the document named the only values the API takes; a pointer to "
+                            + "the shape that says so does not make them advice")
+                    .isIn(Optional.of(JsonValue.of("available")), Optional.of(JsonValue.of("sold")));
+        }
+    }
+
+    @Test
+    @DisplayName("a name the document declares twice gets the entry in both places, so the one "
+            + "without a closed list of its own is filled from the list")
+    void a_name_declared_twice_is_filled_where_it_can_be() {
+        Operation updatePet = Operation.of(HttpMethod.PUT, "/pets/{petId}", List.of(
+                Parameter.of("petId", ParameterLocation.PATH, true, StringSchema.of()),
+                Parameter.of("petId", ParameterLocation.QUERY, true,
+                        new StringSchema(SchemaMetadata.none().withEnumeration(
+                                List.of(JsonValue.of("one"), JsonValue.of("two"))),
+                                Optional.empty(), Optional.empty(), Optional.empty(),
+                                Optional.empty()))));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(updatePet), 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"PUT /pets/{petId}": {"petId": ["7"]}}}""", "ours")), 0);
+
+        TestCase testCase = generator.generate(updatePet).orElseThrow();
+
+        assertThat(testCase.parameterValue("petId", ParameterLocation.PATH).orElseThrow().value())
+                .describedAs("this is why an entry for a name declared twice is never called dead")
+                .isEqualTo(JsonValue.of("7"));
+        assertThat(testCase.parameterValue("petId", ParameterLocation.QUERY).orElseThrow().value())
+                .describedAs("and this is why it cannot be called live either")
+                .isIn(JsonValue.of("one"), JsonValue.of("two"));
+    }
+
     private static String sent(RandomTestCaseGenerator generator, Operation operation) {
         return sent(generator, operation, "name");
     }

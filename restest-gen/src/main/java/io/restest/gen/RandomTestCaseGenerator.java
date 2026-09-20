@@ -102,7 +102,7 @@ public final class RandomTestCaseGenerator {
      * plan to read yet, so the built-in one names this: the list called {@code fuzzing}, which is
      * the one RESTest carries, and any a user adds under the same name.
      */
-    private static final String PUSHES_AT_THE_API = "fuzzing";
+    static final String PUSHES_AT_THE_API = "fuzzing";
 
     /**
      * How much of the testing time goes on requests built from values chosen to be awkward, unless
