@@ -351,11 +351,12 @@ to two names, and an entry that could never be used is said out loud before the 
 ### Why
 
 The format shipped at 2.7a could only speak about two kinds of place: a parameter, and the request
-body as a whole. Measured against the priority corpus, that is about half of what there is to speak
-about. Counting one place for every parameter, one for every body and one for every property inside
-those bodies that a request could carry, the five documents have 480 places between them and **247 of
-them — 51% — were ones a list could fill**. In the documents with few parameters and large bodies it
-is worse: notebook-manager 7 of 33, gestao-hospital 35 of 93, pet-clinic 41 of 88.
+body as a whole. Measured against the priority corpus, that is under half of what there is to speak
+about. Counting every place a request has - each parameter, each body, and every path inside either
+of them, which is what `WhereAValueCanGo` now enumerates - the five documents have **553 places**
+between them, and a list could fill **247**: the 200 parameter names and the 47 bodies. Everything
+else loaded and did nothing. It is worst where the parameters are few and the bodies large:
+notebook-manager 7 places of 37, gestao-hospital 35 of 111, pet-clinic 41 of 109.
 
 The other half was not refused. It loaded, sat in the file looking useful, and did nothing, which is
 the exact failure this format spends paragraphs preventing elsewhere. The cause was one line: what
@@ -385,6 +386,19 @@ file written against 2.7a still means exactly what it meant.
 an `email` four levels inside a body. That difference is the point of having both keyings: one means
 this value and no other, the other means this kind of name anywhere. It is also what 2.5b needs.
 
+A parameter has pieces too, and they are named the same way: `tags[]` for every element of a list
+parameter, `filter.city` for a property of an object one. Nothing here is special to bodies; bodies
+are only where most of the pieces are.
+
+**This changes what four of the five keyings do, and the record should say so.** Only
+`operationAndParameter` is untouched, because for a parameter or a whole body the path is the name.
+A list keyed by `type`, by `format` or by `name`, and the `any` bucket, are now asked for every piece
+of every body as well as for the top of it, so a file written against 2.7a reaches further than it
+used to — a `type`-keyed list of two surnames fills every piece of text in every body as well as
+every text parameter. The version stays 1 and nothing warns on load, because what those files ask
+for has not changed, only how much of a request it covers; the format document's warning about a
+list keyed to a whole kind of value now says where it reaches.
+
 `ValueRequest` carries both, rather than one being derived from the other. An answerer wants
 different ones: a list of good e-mail addresses matches on the name, and somebody who means one
 value and no other writes the path. Deriving either from the other at the point of use would put the
@@ -411,19 +425,31 @@ grouped by reason and naming up to three of each:
 
 ```
 restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operation in this API
-         (getOwnerRenamedSince), 3 for no such parameter or piece of a body in that operation
-         (addOwner/postcode, …), 1 for a piece of a body the same file supplies whole (addOwner/body.city)
+         (ownerId in getOwnerRenamedSince), 1 for a piece of a body that is supplied whole, which
+         is sent instead (body.city in addOwner), 3 for no such parameter or piece of a body in
+         that operation (postcode in addOwner, firstName in addOwner, body.nonsense in addVisit)
 ```
 
-Four things earn a line: an operation the document does not have, a place the operation does not
-have, a parameter whose whole list of allowed values the document declares, and a piece of a body the
-same file supplies whole. All four are knowable from the document, so they are said before a request
-is sent rather than after a run has been spent on them.
+Four things earn a line: an operation the document does not have; a place the operation does not
+have; a place the document settles by itself, which is one whose whole list of allowed values it
+declares or a property it says the API only ever sends back; and a piece of a body that some list
+this run holds supplies whole. All four are knowable from the document, so they are said before a
+request is sent rather than after a run has been spent on them. Of the 553 places in the priority
+corpus, 26 are ones the document settles.
 
-Where the document runs out — a shape the parser could not read, or one that contains itself —
-nothing below that point is judged. An object that merely allows properties it does not name is not
-such a case: a value is only ever asked for under a name the document writes down, so an entry for
-any other name goes unused however willing the API would be to receive it.
+A fifth line says when one file writes one operation under both of the names it answers to. That is
+what accepting two spellings costs: the duplicate-key check cannot see it, because the two keys are
+different strings. Where both give a value for the same place the one under the identifier is kept,
+whichever the file wrote first.
+
+Two things are left unjudged, because saying nothing is safe here and saying the wrong thing is not.
+Where the document runs out — a shape the parser could not read, or the point at which one starts
+repeating itself — nothing below that is judged, though everything above it still is. And a name the document declares twice in one operation, where
+one entry feeds both, is not judged either: what settles one of them need not settle the other.
+
+An object that merely allows properties it does not name is not such a case: a value is only ever
+asked for under a name the document writes down, so an entry for any other name goes unused however
+willing the API would be to receive it.
 
 ### Consequences
 
@@ -443,6 +469,9 @@ any other name goes unused however willing the API would be to receive it.
   values such a request should push with below the top level is a real question — today a body sent
   by the fuzzing share is whatever the type-keyed list holds for an object, which is `{}` — and it is
   the plan's to answer, not this amendment's.
+- **A place the document settles is now named as such wherever it is**, inside a body as well as on
+  a parameter, because what fills the inside of an object is the same ordered list of sources that
+  fills a parameter.
 - **The shape of a generated file changes.** Anybody producing one from a specification should write
   `body.city` where they used to write `city`, and `body` only when the object has to be coherent as a
   whole. The format document says so in as many words.

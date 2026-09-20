@@ -47,20 +47,42 @@ class DictionariesTest {
                     io.restest.core.model.Parameter.of("ownerId", ParameterLocation.PATH, true,
                             StringSchema.of())))));
 
-    /** One operation the document names, one it does not, a closed list, and a body with pieces. */
+    /**
+     * One operation the document names and one it does not; a parameter with a list of values the
+     * document declares and one of the same name without; a parameter with pieces inside it; and a
+     * body with a piece the API only ever returns.
+     */
     private static final ApiModel PET_CLINIC = ApiModel.of("Pet clinic", "1.0", List.of(
             Operation.of(HttpMethod.POST, "/owners")
                     .withId(io.restest.core.model.OperationId.of("addOwner"))
                     .withRequestBody(io.restest.core.model.RequestBodyModel.json(ObjectSchema.of(
-                            Map.of("city", StringSchema.of())), true)),
+                            Map.of("city", StringSchema.of(), "audit", onlyEverReturned())), true)),
             Operation.of(HttpMethod.GET, "/pets", List.of(
                     io.restest.core.model.Parameter.of("status", ParameterLocation.QUERY, true,
-                            new StringSchema(io.restest.core.schema.SchemaMetadata.none()
-                                    .withEnumeration(List.of(
-                                            io.restest.core.json.JsonValue.of("available"),
-                                            io.restest.core.json.JsonValue.of("sold"))),
-                                    java.util.Optional.empty(), java.util.Optional.empty(),
-                                    java.util.Optional.empty(), java.util.Optional.empty())))))); 
+                            oneOf("available", "sold")),
+                    io.restest.core.model.Parameter.of("tags", ParameterLocation.QUERY, false,
+                            io.restest.core.schema.ArraySchema.of(StringSchema.of())))),
+            Operation.of(HttpMethod.GET, "/pets/{petId}", List.of(
+                    io.restest.core.model.Parameter.of("petId", ParameterLocation.PATH, true,
+                            StringSchema.of()),
+                    io.restest.core.model.Parameter.of("petId", ParameterLocation.QUERY, false,
+                            oneOf("one", "two"))))));
+
+    private static StringSchema oneOf(String... allowed) {
+        return new StringSchema(io.restest.core.schema.SchemaMetadata.none().withEnumeration(
+                java.util.Arrays.stream(allowed).map(io.restest.core.json.JsonValue::of)
+                        .map(io.restest.core.json.JsonValue.class::cast).toList()),
+                java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(),
+                java.util.Optional.empty());
+    }
+
+    private static ObjectSchema onlyEverReturned() {
+        return new ObjectSchema(io.restest.core.schema.SchemaMetadata.none()
+                .withAccess(io.restest.core.schema.SchemaMetadata.Access.READ_ONLY),
+                Map.of("by", StringSchema.of()), java.util.Set.of(), java.util.Optional.empty(),
+                java.util.Optional.empty(), java.util.Optional.empty());
+    }
+
 
     @Test
     @DisplayName("the list of awkward values RESTest carries can be read, and holds one for every "
@@ -240,8 +262,8 @@ class DictionariesTest {
                 .describedAs("all of it is knowable from the document, so it is said then rather "
                         + "than after a run has been spent")
                 .contains("2 of its 3 entries will never be used")
-                .contains("addOwner/body.postcode")
-                .contains("addOwner/city");
+                .contains("body.postcode in addOwner")
+                .contains("city in addOwner");
     }
 
     @Test
@@ -259,8 +281,8 @@ class DictionariesTest {
 
         assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
                 .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
-                .contains("a parameter whose whole list of values the document declares")
-                .contains("GET /pets/status");
+                .contains("a place whose whole list of values the document declares")
+                .contains("status in GET /pets");
     }
 
     @Test
@@ -279,8 +301,8 @@ class DictionariesTest {
 
         assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
                 .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
-                .contains("supplies whole")
-                .contains("addOwner/body.city");
+                .contains("supplied whole")
+                .contains("body.city in addOwner");
     }
 
     @Test
@@ -297,6 +319,228 @@ class DictionariesTest {
                 """);
 
         assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an entry for something inside a parameter is not accused of naming nothing: a "
+            + "parameter has pieces too, and values written for them are sent")
+    void entries_inside_a_parameter_are_left_alone(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  GET /pets:
+                    "tags[]": [urgent]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .describedAs("saying nothing is always safe here and saying the wrong thing is "
+                        + "not: this entry fills every element of that list and is used")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a name the document declares twice, with a closed list on only one of them, is "
+            + "not judged: one entry feeds both")
+    void a_name_declared_twice_is_not_judged(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  GET /pets/{petId}:
+                    petId: [7]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .describedAs("the one in the query has a closed list and the one in the path does "
+                        + "not, and this entry is what fills the path")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("an entry for a piece of a body the document says the API only ever sends back "
+            + "is named as one nothing will use, and so is anything under it")
+    void entries_under_a_read_only_property_are_reported(@TempDir Path directory)
+            throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body.audit.by: [somebody]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("the document has that place; what it has not is any intention of "
+                        + "being sent it")
+                .contains("only ever sends back")
+                .doesNotContain("no such parameter");
+    }
+
+    @Test
+    @DisplayName("every entry under an operation this API does not have is counted, not the "
+            + "operation")
+    void a_stale_operation_costs_all_of_its_entries(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body.city: [Seville]
+                  renamedSince:
+                    a: [1]
+                    b: [2]
+                    c: [3]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("three entries are dead, and saying one would under-report a whole "
+                        + "block of them")
+                .contains("3 of its 4 entries will never be used");
+    }
+
+    @Test
+    @DisplayName("a piece of a body is named as unused when any list this run holds gives that "
+            + "body whole, file boundaries being nothing to do with it")
+    void pieces_of_a_body_given_whole_in_another_file_are_reported(@TempDir Path directory)
+            throws IOException {
+        Files.writeString(directory.resolve("a-whole.yaml"), """
+                version: 1
+                name: whole
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body: [{city: Seville}]
+                """);
+        Files.writeString(directory.resolve("b-pieces.yaml"), """
+                version: 1
+                name: pieces
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body.city: [Cordoba]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("the precedence is between the lists a run holds, so the report has "
+                        + "to be too")
+                .contains("b-pieces.yaml")
+                .contains("supplied whole");
+    }
+
+    @Test
+    @DisplayName("one operation written under both of the names it answers to is said out loud, "
+            + "and the entries under its identifier are the ones kept")
+    void one_operation_written_both_ways_is_reported(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /owners:
+                    body.city: [fromMethodAndPath]
+                  addOwner:
+                    body.city: [fromTheIdentifier]
+                """);
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_CLINIC);
+
+        assertThat(found.problems())
+                .describedAs("a file can say the same thing twice without the duplicate-key check "
+                        + "seeing it, because the two keys are different strings")
+                .anyMatch(problem -> problem.contains("both of the names it answers to"));
+        assertThat(((ValueDictionary) found.fromTheUser().get(0)).entriesByOperation())
+                .containsOnlyKeys("addOwner")
+                .extractingByKey("addOwner")
+                .extracting(entries -> entries.get("body.city"))
+                .describedAs("which spelling wins cannot depend on which the file wrote first")
+                .isEqualTo(List.of(io.restest.core.json.JsonValue.of("fromTheIdentifier")));
+    }
+
+    @Test
+    @DisplayName("nothing under a shape that contains itself is called wrong, however deep the "
+            + "entry goes")
+    void a_shape_that_contains_itself_is_not_judged(@TempDir Path directory) throws IOException {
+        ApiModel nested = ApiModel.of("Trees", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/trees")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                new io.restest.core.schema.SchemaReference(
+                                        io.restest.core.schema.SchemaMetadata.none(), "Node"),
+                                true))))
+                .withSchemas(Map.of("Node", ObjectSchema.of(Map.of(
+                        "name", StringSchema.of(),
+                        "child", new io.restest.core.schema.SchemaReference(
+                                io.restest.core.schema.SchemaMetadata.none(), "Node")))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /trees:
+                    body.child.name: [a name one level down]
+                    body.child.child.anything: [below where the shape repeats]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), nested).problems())
+                .describedAs("the names below the point where a shape starts repeating go on for "
+                        + "ever, so nothing down there can be called wrong")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a misspelling above the point where a shape repeats is still caught: not being "
+            + "able to judge one part of a document is not a reason to stop judging the rest")
+    void a_misspelling_above_the_repeat_is_still_caught(@TempDir Path directory) throws IOException {
+        ApiModel nested = ApiModel.of("Trees", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/trees")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                new io.restest.core.schema.SchemaReference(
+                                        io.restest.core.schema.SchemaMetadata.none(), "Node"),
+                                true))))
+                .withSchemas(Map.of("Node", ObjectSchema.of(Map.of(
+                        "name", StringSchema.of(),
+                        "child", new io.restest.core.schema.SchemaReference(
+                                io.restest.core.schema.SchemaMetadata.none(), "Node")))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /trees:
+                    body.child.nonsense: [a name Node does not have]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), nested).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("body.child.nonsense in POST /trees");
+    }
+
+    @Test
+    @DisplayName("nothing under a shape the document leaves open is called wrong either")
+    void a_shape_that_says_nothing_is_not_judged(@TempDir Path directory) throws IOException {
+        ApiModel anything = ApiModel.of("Anything", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/things")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                io.restest.core.schema.AnySchema.of(), true))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /things:
+                    body.whatever: [a value]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), anything).problems())
+                .describedAs("a document that names nothing has ruled nothing out")
+                .isEmpty();
     }
 
     @Test

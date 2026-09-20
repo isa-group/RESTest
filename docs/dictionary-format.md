@@ -68,8 +68,10 @@ Values under the key **`any`** apply whatever the key is. It is where `null` bel
 else that makes sense everywhere.
 
 It is blunter than it looks. In a file keyed by operation and place, `any` applies to *every* place
-of *every* operation, and its values are drawn against the ones written for the place itself — so one
-value under `any` beside a list of three is sent about a quarter of the time, everywhere in the API.
+of *every* operation — every parameter, every body, and every piece of every body. Its values are
+drawn against whatever is written for the place itself, so one value under `any` beside a list of
+three is sent about a quarter of the time there; where nothing else is written for a place, which is
+most of them, it is the only answer and is sent every time. `any: [null]` sends null everywhere.
 Reach for it when you mean exactly that.
 
 ```yaml
@@ -125,8 +127,9 @@ Inside an operation, a key names **one place a value goes**:
 values is drawn from each time an element is built.
 
 A name declared in two places — a `petId` in the path and a `petId` in the query string — gets the
-entry in both. If they mean different things, say which you mean by writing the operation and the
-path to each, or accept that both get the same list.
+entry in both, and there is no way to say which you meant: the key is the name, and both parameters
+have it. Where they mean different things, write values that suit either, or leave the entry out and
+let the document answer.
 
 Under `keyedBy: name` the key is the **last step alone**: `email` matches a parameter called `email`
 and an `email` three levels inside a body, anywhere in the API. That is the difference between the
@@ -217,10 +220,12 @@ could be put where that parameter goes — every one of them empty, in a path �
 enumeration at all, because the alternative is an operation that can never be tested.
 
 > **A list replaces what RESTest would otherwise have sent for the values it covers — it is not added
-> to it.** A file offering two surnames under `string` makes *every* string parameter in the API send
-> one of those two, for the whole run. Keying narrowly does not change that; it changes how much it
-> covers. A list keyed by `name` or `operationAndParameter` replaces the values of the parameters you
-> name and leaves the rest of the API alone, which is usually what somebody adding "a few good names"
+> to it.** A file offering two surnames under `string` makes *every* piece of text in the API send one
+> of those two, for the whole run: every text parameter, and every text property of every body, since
+> a list is asked for each piece of a value as well as for the value itself. Keying narrowly does not
+> change that; it changes how much it covers. A list keyed by `name` covers every place of that name,
+> a parameter and a property alike; one keyed by `operationAndParameter` covers the places you name
+> and leaves the rest of the API alone, which is usually what somebody adding "a few good names"
 > wants. Having your values sent *as well as* invented ones is a different thing, and RESTest cannot
 > do it yet.
 
@@ -231,24 +236,35 @@ and said in one line per file:
 
 ```
 restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operation in this API
-         (getOwnerRenamedSince), 3 for no such parameter or piece of a body in that operation
-         (addOwner/postcode, …), 1 for a piece of a body the same file supplies whole (addOwner/body.city)
+         (ownerId in getOwnerRenamedSince), 1 for a piece of a body that is supplied whole, which
+         is sent instead (body.city in addOwner), 3 for no such parameter or piece of a body in
+         that operation (postcode in addOwner, firstName in addOwner, body.nonsense in addVisit)
 ```
 
-Four things earn a mention:
+Five things earn a mention:
 
 | What | Usually means |
 |---|---|
 | no such operation in this API | the file has fallen behind the document — or the operation gained an `operationId` since |
 | no such parameter or piece of a body in that operation | a misspelling, or a property written as `city` where it should be `body.city` |
-| a parameter whose whole list of values the document declares | an `enum`, which nothing overrides |
-| a piece of a body the same file supplies whole | both were written for one operation, and the whole body is what gets sent |
+| a place whose whole list of values the document declares | an `enum`, which nothing overrides, wherever it is |
+| a property the document says the API only ever sends back | `readOnly`, which is never ours to send |
+| a piece of a body that is supplied whole | some list gives that operation a whole body, and that is what gets sent |
+
+A line of its own appears when one file writes one operation under both of the names it answers to.
+The entries under the `operationId` are the ones kept.
 
 None of it ends the run. A dictionary is advice, and a run with some of it unusable is still a run.
 
-Where the document allows names nobody could know in advance — a shape written in a way the parser
-could not read, one that contains itself — nothing below that point is judged, so an entry there is
-never called wrong.
+Two things are never called wrong. Where the document runs out — a shape written in a way the parser
+could not read, or the point at which one starts repeating itself — nothing below that is judged,
+though everything above it still is. And a name the
+document declares twice in one operation is not judged either, since one entry feeds both and what
+settles one of them need not settle the other.
+
+An object that merely allows properties it does not name is not one of those: a value is only ever
+asked for under a name the document writes down, so an entry for `body.anything` is reported however
+willing the API would be to receive it.
 
 ## Writing one of these from a specification
 
@@ -264,5 +280,7 @@ operation by operation. Four rules make that reliable:
 4. **Prefer a list per place over a whole body**, and keep the whole body for objects whose fields
    depend on each other.
 
-Then run the tool once against the specification. Whatever it says about the file is what a document
-can settle on its own, and it is said before any API is touched.
+Then look at what the run says about the file. The check happens as the file is read, before the
+first request, so the first few lines of any run tell you what is wrong with it. There is no command
+that reads a file and stops; until there is, point a short run at a server of your own rather than at
+somebody else's API to see them.

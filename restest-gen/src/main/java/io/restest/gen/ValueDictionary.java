@@ -225,12 +225,23 @@ public final class ValueDictionary implements Dictionary {
             return this;
         }
         Map<String, Map<String, List<JsonValue>>> renamed = new LinkedHashMap<>();
+        // The order the file wrote them in, first, so that what a run quotes back about a file
+        // reads in the order somebody wrote it.
+        perOperation.keySet().forEach(operation -> renamed.computeIfAbsent(
+                renaming.getOrDefault(operation, operation), ignored -> new LinkedHashMap<>()));
+        // Then the entries, in two passes rather than one, so that which of two spellings of an
+        // operation wins does not depend on which of them the file happened to write first: where
+        // both give a value for the same place, the one under the operation's own identifier is
+        // kept, because that is the name the run prints.
         perOperation.forEach((operation, entries) -> {
-            Map<String, List<JsonValue>> under = renamed.computeIfAbsent(
-                    renaming.getOrDefault(operation, operation), ignored -> new LinkedHashMap<>());
-            // An entry already there was written under the operation's own identifier, which is
-            // the name the run prints, so it is the one kept.
-            entries.forEach(under::putIfAbsent);
+            if (!renaming.containsKey(operation)) {
+                renamed.get(operation).putAll(entries);
+            }
+        });
+        perOperation.forEach((operation, entries) -> {
+            if (renaming.containsKey(operation)) {
+                entries.forEach(renamed.get(renaming.get(operation))::putIfAbsent);
+            }
         });
         return new ValueDictionary(name, keying, values, renamed);
     }

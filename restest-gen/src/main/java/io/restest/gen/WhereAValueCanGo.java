@@ -20,6 +20,7 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
+import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
@@ -28,8 +29,10 @@ import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -38,26 +41,34 @@ import java.util.Set;
  * Every place one operation's request has for a value to go, worked out from the document.
  *
  * <p>Somebody writing a list of values for an API writes one entry per place: a parameter by its
- * name, the whole body under {@code body}, a piece of the body by the way down to it
- * ({@code body.owner.email}). This works out which of those places the document actually has, so
- * that an entry naming one it does not - a parameter that was renamed, a property misspelled, an
- * operation somebody remembered wrong - can be pointed at before a single request is sent, instead
- * of sitting in the file looking useful and doing nothing.
+ * name, the whole body under {@code body}, and anything inside either of those by the way down to
+ * it - {@code body.owner.email}, {@code tags[]}. This works out which of those places the document
+ * actually has, so that an entry naming one it does not - a parameter that was renamed, a property
+ * misspelled, an operation somebody remembered wrong - can be pointed at before a single request is
+ * sent, instead of sitting in the file looking useful and doing nothing.
  *
- * <p>It also knows the two ways a place can exist and still never take a value from a list: a
- * parameter the document gives a closed list of allowed values for, where the document's word is
- * final, and a property the document says the API only ever sends back.
+ * <p>It also knows the two ways a place can exist and still never take a value from a list: where
+ * the document gives the closed list of values it accepts, whose word is final, and a property the
+ * document says the API only ever sends back, which is never ours to send.
  *
- * <p>Where the document runs out - a shape written in a way the parser could not read, or one that
- * contains itself - nothing below that point is judged, because being unable to name something is
- * not the same as knowing it is wrong. An object that merely allows properties it does not name is
- * not such a case: a value is only ever asked for under a name the document writes down, so an
- * entry for any other name would go unused however willing the API is to receive it.
+ * <p>Saying nothing is always safe here and saying the wrong thing is not, so two things are left
+ * unjudged. Where the document runs out - a shape written in a way the parser could not read, or
+ * the point at which one starts repeating itself - nothing below that is judged, though everything
+ * above it still is. And a name the document declares in two places at once, where one entry feeds
+ * both, is not judged either, because what settles one of them need not settle the other.
  */
 final class WhereAValueCanGo {
 
-    /** How deep into a body this looks. Deeper than any list of values anybody writes by hand. */
+    /** How deep into a value this looks. Deeper than any list of values anybody writes by hand. */
     private static final int AS_DEEP_AS_ITEMS_GO = 6;
+
+    /** Why a closed list of accepted values leaves a dictionary nothing to say. */
+    static final String THE_DOCUMENT_SETTLES_IT =
+            "a place whose whole list of values the document declares";
+
+    /** Why a property the API only sends back is never filled from anywhere. */
+    static final String ONLY_EVER_RETURNED =
+            "a property the document says the API only ever sends back";
 
     private final Set<String> places;
     private final Set<String> whereAnyNameIsPossible;
@@ -81,14 +92,25 @@ final class WhereAValueCanGo {
         Set<String> places = new LinkedHashSet<>();
         Set<String> open = new LinkedHashSet<>();
         Map<String, String> unused = new LinkedHashMap<>();
+
+        Map<String, List<Parameter>> byName = new LinkedHashMap<>();
         for (Parameter parameter : operation.parameters()) {
-            places.add(parameter.name());
-            closedListFor(parameter, model)
-                    .ifPresent(why -> unused.put(parameter.name(), why));
+            byName.computeIfAbsent(parameter.name(), ignored -> new ArrayList<>()).add(parameter);
         }
+        byName.forEach((name, declared) -> {
+            places.add(name);
+            // A name declared twice is one entry feeding two parameters, and what is true of one of
+            // them need not be true of the other. The safe answer is to find its places and judge
+            // none of them.
+            Map<String, String> judgement = declared.size() == 1 ? unused : new LinkedHashMap<>();
+            declared.forEach(parameter -> walk(name, parameter.schema(), parameter.location(),
+                    model, places, open, judgement, Optional.empty(), 0, new LinkedHashSet<>()));
+        });
+
         body(operation, model).ifPresent(schema -> {
             places.add(ValueRequest.THE_BODY);
-            walk(ValueRequest.THE_BODY, schema, model, places, open, unused, 0, new LinkedHashSet<>());
+            walk(ValueRequest.THE_BODY, schema, ParameterLocation.BODY, model, places, open, unused,
+                    Optional.empty(), 0, new LinkedHashSet<>());
         });
         return new WhereAValueCanGo(places, open, unused);
     }
@@ -96,8 +118,9 @@ final class WhereAValueCanGo {
     /**
      * Whether the document has a place of this name at all.
      *
-     * <p>A place under one nothing could be named below - a shape the parser could not read, a
-     * shape that contains itself - counts as one this cannot judge, and is treated as present.
+     * <p>A place under one nothing could be named below - a shape the parser could not read, the
+     * point at which one repeats itself - counts as one this cannot judge, and is treated as
+     * present.
      * The comparison is step by step rather than letter by letter, so that {@code body.city} is
      * not taken for a piece of {@code body.citizenship}.
      */
@@ -121,24 +144,6 @@ final class WhereAValueCanGo {
         return Optional.ofNullable(thatNothingWouldUse.get(place));
     }
 
-    /**
-     * Why a closed list of allowed values leaves nothing for a dictionary to say about a parameter.
-     *
-     * <p>Only when at least one of the allowed values could actually be sent where the parameter
-     * goes. A document that allows a path parameter nothing but empty words has contradicted itself,
-     * and the run falls through to whatever else can answer - a list somebody wrote included.
-     */
-    private static Optional<String> closedListFor(Parameter parameter, ApiModel model) {
-        CanonicalSchema schema = resolved(parameter.schema(), model);
-        java.util.List<JsonValue> allowed = schema.metadata().enumeration();
-        if (allowed.isEmpty()
-                || allowed.stream().noneMatch(value ->
-                        RequestBuilder.canBeSentFrom(value, parameter.location()))) {
-            return Optional.empty();
-        }
-        return Optional.of("a parameter whose whole list of values the document declares");
-    }
-
     private static Optional<CanonicalSchema> body(Operation operation, ApiModel model) {
         Optional<RequestBodyModel> declared = operation.requestBody();
         if (declared.isEmpty()) {
@@ -149,9 +154,16 @@ final class WhereAValueCanGo {
                 .map(schema -> resolved(schema, model));
     }
 
-    private static void walk(String path, CanonicalSchema declared, ApiModel model,
-            Set<String> places, Set<String> open, Map<String, String> unused, int depth,
-            Set<String> shapesAlreadyEntered) {
+    /**
+     * Works through one value's shape, writing down every place inside it.
+     *
+     * <p>A reason travels downwards: everything under a property the API only sends back, or under
+     * one whose values the document lists in full, is as unusable as the property itself, because
+     * nothing ever asks for a piece of a value it does not build.
+     */
+    private static void walk(String path, CanonicalSchema declared, ParameterLocation where,
+            ApiModel model, Set<String> places, Set<String> open, Map<String, String> unused,
+            Optional<String> inherited, int depth, Set<String> shapesAlreadyEntered) {
         if (depth > AS_DEEP_AS_ITEMS_GO) {
             open.add(path);
             return;
@@ -164,41 +176,57 @@ final class WhereAValueCanGo {
             return;
         }
         CanonicalSchema schema = resolved(declared, model);
+        Optional<String> carried = inherited.or(() -> settledByTheDocument(schema, where));
+        carried.ifPresent(why -> unused.putIfAbsent(path, why));
         switch (schema) {
-            case ObjectSchema object -> {
+            case ObjectSchema object -> object.properties().forEach((name, property) -> {
                 // Deliberately not opened up for an object that allows properties it does not
                 // name, which is nearly every object OpenAPI declares. What the document would
                 // accept is not the question: a value is only ever asked for under a name the
                 // document writes down, so an entry for any other name would sit there unused
                 // however willing the API is to receive it.
-                object.properties().forEach((name, property) -> {
-                    String below = path + ValueRequest.STEP + name;
-                    places.add(below);
-                    if (property.metadata().access() == SchemaMetadata.Access.READ_ONLY) {
-                        unused.put(below, "a property the document says the API only ever sends back");
-                        return;
-                    }
-                    walk(below, property, model, places, open, unused, depth + 1,
-                            new LinkedHashSet<>(shapesAlreadyEntered));
-                });
-            }
+                String below = path + ValueRequest.STEP + name;
+                places.add(below);
+                Optional<String> why =
+                        property.metadata().access() == SchemaMetadata.Access.READ_ONLY
+                                ? Optional.of(ONLY_EVER_RETURNED) : carried;
+                walk(below, property, where, model, places, open, unused, why, depth + 1,
+                        new LinkedHashSet<>(shapesAlreadyEntered));
+            });
             case ArraySchema list -> {
                 String element = path + ValueRequest.EVERY_ELEMENT;
                 places.add(element);
-                walk(element, list.items(), model, places, open, unused, depth + 1,
+                walk(element, list.items(), where, model, places, open, unused, carried, depth + 1,
                         shapesAlreadyEntered);
             }
             case ChoiceSchema choice -> choice.alternatives().forEach(one ->
-                    walk(path, one, model, places, open, unused, depth + 1,
+                    walk(path, one, where, model, places, open, unused, carried, depth + 1,
                             new LinkedHashSet<>(shapesAlreadyEntered)));
             case AnySchema ignored -> open.add(path);
             case io.restest.core.schema.UnsupportedSchema ignored -> open.add(path);
             case SchemaReference ignored -> open.add(path);
             default -> {
-                // A word, a number, true or false: a place in its own right, already added by
-                // whoever named it, with nothing underneath.
+                // A word, a number, true or false: a place in its own right, already written down
+                // by whoever named it, with nothing underneath.
             }
         }
+    }
+
+    /**
+     * Why a closed list of allowed values leaves nothing for a dictionary to say about a place.
+     *
+     * <p>Only when at least one of the allowed values could actually be sent where the value goes.
+     * A document that allows a path parameter nothing but empty words has contradicted itself, and
+     * the run falls through to whatever else can answer - a list somebody wrote included.
+     */
+    private static Optional<String> settledByTheDocument(CanonicalSchema schema,
+            ParameterLocation where) {
+        List<JsonValue> allowed = schema.metadata().enumeration();
+        if (allowed.isEmpty()
+                || allowed.stream().noneMatch(value -> RequestBuilder.canBeSentFrom(value, where))) {
+            return Optional.empty();
+        }
+        return Optional.of(THE_DOCUMENT_SETTLES_IT);
     }
 
     private static CanonicalSchema resolved(CanonicalSchema schema, ApiModel model) {
@@ -212,5 +240,4 @@ final class WhereAValueCanGo {
         }
         return seen;
     }
-
 }

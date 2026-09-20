@@ -681,12 +681,41 @@ class RandomTestCaseGeneratorTest {
                             "body": [{"city": "whole"}], "body.city": ["a piece"]}}}""",
                         "ours")), 0);
 
-        JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
+        for (int draw = 0; draw < 10; draw++) {
+            JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow()
+                    .value();
+            assertThat(((JsonValue.JsonObject) body).member("city"))
+                    .describedAs("somebody who writes a whole body means that body; rewriting a "
+                            + "piece of it would destroy the reason for writing it whole")
+                    .contains(JsonValue.of("whole"));
+        }
+    }
 
-        assertThat(((JsonValue.JsonObject) body).member("city"))
-                .describedAs("somebody who writes a whole body means that body; rewriting a piece "
-                        + "of it would destroy the reason for writing it whole")
-                .contains(JsonValue.of("whole"));
+    @Test
+    @DisplayName("a parameter has pieces too: a list written for every element of one, or for a "
+            + "property of one, fills them")
+    void a_list_reaches_inside_a_parameter() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("tags", ParameterLocation.QUERY, true,
+                        io.restest.core.schema.ArraySchema.of(StringSchema.of())),
+                Parameter.of("filter", ParameterLocation.QUERY, true,
+                        ObjectSchema.of(Map.of("city", StringSchema.of()), Set.of("city")))));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(search), 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"GET /pets": {
+                            "tags[]": ["urgent"], "filter.city": ["Seville"]}}}""", "ours")), 0);
+
+        TestCase testCase = generator.generate(search).orElseThrow();
+
+        assertThat(((JsonValue.JsonArray) testCase
+                .parameterValue("tags", ParameterLocation.QUERY).orElseThrow().value()).elements())
+                .isNotEmpty()
+                .allSatisfy(element -> assertThat(element).isEqualTo(JsonValue.of("urgent")));
+        assertThat(((JsonValue.JsonObject) testCase
+                .parameterValue("filter", ParameterLocation.QUERY).orElseThrow().value())
+                .member("city"))
+                .contains(JsonValue.of("Seville"));
     }
 
     @Test

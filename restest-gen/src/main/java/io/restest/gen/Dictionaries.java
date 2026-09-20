@@ -169,15 +169,21 @@ public final class Dictionaries {
         }
 
         List<Dictionary> fromTheUser = new ArrayList<>();
+        Map<Dictionary, Path> whereEachCameFrom = new java.util.LinkedHashMap<>();
         for (Path location : locations) {
             for (Path file : filesUnder(location, problems)) {
                 read(file, problems).ifPresent(dictionary -> {
-                    Dictionary named = underTheNamesTheRunPrints(dictionary, model);
+                    Dictionary named = underTheNamesTheRunPrints(dictionary, model, file, problems);
                     fromTheUser.add(named);
-                    reportEntriesNothingWouldUse(named, model, file, problems);
+                    whereEachCameFrom.put(named, file);
                 });
             }
         }
+        // Judged once every file has been read. Which operations are given a body whole is a fact
+        // about the lists this run holds, not about the file a particular entry was written in.
+        Set<String> givenAWholeBody = operationsGivenAWholeBody(fromTheUser);
+        whereEachCameFrom.forEach((dictionary, file) ->
+                reportEntriesNothingWouldUse(dictionary, model, file, givenAWholeBody, problems));
         reportNamesUsedTwice(fromTheUser, problems);
         return new Found(carried, fromTheUser, problems);
     }
@@ -260,7 +266,8 @@ public final class Dictionaries {
      * an identifier is there at all. The second is turned into the first here, once, so that
      * everything after this point has one name per operation to think about.
      */
-    private static Dictionary underTheNamesTheRunPrints(Dictionary dictionary, ApiModel model) {
+    private static Dictionary underTheNamesTheRunPrints(Dictionary dictionary, ApiModel model,
+            Path file, List<String> problems) {
         if (!(dictionary instanceof ValueDictionary values)
                 || values.keyedBy() != ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
             return dictionary;
@@ -278,7 +285,51 @@ public final class Dictionaries {
                 renaming.put(methodAndPath, operation.id().value());
             }
         }
+        reportOperationsWrittenBothWays(values, renaming, file, problems);
         return values.withOperationsRenamed(renaming);
+    }
+
+    /**
+     * Says so when one file writes one operation under both of the names it answers to.
+     *
+     * <p>Two ways of writing the same thing is what makes a file easy to produce from a document,
+     * and this is what it costs: a file can say the same thing twice without the duplicate-key
+     * check seeing it, because the two keys are different strings. Where an entry is written under
+     * both names the one under the operation's own identifier is the one used, and the other is
+     * quietly lost - so it is not left quiet.
+     */
+    private static void reportOperationsWrittenBothWays(ValueDictionary values,
+            Map<String, String> renaming, Path file, List<String> problems) {
+        Set<String> written = values.entriesByOperation().keySet();
+        List<String> both = renaming.entrySet().stream()
+                .filter(naming -> written.contains(naming.getKey())
+                        && written.contains(naming.getValue()))
+                .map(naming -> naming.getValue() + " (also written as " + naming.getKey() + ")")
+                .toList();
+        if (!both.isEmpty()) {
+            problems.add(file + ": " + both.size() + (both.size() == 1
+                    ? " operation is written under both of the names it answers to ("
+                    : " operations are written under both of the names they answer to (")
+                    + String.join(", ", both.subList(0, Math.min(NAMED_IN_FULL, both.size())))
+                    + (both.size() > NAMED_IN_FULL ? ", …" : "") + "), and where the two give "
+                    + "values for the same place the one under the identifier is used");
+        }
+    }
+
+    /** The operations some list this run holds gives a whole body for. */
+    private static Set<String> operationsGivenAWholeBody(List<Dictionary> dictionaries) {
+        Set<String> given = new java.util.LinkedHashSet<>();
+        for (Dictionary dictionary : dictionaries) {
+            if (dictionary instanceof ValueDictionary values
+                    && values.keyedBy() == ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
+                values.entriesByOperation().forEach((operation, entries) -> {
+                    if (entries.containsKey(ValueRequest.THE_BODY)) {
+                        given.add(operation);
+                    }
+                });
+            }
+        }
+        return given;
     }
 
     /**
@@ -303,7 +354,7 @@ public final class Dictionaries {
      * the same as knowing it is wrong.
      */
     private static void reportEntriesNothingWouldUse(Dictionary dictionary, ApiModel model,
-            Path file, List<String> problems) {
+            Path file, Set<String> givenAWholeBody, List<String> problems) {
         if (!(dictionary instanceof ValueDictionary values)
                 || values.keyedBy() != ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
             return;
@@ -318,16 +369,19 @@ public final class Dictionaries {
             entries += named.getValue().size();
             Operation operation = operations.get(named.getKey());
             if (operation == null) {
-                byReason.computeIfAbsent(NO_SUCH_OPERATION, ignored -> new ArrayList<>())
-                        .add(named.getKey());
+                // Every entry under it is dead, not one: the operation is the only part of the key
+                // that is wrong, and counting it once would under-report a whole block of them.
+                named.getValue().keySet().forEach(place ->
+                        byReason.computeIfAbsent(NO_SUCH_OPERATION, ignored -> new ArrayList<>())
+                                .add(place + " in " + named.getKey()));
                 continue;
             }
             WhereAValueCanGo places = WhereAValueCanGo.in(operation, model);
-            boolean theWholeBodyIsGiven = named.getValue().containsKey(ValueRequest.THE_BODY);
+            boolean theWholeBodyIsGiven = givenAWholeBody.contains(named.getKey());
             for (String place : named.getValue().keySet()) {
                 whyNothingWouldUseIt(place, places, theWholeBodyIsGiven).ifPresent(why ->
                         byReason.computeIfAbsent(why, ignored -> new ArrayList<>())
-                                .add(named.getKey() + "/" + place));
+                                .add(place + " in " + named.getKey()));
             }
         }
         if (byReason.isEmpty()) {
@@ -351,15 +405,11 @@ public final class Dictionaries {
     /** Why nothing would take a value from an entry for this place, when nothing would. */
     private static Optional<String> whyNothingWouldUseIt(String place, WhereAValueCanGo places,
             boolean theWholeBodyIsGiven) {
-        if (ValueDictionary.ANY.equals(place)) {
-            return Optional.empty();
-        }
         if (!places.has(place)) {
             return Optional.of("no such parameter or piece of a body in that operation");
         }
         if (theWholeBodyIsGiven && place.startsWith(ValueRequest.THE_BODY + ValueRequest.STEP)) {
-            return Optional.of("a piece of a body the same file supplies whole, which is sent "
-                    + "instead");
+            return Optional.of("a piece of a body that is supplied whole, which is sent instead");
         }
         return places.whyNothingWouldUseIt(place);
     }
