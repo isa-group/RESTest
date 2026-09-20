@@ -61,11 +61,16 @@ quite happily. What a list is *for* is decided by the plan that names it, not by
 | `type` | the kind of value wanted: `string`, `integer`, `number`, `boolean`, `array`, `object`, `null` | values that suit anything of a kind — the list RESTest ships is keyed this way |
 | `format` | the `format` the document declares — `date`, `uuid`, `email` | values that satisfy a stated format |
 | `schema` | the name the document gave the shape — `Pet`, `Owner` | whole objects, which is what a request body is |
-| `name` | the parameter's name, wherever it appears | every `petId` in the API at once |
-| `operationAndParameter` | the operation, then the parameter | one parameter of one operation, which is as specific as it gets |
+| `name` | the name alone, wherever it appears — a parameter or a property inside a body | every `petId` in the API at once |
+| `operationAndParameter` | the operation, then the place in its request | one place in one operation, which is as specific as it gets |
 
 Values under the key **`any`** apply whatever the key is. It is where `null` belongs, and anything
 else that makes sense everywhere.
+
+It is blunter than it looks. In a file keyed by operation and place, `any` applies to *every* place
+of *every* operation, and its values are drawn against the ones written for the place itself — so one
+value under `any` beside a list of three is sent about a quarter of the time, everywhere in the API.
+Reach for it when you mean exactly that.
 
 ```yaml
 version: 1
@@ -90,20 +95,42 @@ a deliberately enormous one arrives as it was written.
 
 ### Naming an operation
 
-An operation is named by its `operationId` when the document declares one, and otherwise by its
-method and path: `GET /pets/{petId}`. That is the same name RESTest prints in its own output, so the
-way to find it is to run the tool and copy it.
+An operation answers to **two names, and either will do**:
 
-This has one sharp edge worth knowing. If a document gives an operation no identifier and somebody
-later adds one, the name changes, and entries written against the old name stop matching. RESTest
-says so rather than silently doing nothing:
+- its `operationId`, when the document declares one — `getPetById`;
+- its method and its path, always — `GET /pets/{petId}`: the method in capitals, one space, and the
+  path exactly as the document writes it, braces and all.
 
-```
-restest: ids.yaml has values for 1 operation this API does not have (getOwnerRenamedSince), so those values will never be used
-```
+The second is there so that a file can be written from the specification with no reasoning and no
+exceptions. If you would rather not check whether a document declares identifiers, use the method and
+the path everywhere and you will always be right. RESTest turns them into whichever name it prints in
+its own output, so the two never come apart.
 
-A parameter is named by its name alone. A name declared in two places — a `petId` in the path and a
-`petId` in the query string — gets the entry in both.
+Unquoted is fine. YAML is happy with `GET /pets/{petId}:` as a key.
+
+### Naming a place in the request
+
+Inside an operation, a key names **one place a value goes**:
+
+| Key | Means |
+|---|---|
+| `ownerId` | the parameter of that name, wherever the document puts it — path, query string, header, cookie |
+| `body` | the whole request body, as one value |
+| `body.city` | the property `city` at the top of the body |
+| `body.owner.email` | the property `email` of the object under `owner` |
+| `body.tags[].label` | the `label` of **every** element of the list `tags` |
+| `body[]` | every element, when the body is itself a list |
+
+`[]` stands for every element because there is no one element a value could be meant for: a list of
+values is drawn from each time an element is built.
+
+A name declared in two places — a `petId` in the path and a `petId` in the query string — gets the
+entry in both. If they mean different things, say which you mean by writing the operation and the
+path to each, or accept that both get the same list.
+
+Under `keyedBy: name` the key is the **last step alone**: `email` matches a parameter called `email`
+and an `email` three levels inside a body, anywhere in the API. That is the difference between the
+two keyings — one means this value and no other, the other means this name anywhere.
 
 ## The values
 
@@ -127,6 +154,33 @@ RESTest picks among the values that apply at random rather than always the first
 through the whole list. A value that could not actually be put in the request — one that would leave
 a gap in a path empty, or carry a line break into a header — is skipped for that place and used
 elsewhere.
+
+### A body piece by piece, or a body whole
+
+Both work, and they are for different things.
+
+```yaml
+values:
+  addOwner:
+    body.city:      [Madison, Seville]      # a list per piece
+    body.telephone: ["6085551023"]
+  addVisit:
+    body:                                   # or the whole thing at once
+      - {date: "2026-09-18", description: rabies shot}
+```
+
+**A list per piece is the one to reach for.** RESTest still assembles the body, so what the document
+says still applies around your values — the formats it declares, the lists of allowed values, which
+optional properties to include this time — and the body varies from request to request.
+
+**A whole body is for when the object only makes sense as a whole**: when one field constrains
+another, when the body is not an object at all (a bare list, a single word), or when you have a
+payload you know the API accepts and want it sent exactly as written. What you give up is variation:
+that object is sent as it stands, every time it is drawn.
+
+Where a file gives both, **the whole body wins** and the pieces of it are never used — the point of
+writing a body whole is that its fields agree with each other, and quietly replacing one of them
+would undo that. RESTest says so when it reads the file.
 
 ## Which lists get used for what
 
@@ -169,3 +223,46 @@ enumeration at all, because the alternative is an operation that can never be te
 > name and leaves the rest of the API alone, which is usually what somebody adding "a few good names"
 > wants. Having your values sent *as well as* invented ones is a different thing, and RESTest cannot
 > do it yet.
+
+## What a run says about your file
+
+Everything a document can settle is settled when the file is read, before a single request is sent,
+and said in one line per file:
+
+```
+restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operation in this API
+         (getOwnerRenamedSince), 3 for no such parameter or piece of a body in that operation
+         (addOwner/postcode, …), 1 for a piece of a body the same file supplies whole (addOwner/body.city)
+```
+
+Four things earn a mention:
+
+| What | Usually means |
+|---|---|
+| no such operation in this API | the file has fallen behind the document — or the operation gained an `operationId` since |
+| no such parameter or piece of a body in that operation | a misspelling, or a property written as `city` where it should be `body.city` |
+| a parameter whose whole list of values the document declares | an `enum`, which nothing overrides |
+| a piece of a body the same file supplies whole | both were written for one operation, and the whole body is what gets sent |
+
+None of it ends the run. A dictionary is advice, and a run with some of it unusable is still a run.
+
+Where the document allows names nobody could know in advance — a shape written in a way the parser
+could not read, one that contains itself — nothing below that point is judged, so an entry there is
+never called wrong.
+
+## Writing one of these from a specification
+
+A file is often produced from the OpenAPI document by a person or a program working through it
+operation by operation. Four rules make that reliable:
+
+1. **Name every operation by its method and path** unless you are certain of its `operationId`. Both
+   are accepted, and this one needs no checking.
+2. **Write `body.` in front of anything inside the request body.** A bare `city` means a *parameter*
+   called `city`, and if the operation has no such parameter the entry does nothing.
+3. **Skip parameters the document gives an `enum` for.** The document has already said what those
+   values are, and nothing in your file will be sent instead.
+4. **Prefer a list per place over a whole body**, and keep the whole body for objects whose fields
+   depend on each other.
+
+Then run the tool once against the specification. Whatever it says about the file is what a document
+can settle on its own, and it is said before any API is touched.

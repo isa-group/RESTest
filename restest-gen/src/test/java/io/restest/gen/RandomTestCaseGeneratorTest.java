@@ -627,6 +627,95 @@ class RandomTestCaseGeneratorTest {
         }
     }
 
+    @Test
+    @DisplayName("a list written for one piece of a request body fills that piece, which is where "
+            + "most of what a run sends actually lives")
+    void a_list_reaches_inside_a_request_body() {
+        Operation addOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                        "city", StringSchema.of(),
+                        "telephone", StringSchema.of()), Set.of("city", "telephone")), true));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"POST /owners": {"body.city": ["Seville"]}}}""", "ours")), 0);
+
+        for (int draw = 0; draw < 10; draw++) {
+            JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow()
+                    .value();
+            assertThat(((JsonValue.JsonObject) body).member("city"))
+                    .describedAs("the entry names one piece of this operation's body, and that is "
+                            + "the piece it fills")
+                    .contains(JsonValue.of("Seville"));
+        }
+    }
+
+    @Test
+    @DisplayName("a list written for a name alone fills that name wherever it turns up, a piece of "
+            + "a body included")
+    void a_list_written_for_a_name_reaches_inside_a_body_too() {
+        Operation addOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                        "city", StringSchema.of()), Set.of("city")), true));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "name",
+                         "values": {"city": ["Seville"]}}""", "ours")), 0);
+
+        JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
+
+        assertThat(((JsonValue.JsonObject) body).member("city")).contains(JsonValue.of("Seville"));
+    }
+
+    @Test
+    @DisplayName("a list that gives the whole body gives the whole body: the pieces of it somebody "
+            + "also wrote down are not poked into the object they wrote")
+    void the_whole_body_beats_the_pieces_of_it() {
+        Operation addOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                        "city", StringSchema.of()), Set.of("city")), true));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"POST /owners": {
+                            "body": [{"city": "whole"}], "body.city": ["a piece"]}}}""",
+                        "ours")), 0);
+
+        JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
+
+        assertThat(((JsonValue.JsonObject) body).member("city"))
+                .describedAs("somebody who writes a whole body means that body; rewriting a piece "
+                        + "of it would destroy the reason for writing it whole")
+                .contains(JsonValue.of("whole"));
+    }
+
+    @Test
+    @DisplayName("a list written for every element of a list inside a body fills every element")
+    void a_list_reaches_inside_a_list_inside_a_body() {
+        Operation addOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                        "tags", new io.restest.core.schema.ArraySchema(SchemaMetadata.none(),
+                                ObjectSchema.of(Map.of("label", StringSchema.of()),
+                                        Set.of("label")),
+                                Optional.of(1), Optional.of(3), false)),
+                        Set.of("tags")), true));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"POST /owners": {"body.tags[].label": ["urgent"]}}}""",
+                        "ours")), 0);
+
+        JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
+
+        assertThat(((JsonValue.JsonArray) ((JsonValue.JsonObject) body).member("tags")
+                .orElseThrow()).elements())
+                .describedAs("a list of values is for every element, there being no one element "
+                        + "somebody could have meant")
+                .isNotEmpty()
+                .allSatisfy(element -> assertThat(((JsonValue.JsonObject) element).member("label"))
+                        .contains(JsonValue.of("urgent")));
+    }
+
     private static String sent(RandomTestCaseGenerator generator, Operation operation) {
         return sent(generator, operation, "name");
     }

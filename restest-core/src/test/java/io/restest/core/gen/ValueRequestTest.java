@@ -66,6 +66,52 @@ class ValueRequestTest {
     }
 
     @Test
+    @DisplayName("a parameter is in the one place it is, so its name and the way down to it are "
+            + "the same thing")
+    void a_parameter_is_its_own_path() {
+        ValueRequest request =
+                ValueRequest.of(OPERATION, "ownerId", ParameterLocation.PATH, StringSchema.of());
+
+        assertThat(request.path()).isEqualTo("ownerId");
+    }
+
+    @Test
+    @DisplayName("stepping into a piece of a value keeps the name of that piece and remembers the "
+            + "way down to it")
+    void stepping_in_remembers_the_way_down() {
+        ValueRequest body = ValueRequest.of(OPERATION, "body", ParameterLocation.BODY,
+                ObjectSchema.of(Map.of()));
+
+        ValueRequest email = body.about("owner", ObjectSchema.of(Map.of()))
+                .about("email", StringSchema.of());
+
+        assertThat(email.name())
+                .describedAs("the name alone is what a list of good e-mail addresses matches on")
+                .isEqualTo("email");
+        assertThat(email.path())
+                .describedAs("the way down is what somebody who means this e-mail and no other "
+                        + "writes")
+                .isEqualTo("body.owner.email");
+    }
+
+    @Test
+    @DisplayName("an element of a list is a piece of the list rather than a piece of the value the "
+            + "list belongs to, and its path says so")
+    void an_element_of_a_list_says_it_is_one() {
+        ValueRequest body = ValueRequest.of(OPERATION, "body", ParameterLocation.BODY,
+                ObjectSchema.of(Map.of()));
+
+        ValueRequest label = body.about("tags", ObjectSchema.of(Map.of()))
+                .aboutAPieceOf(ObjectSchema.of(Map.of()))
+                .about("label", StringSchema.of());
+
+        assertThat(label.path())
+                .describedAs("there is no one element a value could be meant for, so a path names "
+                        + "them all")
+                .isEqualTo("body.tags[].label");
+    }
+
+    @Test
     @DisplayName("a value is always asked for by the name of a parameter")
     void a_question_needs_a_name() {
         assertThatIllegalArgumentException().isThrownBy(() ->

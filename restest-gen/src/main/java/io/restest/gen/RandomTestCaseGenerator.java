@@ -91,15 +91,6 @@ public final class RandomTestCaseGenerator {
     /** How often a parameter the API does not require is included anyway. */
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
 
-    /**
-     * The name a request body is asked for under.
-     *
-     * <p>A body has no name of its own in OpenAPI 3.x, and whoever might suggest a value for it
-     * needs one to be asked by: this is what a list of values written for a particular operation
-     * names to speak about its body.
-     */
-    private static final String THE_BODY = "body";
-
     /** How many bodies are drawn while looking for one that can be written as its media type. */
     private static final int WRITABLE_BODY_ATTEMPTS = 8;
 
@@ -204,10 +195,20 @@ public final class RandomTestCaseGenerator {
         ValueProvider fromTheDocument = ValueProviderChain.of(
                 new ExampleValueProvider(random),
                 new DeclaredValueProvider(random));
-        ValueProvider invention = new RandomValueProvider(model, random, fromTheDocument);
-        this.values = nominal(dictionaries, fromTheDocument, invention, random);
+        // Everything an ordinary request draws on except invention - which is also exactly what
+        // invention needs to ask about anything nested inside a value it is putting together, so
+        // the one list of sources answers for a parameter and for a property four levels inside a
+        // body alike.
+        ValueProvider knownValues = everythingButInvention(dictionaries, fromTheDocument, random);
+        ValueProvider invention = new RandomValueProvider(model, random, knownValues);
+        this.values = ValueProviderChain.of(knownValues, invention);
         this.given = List.copyOf(dictionaries);
-        this.strategies = strategiesFor(dictionaries, awkwardShare, this.values, invention, random);
+        // A request built to push at the API fills the inside of a body the way it always has, from
+        // what the document itself states. Which values such a request should push with, below the
+        // top level, is a question the plan will answer rather than this constructor.
+        ValueProvider whilePushing = new RandomValueProvider(model, random, fromTheDocument);
+        this.strategies =
+                strategiesFor(dictionaries, awkwardShare, this.values, whilePushing, random);
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
 
         List<Operation> canBeTried = new ArrayList<>();
@@ -567,13 +568,16 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * Where the values in an ordinary request come from, in the order they are asked.
+     * Everywhere an ordinary request's values come from except invention, in the order they are
+     * asked.
      *
      * <p>The order is about how much each source knows. A list somebody wrote for <em>this</em>
-     * parameter of <em>this</em> operation knows more about it than the document's own sample,
-     * which in turn knows more than a list of values that suit any text at all. So the lists keyed
-     * to a particular value come first, the document speaks next, and the lists keyed to a kind of
-     * value come after it - with invention last, for anything nobody had an answer for.
+     * place in <em>this</em> operation's request knows more about it than the document's own
+     * sample, which in turn knows more than a list of values that suit any text at all. So the
+     * lists keyed to a particular value come first, the document speaks next, and the lists keyed
+     * to a kind of value come after it. Invention is added after all of them for the value as a
+     * whole, and asks this same list again about every piece of what it builds - which is what lets
+     * a list written for one property of one body be used at all.
      *
      * <p>Ahead of all of it sits the closed list of values a document says it accepts, which is the
      * one statement nothing may override: where a document names the only values the API will take,
@@ -582,8 +586,8 @@ public final class RandomTestCaseGenerator {
      * <p>A list whose values are meant to be refused is not here. Those belong to requests built to
      * be refused, all the way through, and mixing one into an ordinary request would spoil both.
      */
-    private static ValueProvider nominal(List<Dictionary> dictionaries,
-            ValueProvider fromTheDocument, ValueProvider invention, RandomGenerator random) {
+    private static ValueProvider everythingButInvention(List<Dictionary> dictionaries,
+            ValueProvider fromTheDocument, RandomGenerator random) {
         List<ValueProvider> asked = new ArrayList<>();
         // The closed list of values a document says it accepts is not advice and is not ranked
         // against anything: where one exists, it is the whole set of values the API will take, so
@@ -594,7 +598,6 @@ public final class RandomTestCaseGenerator {
         addAsking(asked, dictionaries, random, true);
         asked.add(fromTheDocument);
         addAsking(asked, dictionaries, random, false);
-        asked.add(invention);
         return ValueProviderChain.of(asked);
     }
 
@@ -642,8 +645,8 @@ public final class RandomTestCaseGenerator {
         // to be asked about an Owner, not about "an object with four properties".
         Optional<String> shape = parameter.schema() instanceof SchemaReference reference
                 ? Optional.of(reference.name()) : Optional.empty();
-        return new ValueRequest(operation.id(), parameter.name(), parameter.location(),
-                resolved(parameter.schema()), parameter.examples(), shape);
+        return new ValueRequest(operation.id(), parameter.name(), parameter.name(),
+                parameter.location(), resolved(parameter.schema()), parameter.examples(), shape);
     }
 
     /**
@@ -658,8 +661,8 @@ public final class RandomTestCaseGenerator {
         BodyContent content = body.contentFor(mediaType).orElseThrow();
         Optional<String> shape = content.schema() instanceof SchemaReference reference
                 ? Optional.of(reference.name()) : Optional.empty();
-        return new ValueRequest(operation.id(), THE_BODY, ParameterLocation.BODY,
-                resolved(content.schema()), content.examples(), shape);
+        return new ValueRequest(operation.id(), ValueRequest.THE_BODY, ValueRequest.THE_BODY,
+                ParameterLocation.BODY, resolved(content.schema()), content.examples(), shape);
     }
 
     /**

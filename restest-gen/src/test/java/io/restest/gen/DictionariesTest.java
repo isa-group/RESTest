@@ -47,6 +47,21 @@ class DictionariesTest {
                     io.restest.core.model.Parameter.of("ownerId", ParameterLocation.PATH, true,
                             StringSchema.of())))));
 
+    /** One operation the document names, one it does not, a closed list, and a body with pieces. */
+    private static final ApiModel PET_CLINIC = ApiModel.of("Pet clinic", "1.0", List.of(
+            Operation.of(HttpMethod.POST, "/owners")
+                    .withId(io.restest.core.model.OperationId.of("addOwner"))
+                    .withRequestBody(io.restest.core.model.RequestBodyModel.json(ObjectSchema.of(
+                            Map.of("city", StringSchema.of())), true)),
+            Operation.of(HttpMethod.GET, "/pets", List.of(
+                    io.restest.core.model.Parameter.of("status", ParameterLocation.QUERY, true,
+                            new StringSchema(io.restest.core.schema.SchemaMetadata.none()
+                                    .withEnumeration(List.of(
+                                            io.restest.core.json.JsonValue.of("available"),
+                                            io.restest.core.json.JsonValue.of("sold"))),
+                                    java.util.Optional.empty(), java.util.Optional.empty(),
+                                    java.util.Optional.empty(), java.util.Optional.empty())))))); 
+
     @Test
     @DisplayName("the list of awkward values RESTest carries can be read, and holds one for every "
             + "kind of value it might be asked about")
@@ -175,6 +190,113 @@ class DictionariesTest {
                 .STRING)
                 .contains("getOwnerRenamedSince")
                 .contains("never be used");
+    }
+
+    @Test
+    @DisplayName("an operation written down by its method and path is the operation, whether or "
+            + "not the document also gives it an identifier")
+    void an_operation_can_be_named_the_way_the_document_spells_it(@TempDir Path directory)
+            throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /owners:
+                    body.city: [Seville]
+                """);
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_CLINIC);
+
+        assertThat(found.problems())
+                .describedAs("anybody can read a method and a path off a document without having "
+                        + "to check whether it declares an identifier, so both are accepted")
+                .isEmpty();
+        assertThat(found.fromTheUser()).singleElement()
+                .extracting(dictionary -> ((ValueDictionary) dictionary).entriesByOperation()
+                        .keySet())
+                .describedAs("under the name the run prints, so nothing downstream has two names "
+                        + "to think about")
+                .isEqualTo(java.util.Set.of("addOwner"));
+    }
+
+    @Test
+    @DisplayName("an entry naming a parameter or a piece of a body the operation does not have is "
+            + "pointed at before a single request is sent")
+    void entries_naming_nothing_are_reported(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body.city: [Seville]
+                    body.postcode: ["41012"]
+                    city: [Seville]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("all of it is knowable from the document, so it is said then rather "
+                        + "than after a run has been spent")
+                .contains("2 of its 3 entries will never be used")
+                .contains("addOwner/body.postcode")
+                .contains("addOwner/city");
+    }
+
+    @Test
+    @DisplayName("an entry for a parameter whose whole list of values the document declares is "
+            + "named as one nothing will ever draw on")
+    void entries_for_a_closed_list_are_reported(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  GET /pets:
+                    status: [whatever]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("a parameter whose whole list of values the document declares")
+                .contains("GET /pets/status");
+    }
+
+    @Test
+    @DisplayName("an entry for a piece of a body is named as unused when the same file also gives "
+            + "that body whole")
+    void pieces_of_a_body_given_whole_are_reported(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body: [{city: Seville}]
+                    body.city: [Cordoba]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("supplies whole")
+                .contains("addOwner/body.city");
+    }
+
+    @Test
+    @DisplayName("a file whose every entry names a place the document has is not remarked upon")
+    void a_file_that_is_right_is_left_alone(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  addOwner:
+                    body: [{city: Seville}]
+                  GET /pets: {}
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_CLINIC).problems()).isEmpty();
     }
 
     @Test

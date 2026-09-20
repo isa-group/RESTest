@@ -41,8 +41,14 @@ import java.util.Optional;
  *
  * <p>Two lists are consulted for any one input: the one under whatever key applies - the kind of
  * value, the format the document declares, the name of the shape, the name of the parameter, or the
- * operation and parameter together - and the one under {@code any}, which applies whatever the key
- * and is where values that make sense everywhere live, {@code null} being the obvious one.
+ * operation and the place in its request together - and the one under {@code any}, which applies
+ * whatever the key and is where values that make sense everywhere live, {@code null} being the
+ * obvious one.
+ *
+ * <p>The two keyings that speak about a particular value differ in how particular they are, and the
+ * difference shows inside a request body. One written for a name matches that name wherever it
+ * turns up, a parameter or a property four levels down. One written for an operation matches one
+ * place and no other, named by the way down to it: {@code body.owner.email}.
  *
  * <p>Nothing here decides whether a value is a good idea. That is the job of whatever asks.
  */
@@ -59,9 +65,16 @@ public final class ValueDictionary implements Dictionary {
         FORMAT,
         /** The name the document gave the shape - the values that worked for an {@code Owner}. */
         SCHEMA,
-        /** The parameter's name, wherever it appears - every {@code petId} in the API. */
+        /**
+         * The name alone, wherever it appears - every {@code petId} in the API, whether it is a
+         * parameter or a property somewhere inside a body.
+         */
         NAME,
-        /** One named parameter of one named operation, which is as specific as it gets. */
+        /**
+         * One place in one operation's request, which is as specific as it gets: a parameter by
+         * name, the whole body under {@code body}, or one piece of the body by the way down to it,
+         * {@code body.owner.email}.
+         */
         OPERATION_AND_PARAMETER;
 
         /**
@@ -110,9 +123,12 @@ public final class ValueDictionary implements Dictionary {
 
     private List<JsonValue> under(ValueRequest request) {
         if (keying == Keying.OPERATION_AND_PARAMETER) {
+            // The way down to the value rather than the name of its last step, because this keying
+            // is the one that means one value and no other: 'body.owner.email' is a different
+            // entry from 'email', and a document may well have both.
             return perOperation
                     .getOrDefault(request.operation().value(), Map.of())
-                    .getOrDefault(request.name(), List.of());
+                    .getOrDefault(request.path(), List.of());
         }
         return keyOf(request).map(key -> values.getOrDefault(key, List.of())).orElse(List.of());
     }
@@ -123,6 +139,9 @@ public final class ValueDictionary implements Dictionary {
             case TYPE -> typeOf(request.schema());
             case FORMAT -> formatOf(request.schema());
             case SCHEMA -> request.shape();
+            // The name of the last step alone, which is what makes this the loose keying: a list
+            // of good e-mail addresses written for 'email' answers for a parameter called email and
+            // for an email three levels inside a body.
             case NAME -> Optional.of(request.name());
             // Handled before this is reached, because its key has two parts rather than one.
             case OPERATION_AND_PARAMETER -> Optional.empty();
@@ -174,6 +193,46 @@ public final class ValueDictionary implements Dictionary {
     /** What decides which of this dictionary's values apply. */
     public Keying keyedBy() {
         return keying;
+    }
+
+    /**
+     * The entries this dictionary holds for each operation it names, in the order the file wrote
+     * them.
+     *
+     * <p>Only a dictionary keyed by operation and place has any; the others are read through
+     * {@link #keys()}. A run reads this to say which of somebody's entries name a place the
+     * document it was pointed at does not have.
+     *
+     * @return the entries, operation by operation
+     */
+    public Map<String, Map<String, List<JsonValue>>> entriesByOperation() {
+        return perOperation;
+    }
+
+    /**
+     * The same dictionary with some of its operations under different names.
+     *
+     * <p>An operation can be written down two ways - the identifier the document declares for it,
+     * and the method and path anybody can read off the document without looking for one. Both are
+     * allowed in a file, and both mean the same operation, so one of them is turned into the other
+     * as the file is read and nothing downstream has to know there were ever two.
+     *
+     * @param renaming what to call each operation instead, for the ones being renamed
+     * @return the dictionary, or this one when there is nothing to rename
+     */
+    ValueDictionary withOperationsRenamed(Map<String, String> renaming) {
+        if (keying != Keying.OPERATION_AND_PARAMETER || renaming.isEmpty()) {
+            return this;
+        }
+        Map<String, Map<String, List<JsonValue>>> renamed = new LinkedHashMap<>();
+        perOperation.forEach((operation, entries) -> {
+            Map<String, List<JsonValue>> under = renamed.computeIfAbsent(
+                    renaming.getOrDefault(operation, operation), ignored -> new LinkedHashMap<>());
+            // An entry already there was written under the operation's own identifier, which is
+            // the name the run prints, so it is the one kept.
+            entries.forEach(under::putIfAbsent);
+        });
+        return new ValueDictionary(name, keying, values, renamed);
     }
 
     /**

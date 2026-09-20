@@ -15,7 +15,9 @@
  */
 package io.restest.gen;
 
+import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -56,6 +59,12 @@ public final class Dictionaries {
     /** How the shipped dictionary is named when something is wrong with it, which would be our bug. */
     private static final String SHIPPED_DESCRIPTION =
             "the list of values to push with that is built into RESTest";
+
+    /** How many of the entries under one reason a message names before it stops listing them. */
+    private static final int NAMED_IN_FULL = 3;
+
+    /** What an entry is guilty of when the document has no such operation at all. */
+    private static final String NO_SUCH_OPERATION = "no such operation in this API";
 
     private Dictionaries() {
     }
@@ -163,8 +172,9 @@ public final class Dictionaries {
         for (Path location : locations) {
             for (Path file : filesUnder(location, problems)) {
                 read(file, problems).ifPresent(dictionary -> {
-                    fromTheUser.add(dictionary);
-                    reportKeysThatMatchNothing(dictionary, model, file, problems);
+                    Dictionary named = underTheNamesTheRunPrints(dictionary, model);
+                    fromTheUser.add(named);
+                    reportEntriesNothingWouldUse(named, model, file, problems);
                 });
             }
         }
@@ -243,29 +253,114 @@ public final class Dictionaries {
     }
 
     /**
-     * Says so when a dictionary names operations this API does not have.
+     * The same dictionary with every operation under the name the run prints for it.
      *
-     * <p>Almost always a file that has fallen behind the document it was written for. The likeliest
-     * cause is worth knowing: an operation with no identifier of its own is named after its method
-     * and path, so the day somebody adds an {@code operationId} to the specification, every entry
-     * written against the old name stops matching - silently, if nobody says this.
+     * <p>A file may name an operation either way: by the identifier the document declares, or by
+     * the method and path, which anybody can read off the document without having to check whether
+     * an identifier is there at all. The second is turned into the first here, once, so that
+     * everything after this point has one name per operation to think about.
      */
-    private static void reportKeysThatMatchNothing(Dictionary dictionary, ApiModel model, Path file,
-            List<String> problems) {
+    private static Dictionary underTheNamesTheRunPrints(Dictionary dictionary, ApiModel model) {
+        if (!(dictionary instanceof ValueDictionary values)
+                || values.keyedBy() != ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
+            return dictionary;
+        }
+        Set<String> declared = model.operations().stream()
+                .map(operation -> operation.id().value())
+                .collect(java.util.stream.Collectors.toSet());
+        Map<String, String> renaming = new java.util.LinkedHashMap<>();
+        for (Operation operation : model.operations()) {
+            String methodAndPath = operation.method() + " " + operation.path();
+            // Nothing to rename when the document declares no identifier: the two names are then
+            // the same string already.
+            if (!methodAndPath.equals(operation.id().value())
+                    && !declared.contains(methodAndPath)) {
+                renaming.put(methodAndPath, operation.id().value());
+            }
+        }
+        return values.withOperationsRenamed(renaming);
+    }
+
+    /**
+     * Says so when entries in a dictionary name places this API does not have, or places nothing
+     * would ever take a value from.
+     *
+     * <p>Worth the line because the alternative is a file that loads without complaint and then
+     * quietly does nothing - which is what this format goes out of its way to prevent everywhere
+     * else. All of it is knowable from the document before a single request is sent, so it is said
+     * then rather than after a run has been spent.
+     *
+     * <p>Four things put an entry here. It names an operation the document does not have, which is
+     * usually a file that has fallen behind the document it was written for. It names a parameter
+     * or a piece of a body that operation does not have, which is usually a misspelling - or a
+     * property written under its own name where it should carry the way down to it. It is for a
+     * place the document settles by itself: a parameter whose whole list of allowed values it
+     * declares, or a property it says the API only ever sends back. Or it names a piece of a body
+     * in a file that also supplies that whole body, which is what gets sent.
+     *
+     * <p>Where the document runs out - a shape written in a way the parser could not read, one that
+     * contains itself - nothing below that point is judged: being unable to name something is not
+     * the same as knowing it is wrong.
+     */
+    private static void reportEntriesNothingWouldUse(Dictionary dictionary, ApiModel model,
+            Path file, List<String> problems) {
         if (!(dictionary instanceof ValueDictionary values)
                 || values.keyedBy() != ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
             return;
         }
-        Set<String> known = model.operations().stream()
-                .map(Operation::id)
-                .map(io.restest.core.model.OperationId::value)
-                .collect(java.util.stream.Collectors.toSet());
-        List<String> unknown = values.keys().stream().filter(key -> !known.contains(key)).toList();
-        if (!unknown.isEmpty()) {
-            problems.add(file + " has values for " + unknown.size() + " operation"
-                    + (unknown.size() == 1 ? "" : "s") + " this API does not have ("
-                    + String.join(", ", unknown.subList(0, Math.min(3, unknown.size())))
-                    + (unknown.size() > 3 ? ", …" : "") + "), so those values will never be used");
+        Map<String, Operation> operations = new java.util.LinkedHashMap<>();
+        model.operations().forEach(operation -> operations.put(operation.id().value(), operation));
+
+        Map<String, List<String>> byReason = new java.util.LinkedHashMap<>();
+        int entries = 0;
+        for (Map.Entry<String, Map<String, List<JsonValue>>> named
+                : values.entriesByOperation().entrySet()) {
+            entries += named.getValue().size();
+            Operation operation = operations.get(named.getKey());
+            if (operation == null) {
+                byReason.computeIfAbsent(NO_SUCH_OPERATION, ignored -> new ArrayList<>())
+                        .add(named.getKey());
+                continue;
+            }
+            WhereAValueCanGo places = WhereAValueCanGo.in(operation, model);
+            boolean theWholeBodyIsGiven = named.getValue().containsKey(ValueRequest.THE_BODY);
+            for (String place : named.getValue().keySet()) {
+                whyNothingWouldUseIt(place, places, theWholeBodyIsGiven).ifPresent(why ->
+                        byReason.computeIfAbsent(why, ignored -> new ArrayList<>())
+                                .add(named.getKey() + "/" + place));
+            }
         }
+        if (byReason.isEmpty()) {
+            return;
+        }
+        int unusable = byReason.values().stream().mapToInt(List::size).sum();
+        StringBuilder said = new StringBuilder(file + ": " + unusable + " of its " + entries
+                + " entries will never be used:");
+        String between = " ";
+        for (Map.Entry<String, List<String>> reason : byReason.entrySet()) {
+            List<String> where = reason.getValue();
+            said.append(between).append(where.size()).append(" for ").append(reason.getKey())
+                    .append(" (").append(String.join(", ",
+                            where.subList(0, Math.min(NAMED_IN_FULL, where.size()))))
+                    .append(where.size() > NAMED_IN_FULL ? ", …)" : ")");
+            between = ", ";
+        }
+        problems.add(said.toString());
+    }
+
+    /** Why nothing would take a value from an entry for this place, when nothing would. */
+    private static Optional<String> whyNothingWouldUseIt(String place, WhereAValueCanGo places,
+            boolean theWholeBodyIsGiven) {
+        if (ValueDictionary.ANY.equals(place)) {
+            return Optional.empty();
+        }
+        if (!places.has(place)) {
+            return Optional.of("no such parameter or piece of a body in that operation");
+        }
+        if (theWholeBodyIsGiven && place.startsWith(ValueRequest.THE_BODY + ValueRequest.STEP)) {
+            return Optional.of("a piece of a body the same file supplies whole, which is sent "
+                    + "instead");
+        }
+        return places.whyNothingWouldUseIt(place);
     }
 }
