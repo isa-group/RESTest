@@ -179,6 +179,18 @@ class MatchingStringsTest {
             // would allocate a megabyte, and the loop would have made two hundred of them.
             assertThat(reading("^[a-z]{1000000}$", 1, 64)).isEmpty();
             assertThat(reading("^[a-z]{100000000}$", 1, 64)).isEmpty();
+            // Both ends of a range, because a rule that states its own upper end is not subject to
+            // the limit on how far a repetition runs. Drawing one of these produced nine hundred
+            // thousand characters.
+            assertThat(reading("^[a-z]{0,1000000}$", 1, 64)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a repetition counted in the ordinary way is still read")
+        void an_ordinary_repetition_count_is_read() {
+            assertThat(reading("^[a-z]{3}$", 1, 64)).isPresent();
+            assertThat(reading("^[a-z]{2,5}$", 1, 64)).isPresent();
+            assertThat(reading("^[a-z]{2,}$", 1, 64)).isPresent();
         }
 
         @Test

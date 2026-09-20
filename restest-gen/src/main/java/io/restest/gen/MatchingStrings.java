@@ -95,8 +95,14 @@ final class MatchingStrings {
     /** How many candidates have to agree with this platform's reading before the rule is used. */
     private static final int PROBES = 3;
 
-    /** Finds a repetition count a rule states outright, as in {@code [a-z]{1000000}}. */
-    private static final Pattern STATED_REPETITION = Pattern.compile("\\{\\s*(\\d{1,9})");
+    /**
+     * Finds a repetition count a rule states outright, as in {@code [a-z]{1000000}} or
+     * {@code [a-z]{0,1000000}}. Both ends of a range, because the limit on how far a repetition runs
+     * is only applied where the rule states no end of its own: {@code {0,1000000}} means what it
+     * says, and drawing one produced nine hundred thousand characters.
+     */
+    private static final Pattern STATED_REPETITION =
+            Pattern.compile("\\{\\s*(\\d{1,9})\\s*(?:,\\s*(\\d{1,9}))?\\s*}");
 
     private final String expression;
     private final RgxGen shapes;
@@ -251,7 +257,8 @@ final class MatchingStrings {
     private static boolean statedLongerThan(String expression, long longest) {
         Matcher counts = STATED_REPETITION.matcher(expression);
         while (counts.find()) {
-            if (Long.parseLong(counts.group(1)) > longest) {
+            String upper = counts.group(2) != null ? counts.group(2) : counts.group(1);
+            if (Long.parseLong(upper) > longest) {
                 return true;
             }
         }
