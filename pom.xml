@@ -95,6 +95,10 @@
              up when everything is assembled. -->
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <json-schema-validator.version>3.0.7</json-schema-validator.version>
+        <!-- Builds a string that matches a regular expression, which is what a specification's
+             `pattern` asks for. Carries no dependencies of its own, and takes the run's own seeded
+             java.util.random.RandomGenerator, so a run built on it is still repeated exactly. -->
+        <rgxgen.version>3.0</rgxgen.version>
         <slf4j.version>2.0.17</slf4j.version>
         <pitest.version>1.30.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
@@ -193,6 +197,11 @@
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${json-schema-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.curious-odd-man</groupId>
+                <artifactId>rgxgen</artifactId>
+                <version>${rgxgen.version}</version>
             </dependency>
             <!-- Arrives through the schema validator, which logs through the SLF4J facade. Without a
                  binding, SLF4J prints three warning lines to standard error on first use, which is

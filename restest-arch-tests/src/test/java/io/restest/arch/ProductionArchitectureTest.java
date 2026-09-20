@@ -93,6 +93,16 @@ class ProductionArchitectureTest {
                 "org.yaml.."));
     }
 
+    // The builder of strings that match a regular expression stays inside the module that invents
+    // values, which is the only place that has a spelling rule to satisfy. It is also the one
+    // library here that arrives without a module descriptor of its own, so confining it keeps that
+    // to a single module's declaration rather than to the whole project's. See ADR-0022.
+    @Test
+    @DisplayName("only restest-gen references the regular-expression builder (ADR-0022)")
+    void only_restest_gen_references_the_regular_expression_builder() {
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "gen", "com.github.curiousoddman.."));
+    }
+
     // The schema validator, and the JSON library it brings with it, stay inside the module that
     // decides whether a reply matched its declared shape. tools.jackson is named as well as the
     // validator's own package because it arrives with the validator, and letting it leak would put

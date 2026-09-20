@@ -96,8 +96,9 @@ was edited.
   (too recent, adopted by almost nothing yet) and not 4.x, which has no specification text
   (ADR-0007, reversed at M1.2).
 - Stack: swagger-parser (behind our own interface), networknt json-schema-validator (confined to
-  `restest-oracles`, ADR-0014), picocli, OkHttp, virtual threads, ANTLR4, Choco, SQLite, JUnit 6,
-  AssertJ, Testcontainers, WireMock, ArchUnit, PIT, JaCoCo.
+  `restest-oracles`, ADR-0014), rgxgen (confined to `restest-gen`, ADR-0022), picocli, OkHttp,
+  virtual threads, ANTLR4, Choco, SQLite, JUnit 6, AssertJ, Testcontainers, WireMock, ArchUnit, PIT,
+  JaCoCo.
 
 ## Module boundaries
 

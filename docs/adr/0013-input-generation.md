@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11 and M2.7a
+**Status:** Accepted, amended at M1.11, M2.7a and M2.4
 **Date:** 2026-09-13
 
 ## Context
@@ -507,3 +507,34 @@ already has it.
 
 Nothing yet, because no file of strategies exists to be rewritten. Recorded now because it is cheaper
 to amend a sentence than a format.
+
+## Amendment (M2.4)
+
+**Date:** 2026-09-20
+
+**The format dictionary of §1 is not built. What a document says about the characters of a value is
+read where what it says about the length already is.**
+
+### What changed
+
+§1 lists eight sources, and one of them - *"format dictionary: the schema declares a `format` we have
+values for"* - was to arrive at M2.4. It has not, and will not as a source. A value of the kind a
+document names is now built by the same code that reads `minLength` and `maxLength`, alongside a
+value spelled the way a stated `pattern` demands. The chain is untouched: no source was added, none
+moved, and nothing about the order in §2 changed.
+
+The reasoning is [ADR-0022](0022-the-characters-a-value-is-made-of.md) §2, and the short version is
+that a dictionary sees only its key while the shape states its kind, its spelling and its lengths at
+once, and all three have to hold together.
+
+Seven sources, then, of which four exist. The `format` **keying** of ADR-0020 is untouched and is
+still one of the four dictionaries this record describes - it is simply a file a user writes rather
+than one RESTest ships.
+
+### What it costs
+
+The measurement in §2's note about a varied dictionary - *"index on `format` when the document
+declares one"* - is still the right answer for somebody's own list, and is still what the keying is
+for. What this record loses is the shipped file that would have exercised it, and
+[ADR-0020](0020-what-a-dictionary-is.md) §5 loses the competitor it was counting on to make weighted
+groups worth having. M2.10 is unchanged in scope.

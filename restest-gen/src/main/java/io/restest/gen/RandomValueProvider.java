@@ -59,18 +59,27 @@ import java.util.random.RandomGenerator;
  * of {@code available}, {@code pending} or {@code sold} is useless if only the list itself is built
  * from the specification and its contents are made up.
  *
- * <p>Two limits are worth knowing, because they are visible in the results. A specification can
- * describe the <em>characters</em> a string must be made of - a date, an e-mail address, a pattern -
- * and this pays no attention to that yet, so those parameters get an ordinary word and the API will
- * often refuse it. And a shape the specification describes in a way the parser could not read is
- * declined outright rather than guessed at, which means the parameter is left out if the API allows
- * that and the operation is reported as untestable if it does not - an honest gap rather than a
- * request that was never going to work.
+ * <p>It reads what a specification says about the <em>characters</em> a piece of text must be made
+ * of, as well as what it says about its length: told that a value is a date, it invents a date;
+ * told that one is spelled as three capital letters, it invents three capital letters. Those two
+ * statements are the cheapest information a document carries and the most valuable, because an
+ * ordinary word in place of a date is refused by every API that looks at what it is given.
+ *
+ * <p>One limit is worth knowing, because it is visible in the results. A shape the specification
+ * describes in a way the parser could not read is declined outright rather than guessed at, which
+ * means the parameter is left out if the API allows that and the operation is reported as untestable
+ * if it does not - an honest gap rather than a request that was never going to work.
  *
  * <p>Everything it invents is kept small on purpose. A specification may permit a string of two
  * million characters or a list nested twelve deep, and building one would cost the run its budget and
  * the API under test its patience without testing anything a short value does not. Values the
  * specification <em>insists</em> are enormous are declined and reported rather than built.
+ *
+ * <p>One of these belongs to one run and is asked for one value at a time. It remembers a little
+ * about the spelling rules it has met, so that reading the same rule is not paid for again, and that
+ * memory is not built to be shared between threads. Nothing in the tool shares one: a run's requests
+ * are sent side by side, but the values in them are chosen one after another, and the source of
+ * numbers that makes a run repeatable would not survive being shared either.
  */
 public final class RandomValueProvider implements ValueProvider {
 
@@ -120,6 +129,7 @@ public final class RandomValueProvider implements ValueProvider {
     private final ApiModel model;
     private final RandomGenerator random;
     private final ValueProvider inside;
+    private final Map<Spelling, Optional<MatchingStrings>> spellings = new LinkedHashMap<>();
 
     /**
      * A provider that invents values, asking the specification's own declared values for anything
@@ -216,7 +226,22 @@ public final class RandomValueProvider implements ValueProvider {
     }
 
     /**
-     * A string of a length the specification allows.
+     * A string the specification would accept: of a length it allows, of the kind it names, and
+     * spelled the way it demands.
+     *
+     * <p>Three things can be said about a piece of text and they are tried in that order. The kind
+     * of value comes first - a date, an e-mail address, an identifier - because it describes the
+     * whole value and not merely its characters. A spelling rule comes next, and it is also what
+     * keeps or rejects the kind: where a specification states both, the value has to satisfy both.
+     * When neither is stated, or neither could be honoured, what is left is an ordinary word, which
+     * is what every string used to be.
+     *
+     * <p>Not being able to honour a rule means two different things and they end differently. A rule
+     * nobody could read is treated as though it had not been written, because refusing to test a
+     * parameter over a notation nobody here understands helps nobody. A rule that was read, but that
+     * nothing satisfying it is also short enough for the length the specification demands, means
+     * there is genuinely no value to send - so nothing is offered, and the operation is reported
+     * rather than being counted as tested while every one of its requests is thrown away.
      *
      * <p>All the arithmetic is done in {@code long}s: a specification saying a string may be up to
      * {@code 2147483647} characters is ordinary - that is what a Java {@code @Size} annotation
@@ -231,7 +256,72 @@ public final class RandomValueProvider implements ValueProvider {
         if (lowest > LONGEST_STRING) {
             return Optional.empty();
         }
-        long highest = Math.min(stated, Math.max(lowest, USUAL_LONGEST_STRING));
+
+        // Read before the kind is asked for, because the rule is also what vets the kind's answer,
+        // and because reading it is done once per run rather than once per value.
+        // The lengths the shape permits, and the lengths worth having. "At least one character" is
+        // the second of those and not the first: a rule that can only build the empty string - an
+        // empty rule, or one asking only where the value ends, both of which refuse nothing - would
+        // otherwise leave the parameter with no value at all.
+        Optional<MatchingStrings> spelling = schema.pattern().flatMap(rule -> spellingsFor(rule,
+                new MatchLength(schema.minLength().orElse(0), stated),
+                new MatchLength(lowest, longestWorthSending(lowest, stated))));
+
+        Optional<String> ofTheKindNamed = schema.format()
+                .flatMap(kind -> FormattedStrings.of(kind, random))
+                .filter(value -> value.length() >= lowest && value.length() <= stated)
+                // A rule nobody could read holds nothing against the value, which is the same
+                // answer the rest of this method gives such a rule.
+                .filter(value -> spelling.map(rule -> rule.allows(value)).orElse(true));
+        if (ofTheKindNamed.isPresent()) {
+            return ofTheKindNamed.map(JsonValue::of);
+        }
+
+        if (spelling.isPresent()) {
+            return spelling.get().next(random).map(JsonValue::of);
+        }
+        return Optional.of(JsonValue.of(word(lowest, stated)));
+    }
+
+    /**
+     * The strings one spelling rule allows, read once and kept.
+     *
+     * <p>Reading a rule is parsing a small language, and a run asks the same question thousands of
+     * times: one API in the corpus states a rule for fifteen of the values in every request it
+     * takes. Measured on that one, reading each rule afresh for every value put the cost of building
+     * a whole request up from eight microseconds to eleven; reading each once brings it back to
+     * eight, which is where it was before any of this.
+     *
+     * <p>Kept here rather than anywhere shared, because everything in this class belongs to one run.
+     * Two runs in the same program keep their own, which is what lets them be two runs. It cannot
+     * grow without bound either: there are only as many entries as the document has rules.
+     */
+    private Optional<MatchingStrings> spellingsFor(String rule, MatchLength allowed,
+            MatchLength preferred) {
+        return spellings.computeIfAbsent(new Spelling(rule, allowed, preferred), asked ->
+                MatchingStrings.reading(asked.rule(), asked.allowed(), asked.preferred(), random));
+    }
+
+    /**
+     * A spelling rule together with the lengths it has to fit inside and the ones worth having.
+     *
+     * <p>All of them, because the lengths change the answer: the same rule asked for a string of
+     * forty characters and for one of three is two different questions.
+     */
+    private record Spelling(String rule, MatchLength allowed, MatchLength preferred) {
+    }
+
+    /**
+     * The longest value worth building: what the shape allows, or the usual limit, whichever is
+     * smaller - and always at least what the shape insists on.
+     */
+    private static long longestWorthSending(long lowest, long stated) {
+        return Math.min(stated, Math.max(lowest, USUAL_LONGEST_STRING));
+    }
+
+    /** A word of no particular kind, of a length the specification allows. */
+    private String word(long lowest, long stated) {
+        long highest = longestWorthSending(lowest, stated);
         long length = lowest == highest ? lowest
                 : lowest + random.nextLong(highest - lowest + 1);
 
@@ -239,7 +329,7 @@ public final class RandomValueProvider implements ValueProvider {
         for (long i = 0; i < length; i++) {
             value.append(LETTERS.charAt(random.nextInt(LETTERS.length())));
         }
-        return Optional.of(JsonValue.of(value.toString()));
+        return value.toString();
     }
 
     /**
