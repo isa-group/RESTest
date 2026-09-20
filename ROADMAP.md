@@ -175,13 +175,20 @@ deliberate violation, so it is not 2.3's subject. Whoever takes it measures the 
 quickly operations are covered rather than assuming it: ADR-0017 is explicit that the assumption is
 untested, and being wrong about it is the cheapest thing in M2 to find out.
 
-**2.10 — comes after 2.4, and finishes what 2.7a started.** A weighted group divides one value
-between the sources that answered for it, so it needs two sources that answer for the same value
-before it means anything. Until 2.4 there is essentially one: measured over the corpus, the only
-place two sources compete today is a schema declaring both a `default` and a sample and no
-enumeration — 26 parameters of 5,119, every one of them in a single document of the fifty. 2.4's
-format dictionary answers for every string with a declared `format`, which is the competitor that
-makes weights worth having.
+**2.10 — finishes what 2.7a started, and has to make its own case for weights now.** A weighted
+group divides one value between the sources that answered for it, so it needs two sources that
+answer for the same value before it means anything. Measured over the corpus, the only place two
+sources compete without anybody writing a file is a schema declaring both a `default` and a sample
+and no enumeration — 26 parameters of 5,119, every one of them in a single document of the fifty.
+
+This note used to say that 2.4's shipped format dictionary would be the competitor that makes
+weights worth having. **It was not built** (ADR-0022): a value of a named kind is invented rather
+than looked up, and invention is last in the chain by definition, so it never competes with
+anything. What is left is the case ADR-0020 §5 already documents and the paragraph below repeats —
+a list somebody writes keyed to a whole kind of value replaces invention for that kind, for the
+whole run, when what they wanted was to be one voice among several. That is a smaller case than the
+one promised here, and whoever takes 2.10 should say so rather than inheriting a sentence that is no
+longer true.
 
 2.7a built the first half of ADR-0013 §2 — strategies with shares — because a run had to divide its
 time between ordinary requests and requests built to be refused before it could send either. It left

@@ -16,6 +16,7 @@
 package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.json.JsonValue;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
@@ -473,6 +475,114 @@ class RandomValueProviderTest {
 
         assertThat(provider.offer(inThePath).orElseThrow().value())
                 .isNotEqualTo(JsonValue.NULL);
+    }
+
+    /**
+     * What a document says about the <em>characters</em> of a value, and the order the two
+     * statements are honoured in.
+     *
+     * <p>A shape can name the kind of its value, state the spelling it demands, both, or neither,
+     * and each of the four has to end somewhere sensible. These are the tests of that choice, at the
+     * level where it is made: the pieces it is made of are tested on their own elsewhere, and
+     * neither of those tests would notice the branches being reordered.
+     */
+    @Nested
+    @DisplayName("the characters a document says a value is made of")
+    class Characters {
+
+        @RepeatedTest(20)
+        @DisplayName("a value whose kind the document names is of that kind")
+        void a_named_kind_is_honoured() {
+            String value = text(StringSchema.ofFormat("date-time"));
+
+            assertThatCode(() -> java.time.OffsetDateTime.parse(value))
+                    .describedAs("%s is not a moment in time", value)
+                    .doesNotThrowAnyException();
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("a value spelled the way the document demands")
+        void a_stated_spelling_is_honoured() {
+            String value = text(spelled("^[A-Z]{3}-[0-9]{4}$"));
+
+            assertThat(value).matches("^[A-Z]{3}-[0-9]{4}$");
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("a kind too long for the shape gives way to something that fits")
+        void a_kind_that_does_not_fit_gives_way() {
+            // A moment in time is twenty characters. This shape will take eight.
+            StringSchema tooShortForADateTime = new StringSchema(SchemaMetadata.none(),
+                    Optional.empty(), Optional.of(8), Optional.empty(), Optional.of("date-time"));
+
+            String value = text(tooShortForADateTime);
+
+            assertThat(value).hasSizeLessThanOrEqualTo(8).doesNotContain("T");
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("a kind the spelling rule refuses gives way to the rule")
+        void a_kind_the_spelling_refuses_gives_way() {
+            // An e-mail address is what the kind asks for; the rule says three capital letters,
+            // which no e-mail address is. The rule is the stricter statement and it wins.
+            StringSchema both = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.empty(), Optional.of("^[A-Z]{3}$"), Optional.of("email"));
+
+            assertThat(text(both)).matches("^[A-Z]{3}$");
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("a kind the spelling rule accepts is kept, because it says more")
+        void a_kind_the_spelling_accepts_is_kept() {
+            // The one shape in the whole corpus that states both: an e-mail address, and a rule
+            // asking only that there be an at-sign in it.
+            StringSchema both = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.empty(), Optional.of("@"), Optional.of("email"));
+
+            assertThat(text(both))
+                    .describedAs("the rule allows it, so the better value is the one kept")
+                    .endsWith("@example.com");
+        }
+
+        @RepeatedTest(10)
+        @DisplayName("a spelling rule nobody can read is carried on without, not stopped at")
+        void an_unreadable_rule_leaves_an_ordinary_word() {
+            String value = text(spelled("^(?=.*[A-Z])[A-Za-z0-9]{8}$"));
+
+            assertThat(value)
+                    .describedAs("losing the parameter over a notation nobody understands helps "
+                            + "nobody; an ordinary word at least exercises the operation")
+                    .isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("a rule that can be read and cannot be met leaves no value at all")
+        void an_unsatisfiable_rule_leaves_nothing() {
+            // Three capital letters, in a shape that also insists on ten characters.
+            StringSchema impossible = new StringSchema(SchemaMetadata.none(), Optional.of(10),
+                    Optional.of(10), Optional.of("^[A-Z]{3}$"), Optional.empty());
+
+            assertThat(provider.offer(Schemas.asking(impossible)))
+                    .describedAs("a value the document itself refuses is worse than no value")
+                    .isEmpty();
+        }
+
+        @RepeatedTest(10)
+        @DisplayName("a rule with no end of its own still yields a value worth sending")
+        void an_unbounded_rule_stays_short() {
+            assertThat(text(spelled("^(((a+)+)+)+$")))
+                    .describedAs("a value nobody can read teaches nothing a short one does not")
+                    .hasSizeLessThanOrEqualTo(64);
+        }
+
+        private StringSchema spelled(String rule) {
+            return new StringSchema(SchemaMetadata.none(), Optional.empty(), Optional.empty(),
+                    Optional.of(rule), Optional.empty());
+        }
+
+        private String text(StringSchema schema) {
+            return ((JsonValue.JsonString) invent(schema)).value();
+        }
     }
 
     private JsonValue invent(CanonicalSchema schema) {

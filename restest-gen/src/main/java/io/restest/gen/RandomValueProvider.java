@@ -123,6 +123,7 @@ public final class RandomValueProvider implements ValueProvider {
     private final ApiModel model;
     private final RandomGenerator random;
     private final ValueProvider inside;
+    private final Map<Spelling, Optional<MatchingStrings>> spellings = new LinkedHashMap<>();
 
     /**
      * A provider that invents values, asking the specification's own declared values for anything
@@ -259,8 +260,11 @@ public final class RandomValueProvider implements ValueProvider {
         }
 
         if (schema.pattern().isPresent()) {
+            // The shorter of the two upper limits, not the shape's own: a rule saying "any number
+            // of letters" is as happy with a million of them as with eight, and the promise that
+            // nothing enormous is built holds for a value with a spelling rule as for any other.
             Optional<MatchingStrings> spelling =
-                    MatchingStrings.reading(schema.pattern().get(), lowest, stated);
+                    spellingsFor(schema.pattern().get(), lowest, longestWorthSending(lowest, stated));
             if (spelling.isPresent()) {
                 return spelling.get().next(random).map(JsonValue::of);
             }
@@ -268,9 +272,44 @@ public final class RandomValueProvider implements ValueProvider {
         return Optional.of(JsonValue.of(word(lowest, stated)));
     }
 
+    /**
+     * The strings one spelling rule allows, read once and kept.
+     *
+     * <p>Reading a rule is parsing a small language, and a run asks the same question thousands of
+     * times: one API in the corpus states a rule for fifteen of the values in every request it
+     * takes. Measured on that one, reading each rule afresh for every value put the cost of building
+     * a whole request up from eight microseconds to eleven; reading each once brings it back to
+     * eight, which is where it was before any of this.
+     *
+     * <p>Kept here rather than anywhere shared, because everything in this class belongs to one run.
+     * Two runs in the same program keep their own, which is what lets them be two runs. It cannot
+     * grow without bound either: there are only as many entries as the document has rules.
+     */
+    private Optional<MatchingStrings> spellingsFor(String rule, long shortest, long longest) {
+        return spellings.computeIfAbsent(new Spelling(rule, shortest, longest), asked ->
+                MatchingStrings.reading(asked.rule(), asked.shortest(), asked.longest(), random));
+    }
+
+    /**
+     * A spelling rule together with the lengths it has to fit inside.
+     *
+     * <p>All three, because the lengths change the answer: the same rule asked for a string of forty
+     * characters and for one of three is two different questions.
+     */
+    private record Spelling(String rule, long shortest, long longest) {
+    }
+
+    /**
+     * The longest value worth building: what the shape allows, or the usual limit, whichever is
+     * smaller - and always at least what the shape insists on.
+     */
+    private static long longestWorthSending(long lowest, long stated) {
+        return Math.min(stated, Math.max(lowest, USUAL_LONGEST_STRING));
+    }
+
     /** A word of no particular kind, of a length the specification allows. */
     private String word(long lowest, long stated) {
-        long highest = Math.min(stated, Math.max(lowest, USUAL_LONGEST_STRING));
+        long highest = longestWorthSending(lowest, stated);
         long length = lowest == highest ? lowest
                 : lowest + random.nextLong(highest - lowest + 1);
 

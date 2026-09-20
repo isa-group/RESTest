@@ -85,15 +85,23 @@ the eight sources, and ADR-0020 §5 names 2.4's shipped format dictionary as the
 M2.10's weighted groups worth having. **No such file is shipped, and this reverses that much of
 both.**
 
-Three reasons, in order of weight:
+Two reasons:
 
-- **A dictionary sees only its key.** A list filed under `date-time` knows nothing about the
-  `maxLength` on the shape it is answering for, nor about a spelling rule beside it. Every conflict
-  in §1 above would have needed a guard around the dictionary instead of resolving itself.
 - **Variety.** The chain is exclusive until M2.10, so a shipped list would *replace* invention for
   every value of its kind. The corpus names `uri` 569 times; a run would send half a dozen fixed
-  addresses for all of them, for its whole length.
-- **A fresh identifier cannot come out of a file**, and a `uuid` is usually an identifier.
+  addresses for all of them, for its whole length. An invented one is different every time.
+- **A fresh identifier cannot come out of a file**, and a `uuid` is usually an identifier. Nor can a
+  date drawn from a window somebody can widen, which is what makes a run explore rather than repeat.
+
+A third reason was written here first and does not survive its own implementation, so it is recorded
+as withdrawn rather than quietly dropped. It read: *a dictionary sees only its key, where invention
+sees the whole shape, so every conflict in §1 resolves itself instead of needing a guard.*
+`FormattedStrings` **also** sees only the key — a name and a source of numbers, nothing else — and
+§1's fallthrough is exactly the guard the argument claimed to avoid: a shape saying
+`format: email, maxLength: 12` does not get a shortened address, it gets an ordinary word, which is
+what the dictionary was accused of. The two surviving reasons are enough on their own, and the
+withdrawn one is left here because an argument that sounds good and is not is worth being able to
+find again.
 
 What does not change: the `format` **keying** stays exactly as ADR-0020 defined it, for a *user's*
 file. Somebody holding real IBANs for `format: iban` still writes them that way, and that file still
@@ -117,15 +125,40 @@ Correctness is therefore a checked property of each value rather than a claim ab
 a disagreement between two readings of a dialect costs a value instead of producing a wrong one. A
 rule this platform will not compile is declined for the same reason: nothing could check it.
 
-`MatchingStrings` adds the two things the library cannot know about:
+`MatchingStrings` adds the five things the library cannot know about. Four of the five are there
+because a review of this increment demonstrated the failure each one prevents, on real input.
 
-- **How far a repetition runs.** Its own answer is a hundred, which turns "any number of digits" into
-  a hundred-digit number. The shape's upper length is used where it states one, and its lower length
-  wins over both.
+- **How far a repetition runs.** Its own answer is a hundred, and repetitions *multiply*: four nested
+  "one or more" groups is a hundred to the fourth power, and a rule of that shape produced 868,356
+  characters. Eight is the default here, with the shape's own lower length winning over it — a
+  specification insisting on two hundred characters is insisting — and its upper length capping both.
+- **The longest value worth sending.** The cap above bounds each repetition, not the value. An
+  ordinary e-mail rule, which nests two of them, still produced four thousand characters. So a
+  candidate is also held to the same limit every other invented string obeys: the shape's own
+  `maxLength`, or sixty-four when it states none.
+- **A length the rule states outright.** `[a-z]{1000000}` is a megabyte per attempt and
+  `{100000000}` is a hundred, whatever any cap says, and the loop below would have built two hundred
+  of them. A count larger than the value may be is read off the rule and the rule declined, before
+  anything is built.
+- **Which reader to trust first.** This platform compiles the rule *before* the library parses it.
+  The platform refuses a rule nested twenty thousand deep in microseconds; the library goes looking
+  for memory it cannot have and takes the run down with it, and an `OutOfMemoryError` is not
+  something a `catch` on the wrong side can help with.
+- **Whether the two readings agree at all.** The library does not understand lookahead, so
+  `^(?=.*[A-Z])[A-Za-z0-9]{8}$` — an ordinary password rule — parses without complaint and produces
+  ten characters where the rule demands eight. Every candidate would then be refused one by one and
+  the parameter reported as one no value could be found for, which §4 makes an expensive answer. So
+  three trial values are drawn when the rule is first read, and if none of them satisfies this
+  platform's reading, the rule is treated as one nobody can read.
 - **The length, by drawing again.** There is no "of this length" in the library, so candidates are
-  drawn until one fits — up to two hundred. GitHub's forty hexadecimal digits came out at forty about
-  once in fifty draws; a draw costs microseconds, and almost every shape is satisfied by the first
-  candidate and never reaches the second.
+  drawn until one fits. GitHub's forty hexadecimal digits come out at forty about once in thirty-nine
+  draws, so the allowance starts at two hundred and grows with the length demanded, to a ceiling of
+  two thousand, and stops on a budget of a million characters built. It is still a lottery, and the
+  odds are worth writing down: at an exactly demanded length *n* one draw in about *n* hits, which
+  with the allowance above makes 40 characters a near certainty and 200 about 99%, while 2,000 —
+  where the character budget bites before the attempts do — is about four in ten. Beyond that the
+  tool reports that no value could be found, which is honest about the tool and not quite honest
+  about the shape. Nothing in the corpus demands more than 40.
 
 The kinds of value are **not** a library. `UUID`, `DateTimeFormatter`, `Base64` and `URI` are in
 `java.base`, and a regular expression for `date-time` would cheerfully produce `8336-00-95T06:87:98Z`
@@ -137,14 +170,19 @@ They end differently, and the difference is deliberate:
 
 - **A rule nobody could read** is treated as though it had not been written: an ordinary word, as
   before. Refusing to test a parameter over a notation nobody here understands helps nobody, and the
-  tool never promised every dialect. None of the corpus's 26 is in this case today, and a test says
-  so.
-- **A rule that was read, and nothing satisfying it also fits the length the shape demands**, means
-  there is genuinely no value to send. Nothing is offered, so the parameter is left out or the
-  operation is reported as untestable. That is what `RandomValueProvider` already does when it runs
-  out of attempts, for the reason its own comment gives: better than being counted among the
-  operations being tested while every one of its requests is thrown away. It triggers nowhere in the
-  five measured APIs.
+  tool never promised every dialect. This covers three cases that look different and are not — a
+  rule neither reader accepts, a rule only one of them accepts, and a rule they both accept and
+  understand differently. The last is the one worth naming, because it is silent: only the trial
+  values described in §3 tell it apart from a rule that is simply hard to satisfy, and without them a
+  password rule would take its whole operation out of the run. None of the corpus's 26 rules is in
+  any of the three cases today, and a test says so.
+- **A rule that was read, understood the same way by both, and nothing satisfying it also fits the
+  length the shape demands**, means there is genuinely no value to send. Nothing is offered, so the
+  parameter is left out or the operation is reported as untestable. That is what
+  `RandomValueProvider` already does when it runs out of attempts, for the reason its own comment
+  gives: better than being counted among the operations being tested while every one of its requests
+  is thrown away. It triggers nowhere in the fifty documents of the corpus, and a test pins that too
+  — a described place that yields nothing is a failure there, not a tolerated outcome.
 
 ### 5. A value built this way is still recorded as invented
 
@@ -182,6 +220,13 @@ whoever needs it then can add it without changing what is stored today.
   length disagree, which is thirteen places in fifty documents, and the work is microseconds. If a
   campaign ever shows it on a profile, the answer is a repetition count aimed at the wanted length
   rather than drawn and filtered.
+- **A rule is read once per run, not once per value.** Reading one is parsing a small language, and
+  the API in the corpus with the most of them states a rule for fifteen of the values in every
+  request it takes. Measured on that one: eight microseconds to build a whole request before this
+  increment, eleven with a rule read afresh each time, eight again once each rule is read once and
+  kept. The store of read rules belongs to the generator rather than to the class, because
+  everything in a generator belongs to one run and two runs in the same program have to be two runs;
+  it holds one entry per rule the document states, so it cannot grow.
 - One more list to keep: the kinds of value RESTest builds. It is closed, it is pinned by a test
   against the corpus, and adding to it is adding one line to a `switch`.
 

@@ -18,6 +18,7 @@ package io.restest.gen;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.gen.GeneratedValue;
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
@@ -181,7 +182,10 @@ class FormatsAndPatternsAcrossTheCorpusTest {
                 .map(place -> place.shape().pattern())
                 .flatMap(Optional::stream)
                 .forEach(rule -> {
-                    if (MatchingStrings.reading(rule, 1, Long.MAX_VALUE).isEmpty()) {
+                    Optional<MatchingStrings> spellings =
+                            MatchingStrings.reading(rule, 1, 64, Schemas.fixedRandom());
+                    if (spellings.isEmpty()
+                            || spellings.orElseThrow().next(Schemas.fixedRandom()).isEmpty()) {
                         unreadable.add(document + ": " + rule);
                     }
                 }));
@@ -196,20 +200,21 @@ class FormatsAndPatternsAcrossTheCorpusTest {
     @DisplayName("a value built from what a document says about its characters satisfies that document")
     void every_described_place_gets_a_value_its_own_shape_accepts() {
         List<String> refused = new ArrayList<>();
+        List<String> answeredWithNothing = new ArrayList<>();
         forEachDocument((document, model) -> {
-            RandomValueProvider inventing =
-                    new RandomValueProvider(model, Schemas.fixedRandom());
+            RandomValueProvider inventing = new RandomValueProvider(model, Schemas.fixedRandom());
             for (Described place : describedPlaces(model)) {
                 for (int draw = 0; draw < DRAWS; draw++) {
-                    // Nothing at all is a fair answer - a shape can demand a spelling and a length
-                    // that no string satisfies at once - and saying so is what the tool does with
-                    // any impossible shape. What is checked is the values it does offer.
-                    inventing.offer(Schemas.asking(place.shape()))
-                            .map(GeneratedValue::value)
-                            .ifPresent(value -> SchemaSatisfaction
-                                    .violations(value, place.shape(), model)
-                                    .forEach(problem -> refused.add(
-                                            document + " " + place.where() + ": " + problem)));
+                    Optional<JsonValue> value =
+                            inventing.offer(Schemas.asking(place.shape()))
+                                    .map(GeneratedValue::value);
+                    if (value.isEmpty()) {
+                        answeredWithNothing.add(document + " " + place.where());
+                        continue;
+                    }
+                    SchemaSatisfaction.violations(value.get(), place.shape(), model)
+                            .forEach(problem -> refused.add(
+                                    document + " " + place.where() + ": " + problem));
                 }
             }
         });
@@ -217,6 +222,95 @@ class FormatsAndPatternsAcrossTheCorpusTest {
         assertThat(refused)
                 .describedAs("the whole point is that these values are ones the document accepts")
                 .isEmpty();
+        // Checked as well as the above, because "no value" satisfies every shape there is: without
+        // this, a change that stopped building anything at all for a described place would leave
+        // the assertion above perfectly green.
+        assertThat(answeredWithNothing)
+                .describedAs("a described place that yields nothing is a parameter left out and "
+                        + "possibly an operation lost, so it is pinned rather than tolerated")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a place whose kind of value RESTest knows really does get one of that kind")
+    void a_named_kind_reaches_the_request() {
+        List<String> notOfItsKind = new ArrayList<>();
+        forEachDocument((document, model) -> {
+            RandomValueProvider inventing = new RandomValueProvider(model, Schemas.fixedRandom());
+            for (Described place : describedPlaces(model)) {
+                String kind = place.shape().format().orElse("");
+                if (place.shape().pattern().isPresent()
+                        || FormattedStrings.of(kind, Schemas.fixedRandom()).isEmpty()) {
+                    continue;
+                }
+                for (int draw = 0; draw < DRAWS; draw++) {
+                    inventing.offer(Schemas.asking(place.shape()))
+                            .map(GeneratedValue::value)
+                            .filter(value -> value instanceof JsonValue.JsonString)
+                            .map(value -> ((JsonValue.JsonString) value).value())
+                            .filter(text -> !readsBackAs(kind, text))
+                            .ifPresent(text -> notOfItsKind.add(
+                                    document + " " + place.where() + " (" + kind + "): " + text));
+                }
+            }
+        });
+
+        assertThat(notOfItsKind)
+                .describedAs("without this, deleting the whole branch that reads a declared kind "
+                        + "would break nothing: an ordinary word satisfies every length check "
+                        + "there is, and a kind is an annotation the shared check cannot hold "
+                        + "anybody to")
+                .isEmpty();
+    }
+
+    /**
+     * Whether a value really is of the kind its document named, read back by the platform's own
+     * parser for that kind.
+     *
+     * <p>Written here rather than borrowed from the generator, for the reason every check in these
+     * tests is: one that asked the generator whether it had done the right thing would agree with
+     * it whatever it did.
+     */
+    private static boolean readsBackAs(String kind, String value) {
+        try {
+            switch (kind) {
+                case "date-time" -> java.time.OffsetDateTime.parse(value);
+                case "date" -> java.time.LocalDate.parse(value);
+                case "time" -> java.time.OffsetTime.parse(value);
+                case "duration" -> java.time.Duration.parse(value);
+                case "uuid" -> java.util.UUID.fromString(value);
+                case "byte" -> java.util.Base64.getDecoder().decode(value);
+                case "uri", "url", "iri" -> {
+                    return java.net.URI.create(value).isAbsolute();
+                }
+                case "email", "idn-email" -> {
+                    return value.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
+                }
+                case "hostname", "idn-hostname" -> {
+                    return value.matches("[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
+                }
+                case "ipv4" -> {
+                    return value.matches("(\\d{1,3}\\.){3}\\d{1,3}");
+                }
+                case "ipv6" -> {
+                    return value.contains(":");
+                }
+                case "uri-reference", "iri-reference", "json-pointer" -> {
+                    return value.startsWith("/");
+                }
+                case "relative-json-pointer" -> {
+                    return value.matches("\\d+/.*");
+                }
+                // A kind this does not judge is one the generator does not build either, and the
+                // caller has already skipped those.
+                default -> {
+                    return true;
+                }
+            }
+            return true;
+        } catch (RuntimeException notOfThatKind) {
+            return false;
+        }
     }
 
     /** One place in a request whose shape says something about the characters of its value. */
