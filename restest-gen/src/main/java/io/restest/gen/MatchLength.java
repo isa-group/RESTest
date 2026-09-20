@@ -262,19 +262,25 @@ record MatchLength(long shortest, long longest) {
          */
         private int skipGroupIntroduction(int after) {
             char kind = rule.charAt(after);
-            if (kind == ':' || kind == '=' || kind == '!' || kind == '>') {
+            if (kind == ':' || kind == '=' || kind == '!') {
                 return after + 1;
             }
             if (kind == '<' && after + 1 < rule.length()
                     && (rule.charAt(after + 1) == '=' || rule.charAt(after + 1) == '!')) {
                 return after + 2;
             }
-            // A name, or a setting: everything up to the colon or the bracket that ends it.
-            int end = after;
-            while (end < rule.length() && rule.charAt(end) != ':' && rule.charAt(end) != '>') {
-                end++;
+            // A name, and nothing else. A group that turns a setting on, or that refuses to give
+            // back what it matched, is a group whose effect on what the builder makes is not known
+            // here, so the whole rule goes unanswered rather than half-understood.
+            if (kind == '<' && after + 1 < rule.length()
+                    && Character.isLetter(rule.charAt(after + 1))) {
+                int end = after + 1;
+                while (end < rule.length() && Character.isLetterOrDigit(rule.charAt(end))) {
+                    end++;
+                }
+                return end < rule.length() && rule.charAt(end) == '>' ? end + 1 : -1;
             }
-            return end < rule.length() ? end + 1 : -1;
+            return -1;
         }
 
         /** A set of characters to choose from, which is one character however many are in it. */
@@ -283,14 +289,17 @@ record MatchLength(long shortest, long longest) {
             if (walk < rule.length() && rule.charAt(walk) == '^') {
                 walk++;
             }
-            // A closing bracket written first is one of the characters rather than the end of the set.
-            if (walk < rule.length() && rule.charAt(walk) == ']') {
-                walk++;
-            }
+            // A closing bracket written first is one of the set by this platform's rules and the
+            // end of it by the builder's, so a set beginning that way is not read at all. Nor is
+            // one holding a set of its own, which the two also read differently.
             while (walk < rule.length() && rule.charAt(walk) != ']') {
+                if (rule.charAt(walk) == '[') {
+                    return UNREADABLE;
+                }
                 walk += rule.charAt(walk) == '\\' ? 2 : 1;
             }
-            if (walk >= rule.length()) {
+            if (walk >= rule.length() || walk == at + 1
+                    || (walk == at + 2 && rule.charAt(at + 1) == '^')) {
                 return UNREADABLE;
             }
             at = walk + 1;
@@ -303,37 +312,37 @@ record MatchLength(long shortest, long longest) {
                 return UNREADABLE;
             }
             char named = rule.charAt(at + 1);
-            // "The same as the third group again", which the builder answers by repeating whatever
-            // it built there - so what this costs is whatever that group cost, and a rule can nest
-            // the trick to double its length with every five characters written. Not counted:
-            // refused, and the caller sends an ordinary word instead.
-            if (named >= '1' && named <= '9' || named == 'k') {
-                return UNREADABLE;
-            }
-            at += 2;
             // A whole family of characters named inside brackets - every letter, every currency
-            // sign - or one character written as a number. Either way the braces belong to the
-            // escape and are not a repetition count, which is what they would otherwise be read as.
-            if ((named == 'p' || named == 'P' || named == 'x' || named == 'u' || named == 'N')
-                    && at < rule.length() && rule.charAt(at) == '{') {
-                int closes = rule.indexOf('}', at);
+            // sign. The braces belong to the escape and are not a repetition count, which is what
+            // they would otherwise be read as.
+            if (named == 'p' || named == 'P') {
+                if (at + 2 >= rule.length() || rule.charAt(at + 2) != '{') {
+                    return UNREADABLE;
+                }
+                int closes = rule.indexOf('}', at + 2);
                 if (closes < 0) {
                     return UNREADABLE;
                 }
                 at = closes + 1;
                 return ONE_CHARACTER;
             }
-            // Everything between here and the end of the quotation is itself, braces included.
-            if (named == 'Q') {
-                int ends = rule.indexOf("\\E", at);
-                long literal = (ends < 0 ? rule.length() : ends) - at;
-                at = ends < 0 ? rule.length() : ends + 2;
-                return new MatchLength(literal, literal);
+            // Everything else named by a letter or a digit is refused, and the list of exceptions
+            // is deliberately tiny. This is where four rounds of review left the reading: the
+            // builder's idea of what an escape means is its own, and the ways it differs are found
+            // one at a time and always the expensive way round. A back-reference repeats a whole
+            // group; a quotation swallows everything after it; the marks for where a value begins
+            // and ends are nothing to this platform and a letter to the builder. Rather than keep
+            // a list of the ones that bite, there is a list of the ones that are understood.
+            if (Character.isLetterOrDigit(named)) {
+                boolean known = named == 'd' || named == 'D' || named == 'w' || named == 'W'
+                        || named == 's' || named == 'S' || named == 'n' || named == 'r'
+                        || named == 't' || named == 'f';
+                if (!known) {
+                    return UNREADABLE;
+                }
             }
-            // A word boundary spends no characters; everything else stands for exactly one.
-            boolean position = named == 'b' || named == 'B' || named == 'A' || named == 'z'
-                    || named == 'Z';
-            return position ? NOTHING : ONE_CHARACTER;
+            at += 2;
+            return ONE_CHARACTER;
         }
 
         /** How many times the piece just read may appear. Once, unless the rule says otherwise. */
@@ -348,11 +357,14 @@ record MatchLength(long shortest, long longest) {
                 case '{' -> counted();
                 default -> ONCE;
             };
-            // "As few as possible" and "and do not give any back" change which string is found,
-            // never how long one may be.
-            if (times != UNREADABLE && at < rule.length()
+            // "As few as possible" and "and do not give any back" change which string is found
+            // and not how long one may be - by the notation's rules. The builder reads the second
+            // of them as one more repetition, so `a*+` is `(a*)+` to it and three of those nested
+            // built three hundred thousand characters where this counted four thousand. Neither is
+            // answered for.
+            if (times != ONCE && at < rule.length()
                     && (rule.charAt(at) == '?' || rule.charAt(at) == '+')) {
-                at++;
+                return UNREADABLE;
             }
             return times;
         }

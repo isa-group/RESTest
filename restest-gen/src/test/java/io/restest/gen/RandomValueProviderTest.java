@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
@@ -581,16 +582,33 @@ class RandomValueProviderTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"", "^$", "$", "^", "(?:)"})
-        @DisplayName("a rule that refuses nothing still leaves a value to send")
-        void a_rule_that_refuses_nothing_still_yields_a_value(String refusesNothing) {
-            // Every one of these accepts every string there is - an empty rule, and four ways of
+        @ValueSource(strings = {"", "$", "^", "(?:)"})
+        @DisplayName("a rule that refuses nothing leaves an ordinary word, wherever the value goes")
+        void a_rule_that_refuses_nothing_yields_an_ordinary_word(String refusesNothing) {
+            // Every one of these accepts every string there is - an empty rule, and three ways of
             // saying "somewhere in the value". The builder answers all of them with the empty
-            // string, which is shorter than the one character an undescribed value gets; read as a
-            // limit rather than a preference, that left the parameter with no value at all.
-            assertThat(provider.offer(Schemas.asking(spelled(refusesNothing))))
-                    .describedAs("a rule refusing nothing cannot be the reason there is no value")
-                    .isPresent();
+            // string and nothing else, and an empty string cannot be put in the path of a web
+            // address, so honouring such a rule cost the parameter and the operation with it.
+            for (ParameterLocation where : ParameterLocation.values()) {
+                assertThat(offerFor(spelled(refusesNothing), where))
+                        .describedAs("a rule refusing nothing cannot be the reason there is no "
+                                + "value, in the %s either", where)
+                        .hasValueSatisfying(value -> assertThat(
+                                ((JsonValue.JsonString) value.value()).value()).isNotEmpty());
+            }
+        }
+
+        @Test
+        @DisplayName("a rule that really does demand an empty value gets one")
+        void a_rule_demanding_emptiness_is_honoured() {
+            assertThat(((JsonValue.JsonString) invent(spelled("^$"))).value())
+                    .describedAs("unlike the rules above, this one refuses everything else")
+                    .isEmpty();
+        }
+
+        private Optional<GeneratedValue> offerFor(StringSchema schema, ParameterLocation where) {
+            return provider.offer(io.restest.core.gen.ValueRequest.of(
+                    io.restest.core.model.OperationId.of("GET /widgets/{id}"), "id", where, schema));
         }
 
         @RepeatedTest(10)

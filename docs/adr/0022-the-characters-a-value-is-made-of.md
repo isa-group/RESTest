@@ -138,10 +138,13 @@ running.
   do. A candidate outside that is set aside while better ones are looked for, and taken in the end if
   none turns up. Neither end can be a hard limit, and both were, once: a rule asking for a hundred and
   twenty-eight hexadecimal digits is the *document* asking, and treating sixty-four as a limit made the
-  tool quietly send a word the document refuses; while `pattern: "$"` refuses nothing at all, builds
-  only the empty string, and — with "at least one character" read as a limit — left the parameter with
-  no value. The hard limits are the shape's own, and ten thousand characters where it states no
-  maximum.
+  tool quietly send a word the document refuses; while `pattern: "$"` refuses nothing at all and
+  builds only the empty string, which "at least one character" read as a limit turned into no value
+  at all. A rule that refuses nothing is now treated as no rule, which is a separate fix and the
+  right one — an empty value cannot go in the path of a web address, so honouring such a rule cost
+  the operation. The hard limits are the shape's own, capped at ten thousand characters: a shape
+  permitting fifty thousand is held to ten thousand too, because no value the tool builds is longer
+  than that whatever a document permits.
 - **How long the rule could possibly run**, worked out from the rule before a character is built.
   This is the defence that holds, and it took four attempts, each of the first three demonstrated
   inadequate by review on real input. A cap on repetitions does not bound the value, because a rule
@@ -155,11 +158,18 @@ running.
 
   So `MatchLength` counts what the **builder** will make at its very worst: pieces in a row add up, a
   choice takes the widest span, a repetition multiplies, counts written one after another multiply
-  too, arithmetic saturates rather than wrapping, a group that asks about what surrounds it costs
-  what is inside it, and anything it cannot read through — or whose length depends on what was
-  matched elsewhere, which is what a back-reference is — it refuses to answer for. A rule whose worst
-  is longer than the value may be is declined unbuilt. Deliberately generous: a rule it refuses may
-  merely have looked dangerous, which costs a spelling rule rather than the run.
+  too, arithmetic saturates rather than wrapping, and a group that asks about what surrounds it
+  costs anything between nothing and what is inside it.
+
+  And — the part that finally made this converge — **it answers only for a closed list of
+  constructs, and refuses everything else.** Four rounds of review each found another construct the
+  builder reads differently from the notation: a question about what comes next, a back-reference, a
+  possessive quantifier, the marks for where a value begins and ends, a set whose first character is
+  a bracket. Enumerating the ones that bite does not terminate; enumerating the ones that are
+  understood does. So an escape named by a letter is answered for only if it is one of ten, a group
+  may only say that it is uncapturing, a question, or named, a quantifier may carry no marker, and a
+  set may not hold a set. Anything else leaves the rule unanswered, and a rule unanswered is a rule
+  not built from.
 
   It also counts the **shortest** the rule could build, which answers a different question: whether a
   value short enough to be worth reading exists at all. Where one does not — a rule asking for a
@@ -189,13 +199,19 @@ running.
   could be found, which is honest about the tool and not quite honest about the shape. Nothing in
   the corpus demands more than 40.
 
-The three things that are **not** here are worth naming too, because each was considered and left.
-Nothing tells the run when a rule was refused for being dangerous rather than for being unreadable,
-so the API sees an ordinary word and nobody learns why; that belongs with the rest of what a run says
-about a document it could not fully use. Whether the two readers agree is decided once and kept, so a
-rule they agree about only rarely is settled by eight draws taken at one arbitrary moment. And a rule
-naming more than a hundred groups is refused whether they are nested or side by side, because the
-count that keeps the reading off the end of its own stack does not distinguish the two.
+Two things are **not** here, and both were considered. Nothing tells the run when a rule was refused,
+for any of the reasons above, so the API is sent an ordinary word and nobody learns why; that belongs
+with the rest of what a run says about a document it could not fully use. And whether the two readers
+agree is decided once and kept, so a rule they agree about only rarely is settled by eight draws taken
+at one arbitrary moment.
+
+The guarantee is checked rather than argued. Five thousand rules are made up from an alphabet
+deliberately wider than the list above — the anchors, the quotations, the possessive quantifiers, the
+sets holding sets, characters written as numbers — each is handed to the count, and the builder is
+then held to the answer. A rule the count declines is a pass, because declining is safe; an answer
+smaller than what gets built is a failure. That test found a real error on its first run, and it is
+the reason the paragraphs above can be believed where four rounds of hand-written expectations could
+not.
 
 The kinds of value are **not** a library. `UUID`, `DateTimeFormatter`, `Base64` and `URI` are in
 `java.base`, and a regular expression for `date-time` would cheerfully produce `8336-00-95T06:87:98Z`

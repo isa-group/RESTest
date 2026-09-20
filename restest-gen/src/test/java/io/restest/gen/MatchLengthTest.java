@@ -98,14 +98,14 @@ class MatchLengthTest {
         }
 
         @Test
-        @DisplayName("nor is anything the builder makes from a thousand rules nobody wrote")
+        @DisplayName("nor is anything the builder makes from five thousand rules nobody wrote")
         void the_builder_never_exceeds_the_count_on_rules_nobody_wrote() {
             // Hand-written cases only cover what their author thought of, and what their author did
             // not think of is exactly how this count came to be wrong three times. So the rules are
             // made up: every construct whose length is awkward, put together at random, deep enough
             // to nest. Each one is asked, and then the builder is held to the answer.
             SplittableRandom random = new SplittableRandom(20260920L);
-            for (int attempt = 0; attempt < 1_000; attempt++) {
+            for (int attempt = 0; attempt < 5_000; attempt++) {
                 String rule = aRuleNobodyWrote(random, 0);
                 Optional<MatchLength> counted = MatchLength.of(rule, EIGHT);
                 // Skipped the way the tool skips them: a rule that could build more than any value
@@ -136,7 +136,17 @@ class MatchLengthTest {
             }
         }
 
-        /** One made-up rule, put together from the pieces whose length is worth getting right. */
+        /**
+         * One made-up rule, from as wide an alphabet as can be written.
+         *
+         * <p>Wide on purpose, and wider than the constructs the count knows how to read. A fuzzer
+         * drawing only from what its author has already thought about re-confirms the bugs already
+         * fixed and finds nothing; the ones that ended a run in this increment were all in
+         * constructs missing from an earlier version of this list. So everything goes in - the marks
+         * for where a value begins and ends, quotations, characters written as numbers, the
+         * reluctant and possessive quantifiers, sets holding sets - and a rule the count declines is
+         * a pass, because declining is safe. What must never happen is an answer that is too small.
+         */
         private static String aRuleNobodyWrote(SplittableRandom random, int depth) {
             StringBuilder rule = new StringBuilder();
             int pieces = 1 + random.nextInt(3);
@@ -152,28 +162,46 @@ class MatchLengthTest {
                 if (random.nextInt(4) == 0) {
                     inside = inside + "|" + aRuleNobodyWrote(random, depth + 1);
                 }
-                return switch (random.nextInt(6)) {
+                return switch (random.nextInt(9)) {
                     case 0 -> "(?:" + inside + ")";
                     case 1 -> "(?=" + inside + ")";
                     case 2 -> "(?!" + inside + ")";
                     case 3 -> "(?<=" + inside + ")";
+                    case 4 -> "(?<!" + inside + ")";
+                    case 5 -> "(?<name" + depth + ">" + inside + ")";
+                    case 6 -> "(?>" + inside + ")";
+                    case 7 -> "(?i:" + inside + ")";
                     default -> "(" + inside + ")";
                 };
             }
-            return switch (random.nextInt(8)) {
+            return switch (random.nextInt(22)) {
                 case 0 -> "[a-z]";
                 case 1 -> "[^0-9]";
-                case 2 -> "\\d";
-                case 3 -> "\\w";
-                case 4 -> "\\p{L}";
-                case 5 -> ".";
-                case 6 -> "ab";
+                case 2 -> "[^]]";
+                case 3 -> "[a-z&&[^aeiou]]";
+                case 4 -> "\\d";
+                case 5 -> "\\w";
+                case 6 -> "\\s";
+                case 7 -> "\\p{L}";
+                case 8 -> "\\A";
+                case 9 -> "\\z";
+                case 10 -> "\\Z";
+                case 11 -> "\\b";
+                case 12 -> "\\Q{9}\\E";
+                case 13 -> "\\x41";
+                case 14 -> "\\u0041";
+                case 15 -> "\\052";
+                case 16 -> "\\cA";
+                case 17 -> "\\n";
+                case 18 -> ".";
+                case 19 -> "ab";
+                case 20 -> "-";
                 default -> "x";
             };
         }
 
         private static String aQuantifier(SplittableRandom random) {
-            return switch (random.nextInt(8)) {
+            String count = switch (random.nextInt(8)) {
                 case 0 -> "*";
                 case 1 -> "+";
                 case 2 -> "?";
@@ -182,6 +210,10 @@ class MatchLengthTest {
                 case 5 -> "{" + (1 + random.nextInt(3)) + ",}";
                 default -> "";
             };
+            if (count.isEmpty() || random.nextInt(3) != 0) {
+                return count;
+            }
+            return count + (random.nextBoolean() ? "?" : "+");
         }
     }
 
@@ -242,10 +274,12 @@ class MatchLengthTest {
         }
 
         @Test
-        @DisplayName("a quoted stretch is its own length, braces and all")
-        void a_quoted_stretch_is_taken_literally() {
+        @DisplayName("a quotation is not read at all, because the two readers do not agree on one")
+        void a_quotation_says_nothing() {
             assertThat(MatchLength.of("\\Q{1000000}\\E", EIGHT))
-                    .contains(new MatchLength(9, 9));
+                    .describedAs("an escape named by a letter is answered for only when it is one "
+                            + "of the handful this understands, and a quotation is not among them")
+                    .isEmpty();
         }
     }
 

@@ -102,6 +102,9 @@ final class MatchingStrings {
      */
     private static final int PROBES = 8;
 
+    /** Held against a rule that builds nothing, to tell "accepts everything" from "demands empty". */
+    private static final String A_PLAIN_WORD = "aA0";
+
     private final String expression;
     private final RgxGen shapes;
     private final Pattern checked;
@@ -170,6 +173,9 @@ final class MatchingStrings {
             MatchingStrings reading = new MatchingStrings(expression,
                     RgxGen.parse(howFarRepetitionsRun, expression), checked, couldBe.orElseThrow(),
                     new MatchLength(shortest, ceiling), narrowedTo(preferred, shortest, ceiling));
+            if (reading.saysNothingAboutTheValue()) {
+                return Optional.empty();
+            }
             return reading.bothReadingsAgree(random) ? Optional.of(reading) : Optional.empty();
         } catch (RuntimeException cannotRead) {
             // The library throws its own kind for a rule it cannot read, and this platform throws
@@ -177,6 +183,22 @@ final class MatchingStrings {
             // get the same answer, so one catch covers them.
             return Optional.empty();
         }
+    }
+
+    /**
+     * Whether the rule turns out to refuse nothing, in which case there is nothing to honour.
+     *
+     * <p>{@code pattern: ""} is legal and is what a document generator writes for a field somebody
+     * left blank; {@code ^}, {@code $} and {@code (?:)} say only where a value begins or ends, which
+     * every value in existence satisfies. The builder answers all of them with the empty string and
+     * nothing else, so honouring such a rule would mean sending an empty value - which cannot even
+     * be put in the path of a web address, so the parameter would be lost and the operation with it.
+     *
+     * <p>A rule that genuinely demands an empty value - {@code ^$} - is a different thing and is
+     * kept, which is what asking whether it accepts an ordinary word tells the two apart.
+     */
+    private boolean saysNothingAboutTheValue() {
+        return possible.longest() == 0 && accepts(A_PLAIN_WORD);
     }
 
     /**
