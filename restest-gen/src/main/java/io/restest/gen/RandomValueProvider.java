@@ -180,7 +180,12 @@ public final class RandomValueProvider implements ValueProvider {
         if (depth > HARD_DEPTH) {
             return Optional.empty();
         }
-        if (depth > 0) {
+        // Nobody is asked about a pointer to a shape, only about the shape it points at. What is on
+        // the far side is followed first, a few lines down, and the question is put again there.
+        // Asking here would hand every answerer a shape with nothing in it: a closed list of
+        // allowed values behind a pointer would look like no list at all, and a source that should
+        // have deferred to it would answer instead.
+        if (depth > 0 && !(schema instanceof SchemaReference)) {
             Optional<GeneratedValue> known = inside.offer(request.about(schema));
             if (known.isPresent()) {
                 return Optional.of(known.get().value());
@@ -469,11 +474,18 @@ public final class RandomValueProvider implements ValueProvider {
     }
 
     private Optional<JsonValue> named(ValueRequest request, SchemaReference reference, int depth) {
-        if (depth >= MAX_DEPTH) {
+        Optional<CanonicalSchema> shape = model.resolve(reference);
+        if (shape.isEmpty()) {
             return Optional.empty();
         }
-        return model.resolve(reference)
-                .flatMap(schema -> value(request.aboutTheShapeNamed(reference.name(), schema),
-                        schema, depth + 1));
+        ValueRequest about = request.aboutTheShapeNamed(reference.name(), shape.get());
+        if (depth >= MAX_DEPTH) {
+            // Deep enough that nothing more is invented here - but somebody may still know this
+            // value, and being too deep to build is not a reason to stop asking. Without this, a
+            // shape the document named and one written out where it is used would behave
+            // differently at the same depth, which is a difference nobody wrote down on purpose.
+            return inside.offer(about).map(GeneratedValue::value);
+        }
+        return value(about, shape.get(), depth + 1);
     }
 }

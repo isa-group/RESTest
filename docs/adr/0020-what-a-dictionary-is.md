@@ -338,3 +338,169 @@ reached the wire as written.
   without complaint and then quietly do nothing. Unknown members are refused, which can be relaxed
   later without breaking anybody's file; the reverse cannot. A key written twice is refused for the
   same reason, which is something the YAML reader can be asked to check and the JSON one could not.
+
+---
+
+## Amendment (M2.7c)
+
+**Date:** 2026-09-20
+
+**A list reaches inside a request body, a place is named by the way down to it, an operation answers
+to two names, and an entry that could never be used is said out loud before the run starts.**
+
+### Why
+
+The format shipped at 2.7a could only speak about two kinds of place: a parameter, and the request
+body as a whole. Measured against the priority corpus, that is under half of what there is to speak
+about. Counting every place a request has - each parameter, each body, and every path inside either
+of them, which is what `WhereAValueCanGo` now enumerates - the five documents have **553 places**
+between them, and a list could fill **247**: the 200 parameter names and the 47 bodies. Everything
+else loaded and did nothing. It fills **435** now, the remaining 118 being places the document
+settles by itself. It is worst where the parameters are few and the bodies large:
+notebook-manager 7 places of 37, gestao-hospital 35 of 111, pet-clinic 41 of 109.
+
+The other half was not refused. It loaded, sat in the file looking useful, and did nothing, which is
+the exact failure this format spends paragraphs preventing elsewhere. The cause was one line: what
+fills the inside of an object was asked only of the document, never of the dictionaries.
+
+Two things made fixing it urgent rather than tidy.
+
+**M2.5b is built on it.** The memory of what an API returned is described as dictionaries under the
+keyings this format already has — "one leaf by its name, a whole resource by its shape" — and the
+leaves it would fill are the leaves of request bodies. Landing 2.5b first would have produced a
+mechanism that could not reach its consumer.
+
+**And the first real use of this format is a file somebody generates.** A dictionary is the part of
+the tool most likely to be written by a model reading the specification, and a model reading a
+specification writes entries for properties, because that is where the interesting values are. Every
+one of them would have been ignored.
+
+### How
+
+**A place is named by the way down to it.** A parameter by its name, the body by `body`, and a piece
+of the body by the path from it: `body.owner.email`, `body.tags[].label`. `[]` stands for every
+element of a list, there being no one element a value could be meant for. This is what `keyedBy:
+operationAndParameter` matches, and for a parameter or a whole body the path is the name, so every
+file written against 2.7a still means exactly what it meant.
+
+`keyedBy: name` matches **the last step alone**, wherever it turns up — a parameter called `email` and
+an `email` four levels inside a body. That difference is the point of having both keyings: one means
+this value and no other, the other means this kind of name anywhere. It is also what 2.5b needs.
+
+A parameter has pieces too, and they are named the same way: `tags[]` for every element of a list
+parameter, `filter.city` for a property of an object one. Nothing here is special to bodies; bodies
+are only where most of the pieces are.
+
+**This changes what four of the five keyings do, and the record should say so.** No file means
+anything different by what it says - `operationAndParameter` reads exactly as it did, because for a
+parameter or a whole body the path is the name - but what four of them cover grows.
+A list keyed by `type`, by `format` or by `name`, and the `any` bucket, are now asked for every piece
+of every body as well as for the top of it, so a file written against 2.7a reaches further than it
+used to — a `type`-keyed list of two surnames fills every piece of text in every body as well as
+every text parameter. The version stays 1 and nothing warns on load, because what those files ask
+for has not changed, only how much of a request it covers; the format document's warning about a
+list keyed to a whole kind of value now says where it reaches.
+
+`ValueRequest` carries both, rather than one being derived from the other. An answerer wants
+different ones: a list of good e-mail addresses matches on the name, and somebody who means one
+value and no other writes the path. Deriving either from the other at the point of use would put the
+same parsing in every answerer, including the ones outside this repository that ADR-0008 invites.
+
+**An operation answers to two names.** Its `operationId`, and `GET /pets/{petId}` — the second
+accepted now even where the document declares the first. A file is written from the specification,
+often without running anything, and the rule "use the identifier, unless there is none, in which case
+build this string" is one step of reasoning that can be got wrong silently. With both accepted there
+is no reasoning: whoever writes the file can always use the method and the path. The names are turned
+into the one the run prints as the file is read, so nothing downstream has two names to think about.
+
+This is two ways of writing the same thing, which §"Alternatives considered" warns cannot be
+withdrawn later. Taken deliberately: the cost is one rename at load, and what it buys is that the
+commonest way this format will be produced has no sharp edge in it.
+
+**The whole body beats the pieces of it.** Where a file gives both `body` and `body.city`, the whole
+body is sent as written. Somebody who writes a body whole means that object — the reason to write one
+is that its fields make sense together — and poking a value into it would destroy exactly that.
+Mixing the two is a proportion rather than a precedence, which is M2.10's business.
+
+**An entry that could never be used is reported when the file is read**, in one line per file,
+grouped by reason and naming up to three of each:
+
+```
+restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operation in this API
+         (ownerId in getOwnerRenamedSince), 1 for a piece of a body that is supplied whole, which
+         is sent instead (body.city in addOwner), 3 for no such parameter or piece of a body in
+         that operation (postcode in addOwner, firstName in addOwner, body.nonsense in addVisit)
+```
+
+Four things earn a line: an operation the document does not have; a place the operation does not
+have; a place the document settles by itself; and a piece of a body that some list this run holds
+supplies whole. All four are knowable from the document, so they are said before a request is sent
+rather than after a run has been spent on them.
+
+A document settles a place three ways, and the third is the commonest by far: it declares the whole
+list of values that place accepts, it says the API only ever sends that property back, or **it writes
+the whole body out in full** as a sample - in which case that body is sent as the author wrote it and
+nothing inside it is ever asked for. Of the 553 places in the priority corpus, **118 are settled**,
+and 92 of those are the pieces of kafka-rest-proxy's twelve bodies, every one of which the document
+exemplifies. Somebody generating a file for that API learns that before the run rather than after.
+
+A fifth line says when one file writes one operation under both of the names it answers to. That is
+what accepting two spellings costs: the duplicate-key check cannot see it, because the two keys are
+different strings. Where both give a value for the same place the one under the identifier is kept,
+whichever the file wrote first.
+
+Two things are left unjudged, because saying nothing is safe here and saying the wrong thing is not.
+Where the document runs out — a shape the parser could not read, or the point at which one starts
+repeating itself — nothing below that is judged, though everything above it still is. And a name the document declares twice in one operation, where
+one entry feeds both, is not judged either: what settles one of them need not settle the other.
+
+An object that merely allows properties it does not name is not such a case: a value is only ever
+asked for under a name the document writes down, so an entry for any other name goes unused however
+willing the API would be to receive it.
+
+### Consequences
+
+- **A run's summary says nothing about this**, and that is deliberate. The alternative considered was
+  a tally at the end of every run of which entries were actually drawn on. It reports one thing the
+  check above cannot — a valid entry for an optional parameter that a short run never happened to
+  include — and that is a fact about the budget rather than about the file. It would also have to be
+  kept per value inside a body, where nothing today records which source filled which leaf.
+- **A body's recorded origin still names only whoever assembled the top level.** A body whose every
+  leaf came from a dictionary is recorded as invented, because a body is one value with one origin.
+  Saying otherwise means an origin per leaf, which is a change to what a stored interaction is; it is
+  worth doing when something reads it, and nothing does yet.
+- **An enumeration now beats a sample inside a body too**, as it already did at the top level: what
+  fills the inside of an object is now the same ordered list of sources that fills a parameter, minus
+  invention. One order, one explanation, rather than two that have to be kept in agreement.
+- **A request built to push at the API still fills the inside of a body from the document.** Which
+  values such a request should push with below the top level is a real question — today a body sent
+  by the fuzzing share is whatever the type-keyed list holds for an object, which is `{}` — and it is
+  the plan's to answer, not this amendment's.
+- **What the document says can be filled and what a run fills are not quite the same number, and
+  the difference is an old ceiling this made visible.** Putting a value at each of the 435 and
+  counting the requests that carry it gives **415**. All 20 of the others are in one document,
+  gestao-hospital, under `body.location.location` and `body.location.position`: invention stops
+  adding optional properties at the depth where it stops building, and this walks deeper than that.
+  Teaching the check those limits would mean re-deriving in one place what the generator decides in
+  another, and the two would drift - the same argument this record already makes about which values
+  can be sent. The 20 are left unreported and written down here instead.
+- **A place the document settles is now named as such wherever it is**, inside a body as well as on
+  a parameter, because what fills the inside of an object is the same ordered list of sources that
+  fills a parameter.
+- **A pointer to a shape is followed before anybody is asked about it.** Asking first handed every
+  source a shape with nothing in it, so a closed list of allowed values on the far side of a pointer
+  looked like no list at all and a dictionary answered over it - which is the one thing §4 says
+  nothing may do. Found by review, with the check and the behaviour disagreeing about it, which is
+  what made it visible.
+- **A choice between shapes settles nothing**, however closed one of its branches is: what is asked
+  about is the choice, whose own list of values is empty, so a list somebody wrote is used there and
+  is not reported as dead.
+- **Being too deep to build is not a reason to stop asking.** Following a pointer before the
+  question is put meant a shape the document named and the same shape written out where it is used
+  behaved differently at the depth where invention stops: the first declined outright, so a body
+  with a required property that deep became untestable and an entry written for it was ignored.
+  Nothing in the fifty-document corpus reaches that depth through a name, which is why it took a
+  review to find; at that depth the sources are now asked and only invention gives up.
+- **The shape of a generated file changes.** Anybody producing one from a specification should write
+  `body.city` where they used to write `city`, and `body` only when the object has to be coherent as a
+  whole. The format document says so in as many words.

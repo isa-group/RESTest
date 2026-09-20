@@ -38,6 +38,13 @@ import java.util.Optional;
  * there being no name of its own to use, since OpenAPI 3.x gives a body none. An answerer that
  * keeps whole objects, rather than single words and numbers, is answering this kind of question.
  *
+ * <p>It can also be one piece of either of those - the e-mail address of the owner inside the body
+ * being sent. Such a question carries two ways of referring to the value, because answerers want
+ * different ones. The <em>name</em> is the last step alone, {@code email}, which is what somebody
+ * with a list of good e-mail addresses wants to match on wherever they turn up. The <em>path</em>
+ * is the whole way down to it, {@code body.owner.email}, which is what somebody who means that one
+ * value and no other needs. For a parameter, and for a body as a whole, the two are the same.
+ *
  * <p>The schema handed over is always a real shape, never a pointer to one named elsewhere: chasing
  * those down is done once, before anyone is asked, so that no answerer has to know how the
  * specification was organised. What survives that chase is the shape's <em>name</em>, when the
@@ -46,7 +53,10 @@ import java.util.Optional;
  *
  * @param operation the operation whose request is being built
  * @param name the parameter's name, as the specification writes it, or {@code body} for the request
- *     body itself
+ *     body itself, or - for something inside either of those - the name of that last step alone
+ * @param path the way down to this value from the parameter or body it belongs to:
+ *     {@code ownerId}, {@code body}, {@code body.owner.email}, {@code body.tags[].label}. The
+ *     {@code []} stands for every element of a list, there being no one element a value is for
  * @param location where the value goes in the request: the path, the query string, a header, a
  *     cookie, or the body
  * @param schema the shape the value has to satisfy
@@ -60,14 +70,31 @@ import java.util.Optional;
 public record ValueRequest(
         OperationId operation,
         String name,
+        String path,
         ParameterLocation location,
         CanonicalSchema schema,
         List<JsonValue> examples,
         Optional<String> shape) {
 
+    /**
+     * What a request body is asked for under, there being no name of its own in OpenAPI 3.x to use.
+     *
+     * <p>One of the three pieces of the way a place in a request is written down, which is a
+     * published thing: somebody writing a list of values by hand writes {@code body},
+     * {@code body.owner.email} and {@code body.tags[].label}, and this is where those are spelt.
+     */
+    public static final String THE_BODY = "body";
+
+    /** What separates one step of a path from the next. */
+    public static final String STEP = ".";
+
+    /** What a path puts where a list's elements would each have an index, since none is meant. */
+    public static final String EVERY_ELEMENT = "[]";
+
     public ValueRequest {
         Objects.requireNonNull(operation, "operation");
         Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(path, "path");
         Objects.requireNonNull(location, "location");
         Objects.requireNonNull(schema, "schema");
         Objects.requireNonNull(examples, "examples");
@@ -75,6 +102,9 @@ public record ValueRequest(
         examples = List.copyOf(examples);
         if (name.isBlank()) {
             throw new IllegalArgumentException("a value is asked for by the name of a parameter");
+        }
+        if (path.isBlank()) {
+            throw new IllegalArgumentException("a value is asked for by the way down to it");
         }
     }
 
@@ -89,7 +119,8 @@ public record ValueRequest(
      */
     public static ValueRequest of(OperationId operation, String name, ParameterLocation location,
             CanonicalSchema schema) {
-        return new ValueRequest(operation, name, location, schema, List.of(), Optional.empty());
+        return new ValueRequest(operation, name, name, location, schema, List.of(),
+                Optional.empty());
     }
 
     /**
@@ -104,7 +135,8 @@ public record ValueRequest(
      */
     public static ValueRequest of(OperationId operation, String name, ParameterLocation location,
             CanonicalSchema schema, List<JsonValue> examples) {
-        return new ValueRequest(operation, name, location, schema, examples, Optional.empty());
+        return new ValueRequest(operation, name, name, location, schema, examples,
+                Optional.empty());
     }
 
     /**
@@ -114,7 +146,7 @@ public record ValueRequest(
      * shape named elsewhere is looked up, not how a piece of one is reached.
      */
     public ValueRequest about(CanonicalSchema value) {
-        return new ValueRequest(operation, name, location, value, examples, shape);
+        return new ValueRequest(operation, name, path, location, value, examples, shape);
     }
 
     /**
@@ -126,7 +158,7 @@ public record ValueRequest(
      * {@code Pet} is wanted.
      */
     public ValueRequest aboutTheShapeNamed(String named, CanonicalSchema value) {
-        return new ValueRequest(operation, name, location, value, examples,
+        return new ValueRequest(operation, name, path, location, value, examples,
                 Optional.of(Objects.requireNonNull(named, "named")));
     }
 
@@ -134,10 +166,12 @@ public record ValueRequest(
      * The same question about a named piece of a larger shape - one property of an object.
      *
      * <p>A different value, so the samples offered for the whole are left behind: a sample owner is
-     * not a sample of the owner's first name.
+     * not a sample of the owner's first name. The path gains a step, so that a list written for
+     * {@code body.owner.email} and one written for every {@code email} can both find it.
      */
     public ValueRequest about(String property, CanonicalSchema value) {
-        return new ValueRequest(operation, property, location, value, List.of(), Optional.empty());
+        return new ValueRequest(operation, property, path + STEP + property, location, value,
+                List.of(), Optional.empty());
     }
 
     /**
@@ -145,9 +179,11 @@ public record ValueRequest(
      *
      * <p>Like a named piece, and for the same reason: a sample list of three numbers is a sample of
      * the list, not of each number in it. The name stays, there being no better one to give an
-     * element than the name of the list it belongs to.
+     * element than the name of the list it belongs to, and the path says it is an element rather
+     * than the list itself.
      */
     public ValueRequest aboutAPieceOf(CanonicalSchema value) {
-        return new ValueRequest(operation, name, location, value, List.of(), Optional.empty());
+        return new ValueRequest(operation, name, path + EVERY_ELEMENT, location, value, List.of(),
+                Optional.empty());
     }
 }

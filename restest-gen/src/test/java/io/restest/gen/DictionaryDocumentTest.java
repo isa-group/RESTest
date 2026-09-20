@@ -65,7 +65,7 @@ class DictionaryDocumentTest {
                    "Owner": [{"firstName": "George", "pets": [{"name": "Leo"}]}]
                 }}""");
 
-        ValueRequest anOwner = new ValueRequest(OperationId.of("GET /owners"), "owner",
+        ValueRequest anOwner = new ValueRequest(OperationId.of("GET /owners"), "owner", "owner",
                 ParameterLocation.QUERY, ObjectSchema.of(Map.of()), List.of(),
                 Optional.of("Owner"));
 
