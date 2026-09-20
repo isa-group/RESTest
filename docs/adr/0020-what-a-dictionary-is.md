@@ -476,6 +476,14 @@ willing the API would be to receive it.
   values such a request should push with below the top level is a real question — today a body sent
   by the fuzzing share is whatever the type-keyed list holds for an object, which is `{}` — and it is
   the plan's to answer, not this amendment's.
+- **What the document says can be filled and what a run fills are not quite the same number, and
+  the difference is an old ceiling this made visible.** Putting a value at each of the 435 and
+  counting the requests that carry it gives **415**. All 20 of the others are in one document,
+  gestao-hospital, under `body.location.location` and `body.location.position`: invention stops
+  adding optional properties at the depth where it stops building, and this walks deeper than that.
+  Teaching the check those limits would mean re-deriving in one place what the generator decides in
+  another, and the two would drift - the same argument this record already makes about which values
+  can be sent. The 20 are left unreported and written down here instead.
 - **A place the document settles is now named as such wherever it is**, inside a body as well as on
   a parameter, because what fills the inside of an object is the same ordered list of sources that
   fills a parameter.
@@ -487,6 +495,12 @@ willing the API would be to receive it.
 - **A choice between shapes settles nothing**, however closed one of its branches is: what is asked
   about is the choice, whose own list of values is empty, so a list somebody wrote is used there and
   is not reported as dead.
+- **Being too deep to build is not a reason to stop asking.** Following a pointer before the
+  question is put meant a shape the document named and the same shape written out where it is used
+  behaved differently at the depth where invention stops: the first declined outright, so a body
+  with a required property that deep became untestable and an entry written for it was ignored.
+  Nothing in the fifty-document corpus reaches that depth through a name, which is why it took a
+  review to find; at that depth the sources are now asked and only invention gives up.
 - **The shape of a generated file changes.** Anybody producing one from a specification should write
   `body.city` where they used to write `city`, and `body` only when the object has to be coherent as a
   whole. The format document says so in as many words.

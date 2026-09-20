@@ -120,7 +120,7 @@ final class WhereAValueCanGo {
         // A body the document writes out in full is sent as written, so the request is never taken
         // apart and nothing inside it is ever asked for. The body itself is a different matter: a
         // list written for it is asked before the document's sample and wins.
-        if (theDocumentShowsTheBodyInFull(operation)) {
+        if (theDocumentShowsTheBodyInFull(operation, model)) {
             places.stream().filter(WhereAValueCanGo::isInsideTheBody)
                     .forEach(place -> unused.putIfAbsent(place, A_BODY_SHOWN_IN_FULL));
         }
@@ -161,15 +161,24 @@ final class WhereAValueCanGo {
         return Optional.ofNullable(thatNothingWouldUse.get(place));
     }
 
-    /** Whether the document offers a whole body of its own for the media type that would be sent. */
-    private static boolean theDocumentShowsTheBodyInFull(Operation operation) {
-        return operation.requestBody()
+    /**
+     * Whether the document offers a whole body of its own for the media type that would be sent.
+     *
+     * <p>Written beside the media type, or on the shape itself: whoever reads samples falls back
+     * from the first to the second, so both keep the request whole and both have to count here.
+     */
+    private static boolean theDocumentShowsTheBodyInFull(Operation operation, ApiModel model) {
+        Optional<io.restest.core.model.BodyContent> content = operation.requestBody()
                 .flatMap(declared -> RequestBuilder.mediaTypeToSend(declared)
-                        .flatMap(declared::contentFor))
-                .filter(content -> content.examples().stream()
-                        .anyMatch(sample -> RequestBuilder.canBeSentFrom(sample,
-                                ParameterLocation.BODY)))
-                .isPresent();
+                        .flatMap(declared::contentFor));
+        if (content.isEmpty()) {
+            return false;
+        }
+        List<JsonValue> samples = content.get().examples().isEmpty()
+                ? resolved(content.get().schema(), model).metadata().examples()
+                : content.get().examples();
+        return samples.stream()
+                .anyMatch(sample -> RequestBuilder.canBeSentFrom(sample, ParameterLocation.BODY));
     }
 
     private static Optional<CanonicalSchema> body(Operation operation, ApiModel model) {

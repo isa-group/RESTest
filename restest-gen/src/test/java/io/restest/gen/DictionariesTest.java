@@ -641,6 +641,38 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("a sample body written on the shape counts as one the document shows in full, "
+            + "just as one written beside the media type does")
+    void a_sample_on_the_shape_settles_the_pieces_too(@TempDir Path directory) throws IOException {
+        ApiModel owners = ApiModel.of("Owners", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/owners")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                new ObjectSchema(io.restest.core.schema.SchemaMetadata.none()
+                                        .withExamples(List.of(io.restest.core.json.JsonValue.object(
+                                                Map.of("city", io.restest.core.json.JsonValue
+                                                        .of("Madison"))))),
+                                        Map.of("city", StringSchema.of()), java.util.Set.of(),
+                                        java.util.Optional.empty(), java.util.Optional.empty(),
+                                        java.util.Optional.empty()),
+                                true))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  POST /owners:
+                    body.city: [Seville]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), owners).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("whoever reads samples falls back from the media type's to the "
+                        + "shape's, so both keep the request whole")
+                .contains("writes out in full")
+                .contains("body.city in POST /owners");
+    }
+
+    @Test
     @DisplayName("two lists answering to one name is said out loud, because a name is how a plan "
             + "picks one and how a report names one")
     void two_lists_with_one_name_are_reported(@TempDir Path directory) throws IOException {

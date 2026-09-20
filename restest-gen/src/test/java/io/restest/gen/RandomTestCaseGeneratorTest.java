@@ -797,6 +797,36 @@ class RandomTestCaseGeneratorTest {
                 .isIn(JsonValue.of("one"), JsonValue.of("two"));
     }
 
+    @Test
+    @DisplayName("a shape the document named and one written out where it is used behave the same "
+            + "way at the depth where nothing more is built")
+    void a_pointer_at_the_depth_limit_is_still_asked_about() {
+        io.restest.core.schema.CanonicalSchema leaf =
+                new SchemaReference(SchemaMetadata.none(), "Leaf");
+        Operation deep = Operation.of(HttpMethod.POST, "/deep")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(
+                        Map.of("a", ObjectSchema.of(Map.of("b", ObjectSchema.of(
+                                Map.of("c", ObjectSchema.of(Map.of("d", leaf), Set.of("d"))),
+                                Set.of("c"))), Set.of("b"))), Set.of("a")), true));
+        ApiModel model = ApiModel.of("Deep", "1.0", List.of(deep))
+                .withSchemas(Map.of("Leaf", StringSchema.of()));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 4242L,
+                List.of(DictionaryDocument.read("""
+                        {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                         "values": {"POST /deep": {"body.a.b.c.d": ["from the list"]}}}""",
+                        "ours")), 0);
+
+        assertThat(generator.untestableOperations())
+                .describedAs("being too deep to invent anything more is not a reason to stop "
+                        + "asking whoever might know the value")
+                .isEmpty();
+        JsonValue body = generator.generate(deep).orElseThrow().body().orElseThrow().value();
+        assertThat(((JsonValue.JsonObject) ((JsonValue.JsonObject) ((JsonValue.JsonObject)
+                ((JsonValue.JsonObject) body).member("a").orElseThrow()).member("b").orElseThrow())
+                .member("c").orElseThrow()).member("d"))
+                .contains(JsonValue.of("from the list"));
+    }
+
     private static String sent(RandomTestCaseGenerator generator, Operation operation) {
         return sent(generator, operation, "name");
     }
