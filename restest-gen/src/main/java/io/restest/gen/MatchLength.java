@@ -221,10 +221,12 @@ record MatchLength(long shortest, long longest) {
             }
             int opens = at;
             at++;
+            boolean aboutWhatSurroundsIt = false;
             if (at < rule.length() && rule.charAt(at) == '?') {
                 if (at + 1 >= rule.length()) {
                     return UNREADABLE;
                 }
+                aboutWhatSurroundsIt = asksAboutWhatSurroundsIt(at + 1);
                 at = skipGroupIntroduction(at + 1);
                 if (at < 0) {
                     at = opens;
@@ -237,7 +239,21 @@ record MatchLength(long shortest, long longest) {
             }
             at++;
             depth--;
-            return inside;
+            // A group asking about what surrounds the value can come to anything between nothing and
+            // all of its contents: the builder sometimes writes them out and sometimes writes
+            // nothing, and "sometimes nothing" is what a rule saying "and no more after this" means
+            // to it. Both ends have to allow for that - the high one so a run cannot be ended by
+            // what gets built, the low one so the caller is never told a value is impossible when
+            // one is a draw away.
+            return aboutWhatSurroundsIt ? new MatchLength(0, inside.longest()) : inside;
+        }
+
+        /** Whether a group asks what comes next, or what came before, rather than matching itself. */
+        private boolean asksAboutWhatSurroundsIt(int after) {
+            char kind = rule.charAt(after);
+            return kind == '=' || kind == '!'
+                    || (kind == '<' && after + 1 < rule.length()
+                        && (rule.charAt(after + 1) == '=' || rule.charAt(after + 1) == '!'));
         }
 
         /**

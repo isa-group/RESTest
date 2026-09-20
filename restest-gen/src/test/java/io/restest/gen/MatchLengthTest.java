@@ -96,6 +96,93 @@ class MatchLengthTest {
                 }
             }
         }
+
+        @Test
+        @DisplayName("nor is anything the builder makes from a thousand rules nobody wrote")
+        void the_builder_never_exceeds_the_count_on_rules_nobody_wrote() {
+            // Hand-written cases only cover what their author thought of, and what their author did
+            // not think of is exactly how this count came to be wrong three times. So the rules are
+            // made up: every construct whose length is awkward, put together at random, deep enough
+            // to nest. Each one is asked, and then the builder is held to the answer.
+            SplittableRandom random = new SplittableRandom(20260920L);
+            for (int attempt = 0; attempt < 1_000; attempt++) {
+                String rule = aRuleNobodyWrote(random, 0);
+                Optional<MatchLength> counted = MatchLength.of(rule, EIGHT);
+                // Skipped the way the tool skips them: a rule that could build more than any value
+                // is allowed never reaches the builder in a run either. Kept well under that here,
+                // because what is being checked is the arithmetic and not the patience of whoever
+                // is waiting for the build.
+                if (counted.isEmpty() || counted.orElseThrow().longest() > 500) {
+                    continue;
+                }
+                RgxGenProperties options = new RgxGenProperties();
+                RgxGenOption.INFINITE_PATTERN_REPETITION.setInProperties(options, EIGHT);
+                RgxGen builder;
+                try {
+                    java.util.regex.Pattern.compile(rule);
+                    builder = RgxGen.parse(options, rule);
+                } catch (RuntimeException neitherReaderLikesIt) {
+                    continue;
+                }
+                for (int draw = 0; draw < 5; draw++) {
+                    String built = builder.generate(random);
+                    assertThat((long) built.length())
+                            .describedAs("%s was counted at %d..%d and built %d characters", rule,
+                                    counted.orElseThrow().shortest(),
+                                    counted.orElseThrow().longest(), built.length())
+                            .isBetween(counted.orElseThrow().shortest(),
+                                    counted.orElseThrow().longest());
+                }
+            }
+        }
+
+        /** One made-up rule, put together from the pieces whose length is worth getting right. */
+        private static String aRuleNobodyWrote(SplittableRandom random, int depth) {
+            StringBuilder rule = new StringBuilder();
+            int pieces = 1 + random.nextInt(3);
+            for (int piece = 0; piece < pieces; piece++) {
+                rule.append(onePiece(random, depth)).append(aQuantifier(random));
+            }
+            return rule.toString();
+        }
+
+        private static String onePiece(SplittableRandom random, int depth) {
+            if (depth < 3 && random.nextInt(3) == 0) {
+                String inside = aRuleNobodyWrote(random, depth + 1);
+                if (random.nextInt(4) == 0) {
+                    inside = inside + "|" + aRuleNobodyWrote(random, depth + 1);
+                }
+                return switch (random.nextInt(6)) {
+                    case 0 -> "(?:" + inside + ")";
+                    case 1 -> "(?=" + inside + ")";
+                    case 2 -> "(?!" + inside + ")";
+                    case 3 -> "(?<=" + inside + ")";
+                    default -> "(" + inside + ")";
+                };
+            }
+            return switch (random.nextInt(8)) {
+                case 0 -> "[a-z]";
+                case 1 -> "[^0-9]";
+                case 2 -> "\\d";
+                case 3 -> "\\w";
+                case 4 -> "\\p{L}";
+                case 5 -> ".";
+                case 6 -> "ab";
+                default -> "x";
+            };
+        }
+
+        private static String aQuantifier(SplittableRandom random) {
+            return switch (random.nextInt(8)) {
+                case 0 -> "*";
+                case 1 -> "+";
+                case 2 -> "?";
+                case 3 -> "{" + (1 + random.nextInt(4)) + "}";
+                case 4 -> "{" + random.nextInt(3) + "," + (3 + random.nextInt(4)) + "}";
+                case 5 -> "{" + (1 + random.nextInt(3)) + ",}";
+                default -> "";
+            };
+        }
     }
 
     @Nested
