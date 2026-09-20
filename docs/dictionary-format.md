@@ -59,7 +59,7 @@ quite happily. What a list is *for* is decided by the plan that names it, not by
 | `keyedBy` | The key is | Use it for |
 |---|---|---|
 | `type` | the kind of value wanted: `string`, `integer`, `number`, `boolean`, `array`, `object`, `null` | values that suit anything of a kind — the list RESTest ships is keyed this way |
-| `format` | the `format` the document declares — `date`, `uuid`, `email` | values that satisfy a stated format |
+| `format` | the `format` the document declares — `date`, `uuid`, `email` | values that satisfy a stated format. RESTest builds its own for the kinds it knows, so reach for this where it does not: an account number, a book's identifier, a code your API invented |
 | `schema` | the name the document gave the shape — `Pet`, `Owner` | whole objects, which is what a request body is |
 | `name` | the name alone, wherever it appears — a parameter or a property inside a body | every `petId` in the API at once |
 | `operationAndParameter` | the operation, then the place in its request | one place in one operation, which is as specific as it gets |
@@ -80,11 +80,14 @@ name: formats
 keyedBy: format
 
 values:
-  any:   [null]
-  date:  ["2026-09-18", "1970-01-01"]
-  email: [someone@example.com]
-  uuid:  [123e4567-e89b-12d3-a456-426614174000]
+  any:  [null]
+  iban: ["GB33BUKB20201555555555", "DE75512108001245126199"]
+  isbn: ["978-3-16-148410-0"]
 ```
+
+Kinds RESTest builds for itself — `date`, `date-time`, `email`, `uuid`, `uri`, `ipv4` and the rest of
+the ones the specification format defines — are worth writing down only when you want *your* values
+sent instead of built ones. Everything else is where a file like this earns its keep.
 
 Nothing here needs quoting to be safe. YAML's own older rules turn a startling number of ordinary
 words into something else — `no`, `off` and `n` into false, `yes`, `on` and `y` into true, an

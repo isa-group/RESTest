@@ -346,6 +346,7 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Constraint solver | Choco, behind an interface | 4.10.x |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
 | JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.1 |
+| Strings matching a regular expression | `com.github.curious-odd-man:rgxgen`, confined to `restest-gen` ([ADR-0022](adr/0022-the-characters-a-value-is-made-of.md)) | 3.0 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
 | Assertions | AssertJ | 3.27.7 |
 | Container-based integration tests | Testcontainers | 2.0.5 |

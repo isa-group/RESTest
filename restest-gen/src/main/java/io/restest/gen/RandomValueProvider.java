@@ -59,13 +59,16 @@ import java.util.random.RandomGenerator;
  * of {@code available}, {@code pending} or {@code sold} is useless if only the list itself is built
  * from the specification and its contents are made up.
  *
- * <p>Two limits are worth knowing, because they are visible in the results. A specification can
- * describe the <em>characters</em> a string must be made of - a date, an e-mail address, a pattern -
- * and this pays no attention to that yet, so those parameters get an ordinary word and the API will
- * often refuse it. And a shape the specification describes in a way the parser could not read is
- * declined outright rather than guessed at, which means the parameter is left out if the API allows
- * that and the operation is reported as untestable if it does not - an honest gap rather than a
- * request that was never going to work.
+ * <p>It reads what a specification says about the <em>characters</em> a piece of text must be made
+ * of, as well as what it says about its length: told that a value is a date, it invents a date;
+ * told that one is spelled as three capital letters, it invents three capital letters. Those two
+ * statements are the cheapest information a document carries and the most valuable, because an
+ * ordinary word in place of a date is refused by every API that looks at what it is given.
+ *
+ * <p>One limit is worth knowing, because it is visible in the results. A shape the specification
+ * describes in a way the parser could not read is declined outright rather than guessed at, which
+ * means the parameter is left out if the API allows that and the operation is reported as untestable
+ * if it does not - an honest gap rather than a request that was never going to work.
  *
  * <p>Everything it invents is kept small on purpose. A specification may permit a string of two
  * million characters or a list nested twelve deep, and building one would cost the run its budget and
@@ -216,7 +219,22 @@ public final class RandomValueProvider implements ValueProvider {
     }
 
     /**
-     * A string of a length the specification allows.
+     * A string the specification would accept: of a length it allows, of the kind it names, and
+     * spelled the way it demands.
+     *
+     * <p>Three things can be said about a piece of text and they are tried in that order. The kind
+     * of value comes first - a date, an e-mail address, an identifier - because it describes the
+     * whole value and not merely its characters. A spelling rule comes next, and it is also what
+     * keeps or rejects the kind: where a specification states both, the value has to satisfy both.
+     * When neither is stated, or neither could be honoured, what is left is an ordinary word, which
+     * is what every string used to be.
+     *
+     * <p>Not being able to honour a rule means two different things and they end differently. A rule
+     * nobody could read is treated as though it had not been written, because refusing to test a
+     * parameter over a notation nobody here understands helps nobody. A rule that was read, but that
+     * nothing satisfying it is also short enough for the length the specification demands, means
+     * there is genuinely no value to send - so nothing is offered, and the operation is reported
+     * rather than being counted as tested while every one of its requests is thrown away.
      *
      * <p>All the arithmetic is done in {@code long}s: a specification saying a string may be up to
      * {@code 2147483647} characters is ordinary - that is what a Java {@code @Size} annotation
@@ -231,6 +249,27 @@ public final class RandomValueProvider implements ValueProvider {
         if (lowest > LONGEST_STRING) {
             return Optional.empty();
         }
+
+        Optional<String> ofTheKindNamed = schema.format()
+                .flatMap(kind -> FormattedStrings.of(kind, random))
+                .filter(value -> value.length() >= lowest && value.length() <= stated)
+                .filter(value -> MatchingStrings.allows(schema.pattern(), value));
+        if (ofTheKindNamed.isPresent()) {
+            return ofTheKindNamed.map(JsonValue::of);
+        }
+
+        if (schema.pattern().isPresent()) {
+            Optional<MatchingStrings> spelling =
+                    MatchingStrings.reading(schema.pattern().get(), lowest, stated);
+            if (spelling.isPresent()) {
+                return spelling.get().next(random).map(JsonValue::of);
+            }
+        }
+        return Optional.of(JsonValue.of(word(lowest, stated)));
+    }
+
+    /** A word of no particular kind, of a length the specification allows. */
+    private String word(long lowest, long stated) {
         long highest = Math.min(stated, Math.max(lowest, USUAL_LONGEST_STRING));
         long length = lowest == highest ? lowest
                 : lowest + random.nextLong(highest - lowest + 1);
@@ -239,7 +278,7 @@ public final class RandomValueProvider implements ValueProvider {
         for (long i = 0; i < length; i++) {
             value.append(LETTERS.charAt(random.nextInt(LETTERS.length())));
         }
-        return Optional.of(JsonValue.of(value.toString()));
+        return value.toString();
     }
 
     /**

@@ -74,7 +74,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
-| 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
+| 2.4 | What a document says about the **characters** of a value, read where what it says about its length already is (ADR-0022). The kind it names — `date-time`, `date`, `email`, `uuid`, `uri`, `ipv4` and the twelve others the format defines — built from the platform's own parsers rather than looked up in a list, so every value is different and every value is correct; and the spelling it states as a `pattern` built by a library, with every candidate held against the rule again before it is sent and the length the same shape demands honoured alongside it. **No format dictionary is shipped**, which reverses that much of ADR-0013 §1 and ADR-0020 §5: a list sees only its key, while a shape states its kind, its spelling and its lengths at once and all three have to hold together | A date parameter gets a date instead of a random word, and an operation is no longer refused before anything worth testing happens: 225 places across the corpus name a kind of value, 25 of them in the priority corpus, and the 10 spelling rules in pet-clinic are satisfied rather than broken |
 | 2.5a ✅ [#313](https://github.com/isa-group/RESTest/pull/313) | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
 | 2.5b | The memory of what the API has returned, as dictionaries under the two keyings the format already has — one leaf by its name, a whole resource by its shape — filled by a listener on the event stream (ADR-0021 §6). With it, the operator that changes one leaf of an observed resource and sends it back. **Brings forward the runtime resource pool of 4.2**, and is the first strategy in the tool reproduced by replay rather than from the seed | A body stops being invented from nothing wherever the API has already shown what a real one looks like: 92% of the leaves in the corpus's bodies carry a name some reply also carries |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
@@ -93,6 +93,30 @@ and setting several parameters outside their bounds at once teaches nothing attr
 halves also need M3.1's oracles to pay off at all. Measured before deferring: 327 of 4,916 corpus
 parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2,
 flight-search 1, the other two none.
+
+**2.4 — a generator rather than the dictionary two records expected, and the one library here
+without a module descriptor.** The row said "generators" and ADR-0013 §1 said "format dictionary";
+they cannot both be honoured, and ADR-0022 takes the row's word. The argument is that a list filed
+under `date-time` cannot see the `maxLength` on the shape it is answering for, that an exclusive
+chain would make every one of the corpus's 569 web addresses one of half a dozen fixed strings for a
+whole run, and that a fresh identifier cannot come out of a file. The `format` **keying** is
+untouched and is still a user's to fill — for an account number or a book's identifier, which is
+where a written list beats anything the tool could invent.
+
+Building a string backwards from a regular expression is a compiler, so it is not written here:
+`rgxgen`, Apache-2.0, no dependencies of its own, confined to `restest-gen` by a rule of its own, and
+taking the run's own seeded source of numbers so that repeating a run exactly needed no change. It is
+the one library in this project whose jar carries no module descriptor, which costs `restest-gen` a
+`requires` on a name derived from a file name; ADR-0022 weighs that against writing the engine here
+and says why the packaging step it would block is not the one M7.3 uses. Every value it builds is
+held against the rule again by the platform's own machinery before it is offered, so a disagreement
+between two readings of a dialect costs a value rather than producing a wrong one.
+
+What this increment also did, and is worth knowing when reading a later diff: **the shared check that
+every generated value satisfies its shape now covers spelling rules**, which tightens every
+generation test in the module at once. It had been left out on purpose while invention ignored
+patterns, and `DeclaredSamplesAcrossTheCorpusTest` carried its own stricter copy for the samples it
+judged. That copy is gone, because nothing is excused any more.
 
 **2.7c — taken before 2.5b, and why it is a row rather than a footnote.** Measured on the priority
 corpus: writing one entry per parameter, one per body and one per property inside those bodies gives

@@ -1,6 +1,6 @@
 # ADR-0020: A dictionary is a named list of values with one key, and the plan decides what each list is for
 
-**Status:** Accepted
+**Status:** Accepted, amended at M2.7c and M2.4
 **Date:** 2026-09-18
 
 ## Context
@@ -504,3 +504,25 @@ willing the API would be to receive it.
 - **The shape of a generated file changes.** Anybody producing one from a specification should write
   `body.city` where they used to write `city`, and `body` only when the object has to be coherent as a
   whole. The format document says so in as many words.
+
+## Amendment (M2.4)
+
+**Date:** 2026-09-20
+
+**RESTest ships no list keyed by `format`. The keying is a user's to fill.**
+
+§5 says weighted groups wait for M2.10, *"after 2.4 brings the format dictionary that competes for
+every string with a declared `format`"*. That file was not built.
+[ADR-0022](0022-the-characters-a-value-is-made-of.md) §2 gives the reasoning; in one line, the chain
+is exclusive until M2.10, so a list filed under `uri` would make every one of the corpus's 569 web
+addresses one of half a dozen fixed strings for a whole run, while a value built from the shape is
+different every time and correct every time.
+
+**Nothing in this format changes.** `keyedBy: format` is one of the five keyings, it works exactly as
+written, and a file of real account numbers for `format: iban` still beats anything RESTest would
+invent. The only difference is that the list RESTest carries is still just the one, `fuzzing`.
+
+What §5 loses is its example. The competitor that makes a weighted group worth having is now the one
+this record already documents - a `type`-keyed list of somebody's own replacing invention wholesale
+for a whole kind of value - rather than a shipped file competing for every declared format. M2.10
+still owns the mechanism, and still has a case to answer.

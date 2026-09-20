@@ -124,6 +124,29 @@ final class SchemaSatisfaction {
         schema.maxLength().ifPresent(highest -> require(length <= highest,
                 where + " is " + length + " characters, more than the " + highest + " allowed",
                 found));
+        schema.pattern().ifPresent(spelling ->
+                require(spelled(text.value(), spelling),
+                        where + " is " + value + ", which is not spelled as " + spelling, found));
+    }
+
+    /**
+     * Whether a value is spelled the way a shape demands.
+     *
+     * <p>Somewhere in the value rather than all of it, which is what the specification format means
+     * by stating a rule: a rule of {@code @} asks for a value with an at-sign in it, not for a value
+     * that is nothing but an at-sign.
+     *
+     * <p>A rule this platform will not compile is one nothing can be checked against, so it holds
+     * nothing against the value. Written out again here rather than borrowed from the generator,
+     * because a check that asked the generator whether it had done the right thing would agree with
+     * it whatever it did.
+     */
+    private static boolean spelled(String value, String rule) {
+        try {
+            return java.util.regex.Pattern.compile(rule).matcher(value).find();
+        } catch (java.util.regex.PatternSyntaxException cannotBeJudged) {
+            return true;
+        }
     }
 
     private static void checkNumber(JsonValue value, NumberSchema schema, String where,

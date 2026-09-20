@@ -42,6 +42,27 @@
         </dependency>
 
         <!--
+            Builds a string that matches a regular expression. A specification states the characters
+            it will accept as a `pattern`, and working backwards from one to a string that satisfies
+            it is a small compiler - a parser for a dialect that is not quite Java's, and a walk over
+            the result - which is exactly the kind of thing worth taking off the shelf rather than
+            writing here. Apache-2.0, no dependencies of its own.
+
+            It takes a java.util.random.RandomGenerator, which is the same seeded source the rest of
+            generation draws on, so nothing about repeating a run exactly had to change to use it.
+
+            The jar carries no module descriptor and no Automatic-Module-Name, so `requires rgxgen`
+            names an automatic module derived from the file name. The cost, and why it is accepted,
+            is in ADR-0022.
+
+            Confined to this module by an architecture rule, like every other library here.
+        -->
+        <dependency>
+            <groupId>com.github.curious-odd-man</groupId>
+            <artifactId>rgxgen</artifactId>
+        </dependency>
+
+        <!--
           Test scope only, and deliberately so. Nothing this module publishes depends on the parser -
           the architecture rules read production bytecode and would fail if it did. But the question
           "does generation work against real specifications?" can only be answered by reading real
