@@ -74,6 +74,12 @@ import java.util.random.RandomGenerator;
  * million characters or a list nested twelve deep, and building one would cost the run its budget and
  * the API under test its patience without testing anything a short value does not. Values the
  * specification <em>insists</em> are enormous are declined and reported rather than built.
+ *
+ * <p>One of these belongs to one run and is asked for one value at a time. It remembers a little
+ * about the spelling rules it has met, so that reading the same rule is not paid for again, and that
+ * memory is not built to be shared between threads. Nothing in the tool shares one: a run's requests
+ * are sent side by side, but the values in them are chosen one after another, and the source of
+ * numbers that makes a run repeatable would not survive being shared either.
  */
 public final class RandomValueProvider implements ValueProvider {
 
@@ -251,23 +257,23 @@ public final class RandomValueProvider implements ValueProvider {
             return Optional.empty();
         }
 
+        // Read before the kind is asked for, because the rule is also what vets the kind's answer,
+        // and because reading it is done once per run rather than once per value.
+        Optional<MatchingStrings> spelling = schema.pattern()
+                .flatMap(rule -> spellingsFor(rule, lowest, stated));
+
         Optional<String> ofTheKindNamed = schema.format()
                 .flatMap(kind -> FormattedStrings.of(kind, random))
                 .filter(value -> value.length() >= lowest && value.length() <= stated)
-                .filter(value -> MatchingStrings.allows(schema.pattern(), value));
+                // A rule nobody could read holds nothing against the value, which is the same
+                // answer the rest of this method gives such a rule.
+                .filter(value -> spelling.map(rule -> rule.allows(value)).orElse(true));
         if (ofTheKindNamed.isPresent()) {
             return ofTheKindNamed.map(JsonValue::of);
         }
 
-        if (schema.pattern().isPresent()) {
-            // The shorter of the two upper limits, not the shape's own: a rule saying "any number
-            // of letters" is as happy with a million of them as with eight, and the promise that
-            // nothing enormous is built holds for a value with a spelling rule as for any other.
-            Optional<MatchingStrings> spelling =
-                    spellingsFor(schema.pattern().get(), lowest, longestWorthSending(lowest, stated));
-            if (spelling.isPresent()) {
-                return spelling.get().next(random).map(JsonValue::of);
-            }
+        if (spelling.isPresent()) {
+            return spelling.get().next(random).map(JsonValue::of);
         }
         return Optional.of(JsonValue.of(word(lowest, stated)));
     }
@@ -286,8 +292,9 @@ public final class RandomValueProvider implements ValueProvider {
      * grow without bound either: there are only as many entries as the document has rules.
      */
     private Optional<MatchingStrings> spellingsFor(String rule, long shortest, long longest) {
-        return spellings.computeIfAbsent(new Spelling(rule, shortest, longest), asked ->
-                MatchingStrings.reading(asked.rule(), asked.shortest(), asked.longest(), random));
+        return spellings.computeIfAbsent(new Spelling(rule, shortest, longest),
+                asked -> MatchingStrings.reading(asked.rule(), asked.shortest(), asked.longest(),
+                        longestWorthSending(asked.shortest(), asked.longest()), random));
     }
 
     /**

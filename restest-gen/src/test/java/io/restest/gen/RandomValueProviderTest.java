@@ -54,8 +54,16 @@ class RandomValueProviderTest {
 
     private static final ApiModel EMPTY = ApiModel.of("Test API", "1.0", List.of());
 
-    private final RandomValueProvider provider = new RandomValueProvider(EMPTY,
-            Schemas.fixedRandom());
+    /**
+     * One provider for the whole class, drawing from one source of numbers.
+     *
+     * <p>Shared deliberately. A field built per test would be handed a freshly seeded source, and
+     * every repetition of a repeated test would then make exactly the same draws as the first - so
+     * twenty repetitions would be twenty copies of one assertion, and the sentence above this class
+     * about running many times over would not be true of anything in it.
+     */
+    private static final RandomValueProvider provider =
+            new RandomValueProvider(EMPTY, Schemas.fixedRandom());
 
     @RepeatedTest(50)
     @DisplayName("a string is invented between the lengths the specification allows")
@@ -517,7 +525,10 @@ class RandomValueProviderTest {
 
             String value = text(tooShortForADateTime);
 
-            assertThat(value).hasSizeLessThanOrEqualTo(8).doesNotContain("T");
+            assertThat(value).hasSizeLessThanOrEqualTo(8);
+            assertThatCode(() -> java.time.OffsetDateTime.parse(value))
+                    .describedAs("%s fits, but nothing of that kind could have", value)
+                    .isInstanceOf(java.time.format.DateTimeParseException.class);
         }
 
         @RepeatedTest(20)

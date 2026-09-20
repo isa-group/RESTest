@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -175,24 +176,41 @@ class FormatsAndPatternsAcrossTheCorpusTest {
     }
 
     @Test
-    @DisplayName("every spelling rule the corpus states can be read and built from")
+    @DisplayName("every spelling rule the corpus states can be read and built from, every time")
     void every_spelling_rule_in_the_corpus_can_be_read() {
         Set<String> unreadable = new LinkedHashSet<>();
-        forEachDocument((document, model) -> describedPlaces(model).stream()
-                .map(place -> place.shape().pattern())
-                .flatMap(Optional::stream)
-                .forEach(rule -> {
-                    Optional<MatchingStrings> spellings =
-                            MatchingStrings.reading(rule, 1, 64, Schemas.fixedRandom());
-                    if (spellings.isEmpty()
-                            || spellings.orElseThrow().next(Schemas.fixedRandom()).isEmpty()) {
-                        unreadable.add(document + ": " + rule);
+        // Shared across the whole walk, and each rule asked several times, so that a rule which
+        // only succeeds on a lucky draw is caught here rather than in somebody's run. Asked at the
+        // lengths its own shape states, too: the same rule at (1, 64) and at (40, 40) is two
+        // different questions, and only the second is the one the tool will ask.
+        RandomGenerator random = Schemas.fixedRandom();
+        forEachDocument((document, model) -> {
+            for (Described place : describedPlaces(model)) {
+                Optional<String> rule = place.shape().pattern();
+                if (rule.isEmpty()) {
+                    continue;
+                }
+                long shortest = place.shape().minLength().orElse(1);
+                long longest = place.shape().maxLength().map(Integer::longValue)
+                        .orElse(Long.MAX_VALUE);
+                Optional<MatchingStrings> spellings = MatchingStrings.reading(rule.get(), shortest,
+                        longest, Math.max(shortest, Math.min(longest, 64)), random);
+                if (spellings.isEmpty()) {
+                    unreadable.add(document + " " + place.where() + ": " + rule.get());
+                    continue;
+                }
+                for (int draw = 0; draw < DRAWS; draw++) {
+                    if (spellings.orElseThrow().next(random).isEmpty()) {
+                        unreadable.add(document + " " + place.where() + " (draw " + draw + "): "
+                                + rule.get());
                     }
-                }));
+                }
+            }
+        });
 
         assertThat(unreadable)
-                .describedAs("a rule nothing can read is one the tool answers with an ordinary "
-                        + "word, which the API will refuse; worth knowing when it appears")
+                .describedAs("a rule nothing can build from is one the tool answers with an "
+                        + "ordinary word or with no value at all; worth knowing when it appears")
                 .isEmpty();
     }
 
@@ -244,13 +262,26 @@ class FormatsAndPatternsAcrossTheCorpusTest {
                     continue;
                 }
                 for (int draw = 0; draw < DRAWS; draw++) {
-                    inventing.offer(Schemas.asking(place.shape()))
-                            .map(GeneratedValue::value)
-                            .filter(value -> value instanceof JsonValue.JsonString)
-                            .map(value -> ((JsonValue.JsonString) value).value())
-                            .filter(text -> !readsBackAs(kind, text))
-                            .ifPresent(text -> notOfItsKind.add(
-                                    document + " " + place.where() + " (" + kind + "): " + text));
+                    Optional<JsonValue> value = inventing.offer(Schemas.asking(place.shape()))
+                            .map(GeneratedValue::value);
+                    // A shape that says a value may be absent is sometimes sent as nothing at all,
+                    // on purpose and whatever kind it names. That is the one answer other than a
+                    // value of the named kind which is not a complaint.
+                    if (place.shape().metadata().nullable()
+                            && value.orElse(JsonValue.NULL) instanceof JsonValue.JsonNull) {
+                        continue;
+                    }
+                    // Anything else that is not text is not "of that kind" either. Read as a silent
+                    // pass, this check would survive the whole branch it exists for being deleted.
+                    if (!(value.orElse(JsonValue.NULL) instanceof JsonValue.JsonString text)) {
+                        notOfItsKind.add(document + " " + place.where() + " (" + kind
+                                + "): no text at all, " + value);
+                        continue;
+                    }
+                    if (!readsBackAs(kind, text.value())) {
+                        notOfItsKind.add(document + " " + place.where() + " (" + kind + "): "
+                                + text.value());
+                    }
                 }
             }
         });

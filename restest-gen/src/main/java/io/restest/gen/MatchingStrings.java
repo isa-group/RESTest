@@ -21,7 +21,6 @@ import com.github.curiousoddman.rgxgen.config.RgxGenProperties;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -37,12 +36,13 @@ import java.util.regex.Pattern;
  * compiler, so it is not written here - a third-party library does the reading and the building, and
  * what this class adds is everything that library cannot know about.
  *
- * <p>Three things, in fact. A shape usually states a length as well as a spelling, and the two have
+ * <p>Four things, in fact. A shape usually states a length as well as a spelling, and the two have
  * to hold at once: forty hexadecimal digits means forty, not the three the spelling alone would
- * allow. A value has to be short enough to be worth sending, and a rule saying "any number of
- * letters" will happily produce a million of them. And the two readings of a rule - the library's
- * and this platform's - have to agree, because a rule one of them misunderstands would otherwise
- * produce values that satisfy nobody.
+ * allow. A rule may legally ask for more characters than any machine should be asked to make, so
+ * how long it could possibly run is worked out from the rule before a single character is built. A
+ * value should be short enough to be worth reading, though never at the price of having no value at
+ * all. And the two readings of a rule - the library's and this platform's - have to agree, because a
+ * rule one of them misunderstands would otherwise produce values that satisfy nobody.
  *
  * <p>Two answers other than a string are possible, and they mean different things. <b>Nothing to be
  * read here</b> - the notation is exotic, the rule is malformed, or the two readings disagree about
@@ -76,12 +76,13 @@ final class MatchingStrings {
      *
      * <p>Nothing in the library says "of this length", so a shape demanding a string of exactly
      * forty characters - which is how a commit identifier is written down - is met by drawing until
-     * one comes out at forty. That happens about once every forty draws, so the allowance grows with
-     * the length demanded, and stops growing well before the work does.
+     * one comes out at forty. One draw in about forty hits, so twenty allowances per character
+     * demanded leaves the odds of missing altogether at about one in a thousand million, which is
+     * the difference between a test that passes and a test that passes almost always.
      */
     private static final int LEAST_ATTEMPTS = 200;
-    private static final int MOST_ATTEMPTS = 2_000;
-    private static final int ATTEMPTS_PER_CHARACTER = 5;
+    private static final int MOST_ATTEMPTS = 4_000;
+    private static final int ATTEMPTS_PER_CHARACTER = 20;
 
     /**
      * How many characters may be built in total while looking for one value.
@@ -92,32 +93,31 @@ final class MatchingStrings {
      */
     private static final int CHARACTERS_BUILT = 1_000_000;
 
-    /** How many candidates have to agree with this platform's reading before the rule is used. */
-    private static final int PROBES = 3;
-
     /**
-     * Finds a repetition count a rule states outright, as in {@code [a-z]{1000000}} or
-     * {@code [a-z]{0,1000000}}. Both ends of a range, because the limit on how far a repetition runs
-     * is only applied where the rule states no end of its own: {@code {0,1000000}} means what it
-     * says, and drawing one produced nine hundred thousand characters.
+     * How many candidates have to be tried before the two readings are taken to disagree.
+     *
+     * <p>One agreement is enough, so this is only reached by a rule the two read differently. A few
+     * of them, because a rule they agree about only some of the time would otherwise be thrown away
+     * on one unlucky draw, and the verdict is kept for the whole run.
      */
-    private static final Pattern STATED_REPETITION =
-            Pattern.compile("\\{\\s*(\\d{1,9})\\s*(?:,\\s*(\\d{1,9}))?\\s*}");
+    private static final int PROBES = 8;
 
     private final String expression;
     private final RgxGen shapes;
     private final Pattern checked;
     private final long shortest;
     private final long longest;
+    private final long preferred;
     private final int attempts;
 
     private MatchingStrings(String expression, RgxGen shapes, Pattern checked, long shortest,
-            long longest) {
+            long longest, long preferred) {
         this.expression = expression;
         this.shapes = shapes;
         this.checked = checked;
         this.shortest = shortest;
         this.longest = longest;
+        this.preferred = preferred;
         this.attempts = (int) Math.min(MOST_ATTEMPTS,
                 Math.max(LEAST_ATTEMPTS, ATTEMPTS_PER_CHARACTER * shortest));
     }
@@ -127,8 +127,11 @@ final class MatchingStrings {
      *
      * @param expression the rule, exactly as the specification wrote it
      * @param shortest the fewest characters the value may have
-     * @param longest the most it may have - the shape's own limit, or the longest the tool is
-     *     willing to send, whichever is smaller
+     * @param longest the most it may have, which is the shape's own limit. A rule demanding a long
+     *     value is the document demanding it, exactly as a stated minimum length would be
+     * @param preferred the length beyond which a value is accepted only when nothing shorter turned
+     *     up. A value nobody can read teaches nothing a short one does not, but losing the value
+     *     altogether teaches less still
      * @param random where the trial values come from while the rule is being judged
      * @return a way of drawing strings, or nothing at all when there is nothing here to read - in
      *     which case the caller should build a value as though no rule had been stated. Lengths
@@ -136,23 +139,31 @@ final class MatchingStrings {
      *     works them out from one shape and cannot produce a pair that does
      */
     static Optional<MatchingStrings> reading(String expression, long shortest, long longest,
-            RandomGenerator random) {
+            long preferred, RandomGenerator random) {
         Objects.requireNonNull(expression, "expression");
         Objects.requireNonNull(random, "random");
-        if (shortest > LONGEST || shortest > longest || statedLongerThan(expression, longest)) {
+        long allowed = Math.min(longest, LONGEST);
+        if (shortest > allowed) {
+            return Optional.empty();
+        }
+        int repetitions = repetitionLimit(shortest, allowed);
+        // Asked before a single character is built, because the answer decides whether building is
+        // safe at all. A rule may legally demand nine hundred million characters, or reach the same
+        // number by repeating a repetition, and neither of the two readings below would object: a
+        // short rule compiles instantly and parses instantly, and the memory goes when the value is
+        // made. That is an error rather than an exception, so no amount of catching helps.
+        java.util.OptionalLong couldBe = LongestMatch.of(expression, repetitions);
+        if (couldBe.isEmpty() || couldBe.getAsLong() > allowed) {
             return Optional.empty();
         }
         try {
-            // This platform reads the rule first, and not only because its answer is needed. It is
-            // the careful reader of the two: a rule nested thousands deep is refused here in a few
-            // microseconds, where the builder would go looking for memory it cannot have and take
-            // the run down with it. A rule that gets past this one is a rule worth handing over.
             Pattern checked = Pattern.compile(expression);
             RgxGenProperties howFarRepetitionsRun = new RgxGenProperties();
             RgxGenOption.INFINITE_PATTERN_REPETITION
-                    .setInProperties(howFarRepetitionsRun, repetitionLimit(shortest, longest));
+                    .setInProperties(howFarRepetitionsRun, repetitions);
             MatchingStrings reading = new MatchingStrings(expression,
-                    RgxGen.parse(howFarRepetitionsRun, expression), checked, shortest, longest);
+                    RgxGen.parse(howFarRepetitionsRun, expression), checked, shortest, allowed,
+                    Math.max(shortest, Math.min(preferred, allowed)));
             return reading.bothReadingsAgree(random) ? Optional.of(reading) : Optional.empty();
         } catch (RuntimeException cannotRead) {
             // The library throws its own kind for a rule it cannot read, and this platform throws
@@ -196,21 +207,41 @@ final class MatchingStrings {
      */
     Optional<String> next(RandomGenerator random) {
         Objects.requireNonNull(random, "random");
+        // The shortest acceptable value seen so far, kept in case nothing shorter than the length
+        // worth sending ever turns up. A long value is a poor thing to send and no value at all is
+        // worse, so the search settles for the best it found rather than going away empty-handed.
+        String shortestSoFar = null;
         long built = 0;
         for (int attempt = 0; attempt < attempts && built < CHARACTERS_BUILT; attempt++) {
             String candidate;
             try {
                 candidate = shapes.generate(random);
             } catch (RuntimeException broke) {
-                return Optional.empty();
+                break;
             }
             built += candidate.length();
-            if (candidate.length() >= shortest && candidate.length() <= longest
-                    && accepts(candidate)) {
+            if (candidate.length() < shortest || candidate.length() > longest
+                    || !accepts(candidate)) {
+                continue;
+            }
+            if (candidate.length() <= preferred) {
                 return Optional.of(candidate);
             }
+            if (shortestSoFar == null || candidate.length() < shortestSoFar.length()) {
+                shortestSoFar = candidate;
+            }
         }
-        return Optional.empty();
+        return Optional.ofNullable(shortestSoFar);
+    }
+
+    /**
+     * Whether a value that came from somewhere else satisfies this rule.
+     *
+     * @param value the value
+     * @return whether the rule accepts it
+     */
+    boolean allows(String value) {
+        return accepts(value);
     }
 
     /**
@@ -222,9 +253,10 @@ final class MatchingStrings {
      */
     private boolean accepts(String candidate) {
         // Safe to run without a clock watching it, for two reasons together. Runaway backtracking
-        // needs a long subject, and nothing reaches here longer than the ten thousand characters
-        // that are the most any value is allowed; and every candidate was built from this very rule,
-        // so the engine walks a path that exists rather than exhausting the ones that do not.
+        // needs a long subject, and no rule gets this far unless the count above said everything it
+        // could build is shorter than the value is allowed to be; and a candidate was built from
+        // this very rule, so the engine usually walks a path that exists rather than exhausting the
+        // ones that do not.
         return checked.matcher(candidate).find();
     }
 
@@ -245,24 +277,6 @@ final class MatchingStrings {
         } catch (RuntimeException cannotRead) {
             return true;
         }
-    }
-
-    /**
-     * Whether the rule insists outright on more characters than may be sent.
-     *
-     * <p>Read off the rule rather than discovered by building one, because the building is what
-     * there is to avoid: a rule demanding a hundred million characters is a hundred megabytes per
-     * attempt, and finding that out the slow way costs the run.
-     */
-    private static boolean statedLongerThan(String expression, long longest) {
-        Matcher counts = STATED_REPETITION.matcher(expression);
-        while (counts.find()) {
-            String upper = counts.group(2) != null ? counts.group(2) : counts.group(1);
-            if (Long.parseLong(upper) > longest) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

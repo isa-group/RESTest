@@ -132,33 +132,47 @@ because a review of this increment demonstrated the failure each one prevents, o
   "one or more" groups is a hundred to the fourth power, and a rule of that shape produced 868,356
   characters. Eight is the default here, with the shape's own lower length winning over it — a
   specification insisting on two hundred characters is insisting — and its upper length capping both.
-- **The longest value worth sending.** The cap above bounds each repetition, not the value. An
-  ordinary e-mail rule, which nests two of them, still produced four thousand characters. So a
-  candidate is also held to the same limit every other invented string obeys: the shape's own
-  `maxLength`, or sixty-four when it states none.
-- **A length the rule states outright.** `[a-z]{1000000}` is a megabyte per attempt and
-  `{100000000}` is a hundred, whatever any cap says, and the loop below would have built two hundred
-  of them. A count larger than the value may be is read off the rule and the rule declined, before
-  anything is built.
+- **The longest value worth reading, as a preference rather than a rule.** Sixty-four characters is
+  what every other invented string keeps to, and a candidate longer than that is set aside while
+  shorter ones are looked for — but taken in the end if none turns up. It cannot be a hard limit: a
+  rule asking for a hundred and twenty-eight hexadecimal digits is the *document* asking, exactly as
+  a stated minimum length would be, and an earlier attempt that treated it as a limit made the tool
+  quietly send a word the document refuses. The hard limit is the shape's own `maxLength`, and ten
+  thousand characters where it states none.
+- **How long the rule could possibly run**, worked out from the rule before a character is built.
+  This is the one defence that actually holds, and it took three attempts to arrive at, each of the
+  first two demonstrated inadequate by review on real input. A cap on repetitions does not bound the
+  value, because a rule may state its own counts: `[a-z]{1000000}` is a megabyte. Reading counts off
+  the rule one at a time does not bound it either, because counts *multiply* — nine "repeat this
+  nine times" written inside one another is 387 million characters in a rule thirty characters long,
+  and `{900000000,}` states no upper count to read at all. So `LongestMatch` counts what the rule
+  could produce at its very worst: pieces in a row add up, a choice takes the longer, a repetition
+  multiplies, arithmetic saturates rather than wrapping, and anything it cannot read through it
+  refuses to answer for. A rule whose worst is longer than the value may be is declined unbuilt.
+  Deliberately generous: a rule it passes is certainly safe, and one it refuses may merely have
+  looked dangerous, which costs a spelling rule rather than the run.
 - **Which reader to trust first.** This platform compiles the rule *before* the library parses it.
-  The platform refuses a rule nested twenty thousand deep in microseconds; the library goes looking
-  for memory it cannot have and takes the run down with it, and an `OutOfMemoryError` is not
-  something a `catch` on the wrong side can help with.
+  It refuses a rule nested twenty thousand deep in microseconds, where the library goes looking for
+  memory it cannot have. It is a cheap first filter and nothing more: a short rule demanding a
+  hundred million characters compiles instantly, which is why the count above exists.
 - **Whether the two readings agree at all.** The library does not understand lookahead, so
   `^(?=.*[A-Z])[A-Za-z0-9]{8}$` — an ordinary password rule — parses without complaint and produces
   ten characters where the rule demands eight. Every candidate would then be refused one by one and
   the parameter reported as one no value could be found for, which §4 makes an expensive answer. So
-  three trial values are drawn when the rule is first read, and if none of them satisfies this
-  platform's reading, the rule is treated as one nobody can read.
+  trial values are drawn when the rule is first read, and if none of the eight satisfies this
+  platform's reading, the rule is treated as one nobody can read. The verdict is kept for the whole
+  run, which is the cost: a rule the two agree about only rarely is settled by eight draws taken
+  once. Eight rather than one because the answer is kept; eight rather than eighty because the only
+  rules that ever get there are ones the two readers really do disagree about.
 - **The length, by drawing again.** There is no "of this length" in the library, so candidates are
   drawn until one fits. GitHub's forty hexadecimal digits come out at forty about once in thirty-nine
-  draws, so the allowance starts at two hundred and grows with the length demanded, to a ceiling of
-  two thousand, and stops on a budget of a million characters built. It is still a lottery, and the
-  odds are worth writing down: at an exactly demanded length *n* one draw in about *n* hits, which
-  with the allowance above makes 40 characters a near certainty and 200 about 99%, while 2,000 —
-  where the character budget bites before the attempts do — is about four in ten. Beyond that the
-  tool reports that no value could be found, which is honest about the tool and not quite honest
-  about the shape. Nothing in the corpus demands more than 40.
+  draws, so the allowance is twenty per character demanded, between two hundred and four thousand,
+  and stops on a budget of a million characters built. It is still a lottery, and the odds are worth
+  writing down: at an exactly demanded length *n* one draw in about *n* hits, which makes 40
+  characters a certainty to nine figures and 200 the same, while 2,000 — where the character budget
+  bites before the attempts do — is about seven in ten. Beyond that the tool reports that no value
+  could be found, which is honest about the tool and not quite honest about the shape. Nothing in
+  the corpus demands more than 40.
 
 The kinds of value are **not** a library. `UUID`, `DateTimeFormatter`, `Base64` and `URI` are in
 `java.base`, and a regular expression for `date-time` would cheerfully produce `8336-00-95T06:87:98Z`
@@ -216,10 +230,18 @@ whoever needs it then can add it without changing what is stored today.
   built from it is as likely to be Cyrillic or CJK as Latin. That is what the document asked for, and
   an API that means "Latin letters" should have said so; it does mean those parameters now exercise
   the encoding path as well as the validation one.
-- Two hundred draws for one value is a lot of draws. It happens only where a spelling and a tight
+- Hundreds of draws for one value is a lot of draws. It happens only where a spelling and a tight
   length disagree, which is thirteen places in fifty documents, and the work is microseconds. If a
   campaign ever shows it on a profile, the answer is a repetition count aimed at the wanted length
   rather than drawn and filtered.
+- **A rule can now cost its parameter for a reason that is not the document's fault.** A rule the
+  count above refuses — nested repetitions that multiply past what may be sent, a count too large to
+  build — is answered with an ordinary word, which the API will very likely refuse. That is the
+  right trade against ending the run, and it is the one place where the tool knowingly sends
+  something the document does not accept. Nothing in the fifty-document corpus is in this case, and
+  a test says so; if one ever is, the run has no way of mentioning it, which is a gap a later
+  increment should close alongside the rest of what a run says about a document it could not fully
+  use.
 - **A rule is read once per run, not once per value.** Reading one is parsing a small language, and
   the API in the corpus with the most of them states a rule for fifteen of the values in every
   request it takes. Measured on that one: eight microseconds to build a whole request before this

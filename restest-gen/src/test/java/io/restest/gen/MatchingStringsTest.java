@@ -53,7 +53,7 @@ class MatchingStringsTest {
      * change can see it; the corpus test is what notices if the documents grow a rule this list
      * does not have.
      */
-    private static final List<String> THE_CORPUS_STATES = List.of(
+    static final List<String> THE_CORPUS_STATES = List.of(
             "^\\\\d+(\\.\\\\d+)?$",
             "^[A-Z]{2}$",
             "^[A-Z0-9]{8}$",
@@ -161,15 +161,22 @@ class MatchingStringsTest {
                     .hasValueSatisfying(built -> assertThat(built.length()).isBetween(1, 20));
         }
 
-        @RepeatedTest(20)
-        @DisplayName("repetitions inside repetitions do not multiply into an enormous value")
-        void nested_repetitions_stay_short() {
+        @Test
+        @DisplayName("repetitions inside repetitions are refused before they multiply")
+        void nested_repetitions_are_refused() {
             // Four "one or more" groups inside each other. Left to run as far as the builder's own
-            // default would allow, this produces strings of hundreds of thousands of characters.
-            MatchingStrings spellings = reading("^(((a+)+)+)+$", 1, 64).orElseThrow();
+            // default would allow, this produces strings of hundreds of thousands of characters;
+            // even at eight apiece it is four thousand, which is more than any value may be when
+            // the shape says it may be sixty-four.
+            assertThat(reading("^(((a+)+)+)+$", 1, 64)).isEmpty();
+        }
 
-            assertThat(spellings.next(RANDOM))
-                    .hasValueSatisfying(built -> assertThat(built.length()).isBetween(1, 64));
+        @Test
+        @DisplayName("a repetition inside a repetition is read when what it could build still fits")
+        void nested_repetitions_that_fit_are_read() {
+            assertThat(reading("^(ab{2}){3}$", 1, 64))
+                    .describedAs("six characters, which is not a reason to refuse anything")
+                    .isPresent();
         }
 
         @Test
@@ -289,7 +296,8 @@ class MatchingStringsTest {
         }
     }
 
+    /** Asked with no preference for a shorter value, so what comes back is what the rule allows. */
     private static Optional<MatchingStrings> reading(String rule, long shortest, long longest) {
-        return MatchingStrings.reading(rule, shortest, longest, RANDOM);
+        return MatchingStrings.reading(rule, shortest, longest, longest, RANDOM);
     }
 }
