@@ -104,7 +104,7 @@ class CampaignDocumentTest {
             assertThatThrownBy(() -> read("- source: observations"))
                     .isInstanceOf(JsonException.class)
                     .hasMessageContaining("'observations' is not one of the sources")
-                    .hasMessageContaining("enum, example, default, random")
+                    .hasMessageContaining("enum, example, default, observed, random")
                     .describedAs("somebody meaning a list of their own is told which word to use")
                     .hasMessageContaining("'dictionary'");
         }

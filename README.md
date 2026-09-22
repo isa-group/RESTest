@@ -62,6 +62,7 @@ numbers in it are that run's and yours will be different:
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
 19 of 19 operations can be tested, seed 20260914, budget 10s
+  values from the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
 F100  HTTP Status 500
       deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/207  ->  500
@@ -109,6 +110,21 @@ sends none of them. The other way round, the values *you* know are good — real
 surnames the API actually holds — go in a YAML file next to the specification and are handed over
 with `--dictionary`, which takes a file or a directory and may be repeated;
 [docs/dictionary-format.md](docs/dictionary-format.md) is the format.
+
+A run also learns from the API as it goes. When a request comes back with a reply the API was happy
+with, what that reply contained is kept, and the next request that needs a value of the same name
+sends one the API itself produced — an identifier that exists rather than an invented number that
+reaches a 404, and, where the document names the shape of what an operation wants sent, a whole
+thing the API returned with one value in it changed (or, when nothing in it can be varied, sent
+as it came back and recorded as that). Measured against two containerised APIs,
+restarting each before every run: 27.8 of pet-clinic's operations answered 2XX without this and
+31.6 with it, better on every one of five seeds.
+
+It costs one promise, and this is the only place in the tool that costs it: what such a run sends
+depends on what the API answered, so `--seed` on its own no longer repeats it — it makes a similar
+run rather than the same one. `--store` keeps every request and reply of the run you actually had,
+which is the record to go back to; sending those requests again is a later milestone's job. Taking
+`source: observed` out of the plan below puts the old promise back exactly.
 
 Which of those a run prefers, and in what proportion, is itself a file. `restest run
 --print-campaign` writes out the plan RESTest follows when it is given none: which sources fill in

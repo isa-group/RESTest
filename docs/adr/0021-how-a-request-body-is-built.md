@@ -1,6 +1,6 @@
 # ADR-0021: A request body is one more value, and what the API returns is reused leaf by leaf
 
-**Status:** Accepted
+**Status:** Accepted, amended at M2.5b
 **Date:** 2026-09-18
 
 ## Context
@@ -283,3 +283,276 @@ and in `--help`; whoever takes 2.10 knows it became more urgent here.
   declared on 17 properties in the whole corpus, which is too few to be the real answer: APIs drop
   or refuse fields they never marked. Worth measuring against a running deployment in 2.5b, because
   it decides whether whole-resource reuse earns its operator.
+
+---
+
+## Amendment (M2.5b)
+
+**Date:** 2026-09-22
+
+**The memory is built, both open questions are answered by measurement, and the source it adds is
+one the plan RESTest ships names — so a default run stops being reproducible from its seed alone.**
+
+### The keying is the name, and the format takes no sixth one
+
+The open question was whether the observed index should be keyed by a leaf's name alone or also by
+its path inside the body, RESTler keying its custom payloads by path. Measured over the corpus,
+counting every single value reachable inside a request body against what that same API's own 2XX
+replies carry:
+
+| | Whole corpus | Priority corpus |
+|---|---:|---:|
+| Single values inside request bodies | 2,125 | 256 |
+| …whose **name** some 2XX also carries | **1,886 (89%)** | **223 (87%)** |
+| …at an **address** some 2XX also carries | 1,700 (80%) | 204 (80%) |
+
+The path reaches strictly less, and it would additionally need a rule for turning a reply's own
+addresses into a request body's — a reply starts at the reply and a body starts at the body, so
+`body.owner.email` and a reply's `owner.email` only match under a convention somebody has to invent.
+The name needs no such convention.
+
+What the path would have bought is telling apart two properties that share a name. That is **57 of
+the 1,886**, 3%, and 2 of the 223 in the priority corpus. Of the 57, **47 agree about the kind of
+value** and differ only in a declared form — `uri` beside plain text, `int32` beside `int64`,
+`date-time` beside plain text. The remaining **10 disagree about the kind**, and those are refused
+already, because a value is only offered where its kind matches what is being asked for. So the
+format takes no sixth keying, and `ObservedValuesAcrossTheCorpusTest` holds the numbers.
+
+One thing the measurement taught that nobody asked: **a reply is JSON by what it announces, not by
+what the document spells.** flight-search declares every one of its responses under `*/*`, and
+reading only entries written `application/json` found nothing at all for it — 0 of its 32 values
+rather than 17. `ResponseModel.schemaFor` already looks a content type up exact-then-`type/*`-then-
+`*/*`, and that is what the memory uses.
+
+### An observed value is `Derived`, and saying so cost a second class
+
+ADR-0013's claim that "adding a source of values is one class and one line in a plan" gets its
+second test, and the answer is **two classes, one line in a plan**, with neither `ValueProvider` nor
+`Dictionary` changed:
+
+- `ObservedValues` — the listener and the memory. It holds the two dictionaries this record
+  described, under `Keying.NAME` and `Keying.SCHEMA`, exactly as predicted.
+- `ObservedValueProvider` — the source that asks them.
+
+The second exists for one reason worth recording. `Dictionary.valuesFor` hands back bare values, and
+a value read out of a reply should say **which exchange** it was read out of: `ValueOrigin.Derived`
+is the case `restest-core` has carried since M1.1a for precisely this, and "observed" is not an
+answer anybody can follow up. So the memory offers the provider a richer question of its own. That
+is a smaller correction than ADR-0019's was, and it is the honest version of the claim.
+
+### What is sent back is cut down first, and one value in it is changed
+
+A resource an API returns is not a resource it accepts, so before a remembered thing is offered:
+properties the document marks `readOnly` go, properties the operation's own shape does not declare
+go, and properties whose kind does not match go. If something the operation insists on did not
+survive, nothing is offered and another source builds a complete body instead.
+
+Then **one single value inside it is replaced by a different one**, which is this record's operator.
+The reason is mechanical rather than aesthetic: an unchanged copy asks a `POST` to create a
+duplicate and asks a `PUT` to change nothing, while one value changed asks the API to accept
+something genuinely new that is otherwise exactly as real as what it sent. The replacement comes
+from **the whole strategy**, not from invention alone — fitting a shape and being on the closed list
+a document states are different things, and asking invention outright would send a value the
+document says is not allowed. It has to be *different* from what it replaces, which is not a
+formality and is the subject of one of the corrections below; where nothing different can be had the
+thing is offered as it came back and recorded as unchanged.
+
+Two statements a document makes are honoured when choosing a value, and the rest are not, which is
+deliberate. **The kind must match**, which is what stops a word seen under one name filling a number
+of the same name elsewhere. **A closed list is obeyed**, because that list is the whole set of
+values the API accepts and a value is not made acceptable by having been seen somewhere else. Bounds
+and lengths are *not* checked, because they describe a shape rather than enumerate acceptability,
+and a value the API itself has just produced is evidence about the API that a document's stale
+`maximum` does not override. Re-deriving the whole of schema validation inside one source would be
+the second implementation of it in this repository.
+
+### The plan RESTest ships names it, and that ends what a seed promises for a default run
+
+`source: observed` sits in the shipped plan's weighted group at 20, with `example` and `random`
+giving up five each and `dictionaries: given` ten. Measured the way ADR-0023 §8 measured ranking,
+with two things added: **two** containerised APIs rather than one, and the two plans **alternating
+seed by seed** rather than one after the other, because the budget is a stretch of the clock and
+anything drifting on the machine would otherwise land on one arm only. Each API is restarted before
+every run; five seeds; 30-second budget.
+
+**Operations that answered 2XX**, which is the metric §8 used:
+
+| Seed | pet-clinic without | pet-clinic with | gestão-hospital without | gestão-hospital with |
+|---|---:|---:|---:|---:|
+| 3 | 29 | 33 | 6 | 7 |
+| 7 | 30 | 32 | 6 | 5 |
+| 23 | 27 | 32 | 4 | 6 |
+| 41 | 26 | 30 | 6 | 6 |
+| 99 | 27 | 31 | 6 | 10 |
+| **mean** | **27.8** | **31.6** | **5.6** | **6.8** |
+
+Better on every one of pet-clinic's five seeds, out of 35 operations it can test. On gestão-hospital
+it is better on three, level on one and worse on one, out of 20 — and that is a coarse metric on an
+API where fewer than a third of the operations ever succeed at all, so one operation either way is
+most of the difference.
+
+**Replies that were 2XX**, which is the finer metric and the one that moves everywhere:
+
+| | without | with |
+|---|---:|---:|
+| pet-clinic, mean over five seeds | 11,292 | **12,487** |
+| gestão-hospital, mean over five seeds | 397 | **541** |
+
+Better on all ten paired runs. Throughput does not explain it: both arms sent between 40,000 and
+46,000 requests on pet-clinic and between 5,000 and 8,900 on gestão-hospital.
+
+**And a third API said something the first two could not: this source needs time to fill.** The
+containerised pet shop the smoke gate starts is an API invention already does well on — small
+integer identifiers, statuses it declares as closed lists — so it is the hard case for a memory.
+Five seeds, the same alternating method, at two budgets:
+
+| Budget | operations without | operations with | 2XX replies without | 2XX replies with |
+|---|---:|---:|---:|---:|
+| 10 seconds | 15.0 | 15.6 | 19,097 | **17,448** |
+| 60 seconds | 14.6 | 15.6 | 106,939 | **135,925** |
+
+At ten seconds it covers slightly more operations and earns **fewer** 2XX replies: the memory has
+barely filled, so its share of each value is mostly spent declining, and what it does offer is drawn
+from a handful of things seen once. At sixty seconds — which is what `--budget` defaults to — it is
+ahead on both, by 27% on the replies, better on four of the five seeds and worse on none of them by
+operations.
+
+That is worth knowing before anybody measures a ten-second run and concludes the source does not
+work. It also says where to look next: a source that pays off with time is one whose *share* might
+reasonably grow as a run goes on, which nothing in the plan format can express today.
+
+Four APIs and three budgets is more evidence than §8 had and still not much, and anybody
+re-measuring it should expect to be adding to this rather than contradicting it.
+
+Weighted rather than asked first, for the reason §8 of ADR-0023 established and one of its own: a
+source that answers stops the ones behind it, and this one knows nothing at all until the API has
+answered something.
+
+**What this costs is stated wherever a seed is, and stated as what is true today.** ADR-0013 §7's
+table said that a strategy with a memory is reproduced by replaying the stored run rather than by
+its seed; the first half of that is now true of the default run and the second half is not built.
+There is no `restest replay`: it is an M3.5 row. So `--seed`'s help, the line the run prints under
+its seed, the README and the format document all say the same true thing instead - the same number
+gets a *similar* run rather than the same one, and `--store` keeps every request and reply of the
+run that did happen. Saying "replay the stored run" would have sent somebody looking for a command
+that is not there, which the first draft of all four did. Taking the line out of the plan puts the
+old promise back exactly, which is why the source is a line in a file rather than something switched
+on inside the tool.
+
+### The operator earns its place, and on one of the two APIs it is most of the mechanism
+
+The open question this record left was how much of a returned resource survives projection onto the
+request schema, and therefore whether whole-resource reuse earns its operator. Counted over one
+30-second run of each API, by what the stored run records about where each value came from:
+
+| | pet-clinic | gestão-hospital |
+|---|---:|---:|
+| Requests sent | 39,935 | 8,879 |
+| …carrying something read out of an earlier reply | 6,554 | 1,074 |
+| …of those, carrying a whole thing the API returned | 2,954 | 748 |
+| …of those, carrying one value found by its name | 3,757 | 326 |
+| Requests carrying something observed that were accepted | 1,776 | 155 |
+
+The split reverses between the two, and that is the finding. On pet-clinic the leaf is the larger
+half, as this record's corpus measurement predicted. On gestão-hospital the whole resource is: its
+bodies are mostly shapes the API also returns, so a projected resource answers where a single value
+would only have filled one of its properties. Neither API is served by the other's mechanism alone,
+which is exactly the argument for having both.
+
+### What the review of this increment changed, and why it is worth writing down
+
+Reading an API's replies is the first time this tool has read something written by the thing it is
+testing, and the review found that nothing in the code was treating it that way. Four of the five
+findings are the same mistake in different clothes.
+
+**A reply is read under limits now, and a listener that runs out of room no longer takes the run's
+reporting with it.** `JsonText` said in as many words that "nothing an API under test sends back is
+read here", and this increment made that false without noticing. A 2XX reply of nine thousand open
+brackets - eighteen kilobytes, costing the API nothing - ran the event stream's one delivery thread
+out of stack. The thread died, every later fault went unreported and unstored, and the counter that
+exists to say a listener failed stayed at nought. So: a second reader with a nesting limit, a number
+limit and a text limit, for text that came from outside; and `EventStream` now counts running out of
+room as a broken listener rather than as a machine in trouble, which is what its neighbouring
+comment already argued for `LinkageError`.
+
+**Nothing too large to send is sent.** `1e9999999` is ten characters in a reply and ten million in a
+web address; a reply can carry a word of any length; and a number of eight characters,
+`1e-10000`, cannot be written out in full at all, so a body carrying one ended the run rather than
+costing it a request. Single values are measured as they are kept, at the same length invention will
+build up to. That was not enough on its own and a second review said so: a whole thing filed under
+the name of its shape is kept in one piece, so the values inside it arrive never having been
+measured. They are measured again where a thing is cut down to what an operation accepts, which is
+the one place every one of them passes through.
+
+Beside it, one repair that is not this increment's to claim and is its fault for making reachable:
+the run loop lost a whole run to a value that could not be written down, where it was written to
+lose one request. A list of values somebody wrote by hand could always do that too.
+
+**And the same mistake once more, which is the one worth learning from.** There are two ways to ask
+this source for something - by a value's own name, and by the name of its shape - and every rule
+about what may be sent had been written into the second. Asked by name, a whole object was handed
+back exactly as the API sent it: the identifier the API allots itself included, the properties the
+operation never declared included, nothing measured. 156 of 300 bodies carried a `readOnly` property
+in a probe, which is the opposite of what §5 of this record says and of what this amendment says
+above it. It was found twice - the shape-keyed door in one review, this one in the next - because
+each time the fix went where the defect was rather than where the rule was. Both doors now cut a
+value down through the same code, and a container is measured by what is in it all the way down
+rather than being waved through for being a container.
+
+**A document whose two shapes point at each other no longer ends the run.** `A: {$ref: B}`,
+`B: {$ref: A}` parses cleanly and reports no issue, and following it to decide whether a remembered
+value fits had no hop limit - so the run died on a document that is nobody's mistake. Design
+principle 2 says an operation is skipped and reported; it does not admit exceptions for documents
+that parse.
+
+**"One value changed" was not true, and the record said it was.** What supplies the replacement is
+the rest of the strategy, and the rest of the strategy contains this very source - which holds,
+under that name, the value already in that place. A third of the bodies measured were exact copies
+of what the API had returned, each carrying a stored statement that a value had been changed. Now a
+replacement equal to what it replaces is refused, each value is asked several times before the next
+is tried, and a thing that genuinely could not be varied is offered *and recorded* as unchanged.
+Against the public pet shop with the shipped plan, 157 bodies were built this way afterwards and
+every one of them had a value replaced.
+
+**And one thing the fix taught, which is about plans rather than about this source.** A plan whose
+only source besides invention is this memory cannot vary anything inside a remembered thing: the
+memory is asked for the replacement and answers with what is already there. The plan RESTest ships
+does not have that shape - it asks the closed list a document states first, which answers for
+exactly the values worth varying - but a hand-written plan can, and it then gets a source that
+correctly does nothing. Worth knowing before somebody writes `[observed, random]` and measures it.
+
+### Recorded rather than fixed
+
+- **The memory learns from replies to requests built to push at the API.** A request from the
+  pushing strategy that earns a 201 puts whatever it sent into the memory, from where the ordinary
+  strategy may send it as a value somebody believed in. Nothing records which strategy produced an
+  interaction, and adding that is `intent` on the test case, which ADR-0013 §3 assigns to M3.1b.
+  A value the API accepted is at least a value the API accepts; the measurement above was taken with
+  this behaviour in it.
+- **The exchange an observed value names can only be looked up when `--store` is on**, which is off
+  by default. The origin still says more than the word "observed" - it names which value of which
+  reply - but "go and read that interaction" is advice that needs the run to have been kept.
+- **A thing is measured by its parts and not by its total.** "Sendable when everything in it is"
+  is what the check asks, so a reply carrying forty thousand short words under one name goes back
+  into a body at its full size. For a body that is the right answer - the API produced that
+  structure and a body may be large - and every other place a value can go is capped at ten
+  thousand written characters anyway.
+- **The two keyings are fused inside one source.** §6 above says they "compete with the other
+  sources in a weighted group like any of them"; in the code the shape-keyed answer pre-empts the
+  name-keyed one inside a single provider, and a plan cannot weigh one against the other. Nothing
+  in the corpus measurement asks for them to be separable, and separating them later is two words in
+  the table rather than a change to anything else.
+
+### What was not built
+
+**Nothing writes what was observed to a dictionary file.** This record's consequences said 2.7b
+would acquire its consumer here if it did. It does not, and the reason is that the values are
+deliberately kept *recent rather than complete* — the twenty most recent under any one name — so
+what there is to write is a sample of a moving window, and an identifier saved to disk is one the
+next run's API may never have heard of. 2.7b still waits for a value that cost something to compute.
+
+**Nested things are not kept under the name of their shape**, only under their own name. A reply the
+document names is kept whole under that name, and so is every element of a list of them; an object
+*inside* one contributes its values but is not itself filed as a named shape. Naming it would mean
+walking the document's shapes alongside the reply, and the measurement says whole-resource reuse is
+the minority mechanism — the leaf is where the 89% is.

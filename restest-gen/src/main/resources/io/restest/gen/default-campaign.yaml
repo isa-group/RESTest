@@ -25,7 +25,7 @@ strategies:
       # will take, so where the document states one, nothing else may be sent there.
       - source: enum
 
-      # Everywhere else, four sources are asked at once and one of their answers is chosen.
+      # Everywhere else, five sources are asked at once and one of their answers is chosen.
       #
       # Asking them in turn instead would pin a parameter to one value for a whole run, and that
       # costs more than it sounds. Measured against a containerised pet-clinic, restarting it
@@ -35,26 +35,51 @@ strategies:
       # for the rest of the run - getOwner, updateOwner and deleteOwner never recover.
       #
       # A source with nothing to say does not get its share, and it passes to the others. With no
-      # lists of your own handed over, which is the ordinary case, the fifty below goes to the
-      # other three.
+      # lists of your own handed over, which is the ordinary case, the forty below goes to the
+      # other four - and until the API has answered something, so does the twenty beside it.
       - weighted:
 
           # What the document's author wrote down. Usually a value that existed in the API they
           # were looking at, which is why it is worth more than anything invented.
           - source: example
-            weight: 20
+            weight: 15
 
           # Invented to fit the shape. Here rather than after the group on purpose: a source
           # below a group is never reached for any value the group could answer.
           - source: random
-            weight: 25
+            weight: 20
+
+          # What this API itself has already sent back, earlier in this run. An identifier that
+          # came out of the API is one that exists, where an invented one reaches a 404 - and a
+          # whole thing the API returned is one it can be asked to accept again with a single
+          # value in it changed.
+          #
+          # It is here, weighted rather than asked first, because it knows nothing until the API
+          # has answered something, and because pinning a value to the first thing ever seen for
+          # it would stop the run exploring. Measured against two containerised APIs, restarting
+          # each before every run, five seeds, the two plans alternating: on pet-clinic 27.8 of
+          # its operations answered 2XX without this line and 31.6 with it, better on every seed;
+          # on gestao-hospital 5.6 and 6.8, better on three seeds of five. Counting replies rather
+          # than operations it is better on all ten runs.
+          #
+          # It needs time to fill, and on a short run that shows. Against the pet shop the smoke
+          # gate starts, an API invention already does well on: at ten seconds it earns 9% fewer
+          # 2XX replies than leaving this line out, and at sixty - which is what --budget defaults
+          # to - it earns 27% more.
+          #
+          # This is the one source with a memory, and it costs the run one promise: what it sends
+          # depends on what the API answered, so --seed no longer repeats a run on its own. Take
+          # this line out and it does. What you have instead is --store, which keeps every request
+          # and reply of the run you actually had.
+          - source: observed
+            weight: 20
 
           # Every list of values passed with --dictionary, the ones written for a particular
           # place asked before the ones written for a whole kind of value. Nothing by default;
           # when there is one it is the most specific thing anybody knows about this API, which
-          # is why it is weighted highest of the four.
+          # is why it is weighted highest of the five.
           - dictionaries: given
-            weight: 50
+            weight: 40
 
           # What the API uses when the caller sends nothing. One value, so it never varies,
           # which is why it is asked least.

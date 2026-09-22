@@ -38,10 +38,16 @@ import java.util.Objects;
  * the escaping and number rules are exactly the sort of thing that looks easy and is not. So this is
  * a thin adapter over a library that does it properly.
  *
- * <p>Three parts of RESTest need it and none of them can see the other two: the file a run is stored
- * in, the report written at the end of a run, and the schema location an oracle hands to the
- * validator. It therefore sits in the one module all three share, so that this project has exactly
- * one answer to "what does this value look like written down".
+ * <p>Several parts of RESTest need it and none of them can see the others: the file a run is stored
+ * in, the report written at the end of a run, the schema location an oracle hands to the validator,
+ * and the replies an API sends back that a run learns values from. It therefore sits in the one
+ * module they all share, so that this project has exactly one answer to "what does this value look
+ * like written down".
+ *
+ * <p>Those are not all the same kind of text, and the difference matters. What RESTest wrote itself
+ * is read back whole, however large the person running it chose to let it be. What an API under
+ * test sends back is read under limits, because it is written by the very thing being tested and a
+ * reply can be shaped to be expensive to read.
  *
  * <p>Numbers keep their exact written form, so an identifier with twenty digits comes back as itself
  * rather than as the nearest number a computer could hold - and they are written the way people
@@ -52,18 +58,50 @@ import java.util.Objects;
 public final class JsonText {
 
     /**
-     * The reader refuses very long pieces of text by default, as a defence against hostile input.
-     * That defence is aimed at data arriving from strangers. Nothing an API under test sends back
-     * is read here - a reply body is judged by the schema validator, which applies its own limits to
-     * it - so what this reads is a run RESTest wrote itself, and the size of a reply body it kept is
-     * the user's own setting to make. Left at the default, a run that kept a twenty-megabyte reply
-     * would be written happily and then be unreadable for ever.
+     * For text RESTest wrote itself. The reader refuses very long pieces of text by default, as a
+     * defence against hostile input, and that defence is not what is wanted here: what this reads
+     * is a run this tool stored, and the size of a reply body it kept is the user's own setting to
+     * make. Left at the default, a run that kept a twenty-megabyte reply would be written happily
+     * and then be unreadable for ever.
      */
     private static final JsonFactory FACTORY = JsonFactory.builder()
             .streamReadConstraints(StreamReadConstraints.builder()
                     .maxStringLength(Integer.MAX_VALUE)
                     .maxNumberLength(Integer.MAX_VALUE)
                     .maxNestingDepth(10_000)
+                    .build())
+            .build();
+
+    /**
+     * How deeply a reply from an API under test may be nested before it is refused.
+     *
+     * <p>Far deeper than any resource anybody describes - the deepest request body in a corpus of
+     * fifty real specifications is five levels - and far shallower than the depth at which reading
+     * one runs out of room on the stack. The value in between is the whole point: a reply nested
+     * ten thousand levels deep costs nothing to send and would otherwise end the thread reading it.
+     */
+    private static final int AS_DEEP_AS_A_REPLY_MAY_BE = 100;
+
+    /** How long a single number in such a reply may be written, in characters. */
+    private static final int LONGEST_NUMBER_IN_A_REPLY = 1_000;
+
+    /** How long a single piece of text in such a reply may be, in characters. */
+    private static final int LONGEST_TEXT_IN_A_REPLY = 1_024 * 1_024;
+
+    /**
+     * For text an API under test sent back, which is written by the thing being tested.
+     *
+     * <p>Same reader, tight limits. Reading a value builds it piece by piece and one piece inside
+     * another, so a reply that is nothing but ten thousand open brackets - eighteen kilobytes,
+     * costing the API nothing - would run the reading thread out of room. Refusing it is the whole
+     * of the defence, and it costs nothing real, because nothing this shape is a resource anybody
+     * meant to hand back.
+     */
+    private static final JsonFactory FROM_AN_API = JsonFactory.builder()
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxStringLength(LONGEST_TEXT_IN_A_REPLY)
+                    .maxNumberLength(LONGEST_NUMBER_IN_A_REPLY)
+                    .maxNestingDepth(AS_DEEP_AS_A_REPLY_MAY_BE)
                     .build())
             .build();
 
@@ -105,7 +143,11 @@ public final class JsonText {
      */
     public static JsonValue read(String text) {
         Objects.requireNonNull(text, "text");
-        try (JsonParser in = FACTORY.createParser(text)) {
+        return read(text, FACTORY);
+    }
+
+    private static JsonValue read(String text, JsonFactory factory) {
+        try (JsonParser in = factory.createParser(text)) {
             if (in.nextToken() == null) {
                 throw new JsonException("Empty text where a JSON value was expected");
             }
@@ -119,6 +161,26 @@ public final class JsonText {
             throw new JsonException(
                     "Stored JSON could not be read back: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * The value the text describes, where the text came back from the API being tested.
+     *
+     * <p>The same answer {@link #read} gives, under limits {@link #read} deliberately does not
+     * apply: how deeply the value may be nested, how long one number may be written, and how long
+     * one piece of text may be. A reply exceeding any of them is refused rather than read, which
+     * for whoever is asking means learning nothing from that reply - a good deal cheaper than the
+     * alternative, since this is read on the one thread that carries a run's announcements to
+     * everything listening.
+     *
+     * @param text the reply, as it arrived
+     * @return the value it describes
+     * @throws JsonException if it is not one JSON value, or carries anything after it, or is
+     *     larger or deeper than a reply is allowed to be
+     */
+    public static JsonValue readFromAnApi(String text) {
+        Objects.requireNonNull(text, "text");
+        return read(text, FROM_AN_API);
     }
 
     /**

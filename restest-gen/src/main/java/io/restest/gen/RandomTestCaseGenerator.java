@@ -15,6 +15,7 @@
  */
 package io.restest.gen;
 
+import io.restest.core.event.RunListener;
 import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
@@ -72,11 +73,10 @@ import java.util.stream.Stream;
  * an API's twenty operations should say so.
  *
  * <p>Every generator is given a number to start from, and the same number produces the same
- * requests, carrying the same values, in the same order, on any machine and on any Java runtime.
- * That is what makes a surprising result worth investigating: it can be reproduced exactly rather
- * than chased. What is not repeated is the label each test case is filed under, which is drawn
- * fresh every time so that two runs happening at once cannot both claim the same one. Two
- * generators in one program never affect each other.
+ * decisions, on any machine and on any Java runtime. That is what makes a surprising result worth
+ * investigating: it can be reproduced rather than chased. What is not repeated is the label each
+ * test case is filed under, which is drawn fresh every time so that two runs happening at once
+ * cannot both claim the same one. Two generators in one program never affect each other.
  *
  * <p>The randomness comes from a source every Java runtime is required to carry, on every release,
  * rather than from the best one a particular runtime happens to offer. Choosing by name would make
@@ -85,12 +85,13 @@ import java.util.stream.Stream;
  * compulsory parts of an older Java - a small container image, say - the tool would refuse to start
  * at all.
  *
- * <p>That promise holds for as long as nothing this generator uses remembers what the API has been
- * answering. It is true of everything here today. It will stop being true of a source of values that
- * learns from the responses - one that reuses an identifier it saw in an earlier reply, say - because
- * then what gets chosen depends on when each answer arrived, which depends on the network. The way to
- * reproduce a run like that is not to run it again from the same number, but to send the stored
- * requests again, which is why every request is kept.
+ * <p>Whether the same number produces the same <em>requests</em> depends on the plan, and on one
+ * thing in it. A plan that asks for what the API has already sent back gets values that depend on
+ * what the API answered, and an API answers differently on a different day - so starting a run like
+ * that from the same number gets a similar run rather than the same one, which is one of the
+ * reasons every request it did send is worth keeping. Every other source reads the document, which
+ * says the same thing every time. A run says for itself which kind it is: there is something to
+ * listen to its replies with only when the plan asked for a source with a memory.
  *
  * <p>One generator belongs to one sequence of decisions, so it is used from one thread at a time.
  */
@@ -128,6 +129,7 @@ public final class RandomTestCaseGenerator {
     private final RandomGenerator random;
     private final ValueProvider values;
     private final List<Dictionary> given;
+    private final ObservedValues observed;
     private final Campaign campaign;
     private final List<Strategy> strategies;
     private final int sharesInTotal;
@@ -213,7 +215,10 @@ public final class RandomTestCaseGenerator {
         this.random = new SplittableRandom(seed);
         this.given = List.copyOf(dictionaries);
         this.campaign = campaign;
-        this.strategies = strategiesFor(campaign, dictionaries, model, random);
+        // Only when the plan asks for it. A run whose plan says nothing about what the API has
+        // returned does not listen to its own replies at all, and stays repeatable from its seed.
+        this.observed = namesWhatTheApiReturns(campaign) ? new ObservedValues(model) : null;
+        this.strategies = strategiesFor(campaign, dictionaries, model, random, observed);
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
         // Whether an operation can be tested at all is asked of an ordinary way of building a
         // request, never of one built to push at the API: a list of awkward values answers for
@@ -311,6 +316,23 @@ public final class RandomTestCaseGenerator {
      */
     public List<OperationId> operationsThePlanSetAside() {
         return setAsideByThePlan;
+    }
+
+    /**
+     * What has to be told about every exchange, when the plan asks for a source that needs telling.
+     *
+     * <p>Only one source does: the one that reuses what the API has already sent back, which cannot
+     * know anything unless somebody passes on what came back. Whoever runs the tests subscribes
+     * this to the run's stream of announcements, the same way a report or a rule is subscribed.
+     *
+     * <p>Empty for every other plan, and it being empty rather than a listener that does nothing is
+     * the point: a run whose plan says nothing about the API's replies does not watch them at all,
+     * and stays repeatable from its starting number.
+     *
+     * @return what to subscribe, or nothing when this plan has no source with a memory
+     */
+    public Optional<RunListener> whatListensToTheRun() {
+        return Optional.ofNullable(observed);
     }
 
     /** The plan this run is following. */
@@ -569,6 +591,21 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
+     * Whether this plan asks anywhere for what the API has already sent back.
+     *
+     * <p>Asked before anything is built, because the answer decides whether this run listens to its
+     * own replies at all - and a run that does not is one that can be repeated from its starting
+     * number.
+     */
+    private static boolean namesWhatTheApiReturns(Campaign campaign) {
+        return campaign.strategies().stream()
+                .flatMap(strategy -> strategy.sources().stream())
+                .flatMap(entry -> entry.sources().stream())
+                .anyMatch(source -> source instanceof Campaign.Source.Builtin builtin
+                        && builtin.which() == Campaign.Builtin.OBSERVED);
+    }
+
+    /**
      * The plan RESTest carries, with one thing said about it: how much of the run goes on pushing.
      *
      * <p>What {@code --fuzzing} means. Rather than a second way of arranging sources, it adjusts
@@ -591,13 +628,13 @@ public final class RandomTestCaseGenerator {
      * among the ones this run was handed, and the arrangement it wrote them in is built.
      */
     private static List<Strategy> strategiesFor(Campaign campaign, List<Dictionary> dictionaries,
-            ApiModel model, RandomGenerator random) {
+            ApiModel model, RandomGenerator random, ObservedValues observed) {
         List<Strategy> ways = new ArrayList<>();
         for (Campaign.PlannedStrategy planned : campaign.strategies()) {
             if (pushesWithNothingToPushWith(planned, dictionaries)) {
                 continue;
             }
-            ValueProvider values = valuesFor(planned, dictionaries, model, random);
+            ValueProvider values = valuesFor(planned, dictionaries, model, random, observed);
             if (values instanceof ValueProviderChain chain && chain.providers().isEmpty()) {
                 // Every source this strategy names turned out to be a list nobody handed over, so
                 // it has nothing at all to fill a value with. It would still be drawn for its
@@ -657,30 +694,47 @@ public final class RandomTestCaseGenerator {
      * in the place the plan put it.
      */
     private static ValueProvider valuesFor(Campaign.PlannedStrategy planned,
-            List<Dictionary> dictionaries, ApiModel model, RandomGenerator random) {
-        ValueProvider knownValues = asPlanned(planned, dictionaries, random, null);
+            List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
+            ObservedValues observed) {
+        ValueProvider knownValues = asPlanned(planned, dictionaries, model, random, observed, null);
         ValueProvider invention = new RandomValueProvider(model, random, knownValues);
-        return asPlanned(planned, dictionaries, random, invention);
+        return asPlanned(planned, dictionaries, model, random, observed,
+                new Assembled(invention, ValueProviderChain.of(knownValues, invention)));
+    }
+
+    /**
+     * The two sources that cannot exist until the rest of a strategy does.
+     *
+     * @param invention what fills a value from its shape alone
+     * @param everythingThisStrategyKnows the whole strategy, the document's own statements first
+     *     and invention last. What a source needs when it has to fill in one value of its own -
+     *     asking invention outright would send a value where the document states the closed list
+     *     it accepts, since fitting the shape and being on that list are different things
+     */
+    private record Assembled(ValueProvider invention, ValueProvider everythingThisStrategyKnows) {
     }
 
     /**
      * The sources of one strategy, in the arrangement the plan wrote.
      *
-     * @param invention what answers where the plan asks for an invented value, or {@code null} to
-     *     leave those steps out - which is how the list invention itself consults is built
+     * @param assembled the sources that need the rest of the strategy to exist first, or
+     *     {@code null} to leave those steps out - which is how the list invention itself consults
+     *     is built
      */
     private static ValueProvider asPlanned(Campaign.PlannedStrategy planned,
-            List<Dictionary> dictionaries, RandomGenerator random, ValueProvider invention) {
+            List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
+            ObservedValues observed, Assembled assembled) {
         List<ValueProvider> asked = new ArrayList<>();
         for (Campaign.Entry entry : planned.sources()) {
             switch (entry) {
-                case Campaign.Entry.Single single ->
-                    built(single.source(), dictionaries, random, invention).ifPresent(asked::add);
+                case Campaign.Entry.Single single -> built(single.source(), dictionaries, model,
+                        random, observed, assembled).ifPresent(asked::add);
                 case Campaign.Entry.Group group -> {
                     List<WeightedGroup.Weighted> among = new ArrayList<>();
                     for (Campaign.Share share : group.among()) {
-                        built(share.source(), dictionaries, random, invention).ifPresent(source ->
-                                among.add(new WeightedGroup.Weighted(source, share.weight())));
+                        built(share.source(), dictionaries, model, random, observed, assembled)
+                                .ifPresent(source -> among.add(
+                                        new WeightedGroup.Weighted(source, share.weight())));
                     }
                     // A group whose sources all turned out to be absent is no group at all, and one
                     // with a single source left is simply that source: there is nothing to choose
@@ -708,13 +762,17 @@ public final class RandomTestCaseGenerator {
      * times its say. Several lists become one by being asked in turn.
      */
     private static Optional<ValueProvider> built(Campaign.Source source,
-            List<Dictionary> dictionaries, RandomGenerator random, ValueProvider invention) {
+            List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
+            ObservedValues observed, Assembled assembled) {
         return switch (source) {
             case Campaign.Source.Builtin builtin -> switch (builtin.which()) {
                 case ENUM -> Optional.of(DeclaredValueProvider.onlyTheAcceptedList(random));
                 case EXAMPLE -> Optional.of(new ExampleValueProvider(random));
                 case DEFAULT -> Optional.of(DeclaredValueProvider.onlyTheStatedDefault(random));
-                case RANDOM -> Optional.ofNullable(invention);
+                case OBSERVED -> Optional.ofNullable(observed).map(memory ->
+                        new ObservedValueProvider(model, memory, random, assembled == null
+                                ? null : assembled.everythingThisStrategyKnows()));
+                case RANDOM -> Optional.ofNullable(assembled).map(Assembled::invention);
             };
             case Campaign.Source.OneList list -> asOne(dictionaries.stream()
                     .filter(held -> held.name().equals(list.name())).toList(), random);

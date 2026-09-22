@@ -21,6 +21,7 @@ import io.restest.core.exec.HttpEngine;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
+import io.restest.core.json.JsonException;
 import io.restest.core.model.Operation;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.RequestBuilder;
@@ -252,13 +253,19 @@ final class RunLoop {
      * thousands ends the whole run, which is exactly what this tool promises not to do to a document
      * it does not entirely understand.
      *
+     * <p>A value that cannot be <em>written down</em> is caught here for the same reason and was
+     * not, until a value read out of an API's own reply reached this - a number can be eight
+     * characters on the wire and beyond anything JSON can write out in full. It is not only that
+     * source: a list of values somebody wrote by hand can hold one too, and one of those ended a
+     * run rather than costing it a request.
+     *
      * @return the request, or {@code null} if this test case cannot be sent
      */
     private static HttpRequestRecord assemble(Operation operation, TestCase testCase,
             String baseUrl) {
         try {
             return RequestBuilder.build(operation, testCase, baseUrl);
-        } catch (IllegalArgumentException cannotBeSent) {
+        } catch (IllegalArgumentException | JsonException cannotBeSent) {
             return null;
         }
     }

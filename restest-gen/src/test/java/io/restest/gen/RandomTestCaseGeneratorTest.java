@@ -16,6 +16,7 @@
 package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import io.restest.core.execution.ParameterValue;
@@ -1210,6 +1211,156 @@ class RandomTestCaseGeneratorTest {
                         + "drawn from the list of awkward values - a null, an empty object - is "
                         + "what that looks like for an operation that takes one")
                 .containsExactlyInAnyOrder(true, false);
+    }
+
+    @Test
+    @DisplayName("a run listens to its own replies only when the plan asks it to")
+    void nothing_listens_unless_the_plan_asks() {
+        RandomTestCaseGenerator asksForIt = new RandomTestCaseGenerator(model(LIST_PETS), 20260922L,
+                List.of(), planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)));
+        RandomTestCaseGenerator doesNot = new RandomTestCaseGenerator(model(LIST_PETS), 20260922L,
+                List.of(), planOf(step(Campaign.Builtin.RANDOM)));
+
+        assertThat(asksForIt.whatListensToTheRun()).isPresent();
+        assertThat(doesNot.whatListensToTheRun())
+                .describedAs("a run that does not watch its own replies is one the same starting "
+                        + "number repeats exactly, and most runs should stay that way")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("what the API sent back is what goes out next, once it has been heard")
+    void what_the_api_returned_is_sent_back() {
+        Operation getPet = Operation.of(HttpMethod.GET, "/pets/{petId}", List.of(
+                        Parameter.of("petId", ParameterLocation.PATH, true, StringSchema.of())))
+                .withId(OperationId.of("getPet"))
+                .withResponses(List.of(io.restest.core.model.ResponseModel.json("200",
+                        ObjectSchema.of(Map.of("petId", StringSchema.of())))));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(getPet), 20260922L,
+                List.of(), planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)));
+
+        generator.whatListensToTheRun().orElseThrow().on(
+                new io.restest.core.event.RunEvent.InteractionCompleted(java.time.Instant.EPOCH,
+                        io.restest.core.execution.Interaction.answered(
+                                TestCase.of(OperationId.of("getPet"), List.of()),
+                                io.restest.core.execution.HttpRequestRecord.of(HttpMethod.GET,
+                                        "https://api.example/pets/1"),
+                                new io.restest.core.execution.HttpResponseRecord(
+                                        io.restest.core.execution.StatusLine.of(200),
+                                        List.of(io.restest.core.execution.Header.of("Content-Type",
+                                                "application/json")),
+                                        Optional.of(io.restest.core.execution.Payload.text(
+                                                "{\"petId\": \"real-one\"}", "application/json"))),
+                                java.time.Instant.EPOCH, java.time.Duration.ofMillis(3))));
+
+        ParameterValue sent = generator.generate(getPet).orElseThrow()
+                .parameterValue("petId", ParameterLocation.PATH).orElseThrow();
+
+        assertThat(((JsonValue.JsonString) sent.value()).value())
+                .describedAs("an identifier that came out of the API is one that exists, where an "
+                        + "invented one reaches a 404")
+                .isEqualTo("real-one");
+        assertThat(sent.origin())
+                .describedAs("and it says which exchange it was read out of")
+                .isInstanceOf(ValueOrigin.Derived.class);
+    }
+
+    @Test
+    @DisplayName("the value changed inside a thing the API returned is one the document allows")
+    void the_changed_value_still_obeys_the_document() {
+        StringSchema onlyThree = new StringSchema(
+                SchemaMetadata.none().withEnumeration(List.of(JsonValue.of("available"),
+                        JsonValue.of("pending"), JsonValue.of("sold"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        ObjectSchema pet = ObjectSchema.of(Map.of("status", onlyThree));
+        Operation updatePet = Operation.of(HttpMethod.PUT, "/pets")
+                .withId(OperationId.of("updatePet"))
+                .withRequestBody(RequestBodyModel.json(SchemaReference.to("Pet"), true))
+                .withResponses(List.of(
+                        io.restest.core.model.ResponseModel.json("200",
+                                SchemaReference.to("Pet"))));
+        ApiModel api = ApiModel.of("Test API", "1.0", List.of(updatePet))
+                .withSchemas(Map.of("Pet", pet));
+        // Arranged the way the plan RESTest ships arranges it: the closed list of values a
+        // document states is asked first and answers for a value that has one. Without a step like
+        // that, the only thing that can supply a replacement for a value inside a remembered thing
+        // is this same memory, which holds the value already there and nothing else - so the thing
+        // is offered unchanged, correctly and uselessly.
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(api, 20260922L, List.of(),
+                planOf(step(Campaign.Builtin.ENUM), step(Campaign.Builtin.OBSERVED),
+                        step(Campaign.Builtin.RANDOM)));
+        generator.whatListensToTheRun().orElseThrow().on(
+                new io.restest.core.event.RunEvent.InteractionCompleted(java.time.Instant.EPOCH,
+                        io.restest.core.execution.Interaction.answered(
+                                TestCase.of(OperationId.of("updatePet"), List.of()),
+                                io.restest.core.execution.HttpRequestRecord.of(HttpMethod.PUT,
+                                        "https://api.example/pets"),
+                                new io.restest.core.execution.HttpResponseRecord(
+                                        io.restest.core.execution.StatusLine.of(200),
+                                        List.of(io.restest.core.execution.Header.of("Content-Type",
+                                                "application/json")),
+                                        Optional.of(io.restest.core.execution.Payload.text(
+                                                "{\"status\": \"sold\"}", "application/json"))),
+                                java.time.Instant.EPOCH, java.time.Duration.ofMillis(3))));
+
+        List<String> sent = IntStream.range(0, 40)
+                .mapToObj(draw -> generator.generate(updatePet).orElseThrow().body().orElseThrow())
+                .map(body -> ((JsonValue.JsonString) ((JsonValue.JsonObject) body.value())
+                        .members().get("status")).value())
+                .distinct()
+                .toList();
+
+        assertThat(sent)
+                .describedAs("the one value in a returned thing that gets replaced is filled by "
+                        + "the whole strategy, not by invention alone: fitting the shape and "
+                        + "being on the list the document says it accepts are different things")
+                .isNotEmpty()
+                .allSatisfy(status -> assertThat(status)
+                        .isIn("available", "pending", "sold"));
+        assertThat(sent)
+                .describedAs("and what goes out is not an echo of what came back: a copy of "
+                        + "something that already exists asks the API to make a duplicate, which "
+                        + "is the one outcome changing a value exists to avoid")
+                .contains("available", "pending");
+    }
+
+    @Test
+    @DisplayName("a document whose shapes point at each other does not end the run")
+    void two_shapes_pointing_at_each_other_do_not_end_the_run() {
+        // A document nobody would call wrong: two names for one shape, each written as a pointer
+        // to the other. It parses without a single reported issue, and following it without
+        // counting the hops runs out of room on the thread building the request.
+        Operation addThing = Operation.of(HttpMethod.POST, "/things")
+                .withId(OperationId.of("addThing"))
+                .withRequestBody(RequestBodyModel.json(SchemaReference.to("A"), true))
+                .withResponses(List.of(
+                        io.restest.core.model.ResponseModel.json("200", SchemaReference.to("A"))));
+        ApiModel roundAndRound = ApiModel.of("Test API", "1.0", List.of(addThing))
+                .withSchemas(Map.of("A", SchemaReference.to("B"), "B", SchemaReference.to("A")));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(roundAndRound, 20260922L,
+                List.of(), planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)));
+        generator.whatListensToTheRun().orElseThrow().on(
+                new io.restest.core.event.RunEvent.InteractionCompleted(java.time.Instant.EPOCH,
+                        io.restest.core.execution.Interaction.answered(
+                                TestCase.of(OperationId.of("addThing"), List.of()),
+                                io.restest.core.execution.HttpRequestRecord.of(HttpMethod.POST,
+                                        "https://api.example/things"),
+                                new io.restest.core.execution.HttpResponseRecord(
+                                        io.restest.core.execution.StatusLine.of(200),
+                                        List.of(io.restest.core.execution.Header.of("Content-Type",
+                                                "application/json")),
+                                        Optional.of(io.restest.core.execution.Payload.text(
+                                                "{\"name\": \"a thing\"}", "application/json"))),
+                                java.time.Instant.EPOCH, java.time.Duration.ofMillis(3))));
+
+        assertThatCode(() -> {
+            for (int attempt = 0; attempt < 50; attempt++) {
+                generator.generate(addThing);
+            }
+        })
+                .describedAs("a document RESTest cannot make sense of costs the operation it is "
+                        + "in, never the run: this one is not even malformed")
+                .doesNotThrowAnyException();
     }
 
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {
