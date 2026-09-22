@@ -33,6 +33,7 @@ import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.spec.SwaggerSpecificationParser;
+import io.restest.core.settings.ScheduleSettings;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -66,6 +67,10 @@ class RunLoopTest {
 
     /** Long enough that a healthy run always drains, short enough that a stuck one does not hang. */
     private static final Duration PATIENT = Duration.ofSeconds(5);
+
+    /** How many announcements the loop under test lets pile up before it pauses for the reports. */
+    private static final int ANNOUNCEMENTS_ALLOWED =
+            ScheduleSettings.defaults().announcementsAllowedToPileUp();
 
     private final ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
     private final ApiEngine engine = new ApiEngine();
@@ -142,7 +147,7 @@ class RunLoopTest {
 
         assertThat(watched.highestSeen)
                 .describedAs("the backlog is held near its limit rather than growing all run")
-                .isLessThan(RunLoop.ANNOUNCEMENTS_ALLOWED_TO_PILE_UP * 2L);
+                .isLessThan(ANNOUNCEMENTS_ALLOWED * 2L);
     }
 
     @Test
@@ -182,7 +187,7 @@ class RunLoopTest {
         RunLoop.Outcome outcome;
         try (EventStream events = new EventStream()) {
             outcome = RunLoop.run(model.operations(), generator(), "https://api.example?key=abc",
-                    Instant.now().plusSeconds(30), WORK_AHEAD, PATIENT, engine, events);
+                    Instant.now().plusSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events);
         }
 
         assertThat(outcome.sent()).isZero();
@@ -199,7 +204,7 @@ class RunLoopTest {
     void no_operations_is_not_a_run() {
         try (EventStream events = new EventStream()) {
             assertThatThrownBy(() -> RunLoop.run(List.of(), generator(), "https://api.example",
-                    Instant.now().plusSeconds(1), WORK_AHEAD, PATIENT, engine, events))
+                    Instant.now().plusSeconds(1), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("nothing to do");
         }
@@ -209,7 +214,7 @@ class RunLoopTest {
         try (EventStream events = new EventStream()) {
             setUp.accept(events);
             return RunLoop.run(model.operations(), generator(), "https://api.example",
-                    Instant.now().plus(budget), WORK_AHEAD, PATIENT, engine, events);
+                    Instant.now().plus(budget), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events);
         }
     }
 

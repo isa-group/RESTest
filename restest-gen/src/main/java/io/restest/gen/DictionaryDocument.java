@@ -17,6 +17,7 @@ package io.restest.gen;
 
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonValue;
+import io.restest.core.json.YamlText;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

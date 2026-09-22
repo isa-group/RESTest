@@ -40,6 +40,7 @@ import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
+import io.restest.core.settings.MemorySettings;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -311,7 +312,7 @@ class ObservedValuesTest {
         void only_the_most_recent_few() {
             ObservedValues seen = new ObservedValues(anApiReturning(PET));
 
-            for (int identifier = 1; identifier <= ObservedValues.MOST_VALUES_UNDER_ONE_NAME + 5;
+            for (int identifier = 1; identifier <= MemorySettings.defaults().mostValuesUnderOneName() + 5;
                     identifier++) {
                 seen.on(reply(200, "application/json", "{\"id\": " + identifier + "}"));
             }
@@ -319,8 +320,8 @@ class ObservedValuesTest {
             assertThat(valuesUnder(seen, "id"))
                     .describedAs("what this is for is a value that is true now, and the oldest "
                             + "identifier is the likeliest to have been deleted since")
-                    .hasSize(ObservedValues.MOST_VALUES_UNDER_ONE_NAME)
-                    .contains(JsonValue.of(ObservedValues.MOST_VALUES_UNDER_ONE_NAME + 5))
+                    .hasSize(MemorySettings.defaults().mostValuesUnderOneName())
+                    .contains(JsonValue.of(MemorySettings.defaults().mostValuesUnderOneName() + 5))
                     .doesNotContain(JsonValue.of(1));
         }
 
@@ -340,11 +341,44 @@ class ObservedValuesTest {
         }
 
         @Test
+        @DisplayName("how much is kept is a setting, so an experiment can turn the memory down to "
+                + "nothing without touching the plan")
+        void how_much_is_kept_can_be_changed() {
+            ObservedValues small = new ObservedValues(anApiReturning(PET),
+                    new MemorySettings(2, MemorySettings.defaults().mostNames(),
+                            MemorySettings.defaults().longestValueKept(),
+                            MemorySettings.defaults().longestReplyRead(),
+                            MemorySettings.defaults().asDeepAsAReplyIsRead()));
+
+            for (int identifier = 1; identifier <= 5; identifier++) {
+                small.on(reply(200, "application/json", "{\"id\": " + identifier + "}"));
+            }
+
+            assertThat(valuesUnder(small, "id"))
+                    .describedAs("two, because two is what was asked for")
+                    .hasSize(2)
+                    .contains(JsonValue.of(5))
+                    .doesNotContain(JsonValue.of(1));
+        }
+
+        @Test
+        @DisplayName("a memory asked to keep nothing keeps nothing, which is how an experiment "
+                + "switches it off")
+        void a_memory_of_nothing() {
+            ObservedValues none = new ObservedValues(anApiReturning(PET),
+                    new MemorySettings(0, 0, 0, 0, 0));
+
+            none.on(reply(200, "application/json", "{\"id\": 1}"));
+
+            assertThat(valuesUnder(none, "id")).isEmpty();
+        }
+
+        @Test
         @DisplayName("only so many different names, whatever an API invents")
         void only_so_many_names() {
             ObservedValues seen = new ObservedValues(anApiReturning(PET));
             StringBuilder madeUp = new StringBuilder("{");
-            for (int at = 0; at < ObservedValues.MOST_NAMES + 50; at++) {
+            for (int at = 0; at < MemorySettings.defaults().mostNames() + 50; at++) {
                 madeUp.append(at == 0 ? "" : ",").append("\"name").append(at).append("\": 1");
             }
             madeUp.append("}");
@@ -354,7 +388,7 @@ class ObservedValuesTest {
             assertThat(seen.underTheirOwnNames().size())
                     .describedAs("an API writing a map of identifiers as an object would grow "
                             + "this for as long as the run lasted")
-                    .isEqualTo(ObservedValues.MOST_NAMES);
+                    .isEqualTo(MemorySettings.defaults().mostNames());
         }
     }
 

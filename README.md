@@ -134,6 +134,17 @@ filter, since a run writes to whatever it is pointed at — `methods: [GET, HEAD
 keeps it to the requests HTTP calls *safe*. [docs/campaign-format.md](docs/campaign-format.md) is
 the format.
 
+That plan is about the API. How the tool itself behaves — how many requests it keeps in flight, how
+long an invented word is, how much of a reply it keeps, how long it waits — is a separate thing,
+because those numbers would mean the same against a different API on the same machine. `restest run
+--print-settings` writes out all thirty-nine of them, each with a line saying what it does and a note
+saying where its value came from, and that output is a file you hand back with `--settings`. One of
+them without a file: `--set engine.maxConcurrency=1`, which is the answer to an API that falls over
+when asked two things at once. The same names work as environment variables,
+`RESTEST_ENGINE_MAX_CONCURRENCY=1`, which is how a container is configured. Every run writes the lot
+into `report.json`, so a directory of results carries the configuration that produced it.
+[docs/settings.md](docs/settings.md) is the list.
+
 Nothing else is required. `--url` is only needed when the document does not name an address you
 can reach; it says which machine, so an API the document describes as living under a directory is
 still tested there unless you give a path of your own. `--budget` defaults to a minute. The whole

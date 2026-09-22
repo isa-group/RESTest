@@ -542,3 +542,44 @@ because of what a plan can say: one of the things it is for is keeping a run to 
 calls *safe*, and carrying on with a different plan would answer "only read from this API" by
 writing to it. The rule this follows is the one the smoke gate follows - a gate that reports
 success because it could not run is worse than no gate.
+
+## Amendment (M11.1)
+
+**Date:** 2026-09-22
+
+**Three options for the numbers, and one refusal.**
+
+```
+restest run [--settings=<file>] [--set=<group.key=value>]... [--print-settings] ... <spec>
+```
+
+[ADR-0025](0025-settings.md) is the format and the reasoning; this records what the command line
+gains by it, because the command line is a compatibility surface and 12.1 freezes it.
+
+`--settings <file>` names a file of settings, in YAML. `--set group.key=value` sets one of them and
+may be repeated. Both are read alongside the environment, which names the same settings as
+`RESTEST_<GROUP>_<KEY>`; what is typed on the command line wins over the environment, which wins
+over the file, which wins over what the tool does when nobody has said otherwise.
+
+`--print-settings` writes out the settings this very command would have used — every one of them,
+with a line saying what it does and a note saying which of those four places decided its value — and
+stops. Like `--print-campaign`, it is a question about the tool rather than about an API, so it
+needs no document.
+
+**`--print-settings` alongside `--settings` is not a conflict**, which is a deliberate difference
+from `--print-campaign` alongside `--campaign`. A plan is printed *instead of* being read, so being
+handed one while asked to print the carried one is two questions at once. Settings are printed
+*after* being gathered, so being handed a file makes the answer more useful rather than ambiguous:
+what is printed is what this command would use, that file included, with every value naming where it
+came from. `--print-settings` together with `--print-campaign` is refused, because those two are
+questions of the same kind and answering one would read as an answer to both.
+
+**A settings file or a `--set` this version cannot accept answers `2`, and the run does not start.**
+The same rule a plan file already follows, for the same reason: the numbers decide what the run
+does — how hard it pushes at somebody's API, how much of its replies it keeps — so running with
+different numbers from the ones that were asked for would produce a result answering a question
+nobody put. This is what the exit-code table means from 12.1 by *a settings or plan file the command
+line named and the tool could not accept*.
+
+**Nothing else changes.** A run with no settings behaves exactly as it did, since the defaults are
+the constants that were in the code before, and every existing option keeps its meaning.

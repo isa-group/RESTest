@@ -426,3 +426,41 @@ built later it reads the stored run, as the deferred list says; it is not starte
   It showed the spread of what was tried, which is worth something, and it cost two more limits and
   a tenth of the file for something a kept run answers completely. The allowance and the exact counts
   carry the rest.
+
+---
+
+## Amendment (M11.1)
+
+**Date:** 2026-09-22
+
+**The YAML reader joins the JSON one in `restest-core`, for the same reason and by the same rule.**
+
+The M1.6 amendment moved the JSON library into `restest-core` when a third part of the tool came to
+need it, and argued that one answer to "what does this value look like written down" is worth more
+than three. The reader of the files a *person* writes has now reached the same point.
+
+Three files are written by hand for RESTest: a list of values (ADR-0020), a plan (ADR-0023), and —
+from M11.1 — a file of settings (ADR-0025). All three are YAML, and all three are read by parts of
+the tool that cannot see one another: the lists and the plan in `restest-gen`, the settings in
+`restest-cli`, because [ADR-0025](0025-settings.md) assembles the four layers there and nowhere
+else. The small class that reads them, `YamlText`, therefore moves to `io.restest.core.json` beside
+`JsonText`, and becomes part of this module's published surface.
+
+It is the same job as the one already in that package. JSON is a subset of YAML, the class turns the
+text of a hand-written file into `JsonValue`, and the two traps it solves — a key written twice, and
+YAML's older rules turning `NO` into `false` — are traps for every one of the three files equally.
+
+**What this changes, and what it does not.** `restest-core` now carries two third-party libraries
+rather than one, both behind `io.restest.core.json`, and `restest-gen` carries none of its own for
+this purpose. The confinement rule in the architecture tests moves with the library rather than
+being dropped: it read *only `restest-gen` and `restest-spec` may see the YAML reader* and now reads
+*only `restest-core` and `restest-spec`*, still two modules, `restest-spec` because the library
+arrives there through the specification parser on its own account. Nothing else about this record
+changes.
+
+**The alternative, and why not.** `restest-cli` could have been added to the confinement rule as a
+third module and read the file itself. That would have meant three modules holding the library and
+either a third copy of those two traps or a shared reader living somewhere — and the somewhere is
+this module, which is where the change ends up either way. Exporting the reader from `restest-gen`
+instead would have had the command line read its settings using a class from the module that invents
+request values, which is a dependency nobody could explain from the names.

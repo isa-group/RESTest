@@ -27,6 +27,9 @@ import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.settings.ReportSettings;
+import io.restest.core.settings.Settings;
+import io.restest.core.settings.SettingsInEffect;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
@@ -83,33 +86,6 @@ import java.util.Set;
  * the list it was taken from.
  */
 public final class JsonReport implements RunListener {
-
-    /**
-     * How many faults of one kind, on one operation, are written out whole.
-     *
-     * <p>The first proves the fault is real and can be repeated. A second and a third show what else
-     * was being sent when it happened, which is the part a reader learns from. By the fifth, another
-     * near-identical copy teaches nobody anything.
-     */
-    static final int WRITE_UPS_PER_OPERATION_AND_KIND = 5;
-
-    /** And how many in the whole file, for a description that goes wrong in very many places. */
-    static final int WRITE_UPS_IN_TOTAL = 1_000;
-
-    /**
-     * How much of any one body is quoted.
-     *
-     * <p>This is what makes counting write-ups a real limit. Without it the size of a write-up is
-     * whatever the API felt like sending - measured on one real run, from 1.7 KB to 158 KB for the
-     * same kind of fault - so a file could hold five of them and be enormous. Trimmed, write-ups are
-     * all about the same size, and counting them is enough; this file needs no other limit.
-     *
-     * <p>What is kept says how long the whole body was, so a trimmed one is never mistaken for the
-     * API having sent less than it did. A run kept in its own file keeps every body whole, because
-     * that one is re-judged later and half a reply is a false fact rather than a smaller one.
-     */
-    static final long MOST_BODY_BYTES_KEPT = 24L * 1024;
-
 
     /** How many exact status codes are listed beside the families, commonest first. */
     private static final int STATUS_CODES_LISTED = 10;
@@ -205,24 +181,51 @@ public final class JsonReport implements RunListener {
     private EngineStatistics engine = EngineStatistics.none();
     private JsonValue written;
 
-    private JsonReport(Optional<Path> file, Clock clock) {
+    private final ReportSettings limits;
+    private final SettingsInEffect configuration;
+
+    private JsonReport(Optional<Path> file, Clock clock, SettingsInEffect configuration) {
         this.file = file;
         this.clock = clock;
+        this.configuration = configuration;
+        this.limits = configuration.settings().report();
     }
 
-    /** A report written to this file when the run finishes. */
+    /** A report written to this file when the run finishes, with the limits RESTest ships. */
     public static JsonReport to(Path file) {
-        return new JsonReport(Optional.of(Objects.requireNonNull(file, "file")), Clock.systemUTC());
+        return to(file, SettingsInEffect.of(Settings.defaults()));
+    }
+
+    /**
+     * A report written to this file when the run finishes.
+     *
+     * @param file where to write it
+     * @param configuration how the run was configured: the report's own limits are read from it,
+     *     and the whole of it is written into the file so that a directory of results carries the
+     *     settings that produced it
+     * @return the report
+     */
+    public static JsonReport to(Path file, SettingsInEffect configuration) {
+        return new JsonReport(Optional.of(Objects.requireNonNull(file, "file")), Clock.systemUTC(),
+                Objects.requireNonNull(configuration, "configuration"));
     }
 
     /** A report that is built but written nowhere, for anyone who only wants to read it back. */
     public static JsonReport inMemory() {
-        return new JsonReport(Optional.empty(), Clock.systemUTC());
+        return new JsonReport(Optional.empty(), Clock.systemUTC(),
+                SettingsInEffect.of(Settings.defaults()));
     }
 
     /** The same, with the clock the report's timestamp comes from, so a test can fix it. */
     public static JsonReport inMemory(Clock clock) {
-        return new JsonReport(Optional.empty(), Objects.requireNonNull(clock, "clock"));
+        return new JsonReport(Optional.empty(), Objects.requireNonNull(clock, "clock"),
+                SettingsInEffect.of(Settings.defaults()));
+    }
+
+    /** The same, configured, for anyone who wants to read back what a configured run would write. */
+    public static JsonReport inMemory(Clock clock, SettingsInEffect configuration) {
+        return new JsonReport(Optional.empty(), Objects.requireNonNull(clock, "clock"),
+                Objects.requireNonNull(configuration, "configuration"));
     }
 
     /** What was written, once the run has finished. Empty before that. */
@@ -322,8 +325,8 @@ public final class JsonReport implements RunListener {
 
     /** Writes the whole attempt out, if this kind of fault on this operation still has room. */
     private void writtenWhole(Finding finding, Tally tally) {
-        if (tally.writtenInFull >= WRITE_UPS_PER_OPERATION_AND_KIND
-                || writeUps.size() >= WRITE_UPS_IN_TOTAL) {
+        if (tally.writtenInFull >= limits.writeUpsPerOperationAndKind()
+                || writeUps.size() >= limits.writeUpsInTotal()) {
             // Its kind has had its share, or the file has had its. Either way the fault is never
             // turned into JSON at all, which is why a run finding faults by the hundred thousand
             // costs this report almost nothing.
@@ -371,6 +374,7 @@ public final class JsonReport implements RunListener {
         report.put("api", pair("title", JsonValue.of(api), "baseUrl", JsonValue.of(baseUrl)));
         report.put("totals", totals());
         report.put("limits", limits());
+        report.put("settings", settings());
         report.put("engine", engineStatistics());
         report.put("replies", replies());
         report.put("serverErrors", serverErrors());
@@ -429,11 +433,31 @@ public final class JsonReport implements RunListener {
      * without having to know which version of RESTest wrote it.
      */
     private JsonValue limits() {
-        Map<String, JsonValue> limits = new LinkedHashMap<>();
-        limits.put("writeUpsPerOperationAndKind", JsonValue.of(WRITE_UPS_PER_OPERATION_AND_KIND));
-        limits.put("writeUpsInTotal", JsonValue.of(WRITE_UPS_IN_TOTAL));
-        limits.put("mostBodyBytesKept", JsonValue.of(MOST_BODY_BYTES_KEPT));
-        return JsonValue.object(limits);
+        Map<String, JsonValue> written = new LinkedHashMap<>();
+        written.put("writeUpsPerOperationAndKind",
+                JsonValue.of(limits.writeUpsPerOperationAndKind()));
+        written.put("writeUpsInTotal", JsonValue.of(limits.writeUpsInTotal()));
+        written.put("mostBodyBytesKept", JsonValue.of(limits.mostBodyBytesKept()));
+        return JsonValue.object(written);
+    }
+
+    /**
+     * How this run was configured, and where each of its settings came from.
+     *
+     * <p>Every setting there is, not only the ones somebody changed, so that two runs can be
+     * compared line by line without either of them having to be re-derived from a shell history.
+     * A reader that does not know about settings ignores this.
+     */
+    private JsonValue settings() {
+        return JsonValue.array(configuration.rows().stream()
+                .map(row -> {
+                    Map<String, JsonValue> stated = new LinkedHashMap<>();
+                    stated.put("key", JsonValue.of(row.key().fullName()));
+                    stated.put("value", JsonValue.of(row.value()));
+                    stated.put("source", JsonValue.of(row.source().written()));
+                    return (JsonValue) JsonValue.object(stated);
+                })
+                .toList());
     }
 
     /**
@@ -566,7 +590,7 @@ public final class JsonReport implements RunListener {
                 .ifPresent(status -> entry.put("status", JsonValue.of(status)));
         entry.put("statusClass", JsonValue.of(classOf(finding.interaction())));
         entry.put("interaction",
-                InteractionDocument.of(finding.interaction(), MOST_BODY_BYTES_KEPT));
+                InteractionDocument.of(finding.interaction(), limits.mostBodyBytesKept()));
         return JsonValue.object(entry);
     }
 

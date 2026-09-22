@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.restest.gen;
+package io.restest.core.json;
 
-import io.restest.core.json.JsonException;
-import io.restest.core.json.JsonValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,16 +37,19 @@ import org.yaml.snakeyaml.resolver.Resolver;
 /**
  * Turns the text of a file somebody wrote by hand into plain values the rest of the tool can read.
  *
- * <p>Two kinds of file are written by hand for RESTest: a list of values to send, and a plan saying
- * where a run's values should come from. Both are YAML, for the same reason - the specifications
- * they sit beside are written in it, and JSON is a subset of YAML, so a file written either way is
- * read the same way without anybody being told.
+ * <p>Three kinds of file are written by hand for RESTest: a list of values to send, a plan saying
+ * where a run's values should come from, and a file of settings saying how hard the tool should
+ * push. All three are YAML, for the same reason - the specifications they sit beside are written in
+ * it, and JSON is a subset of YAML, so a file written either way is read the same way without
+ * anybody being told.
  *
- * <p>Reading them is the same job twice, and it is a job with two traps in it that are worth having
- * solved in one place rather than two. Both are described below, on the two small classes that
- * avoid them.
+ * <p>Reading them is the same job three times, and it is a job with two traps in it that are worth
+ * having solved in one place rather than three. Both are described below, on the two small classes
+ * that avoid them. The three files are read by three different parts of the tool, none of which can
+ * see the other two, which is why this sits here beside {@link JsonText} rather than next to any
+ * one of them.
  */
-final class YamlText {
+public final class YamlText {
 
     private YamlText() {
     }
@@ -66,7 +67,7 @@ final class YamlText {
      * @return what it says
      * @throws JsonException if the text is not something this can read
      */
-    static JsonValue read(String text, String describedAs) {
+    public static JsonValue read(String text, String describedAs) {
         Objects.requireNonNull(text, "text");
         Objects.requireNonNull(describedAs, "describedAs");
         LoaderOptions options = new LoaderOptions();
@@ -169,7 +170,7 @@ final class YamlText {
     }
 
     /** The object a value is, or a refusal naming what was there instead. */
-    static JsonValue.JsonObject asObject(JsonValue value, String what, String describedAs) {
+    public static JsonValue.JsonObject asObject(JsonValue value, String what, String describedAs) {
         if (value instanceof JsonValue.JsonObject object) {
             return object;
         }
@@ -177,7 +178,7 @@ final class YamlText {
     }
 
     /** The list a value is, or a refusal naming what was there instead. */
-    static List<JsonValue> asList(JsonValue value, String what, String describedAs) {
+    public static List<JsonValue> asList(JsonValue value, String what, String describedAs) {
         if (value instanceof JsonValue.JsonArray array) {
             return array.elements();
         }
@@ -185,7 +186,7 @@ final class YamlText {
     }
 
     /** The text a value is, or a refusal naming what was there instead. */
-    static String asText(JsonValue value, String what, String describedAs) {
+    public static String asText(JsonValue value, String what, String describedAs) {
         if (value instanceof JsonValue.JsonString string) {
             return string.value();
         }
@@ -199,7 +200,7 @@ final class YamlText {
      * share of 24.5 is not a share of 24. Reading either as the nearest whole number is the
      * half-reading these formats refuse everywhere else.
      */
-    static long asWholeNumber(JsonValue value, String what, String describedAs) {
+    public static long asWholeNumber(JsonValue value, String what, String describedAs) {
         if (value instanceof JsonValue.JsonNumber number) {
             try {
                 return number.value().longValueExact();

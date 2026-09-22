@@ -34,6 +34,8 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.UnsupportedSchema;
+import io.restest.core.settings.GenerationSettings;
+import io.restest.core.settings.Settings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -97,12 +99,6 @@ import java.util.stream.Stream;
  */
 public final class RandomTestCaseGenerator {
 
-    /** How often a parameter the API does not require is included anyway. */
-    private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
-
-    /** How many bodies are drawn while looking for one that can be written as its media type. */
-    private static final int WRITABLE_BODY_ATTEMPTS = 8;
-
     /**
      * The name of the list of values to push at an API with.
      *
@@ -125,6 +121,7 @@ public final class RandomTestCaseGenerator {
     public static final int AWKWARD_SHARE = 25;
 
     private final ApiModel model;
+    private final Settings settings;
     private final long seed;
     private final RandomGenerator random;
     private final ValueProvider values;
@@ -201,7 +198,27 @@ public final class RandomTestCaseGenerator {
      */
     public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
             Campaign campaign) {
+        this(model, seed, dictionaries, campaign, Settings.defaults());
+    }
+
+    /**
+     * The same, told how the tool itself should behave while it does it.
+     *
+     * <p>The plan and the settings answer different questions and both are needed here. The plan
+     * says where a value comes from - the document's own samples, a list somebody wrote, what the
+     * API has already returned - and the settings say what a value the tool invents for itself may
+     * look like: how long a word, how many items in a list, how deep inside one another.
+     *
+     * @param model the API to test
+     * @param seed the number the whole run's randomness is derived from
+     * @param dictionaries the lists of values to draw on, the plan deciding which are used where
+     * @param campaign the plan to follow
+     * @param settings how the tool behaves: only what it invents and what it remembers is read here
+     */
+    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
+            Campaign campaign, Settings settings) {
         this.model = Objects.requireNonNull(model, "model");
+        this.settings = Objects.requireNonNull(settings, "settings");
         Objects.requireNonNull(campaign, "campaign");
         this.seed = seed;
         Objects.requireNonNull(dictionaries, "dictionaries");
@@ -217,8 +234,10 @@ public final class RandomTestCaseGenerator {
         this.campaign = campaign;
         // Only when the plan asks for it. A run whose plan says nothing about what the API has
         // returned does not listen to its own replies at all, and stays repeatable from its seed.
-        this.observed = namesWhatTheApiReturns(campaign) ? new ObservedValues(model) : null;
-        this.strategies = strategiesFor(campaign, dictionaries, model, random, observed);
+        this.observed = namesWhatTheApiReturns(campaign)
+                ? new ObservedValues(model, settings.memory()) : null;
+        this.strategies = strategiesFor(campaign, dictionaries, model, random, observed,
+                settings.generation());
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
         // Whether an operation can be tested at all is asked of an ordinary way of building a
         // request, never of one built to push at the API: a list of awkward values answers for
@@ -405,7 +424,7 @@ public final class RandomTestCaseGenerator {
     private Optional<TestCase> fill(Operation operation, Strategy strategy) {
         List<ParameterValue> chosen = new ArrayList<>();
         for (Parameter parameter : operation.parameters()) {
-            if (!parameter.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
+            if (!parameter.required() && random.nextDouble() >= settings.generation().optionalParameterChance()) {
                 continue;
             }
             Optional<GeneratedValue> value = strategy.values().offer(ask(operation, parameter));
@@ -439,7 +458,7 @@ public final class RandomTestCaseGenerator {
      */
     private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
             Strategy strategy) {
-        if (!declared.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
+        if (!declared.required() && random.nextDouble() >= settings.generation().optionalParameterChance()) {
             return Optional.empty();
         }
         Optional<String> mediaType = RequestBuilder.mediaTypeToSend(declared);
@@ -462,7 +481,7 @@ public final class RandomTestCaseGenerator {
      */
     private Optional<GeneratedValue> writableBody(Operation operation, RequestBodyModel declared,
             String mediaType, ValueProvider from) {
-        for (int attempt = 0; attempt < WRITABLE_BODY_ATTEMPTS; attempt++) {
+        for (int attempt = 0; attempt < settings.generation().writableBodyAttempts(); attempt++) {
             Optional<GeneratedValue> offered = from.offer(askForBody(operation, declared,
                     mediaType));
             if (offered.isEmpty()) {
@@ -628,13 +647,15 @@ public final class RandomTestCaseGenerator {
      * among the ones this run was handed, and the arrangement it wrote them in is built.
      */
     private static List<Strategy> strategiesFor(Campaign campaign, List<Dictionary> dictionaries,
-            ApiModel model, RandomGenerator random, ObservedValues observed) {
+            ApiModel model, RandomGenerator random, ObservedValues observed,
+            GenerationSettings inventing) {
         List<Strategy> ways = new ArrayList<>();
         for (Campaign.PlannedStrategy planned : campaign.strategies()) {
             if (pushesWithNothingToPushWith(planned, dictionaries)) {
                 continue;
             }
-            ValueProvider values = valuesFor(planned, dictionaries, model, random, observed);
+            ValueProvider values =
+                    valuesFor(planned, dictionaries, model, random, observed, inventing);
             if (values instanceof ValueProviderChain chain && chain.providers().isEmpty()) {
                 // Every source this strategy names turned out to be a list nobody handed over, so
                 // it has nothing at all to fill a value with. It would still be drawn for its
@@ -695,9 +716,10 @@ public final class RandomTestCaseGenerator {
      */
     private static ValueProvider valuesFor(Campaign.PlannedStrategy planned,
             List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
-            ObservedValues observed) {
+            ObservedValues observed, GenerationSettings inventing) {
         ValueProvider knownValues = asPlanned(planned, dictionaries, model, random, observed, null);
-        ValueProvider invention = new RandomValueProvider(model, random, knownValues);
+        ValueProvider invention =
+                new RandomValueProvider(model, random, knownValues, inventing);
         return asPlanned(planned, dictionaries, model, random, observed,
                 new Assembled(invention, ValueProviderChain.of(knownValues, invention)));
     }

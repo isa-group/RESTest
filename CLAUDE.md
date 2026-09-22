@@ -112,8 +112,9 @@ was edited.
 
 ```
 restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy dependencies:
-                  the one third-party library it carries is the streaming JSON reader and writer
-                  behind `io.restest.core.json` (ADR-0006, amended at M1.6).
+                  the two third-party libraries it carries are the streaming JSON reader and writer
+                  and the YAML reader, both behind `io.restest.core.json` (ADR-0006, amended at
+                  M1.6 and M11.1).
 restest-spec      the only module allowed to reference io.swagger.
 restest-idl       IDL language, constraints, solver interface.
 restest-gen       generation phases, value providers, scheduler.

@@ -20,6 +20,7 @@ import io.restest.core.model.Server;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.restest.core.settings.DocumentSettings;
 import io.restest.core.spec.SpecificationParser;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Json31;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -65,11 +67,24 @@ import java.util.Optional;
  */
 public final class SwaggerSpecificationParser implements SpecificationParser {
 
-    /** Generous, but not unbounded: a hung server must not hang the run that asked for its document. */
-    private static final int URL_TIMEOUT_MILLIS = 10_000;
+    /** How long to wait for a document served over the network, and how much of it to read. */
+    private final DocumentSettings settings;
 
-    /** Far larger than any real specification; a bound against an unbounded or hostile response. */
-    private static final int MAX_DOCUMENT_BYTES = 64 * 1024 * 1024;
+    /** A parser that reads a document the way RESTest does when nobody has said otherwise. */
+    public SwaggerSpecificationParser() {
+        this(DocumentSettings.defaults());
+    }
+
+    /**
+     * A parser that waits and reads as far as it is told to.
+     *
+     * @param settings how long to wait for a document fetched over the network, and the largest
+     *     one to read at all. A hung server must not hang the run that asked for its document, and
+     *     a server that answers for ever must not fill its memory
+     */
+    public SwaggerSpecificationParser(DocumentSettings settings) {
+        this.settings = Objects.requireNonNull(settings, "settings");
+    }
 
     @Override
     public ApiModel parse(String location) {
@@ -208,7 +223,7 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
      * exists but is not valid UTF-8 is reported for what it is - unreadable content - rather than
      * mistaken for a location nothing answered at.
      */
-    private static Optional<String> read(String location) {
+    private Optional<String> read(String location) {
         try {
             Path path = Path.of(location);
             if (Files.isReadable(path) && !Files.isDirectory(path)) {
@@ -228,8 +243,10 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
         if (location.startsWith("http://") || location.startsWith("https://")) {
             try {
                 URLConnection connection = URI.create(location).toURL().openConnection();
-                connection.setConnectTimeout(URL_TIMEOUT_MILLIS);
-                connection.setReadTimeout(URL_TIMEOUT_MILLIS);
+                int patience = (int) Math.min(Integer.MAX_VALUE,
+                        settings.fetchTimeout().toMillis());
+                connection.setConnectTimeout(patience);
+                connection.setReadTimeout(patience);
                 try (InputStream stream = connection.getInputStream()) {
                     return Optional.of(decode(readBounded(stream)));
                 }
@@ -246,8 +263,8 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
      * Every byte, up to a ceiling no real specification approaches - a bound against an unbounded or
      * hostile response, not a claim about how large a real document can be.
      */
-    private static byte[] readBounded(InputStream stream) throws IOException {
-        return stream.readNBytes(MAX_DOCUMENT_BYTES);
+    private byte[] readBounded(InputStream stream) throws IOException {
+        return stream.readNBytes(settings.mostBytesRead());
     }
 
     private static String decode(byte[] bytes) {

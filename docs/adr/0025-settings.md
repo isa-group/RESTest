@@ -148,3 +148,83 @@ the default.
 - **Leave the constants where they are and add switches only.** Cheapest. Rejected: the same
   mechanism carries both, the switches need the layering and the printing anyway, and the constants
   are the part a user asks for.
+
+---
+
+## Amendment (M11.1)
+
+**Date:** 2026-09-22
+
+What building the first tranche settled, and one place where this record's own example did not work
+as written.
+
+### The record's own example was refused, so a default is now worked out rather than fixed
+
+This record says `--set engine.maxConcurrency=1` *is the answer to "my API falls over when asked two
+things at once", and it did not exist*. Built as written, it was refused: the engine starts at four
+requests in flight, and four is outside the range somebody had just asked for, so the compact
+constructor turned the line down.
+
+Weakening that check was not an option — it is the range-checking this record asks for. So the
+*default* for where the engine starts is now worked out from the range in force rather than fixed at
+four: it is four, held inside whatever the fewest and the most turn out to be. Lowering the most to
+one lowers the start to one; raising the fewest to eight raises the start to eight. A starting number
+somebody names outright and that lies outside the range is still refused, saying what the range is,
+because that is a value stated rather than a default worked out.
+
+The general point is worth keeping: a group whose values constrain one another needs its defaults to
+be functions of the values in force, not constants, or the simplest line anybody types is the one
+that fails.
+
+### What `--print-settings` writes is a file, and the file is the documentation
+
+The obvious reading of §3 is a table. What is written instead is a settings file: every setting there
+is, grouped, each with a comment saying what it does and a note saying which of the four places
+decided its value. It is what `--print-campaign` does, and it means the round trip — print, change
+one line, hand back — is the way to change a setting rather than a thing one could do. A test asserts
+that what comes out reads back as the same values.
+
+Two consequences. Handing the printed file back makes every setting's source *file*, because the
+file states every one of them; that is honest rather than a defect, and the values are unchanged.
+And lengths of time are quoted in what is printed, since `30s` unquoted is a word and `10` unquoted
+is a number, and only one of the two survives a reader that does not know which setting it is
+reading.
+
+### What moved, and what did not
+
+Thirty-nine settings in six groups: `engine`, `schedule`, `generation`, `memory`, `document`,
+`report`. The `store` and `sequences` groups of §1 are not created, because nothing fills them yet —
+`sequences` waits for M9 and M10 by design, and the store's two numbers are not in the tranche the
+roadmap names. An empty group would be a promise printed to every user with nothing behind it.
+
+Inside `generation`, what moved is every number that bounds *what a request may look like*: the
+depths, the word and list lengths, the room an unbounded number is invented in, the decimal places,
+the rate at which something optional is included, and the attempt counts. What stayed, and is named
+here so the next person does not have to rediscover it, is the safety limits inside the helpers that
+build a string from a spelling rule and a value from a declared kind — how far a repetition with no
+end may run, how many characters may be built while looking for one value, how deep a rule is read.
+Those are backstops against the tool exhausting its own stack or memory rather than shapes of a
+request, they sit behind static calls with no object to hang settings on, and §5's rule is that the
+rest move when the code around them is next touched rather than in a sweep.
+
+One number was **found to be misnamed while it was moved**. The pair that decides the room an
+unbounded number is invented in reads as a bottom and a top, and the second is in fact a width added
+to the first — a description stating a bottom of its own gets the same room above *that*. It is now
+`generation.lowestNumber` and `generation.roomAboveIt`, because a printed file that names a setting
+wrongly is worse than no printed file.
+
+### One thing outside this record had to move: the reader of hand-written files
+
+The settings file is YAML, and it is read in `restest-cli`, which held no YAML reader and should not
+hold a second copy of one. The small class that already read the other two hand-written files moved
+into `restest-core` beside the JSON reader, which is where the M1.6 amendment to
+[ADR-0006](0006-event-stream-and-store.md) put the same argument the first time. That amendment
+records it.
+
+### The architecture rule is in place and proved
+
+`System.getenv`, `System.getProperty` and `System.getProperties` are forbidden outside
+`restest-cli`, checked against the real code and against fixtures that break the rule on purpose —
+all three of them, since a rule naming only the first two would let the third hand back the whole map
+and be the way round both. No production code read any of them before this increment, so the rule
+starts out as a fence rather than a repair.

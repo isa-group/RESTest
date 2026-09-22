@@ -111,6 +111,31 @@ class ArchitectureRulesSelfTest {
     }
 
     @Test
+    @DisplayName("the environment rule catches all three ways of asking outside cli, and allows "
+            + "them inside")
+    void environment_rule_reports_a_read_outside_the_command_line_module() {
+        expectViolation(
+                ArchitectureRules.onlyOneModuleReadsTheEnvironment(MIRROR, "cli"),
+                "GenReadingTheEnvironment");
+
+        // One fixture, three calls: getenv, getProperty and getProperties. A rule naming only the
+        // first two would let the third hand back the whole map and be the way round both.
+        assertThatThrownBy(() -> ArchitectureRules
+                .onlyOneModuleReadsTheEnvironment(MIRROR, "cli").check(mirrorClasses))
+                .describedAs("all three ways of asking have to be reported, or the rule guards "
+                        + "only the obvious ones")
+                .hasMessageContaining("getenv")
+                .hasMessageContaining("getProperty")
+                .hasMessageContaining("getProperties");
+
+        assertThatThrownBy(() -> ArchitectureRules
+                .onlyOneModuleReadsTheEnvironment(MIRROR, "cli").check(mirrorClasses))
+                .describedAs("the command-line module gathers a run's settings from the "
+                        + "environment, which is the design rather than a breach of it")
+                .hasMessageNotContaining("CliReadingTheEnvironment");
+    }
+
+    @Test
     @DisplayName("the static-state rule catches a writable static field, whatever its visibility")
     void static_state_rule_reports_a_non_final_static_field() {
         expectViolation(ArchitectureRules.noStaticMutableState(MIRROR), "requestsSoFar");
