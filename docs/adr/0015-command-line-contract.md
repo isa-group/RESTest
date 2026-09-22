@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a and again for what `--url` throws away
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a and M2.10a
 **Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
@@ -511,3 +511,34 @@ string onto an address that had none.
 A run where every single request is refused still reads much like a run against an API that refuses
 everything. Telling "the API said no to all of it" from "we never found the API" is a question about
 what a run says when nothing could be judged, which is M3.6's, not this one's.
+
+
+## Amendment (M2.10a)
+
+**Date:** 2026-09-22
+
+**Two options, one refusal, and a positional parameter that is no longer always required.**
+
+```
+restest run [--campaign=<file>] [--print-campaign] ... <spec>
+```
+
+`--campaign <file>` names a plan saying where this run's values come from and which operations it
+may touch; [ADR-0023](0023-the-campaign-file.md) is the format.
+
+`--print-campaign` writes out the plan RESTest follows when it is given none, and stops. It is the
+one thing `run` does that needs no document, because it is a question about the tool rather than
+about an API - so `<specification>` became optional and is asked for in this command's own words
+instead. Everything else about a missing document is unchanged, including the exit code.
+
+**Naming both `--campaign` and `--fuzzing` answers 2.** A plan sets the share of every strategy it
+names, including the one that pushes, and the option sets that one share. Honouring both would mean
+deciding which the person meant by a rule nobody wrote down, so neither is guessed at.
+
+**A plan that cannot be read answers 2 and the run does not start**, which is a departure from how
+this command treats everything else it is handed. A specification it cannot fully read is reported
+and worked with; a list of values it cannot read costs the run those values. A plan is different
+because of what a plan can say: one of the things it is for is keeping a run to the operations HTTP
+calls *safe*, and carrying on with a different plan would answer "only read from this API" by
+writing to it. The rule this follows is the one the smoke gate follows - a gate that reports
+success because it could not run is worse than no gate.

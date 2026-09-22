@@ -42,16 +42,24 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
+import java.util.stream.Stream;
 
 /**
  * Decides what to try against an API: which operation, and what to put in every parameter of it.
  *
  * <p>This is where the tool stops needing to be told anything. Given an API's description it works
- * out which operations it can attempt at all, and for each attempt it asks the sources of values in
- * turn - the specification's own defaults and allowed values first, invention second - until every
- * parameter the API requires has something in it. Optional parameters are included some of the time
- * and left out the rest, because an API behaves differently depending on which of them arrive and a
- * tool that always sent all of them would only ever see one of those behaviours.
+ * out which operations it can attempt at all, and for each attempt it fills in every parameter the
+ * API requires. Optional parameters are included some of the time and left out the rest, because an
+ * API behaves differently depending on which of them arrive and a tool that always sent all of them
+ * would only ever see one of those behaviours.
+ *
+ * <p>Where the values come from is not decided here any more. A <em>plan</em> says it - which
+ * sources are asked, in what order, which of them are chosen among rather than ranked, how much of
+ * the run goes on requests meant to work as against requests meant to push at the API, and which of
+ * the API's operations may be touched at all. A run given no plan of its own follows the one
+ * RESTest carries. Everything this class does with a plan is turn its names into the things that
+ * answer: a list of values somebody wrote, the samples in the document, a value invented to fit the
+ * shape.
  *
  * <p>Operations that take a body get one: the shape the document declares is filled in the same way
  * every other value is, so creating and updating things is tested rather than skipped. The body is
@@ -95,12 +103,13 @@ public final class RandomTestCaseGenerator {
     private static final int WRITABLE_BODY_ATTEMPTS = 8;
 
     /**
-     * The list this run pushes at the API with, until a plan says otherwise.
+     * The name of the list of values to push at an API with.
      *
-     * <p>A plan names the lists each way of building a request draws on, which is what lets one run
-     * push with two lists, or push with one and fill ordinary requests from another. There is no
-     * plan to read yet, so the built-in one names this: the list called {@code fuzzing}, which is
-     * the one RESTest carries, and any a user adds under the same name.
+     * <p>A plan names the lists each way of building a request draws on, so a run can push with
+     * two lists, or push with one and fill ordinary requests from another. This is the name the
+     * one RESTest carries answers to, and the one a user adds to by handing over a list of their
+     * own called the same thing. It is also what makes a strategy one that pushes: a strategy is
+     * pushing because of the values it draws on, not because anything says so.
      */
     static final String PUSHES_AT_THE_API = "fuzzing";
 
@@ -119,10 +128,12 @@ public final class RandomTestCaseGenerator {
     private final RandomGenerator random;
     private final ValueProvider values;
     private final List<Dictionary> given;
+    private final Campaign campaign;
     private final List<Strategy> strategies;
     private final int sharesInTotal;
     private final List<Operation> testable;
     private final Map<OperationId, String> untestable;
+    private final List<OperationId> setAsideByThePlan;
 
     /**
      * A generator for this API, starting from a number of the system's choosing.
@@ -159,24 +170,37 @@ public final class RandomTestCaseGenerator {
      * A generator for this API, using these lists of values and spending this much of its time on
      * requests built to be refused.
      *
-     * <p>The same number produces the same decisions every time, this one included.
+     * <p>A way of saying one thing about the plan RESTest carries without writing a plan: how much
+     * of the run goes on pushing at the API. Everything else about it is left as it is.
      *
      * @param model the API to test
      * @param seed the number the whole run's randomness is derived from
-     * @param dictionaries the lists of values to draw on. The ones whose values are meant to be
-     *     refused earn a way of building requests of their own; the rest are asked alongside what
-     *     the document itself says
+     * @param dictionaries the lists of values to draw on
      * @param awkwardShare how much of the time, as a percentage, goes on requests built entirely
      *     from values meant to be refused. Nought sends none of them
      * @throws IllegalArgumentException if that is not a percentage
      */
     public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
             int awkwardShare) {
+        this(model, seed, dictionaries, carriedPlanPushing(awkwardShare));
+    }
+
+    /**
+     * A generator for this API, following the plan it is given.
+     *
+     * <p>The plan says where values come from and how much of the run goes on each way of building
+     * a request. The same number produces the same decisions every time, as long as no source the
+     * plan names has a memory of what the API has already answered.
+     *
+     * @param model the API to test
+     * @param seed the number the whole run's randomness is derived from
+     * @param dictionaries the lists of values to draw on, the plan deciding which are used where
+     * @param campaign the plan to follow
+     */
+    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
+            Campaign campaign) {
         this.model = Objects.requireNonNull(model, "model");
-        if (awkwardShare < 0 || awkwardShare > 100) {
-            throw new IllegalArgumentException("the share of requests built to be refused is a "
-                    + "percentage, so it is between 0 and 100: " + awkwardShare);
-        }
+        Objects.requireNonNull(campaign, "campaign");
         this.seed = seed;
         Objects.requireNonNull(dictionaries, "dictionaries");
         // Built directly rather than asked for by the name of an algorithm. The better-sounding
@@ -187,33 +211,32 @@ public final class RandomTestCaseGenerator {
         // asking by name means the tool cannot start on the oldest runtime it promises to run on.
         // This one is in java.base on every release, which every runtime has by definition.
         this.random = new SplittableRandom(seed);
-        // What the document itself says about a value, in the order of preference the document's own
-        // words imply: a closed list of accepted values leaves nothing to choose; a sample the author
-        // wrote down is a value that worked against a real API; a default is what the API uses when
-        // the caller says nothing. The same list answers questions about anything nested inside a
-        // value as well as about the value itself, which is why it is built once and shared.
-        ValueProvider fromTheDocument = ValueProviderChain.of(
-                new ExampleValueProvider(random),
-                new DeclaredValueProvider(random));
-        // Everything an ordinary request draws on except invention - which is also exactly what
-        // invention needs to ask about anything nested inside a value it is putting together, so
-        // the one list of sources answers for a parameter and for a property four levels inside a
-        // body alike.
-        ValueProvider knownValues = everythingButInvention(dictionaries, fromTheDocument, random);
-        ValueProvider invention = new RandomValueProvider(model, random, knownValues);
-        this.values = ValueProviderChain.of(knownValues, invention);
         this.given = List.copyOf(dictionaries);
-        // A request built to push at the API fills the inside of a body the way it always has, from
-        // what the document itself states. Which values such a request should push with, below the
-        // top level, is a question the plan will answer rather than this constructor.
-        ValueProvider whilePushing = new RandomValueProvider(model, random, fromTheDocument);
-        this.strategies =
-                strategiesFor(dictionaries, awkwardShare, this.values, whilePushing, random);
+        this.campaign = campaign;
+        this.strategies = strategiesFor(campaign, dictionaries, model, random);
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
+        // Whether an operation can be tested at all is asked of an ordinary way of building a
+        // request, never of one built to push at the API: a list of awkward values answers for
+        // almost anything, so asking it would count an operation testable and then leave it with
+        // nothing for the three quarters of requests built the ordinary way. The plan may list its
+        // pushing strategy first, so this is chosen by what a strategy is rather than by position.
+        this.values = this.strategies.stream()
+                .filter(way -> !way.pushesAtTheApi())
+                .findFirst()
+                .orElse(this.strategies.get(0))
+                .values();
 
         List<Operation> canBeTried = new ArrayList<>();
         Map<OperationId, String> cannot = new LinkedHashMap<>();
+        List<OperationId> setAside = new ArrayList<>();
         for (Operation operation : model.operations()) {
+            // Kept apart from the ones that cannot be tested, because they are not the same thing
+            // and a run that ran them together would be telling somebody their document was wrong
+            // when in fact their plan said not to bother.
+            if (!campaign.operations().matches(operation)) {
+                setAside.add(operation.id());
+                continue;
+            }
             Optional<String> problem = whatStandsInTheWay(operation);
             if (problem.isPresent()) {
                 cannot.put(operation.id(), problem.get());
@@ -221,6 +244,7 @@ public final class RandomTestCaseGenerator {
                 canBeTried.add(operation);
             }
         }
+        this.setAsideByThePlan = List.copyOf(setAside);
         this.testable = List.copyOf(canBeTried);
         // Not Map.copyOf. That one's iteration order is randomised per process, so the same
         // document would list the operations it cannot test in a different order every run - and
@@ -276,6 +300,24 @@ public final class RandomTestCaseGenerator {
                 .toList();
     }
 
+    /**
+     * The operations this run's plan told it to leave alone.
+     *
+     * <p>Different from the ones that cannot be tested, and worth keeping apart: those are
+     * something wrong with the document, these are something somebody asked for. A run that
+     * confused the two would report a plan working exactly as intended as a problem with the API.
+     *
+     * @return them, in the order the document declares them, empty when the plan set none aside
+     */
+    public List<OperationId> operationsThePlanSetAside() {
+        return setAsideByThePlan;
+    }
+
+    /** The plan this run is following. */
+    public Campaign campaign() {
+        return campaign;
+    }
+
     /** Where values come from, in the order they are asked. */
     public ValueProvider values() {
         return values;
@@ -289,12 +331,20 @@ public final class RandomTestCaseGenerator {
      * that spends a quarter of its time sending values nobody sensible would send reads as though
      * the API were turning away far more ordinary traffic than it is.
      *
+     * <p>The names of the <em>lists</em>, which is what a report was told each value came from -
+     * not the names of the strategies drawing on them, which a plan may call anything.
+     *
      * @return the names, empty when this run sends nothing of the kind
      */
     public java.util.Set<String> sourcesThatPushAtTheApi() {
+        // The names of the lists, not of the strategies that draw on them. A report matches these
+        // against what it was told each value came from, which is the list's name - so a plan
+        // whose pushing strategy is called something else would otherwise have every one of its
+        // requests counted as ordinary.
         return strategies.stream()
                 .filter(Strategy::pushesAtTheApi)
-                .map(Strategy::name)
+                .flatMap(way -> given.stream().map(Dictionary::name)
+                        .filter(PUSHES_AT_THE_API::equals))
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
@@ -522,94 +572,175 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * The ways this run will put a request together, and how the time divides between them.
+     * The plan RESTest carries, with one thing said about it: how much of the run goes on pushing.
      *
-     * <p>Most of it goes on requests meant to be accepted. The rest goes on requests built entirely
-     * from a dictionary of values designed to be refused - every parameter at once, on purpose,
-     * because an API stops reading at the first thing it does not like and there is no sense
-     * pretending a refusal could be pinned on any one of them. What such a request is good for is
-     * the other answer: a server error is a fault whatever was sent, and unexpected input is how
-     * they are found.
-     *
-     * <p>Three quarters against one is a starting point, not a measurement. It is the one number
-     * here that has to be settled by running campaigns rather than by argument, and it lives in one
-     * place so that settling it is a one-line change.
-     *
-     * <p>Which lists feed which kind of request is the plan's decision, taken by naming them. There
-     * is no plan to read yet, so the built-in one names one list for pushing and gives every other
-     * list to ordinary requests.
+     * <p>What {@code --fuzzing} means. Rather than a second way of arranging sources, it adjusts
+     * the shares of the plan already there - so the option and the file cannot come to disagree
+     * about anything except the one number the option is about.
      */
-    private static List<Strategy> strategiesFor(List<Dictionary> dictionaries, int awkwardShare,
-            ValueProvider nominal, ValueProvider invention, RandomGenerator random) {
-        List<Dictionary> pushing = dictionaries.stream()
-                .filter(held -> held.name().equals(PUSHES_AT_THE_API))
-                .toList();
+    private static Campaign carriedPlanPushing(int awkwardShare) {
+        if (awkwardShare < 0 || awkwardShare > Campaign.WHOLE) {
+            throw new IllegalArgumentException("the share of requests built to be refused is a "
+                    + "percentage, so it is between 0 and " + Campaign.WHOLE + ": " + awkwardShare);
+        }
+        return Campaigns.carried().withTheShareOfPushingSetTo(awkwardShare);
+    }
+
+    /**
+     * One working strategy per strategy the plan describes.
+     *
+     * <p>This is where a plan stops being a document and starts being the thing that fills in
+     * requests: each source it names by word is found, each list it names by name is looked up
+     * among the ones this run was handed, and the arrangement it wrote them in is built.
+     */
+    private static List<Strategy> strategiesFor(Campaign campaign, List<Dictionary> dictionaries,
+            ApiModel model, RandomGenerator random) {
         List<Strategy> ways = new ArrayList<>();
-        if (pushing.isEmpty() || awkwardShare == 0) {
-            // A list the plan names for pushing is not folded into ordinary requests when there is
-            // no pushing to do: its values were gathered for a different job, and sending them as
-            // though somebody believed in them is not what anybody asked for. What was asked for
-            // and then made impossible is reported instead, by listsGivenButNotUsed.
-            return List.of(new Strategy("nominal", 100, false, nominal));
+        for (Campaign.PlannedStrategy planned : campaign.strategies()) {
+            if (nothingLeftButInvention(planned, dictionaries)) {
+                continue;
+            }
+            ways.add(new Strategy(planned.name(), planned.share(), planned.pushesAtTheApi(),
+                    valuesFor(planned, dictionaries, model, random)));
         }
-        // Counted against each other rather than out of a hundred, so that asking for a quarter is
-        // a quarter whether one list of awkward values is in play or thirty. Giving each list a
-        // share of its own and dividing would round the quarter into something else; multiplying
-        // the other side instead keeps it exact whatever the arithmetic.
-        if (awkwardShare < 100) {
-            ways.add(new Strategy("nominal", (100 - awkwardShare) * pushing.size(), false, nominal));
+        if (ways.isEmpty()) {
+            // Every strategy asked for lists nobody handed over. Rather than a run that builds no
+            // requests, the plainest plan there is - and Campaigns has already said, by name, which
+            // lists were missing.
+            return strategiesFor(Campaigns.plainest(), dictionaries, model, random);
         }
-        for (Dictionary dictionary : pushing) {
-            ways.add(new Strategy(dictionary.name(), awkwardShare, true,
-                    ValueProviderChain.of(new DictionaryValueProvider(dictionary, random),
-                            invention)));
-        }
+        // The shares are counted against each other rather than out of a hundred, so dropping one
+        // strategy leaves the rest in the same proportion to one another as the plan wrote them.
         return List.copyOf(ways);
     }
 
     /**
-     * Everywhere an ordinary request's values come from except invention, in the order they are
-     * asked.
+     * Whether a strategy would have nothing left but invention.
      *
-     * <p>The order is about how much each source knows. A list somebody wrote for <em>this</em>
-     * place in <em>this</em> operation's request knows more about it than the document's own
-     * sample, which in turn knows more than a list of values that suit any text at all. So the
-     * lists keyed to a particular value come first, the document speaks next, and the lists keyed
-     * to a kind of value come after it. Invention is added after all of them for the value as a
-     * whole, and asks this same list again about every piece of what it builds - which is what lets
-     * a list written for one property of one body be used at all.
+     * <p>A strategy naming lists nobody handed over is not automatically pointless: one that also
+     * asks the document what it says still has most of its job. What is pointless is one with
+     * nothing left but inventing a value to fit the shape - which is what the plan RESTest carries
+     * comes to when a run is given no list to push with. That strategy would spend a quarter of the
+     * budget on ordinary invented values under another name, and, having no step for the closed
+     * list of values a document states, would send values the document says are not allowed.
      *
-     * <p>Ahead of all of it sits the closed list of values a document says it accepts, which is the
-     * one statement nothing may override: where a document names the only values the API will take,
-     * anything else is a value it has said is not allowed.
-     *
-     * <p>A list whose values are meant to be refused is not here. Those belong to requests built to
-     * be refused, all the way through, and mixing one into an ordinary request would spoil both.
+     * <p>Left out instead, and the remaining shares keep the proportions the plan wrote them in.
      */
-    private static ValueProvider everythingButInvention(List<Dictionary> dictionaries,
-            ValueProvider fromTheDocument, RandomGenerator random) {
+    private static boolean nothingLeftButInvention(Campaign.PlannedStrategy planned,
+            List<Dictionary> dictionaries) {
+        List<Campaign.Source> surviving = planned.sources().stream()
+                .flatMap(entry -> entry.sources().stream())
+                .filter(source -> switch (source) {
+                    case Campaign.Source.OneList list -> dictionaries.stream()
+                            .anyMatch(held -> held.name().equals(list.name()));
+                    case Campaign.Source.EveryListGiven ignored -> dictionaries.stream()
+                            .anyMatch(held -> !held.name().equals(PUSHES_AT_THE_API));
+                    case Campaign.Source.Builtin ignored -> true;
+                })
+                .toList();
+        return surviving.stream().allMatch(source ->
+                source instanceof Campaign.Source.Builtin builtin
+                        && builtin.which() == Campaign.Builtin.RANDOM);
+    }
+
+    /**
+     * Where one strategy's values come from.
+     *
+     * <p>Built twice, because invention is the one source that needs the others. Putting a value
+     * together from its shape means asking about everything nested inside it, and what should
+     * answer those questions is the rest of this same strategy - so the strategy without invention
+     * is built first, handed to invention, and then the whole thing is built again with invention
+     * in the place the plan put it.
+     */
+    private static ValueProvider valuesFor(Campaign.PlannedStrategy planned,
+            List<Dictionary> dictionaries, ApiModel model, RandomGenerator random) {
+        ValueProvider knownValues = asPlanned(planned, dictionaries, random, null);
+        ValueProvider invention = new RandomValueProvider(model, random, knownValues);
+        return asPlanned(planned, dictionaries, random, invention);
+    }
+
+    /**
+     * The sources of one strategy, in the arrangement the plan wrote.
+     *
+     * @param invention what answers where the plan asks for an invented value, or {@code null} to
+     *     leave those steps out - which is how the list invention itself consults is built
+     */
+    private static ValueProvider asPlanned(Campaign.PlannedStrategy planned,
+            List<Dictionary> dictionaries, RandomGenerator random, ValueProvider invention) {
         List<ValueProvider> asked = new ArrayList<>();
-        // The closed list of values a document says it accepts is not advice and is not ranked
-        // against anything: where one exists, it is the whole set of values the API will take, so
-        // offering anything else there would be sending a value the document says is not allowed.
-        // Unless not one of them could be put where the value goes - every one of them empty, in a
-        // path - in which case there is nothing here to honour, and the rest of the chain answers.
-        asked.add(DeclaredValueProvider.onlyTheAcceptedList(random));
-        addAsking(asked, dictionaries, random, true);
-        asked.add(fromTheDocument);
-        addAsking(asked, dictionaries, random, false);
+        for (Campaign.Entry entry : planned.sources()) {
+            switch (entry) {
+                case Campaign.Entry.Single single ->
+                    built(single.source(), dictionaries, random, invention).ifPresent(asked::add);
+                case Campaign.Entry.Group group -> {
+                    List<WeightedGroup.Weighted> among = new ArrayList<>();
+                    for (Campaign.Share share : group.among()) {
+                        built(share.source(), dictionaries, random, invention).ifPresent(source ->
+                                among.add(new WeightedGroup.Weighted(source, share.weight())));
+                    }
+                    // A group whose sources all turned out to be absent is no group at all, and one
+                    // with a single source left is simply that source: there is nothing to choose
+                    // between. Both happen for ordinary reasons - a plan naming a list nobody
+                    // handed over, or the group that invention itself is being built without.
+                    if (among.size() == 1) {
+                        asked.add(among.get(0).source());
+                    } else if (!among.isEmpty()) {
+                        asked.add(new WeightedGroup(among, random));
+                    }
+                }
+            }
+        }
         return ValueProviderChain.of(asked);
     }
 
-    /** The lists that speak about one value in particular, or the ones that speak about a kind. */
-    private static void addAsking(List<ValueProvider> asked, List<Dictionary> dictionaries,
-            RandomGenerator random, boolean aboutOneValue) {
-        for (Dictionary dictionary : dictionaries) {
-            if (!dictionary.name().equals(PUSHES_AT_THE_API)
-                    && dictionary.isAboutOneValueInParticular() == aboutOneValue) {
-                asked.add(new DictionaryValueProvider(dictionary, random));
-            }
+    /**
+     * What answers for one source a plan names, or nothing when nothing does.
+     *
+     * <p>Nothing when the plan asks for a list nobody handed over, or for invention while invention
+     * is still being built.
+     *
+     * <p>One answerer even where several lists are meant, and that matters: a step in a plan
+     * carries one weight, and handing back three answerers would quietly give that step three
+     * times its say. Several lists become one by being asked in turn.
+     */
+    private static Optional<ValueProvider> built(Campaign.Source source,
+            List<Dictionary> dictionaries, RandomGenerator random, ValueProvider invention) {
+        return switch (source) {
+            case Campaign.Source.Builtin builtin -> switch (builtin.which()) {
+                case ENUM -> Optional.of(DeclaredValueProvider.onlyTheAcceptedList(random));
+                case EXAMPLE -> Optional.of(new ExampleValueProvider(random));
+                case DEFAULT -> Optional.of(DeclaredValueProvider.onlyTheStatedDefault(random));
+                case RANDOM -> Optional.ofNullable(invention);
+            };
+            case Campaign.Source.OneList list -> asOne(dictionaries.stream()
+                    .filter(held -> held.name().equals(list.name())).toList(), random);
+            // Every list except one for pushing at the API. Those were gathered for a different
+            // job, and sending their values as though somebody believed in them is not what
+            // anybody asked for - which is why a strategy that wants them names them.
+            //
+            // Asked most particular first, which is the one piece of ranking that does not come
+            // from the plan: a list somebody wrote for one parameter of one operation knows more
+            // about that value than a list of every date in the world, and no plan should have to
+            // say so.
+            case Campaign.Source.EveryListGiven ignored -> asOne(Stream.concat(
+                    handedOver(dictionaries).filter(Dictionary::isAboutOneValueInParticular),
+                    handedOver(dictionaries).filter(held -> !held.isAboutOneValueInParticular()))
+                    .toList(), random);
+        };
+    }
+
+    /** The lists this run was handed, which is every one that is not for pushing with. */
+    private static Stream<Dictionary> handedOver(List<Dictionary> dictionaries) {
+        return dictionaries.stream().filter(held -> !held.name().equals(PUSHES_AT_THE_API));
+    }
+
+    /** Several lists as one answerer, asked in the order given, or nothing when there are none. */
+    private static Optional<ValueProvider> asOne(List<Dictionary> lists, RandomGenerator random) {
+        if (lists.isEmpty()) {
+            return Optional.empty();
         }
+        return Optional.of(ValueProviderChain.of(lists.stream()
+                .map(held -> (ValueProvider) new DictionaryValueProvider(held, random)).toList()));
     }
 
     /**

@@ -1,6 +1,6 @@
 # ADR-0020: A dictionary is a named list of values with one key, and the plan decides what each list is for
 
-**Status:** Accepted, amended at M2.7c and M2.4
+**Status:** Accepted, amended at M2.7c, M2.4 and M2.10a
 **Date:** 2026-09-18
 
 ## Context
@@ -526,3 +526,29 @@ What §5 loses is its example. The competitor that makes a weighted group worth 
 this record already documents - a `type`-keyed list of somebody's own replacing invention wholesale
 for a whole kind of value - rather than a shipped file competing for every declared format. M2.10
 still owns the mechanism, and still has a case to answer.
+
+
+## Amendment (M2.10a)
+
+**Date:** 2026-09-22
+
+**§5 described an order that is now written in a file, and the order it described is not the one
+the file ships with.** [ADR-0023](0023-the-campaign-file.md) is where that lives now; this records
+what changed for anybody reading §5 and expecting the code to match.
+
+§5 says the lists written for one value in particular are asked before the document has its say and
+the lists written for a whole kind of value after it. That ranking was worked out from each list's
+keying and hard-wired. A plan names sources instead, so:
+
+- **The ranking survives, but only among the lists themselves.** `dictionaries: given` asks the
+  particular before the general, which is the one piece of ordering no plan has to state.
+- **Where they sit against the document's own samples is the plan's to say.** The plan RESTest
+  ships puts every handed-over list in the same weighted group as the document's samples, at half
+  the weight of the group. A list keyed to a whole kind of value therefore competes with the
+  document's sample of a parameter, which under §5 it would have lost to outright. Somebody who
+  wants §5's arrangement writes it: name the list before `source: example` or after it.
+
+**§6's "three quarters against one" is now the `share` of the plan's two strategies**, and
+`--fuzzing` adjusts them rather than being the source of the number. §5's distinction between a
+share and a weight is untouched and is exactly what the format is built on: a share divides the
+run's time between strategies, a weight divides one value between the sources that offered one.

@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a and M2.4
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4 and M2.10a
 **Date:** 2026-09-13
 
 ## Context
@@ -538,3 +538,42 @@ declares one"* - is still the right answer for somebody's own list, and is still
 for. What this record loses is the shipped file that would have exercised it, and
 [ADR-0020](0020-what-a-dictionary-is.md) §5 loses the competitor it was counting on to make weighted
 groups worth having. M2.10 is unchanged in scope.
+
+
+## Amendment (M2.10a)
+
+**Date:** 2026-09-22
+
+**The file §2 sketched is built, and three of its ideas turned out to be saying what the structure
+already said. §6's `safeOnly` is answered by `methods` instead.**
+[ADR-0023](0023-the-campaign-file.md) is the record; this notes where that file departs from what
+was written here, so that a reader of §2 and §6 is not surprised by what they find on disk.
+
+**No `exclusive` group.** §2 writes one beside `weighted`, but an exclusive group means *ask these
+in turn and stop at the first answer*, which is what an ordered list of sources already means. The
+keyword said nothing the order did not, and the plan RESTest ships needed four single-entry groups
+in a row to say nothing at all. `weighted:` is the only group keyword. The semantics §2 decided are
+untouched.
+
+**No `custom` or `format` among the source words.** §2's example names five sources, of which two
+are dictionary keyings rather than sources. A list of values is named by naming the list -
+`dictionary: good-values` - and a plan says which kind of thing each name is, so that a file called
+`example` cannot silently shadow the tool's own samples. The words that remain are `enum`,
+`example`, `default` and `random`, with `observed` joining them at M2.5b, which is the source this
+whole increment was taken early to make nameable.
+
+**No `safeOnly`.** §6 asks for it by name. HTTP's safe methods are exactly `GET`, `HEAD`, `OPTIONS`
+and `TRACE`, so `methods:` already says it, and keeping both would force a rule for a file that sets
+both. The point §6 was really making survives and is why the key is not called `readOnly`: an API
+that searches with `POST` is ordinary, and one of the five in the priority corpus does exactly that.
+
+**A strategy serving only some kinds of operation is not built.** §6 puts the filters in the plan,
+and the run-level one is there. A filter *per strategy* - so that writes could be pushed at harder
+than reads - was designed, written and dropped before it shipped: its one real use is that split,
+and it was the sole cause of shares that summed to 175, of redistribution, of per-operation
+validation and of operations no strategy served. A strategy without a scope already means every
+operation, so adding it later breaks no file anybody has written.
+
+**§7's promise is untouched and still ahead of us.** Every strategy this increment can build is
+reproduced from the seed, because none of them has a memory yet. M2.5b is where the table in §7
+starts to matter.

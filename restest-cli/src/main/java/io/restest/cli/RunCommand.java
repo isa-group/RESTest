@@ -25,6 +25,9 @@ import io.restest.core.model.SpecificationIssue;
 import io.restest.core.spec.SpecificationParser;
 import io.restest.core.store.InteractionStore;
 import io.restest.exec.OkHttpEngine;
+import io.restest.gen.Campaign;
+import io.restest.gen.Campaigns;
+import java.util.Optional;
 import io.restest.gen.Dictionaries;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.oracles.OracleListener;
@@ -107,6 +110,10 @@ final class RunCommand implements Callable<Integer> {
 
     @Parameters(
             index = "0",
+            // Not required, so that --print-campaign can answer a question about the tool without
+            // being handed a document it is not going to read. Asked for below instead, in the
+            // words picocli would have used.
+            arity = "0..1",
             paramLabel = "<specification>",
             description = "The OpenAPI document describing the API: a file, a web address, or "
                     + "something on the class path.")
@@ -166,6 +173,20 @@ final class RunCommand implements Callable<Integer> {
     private int fuzzingShare;
 
     @Option(
+            names = "--campaign",
+            paramLabel = "<file>",
+            description = "A plan, in YAML, saying where this run's values should come from and "
+                    + "which operations it may touch. Without one, RESTest follows the plan it "
+                    + "carries; --print-campaign writes that out as a starting point.")
+    private Path campaignFile;
+
+    @Option(
+            names = "--print-campaign",
+            description = "Write out the plan RESTest follows when it is given none, and stop. "
+                    + "Save it, change a line, and hand it back with --campaign.")
+    private boolean printTheCampaign;
+
+    @Option(
             names = "--store",
             description = "Keep every request and reply in run.sqlite, so the run can be examined "
                     + "again later without asking the API anything. Off unless asked for: a minute "
@@ -178,6 +199,11 @@ final class RunCommand implements Callable<Integer> {
     @Spec
     private CommandSpec spec;
 
+    /** Whether a share of pushing was typed, as against left at what this command defaults to. */
+    private boolean askedForAShareOfPushing() {
+        return spec.commandLine().getParseResult().hasMatchedOption("--fuzzing");
+    }
+
     private final SpecificationParser parser = new SwaggerSpecificationParser();
     private final EngineSettings engineSettings = EngineSettings.defaults();
 
@@ -185,6 +211,32 @@ final class RunCommand implements Callable<Integer> {
     public Integer call() {
         PrintWriter out = spec.commandLine().getOut();
         PrintWriter err = spec.commandLine().getErr();
+
+        if (printTheCampaign) {
+            // Before the document is read, and before the clock starts: this asks what RESTest
+            // would do, not that it do anything.
+            try {
+                out.print(Campaigns.shippedText());
+                return ExitCode.NO_FAULTS;
+            } catch (IOException cannotRead) {
+                err.println("restest: " + cannotRead.getMessage());
+                return ExitCode.TOOL_FAILED;
+            }
+        }
+        if (specification == null) {
+            err.println("Missing required parameter: '<specification>'");
+            spec.commandLine().usage(err);
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        if (campaignFile != null && askedForAShareOfPushing()) {
+            // Two ways of saying one thing. A plan sets the share of every strategy it names, and
+            // --fuzzing sets one of them, so honouring both would mean deciding which of the two
+            // the person meant - and the answer they get would depend on a rule nobody wrote down.
+            err.println("restest: --fuzzing sets how much of a run pushes at the API, and so does "
+                    + "the 'share' of a plan's strategies. Name one or the other, not both: the "
+                    + "share belongs in " + campaignFile + " now");
+            return ExitCode.BAD_COMMAND_LINE;
+        }
 
         Instant startedAt = Instant.now();
         // The engine is built before a single line of the document has been read, and that ordering
@@ -198,11 +250,33 @@ final class RunCommand implements Callable<Integer> {
             ApiModel model = parser.parse(specification);
             Dictionaries.Found found = Dictionaries.gather(dictionaries, model);
             found.problems().forEach(problem -> err.println("restest: " + problem));
+            // Every list this run holds, not only the ones somebody handed over: the question a
+            // plan is judged against is whether the source it names will find anything, and the
+            // list RESTest carries is there whether or not anybody asked for it.
+            Campaigns.Found plan;
+            try {
+                plan = Campaigns.gather(Optional.ofNullable(campaignFile), model,
+                        found.dictionaries().stream().map(io.restest.gen.Dictionary::name)
+                                .collect(java.util.stream.Collectors.toSet()));
+            } catch (io.restest.core.json.JsonException cannotRead) {
+                // A plan somebody named and this version cannot read. Running a different one
+                // instead would answer "keep to the operations that only read" by writing to the
+                // API, so the run does not start.
+                err.println("restest: " + cannotRead.getMessage());
+                return ExitCode.BAD_COMMAND_LINE;
+            }
+            plan.problems().forEach(problem -> err.println("restest: " + problem));
             RandomTestCaseGenerator generator;
             try {
+                // Only when somebody typed it. Applying the default share regardless would
+                // renormalise every plan back to it, so the 'share' lines of the file RESTest
+                // ships - and of any file copied from it - would decide nothing at all.
+                Campaign campaign = askedForAShareOfPushing()
+                        ? plan.campaign().withTheShareOfPushingSetTo(fuzzingShare)
+                        : plan.campaign();
                 generator = new RandomTestCaseGenerator(model,
                         seed == null ? new java.util.SplittableRandom().nextLong() : seed,
-                        found.dictionaries(), fuzzingShare);
+                        found.dictionaries(), campaign);
             } catch (IllegalArgumentException outOfRange) {
                 // Asking for something the command line does not offer, which is the same kind of
                 // mistake as misspelling an option and answers with the same number.
@@ -215,8 +289,11 @@ final class RunCommand implements Callable<Integer> {
             java.util.Set<String> theirs = found.namesFromTheUser();
             generator.listsGivenButNotUsed().stream().filter(theirs::contains)
                     .forEach(unused -> err.println("restest: the list of values called '" + unused
-                            + "' is one this run pushes at the API with, and --fuzzing 0 asks for "
-                            + "no pushing, so nothing in it will be sent"));
+                            + "' is one this run pushes at the API with, and "
+                            + (campaignFile == null
+                                    ? "--fuzzing 0 asks for no pushing"
+                                    : campaignFile + " gives no strategy that pushes")
+                            + ", so nothing in it will be sent"));
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {
                 return nothingToTest(err, model, generator);
@@ -401,19 +478,36 @@ final class RunCommand implements Callable<Integer> {
      */
     private int nothingToTest(PrintWriter err, ApiModel model, RandomTestCaseGenerator generator) {
         var refused = generator.untestableOperations();
-        err.println(refused.isEmpty()
-                ? "restest: the document describes no operation that could be tested"
-                : "restest: none of the " + refused.size() + " operations in the document can be "
-                        + "tested; the first says: " + refused.values().iterator().next());
+        int setAside = generator.operationsThePlanSetAside().size();
+        // The plan is asked about first. An operation the plan set aside is one somebody asked to
+        // leave alone, and blaming the document for it would report a plan working exactly as
+        // intended as a problem with the API.
+        if (refused.isEmpty() && setAside > 0) {
+            err.println("restest: the plan keeps this run to no operation at all - the document "
+                    + "describes " + setAside + " that could have been tested, and its "
+                    + "'operations' filter matches none of them");
+        } else if (refused.isEmpty()) {
+            err.println("restest: the document describes no operation that could be tested");
+        } else {
+            err.println("restest: none of the " + refused.size() + " operations in the document "
+                    + "can be tested; the first says: " + refused.values().iterator().next());
+        }
         report(err, model.issues());
         return ExitCode.NOTHING_TO_TEST;
     }
 
     private void describe(PrintWriter out, ApiModel model, RandomTestCaseGenerator generator,
             int testable) {
-        out.println(testable + " of " + (testable + generator.untestableOperations().size())
+        int setAside = generator.operationsThePlanSetAside().size();
+        out.println(testable + " of "
+                + (testable + generator.untestableOperations().size() + setAside)
                 + " operations can be tested, seed " + generator.seed()
                 + ", budget " + human(budget));
+        // Said as its own line rather than folded into the count, because the two are different
+        // things: one is what the document makes impossible, the other is what somebody asked for.
+        if (setAside > 0) {
+            out.println("  " + setAside + " left alone by the plan");
+        }
         report(out, model.issues());
         out.println();
     }
