@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.restest.core.json.JsonValue;
 import io.restest.core.json.YamlText;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -103,6 +104,45 @@ class SettingsInEffectTest {
         assertThat(SettingsInEffect.of(Settings.defaults()).rows())
                 .anySatisfy(row -> assertThat(row.key()).isEqualTo(key));
     }
+
+    /**
+     * The rule the settings live by, asked of every setting and every awkward value at once.
+     *
+     * <p>A value is accepted only if the tool can write it back out and read it again as itself.
+     * That rule is what stops a line of a settings file being accepted and then killing the run
+     * much later, where it is printed or recorded - which is how three ordinary things to type
+     * behaved before it was written down. Nothing here cares which of these values are accepted;
+     * it cares that every accepted one survives the trip.
+     */
+    @ParameterizedTest
+    @MethodSource("everySetting")
+    @DisplayName("whatever a setting accepts, it can write back out and read again as itself")
+    void whatever_is_accepted_survives_being_written_down(SettingKey key) {
+        for (String awkward : AWKWARD) {
+            Settings accepted;
+            try {
+                accepted = Settings.from(Map.of(key.fullName(), awkward));
+            } catch (SettingsException refused) {
+                continue;
+            }
+            SettingsInEffect printed = SettingsInEffect.of(accepted);
+            assertThat(Settings.from(readBack(printed)))
+                    .describedAs("%s accepted '%s' and then could not read back what it printed:"
+                            + "%n%s", key.fullName(), awkward, printed.asAFile())
+                    .isEqualTo(accepted);
+        }
+    }
+
+    /** Values worth trying against every setting, whatever kind of thing that setting holds. */
+    private static final List<String> AWKWARD = List.of(
+            "0", "1", "-1", "2", "1000000",
+            "1e400", "1E+2", "1.50", "0.000001", "1e999999999",
+            "9223372036854775807", "9223372036854775808", "-9223372036854775809",
+            "true", "false", "TRUE",
+            "0s", "1ms", "30s", "5m", "2h", "PT0.0005S", "9223372036854775807h", "PT1M30S",
+            "a word", "two\nlines", "a\ttab", "a \"quote\"", "a\\backslash",
+            "acontrol", "a\uD800half a pair", "reserved ￾", "an emoji 😀",
+            " leading and trailing ", "#hash", "- dash", "yes:", "");
 
     @Test
     @DisplayName("the rows come out in the order settings are printed")
