@@ -151,8 +151,8 @@ option is about. Naming both `--campaign` and `--fuzzing` is refused, because a 
 of every strategy it names and the option sets one of them, and honouring both would mean deciding
 which the person meant by a rule nobody wrote down.
 
-### 8. The shipped plan chooses among its sources rather than ranking them, and that was settled
-by measurement after being decided the other way twice
+### 8. The shipped plan chooses among its sources rather than ranking them, on evidence that
+reversed a decision taken twice
 
 The objection to ranking is real: asked in turn, a source that answers stops the ones behind it
 *for that value*, so a parameter whose document offers one sample receives that same value on every
@@ -182,9 +182,15 @@ damage left by the previous one:
 | 99 | 16 | 15 |
 | **mean operations answering 2XX** | **16.8** | **19.6** |
 
-So the shipped plan weights, and the lesson is about the metric rather than the number: *fidelity to
-the document* and *whether the request worked* come apart the moment a run mutates the API, and only
-the second is worth optimising. `DeclaredSamplesAcrossTheCorpusTest` asked for the first on every
+So the shipped plan weights. **This is evidence for the decision rather than a settlement of it**:
+five paired runs, one API, one budget, no dispersion reported, and one seed of the five reversing
+the direction. It is enough to prefer weighting and not enough to close the question, and anybody
+re-measuring it — on another API, or after 2.5b changes what `observed` can offer — should expect
+to be adding to this rather than contradicting a finding.
+
+The durable part is the lesson about the metric rather than the number: *fidelity to the document*
+and *whether the request worked* come apart the moment a run mutates the API, and only the second
+is worth optimising. `DeclaredSamplesAcrossTheCorpusTest` asked for the first on every
 draw; it now asks that the author's identifier is among what goes out and is the value most often
 sent, which is what actually helps, with these figures in its own comment.
 

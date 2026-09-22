@@ -337,15 +337,12 @@ public final class RandomTestCaseGenerator {
      * @return the names, empty when this run sends nothing of the kind
      */
     public java.util.Set<String> sourcesThatPushAtTheApi() {
-        // The names of the lists, not of the strategies that draw on them. A report matches these
-        // against what it was told each value came from, which is the list's name - so a plan
-        // whose pushing strategy is called something else would otherwise have every one of its
-        // requests counted as ordinary.
-        return strategies.stream()
-                .filter(Strategy::pushesAtTheApi)
-                .flatMap(way -> given.stream().map(Dictionary::name)
-                        .filter(PUSHES_AT_THE_API::equals))
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        // The name of the list, not of the strategy drawing on it: a report matches these against
+        // what it was told each value came from, and that is the list's name. A plan may call its
+        // strategy anything.
+        return strategies.stream().anyMatch(Strategy::pushesAtTheApi)
+                ? java.util.Set.of(PUSHES_AT_THE_API)
+                : java.util.Set.of();
     }
 
     /**
@@ -597,17 +594,30 @@ public final class RandomTestCaseGenerator {
             ApiModel model, RandomGenerator random) {
         List<Strategy> ways = new ArrayList<>();
         for (Campaign.PlannedStrategy planned : campaign.strategies()) {
-            if (nothingLeftButInvention(planned, dictionaries)) {
+            if (pushesWithNothingToPushWith(planned, dictionaries)) {
                 continue;
             }
+            ValueProvider values = valuesFor(planned, dictionaries, model, random);
+            if (values instanceof ValueProviderChain chain && chain.providers().isEmpty()) {
+                // Every source this strategy names turned out to be a list nobody handed over, so
+                // it has nothing at all to fill a value with. It would still be drawn for its
+                // share of the requests, and every one of them would be abandoned unbuilt - the
+                // operation counted among those under test and sending nothing.
+                throw new IllegalArgumentException("the strategy called '" + planned.name()
+                        + "' names no source that this run has, so it could not fill in a single "
+                        + "value");
+            }
             ways.add(new Strategy(planned.name(), planned.share(), planned.pushesAtTheApi(),
-                    valuesFor(planned, dictionaries, model, random)));
+                    values));
         }
         if (ways.isEmpty()) {
-            // Every strategy asked for lists nobody handed over. Rather than a run that builds no
-            // requests, the plainest plan there is - and Campaigns has already said, by name, which
-            // lists were missing.
-            return strategiesFor(Campaigns.plainest(), dictionaries, model, random);
+            // Every strategy in the plan pushes, and there is nothing to push with. Running some
+            // other plan instead is what this increment spent a review learning not to do: the
+            // person asked for something specific and would be told, in the summary, that they
+            // got it.
+            throw new IllegalArgumentException("every strategy in this plan pushes at the API "
+                    + "with a list of values called '" + PUSHES_AT_THE_API + "', and no list of "
+                    + "that name was handed over, so there is nothing for the run to do");
         }
         // The shares are counted against each other rather than out of a hundred, so dropping one
         // strategy leaves the rest in the same proportion to one another as the plan wrote them.
@@ -615,32 +625,26 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * Whether a strategy would have nothing left but invention.
+     * Whether a strategy is one that pushes at the API with no list to push with.
      *
-     * <p>A strategy naming lists nobody handed over is not automatically pointless: one that also
-     * asks the document what it says still has most of its job. What is pointless is one with
-     * nothing left but inventing a value to fit the shape - which is what the plan RESTest carries
-     * comes to when a run is given no list to push with. That strategy would spend a quarter of the
-     * budget on ordinary invented values under another name, and, having no step for the closed
-     * list of values a document states, would send values the document says are not allowed.
+     * <p>The plan RESTest carries spends a quarter of the run sending values nobody sensible would
+     * send. A run given no such list has nothing of the kind to send, so that strategy would spend
+     * the quarter on ordinary invented values under another name - and, having no step for the
+     * closed list of values a document states, would send values the document says are not
+     * allowed. Left out instead, and the remaining shares keep the proportions the plan wrote.
      *
-     * <p>Left out instead, and the remaining shares keep the proportions the plan wrote them in.
+     * <p>Deliberately this narrow. An earlier version asked the more general question - has this
+     * strategy anything left but invention? - and could not tell {@code [dictionary: fuzzing,
+     * source: random]} from {@code [dictionary: mine, source: random]}, because they are the same
+     * shape. It threw away the second, which is the plainest thing anybody would write for a list
+     * of their own, and handed the whole run to the strategy that pushes. A strategy that merely
+     * lost a list still invents, which is what it would have done for every value the list had
+     * nothing for anyway.
      */
-    private static boolean nothingLeftButInvention(Campaign.PlannedStrategy planned,
+    private static boolean pushesWithNothingToPushWith(Campaign.PlannedStrategy planned,
             List<Dictionary> dictionaries) {
-        List<Campaign.Source> surviving = planned.sources().stream()
-                .flatMap(entry -> entry.sources().stream())
-                .filter(source -> switch (source) {
-                    case Campaign.Source.OneList list -> dictionaries.stream()
-                            .anyMatch(held -> held.name().equals(list.name()));
-                    case Campaign.Source.EveryListGiven ignored -> dictionaries.stream()
-                            .anyMatch(held -> !held.name().equals(PUSHES_AT_THE_API));
-                    case Campaign.Source.Builtin ignored -> true;
-                })
-                .toList();
-        return surviving.stream().allMatch(source ->
-                source instanceof Campaign.Source.Builtin builtin
-                        && builtin.which() == Campaign.Builtin.RANDOM);
+        return planned.pushesAtTheApi() && dictionaries.stream()
+                .noneMatch(held -> held.name().equals(PUSHES_AT_THE_API));
     }
 
     /**

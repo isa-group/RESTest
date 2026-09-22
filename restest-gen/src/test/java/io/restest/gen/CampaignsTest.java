@@ -33,10 +33,10 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * The plan a run ends up following, and what it is told about it before a request is sent.
  *
- * <p>Either a file somebody pointed the tool at or the one RESTest carries. Nothing here ends a
- * run: a plan that cannot be read costs whatever its author meant by it, and one asking for
- * something that will not happen is said out loud - because a run that quietly does less than its
- * plan says looks exactly like one that did as it was told.
+ * <p>Either a file somebody pointed the tool at or the one RESTest carries. A plan that cannot be
+ * read ends the run, because one of the things a plan is for is keeping a run away from everything
+ * that writes. A plan asking for something that will not happen is said out loud instead - because
+ * a run that quietly does less than its plan says looks exactly like one that did as it was told.
  */
 class CampaignsTest {
 
@@ -195,6 +195,62 @@ class CampaignsTest {
                 .describedAs("said rather than refused: a shape nothing satisfies leaves "
                         + "invention with no answer either, and a plan may rely on that")
                 .contains("hardly ever be reached");
+    }
+
+    @Test
+    @DisplayName("however the shares divide, they still add up to a hundred afterwards")
+    void the_shares_always_add_up_again() {
+        // The cases a review found by trying them: a share that does not divide evenly among the
+        // strategies on its side, and a side with more strategies in it than share to go round.
+        Campaign three = planOf(way("a", 33), way("b", 33), way("c", 33), pushing("p", 1));
+        for (int asked = 0; asked <= Campaign.WHOLE; asked++) {
+            Campaign divided = three.withTheShareOfPushingSetTo(asked);
+            assertThat(divided.strategies()).extracting(Campaign.PlannedStrategy::share)
+                    .describedAs("asked for %d", asked)
+                    .allMatch(share -> share > 0);
+            assertThat(divided.strategies().stream()
+                    .mapToInt(Campaign.PlannedStrategy::share).sum())
+                    .describedAs("asked for %d", asked)
+                    .isEqualTo(Campaign.WHOLE);
+            assertThat(divided.strategies().stream()
+                    .filter(Campaign.PlannedStrategy::pushesAtTheApi)
+                    .mapToInt(Campaign.PlannedStrategy::share).sum())
+                    .describedAs("what was asked for is what the pushing side gets, exactly")
+                    .isEqualTo(asked);
+        }
+
+        Campaign crowded = planOf(way("a", 19), way("b", 19), way("c", 19), way("d", 19),
+                way("e", 19), pushing("p", 5));
+        Campaign squeezed = crowded.withTheShareOfPushingSetTo(97);
+        assertThat(squeezed.strategies().stream()
+                .mapToInt(Campaign.PlannedStrategy::share).sum())
+                .describedAs("three left over between five: the two that get nothing do not run, "
+                        + "and the plan still adds up rather than refusing itself")
+                .isEqualTo(Campaign.WHOLE);
+        assertThat(squeezed.strategies()).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("two strategies of a plan cannot share a name, because a report names them")
+    void two_strategies_cannot_share_a_name() {
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() -> planOf(way("same", 50), way("same", 50)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot share a name");
+    }
+
+    private static Campaign planOf(Campaign.PlannedStrategy... strategies) {
+        return new Campaign(List.of(strategies), WhichOperations.everything());
+    }
+
+    private static Campaign.PlannedStrategy way(String name, int share) {
+        return new Campaign.PlannedStrategy(name, share, List.of(new Campaign.Entry.Single(
+                new Campaign.Source.Builtin(Campaign.Builtin.RANDOM))));
+    }
+
+    private static Campaign.PlannedStrategy pushing(String name, int share) {
+        return new Campaign.PlannedStrategy(name, share, List.of(
+                new Campaign.Entry.Single(new Campaign.Source.OneList("fuzzing"))));
     }
 
     @Test

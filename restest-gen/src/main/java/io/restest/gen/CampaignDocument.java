@@ -138,15 +138,15 @@ final class CampaignDocument {
         String name = YamlText.asText(required(stated, "name", describedAs),
                 "a strategy's 'name'", describedAs);
         String where = "the strategy called '" + name + "'";
-        long share = YamlText.asWholeNumber(required(stated, "share", describedAs),
-                where + "'s 'share'", describedAs);
+        int share = asShare(YamlText.asWholeNumber(required(stated, "share", describedAs),
+                where + "'s 'share'", describedAs), where + "'s 'share'", describedAs);
         List<Campaign.Entry> sources = new ArrayList<>();
         for (JsonValue held : YamlText.asList(required(stated, "sources", describedAs),
                 where + "'s 'sources'", describedAs)) {
             sources.add(entry(YamlText.asObject(held, "a source of " + where, describedAs),
                     where, describedAs));
         }
-        return new Campaign.PlannedStrategy(name, (int) share, sources);
+        return new Campaign.PlannedStrategy(name, share, sources);
     }
 
     /**
@@ -166,13 +166,13 @@ final class CampaignDocument {
                     "a '" + WEIGHTED + "' group of " + where, describedAs)) {
                 JsonValue.JsonObject one =
                         YamlText.asObject(held, "a source inside a group", describedAs);
-                long weight = YamlText.asWholeNumber(
+                int weight = asShare(YamlText.asWholeNumber(
                         one.member(WEIGHT).orElseThrow(() -> new JsonException(describedAs
                                 + ": a source inside a '" + WEIGHTED + "' group says how much of "
                                 + "the choice it gets, and this one has no '" + WEIGHT + "'")),
+                        "a '" + WEIGHT + "'", describedAs),
                         "a '" + WEIGHT + "'", describedAs);
-                among.add(new Campaign.Share(source(one, List.of(WEIGHT), describedAs),
-                        (int) weight));
+                among.add(new Campaign.Share(source(one, List.of(WEIGHT), describedAs), weight));
             }
             return new Campaign.Entry.Group(among);
         }
@@ -269,6 +269,20 @@ final class CampaignDocument {
                 + java.util.Arrays.stream(HttpMethod.values()).map(HttpMethod::name)
                         .reduce((a, b) -> a + ", " + b).orElseThrow()
                 .toUpperCase(Locale.ROOT));
+    }
+
+    /**
+     * A share or a weight, which is a number between nothing and a hundred.
+     *
+     * <p>Checked before it is narrowed to the size the rest of the tool holds it in. Narrowing
+     * first is how {@code 4294967396} became {@code 100} and passed the check that shares add up.
+     */
+    private static int asShare(long stated, String what, String describedAs) {
+        if (stated < 0 || stated > Campaign.WHOLE) {
+            throw new JsonException(describedAs + ": " + what + " is " + stated
+                    + ", and a share of something is between 0 and " + Campaign.WHOLE);
+        }
+        return (int) stated;
     }
 
     private static JsonValue required(JsonValue.JsonObject document, String member,

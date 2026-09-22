@@ -892,28 +892,102 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("a strategy left with nothing but invention is dropped, and one that merely lost "
-            + "a list is not")
-    void a_strategy_with_nothing_left_is_dropped() {
+    @DisplayName("the strategy that pushes is left out when there is no list to push with, and a "
+            + "strategy that merely lost a list of its own is not")
+    void a_strategy_that_cannot_do_its_job_is_dropped() {
+        io.restest.core.schema.CanonicalSchema onlyThese = new StringSchema(
+                SchemaMetadata.none().withEnumeration(List.of(
+                        JsonValue.of("available"), JsonValue.of("sold"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
-                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+                Parameter.of("status", ParameterLocation.QUERY, true, onlyThese)));
         ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        // A plan of the shape anybody writes for a list of their own, beside one that pushes.
+        Campaign plan = new Campaign(List.of(
+                new Campaign.PlannedStrategy("nominal", 50,
+                        List.of(theList("my-good-values"), step(Campaign.Builtin.ENUM))),
+                new Campaign.PlannedStrategy("pushing", 50,
+                        List.of(theList("fuzzing"), step(Campaign.Builtin.RANDOM)))),
+                WhichOperations.everything());
 
-        Campaign nothingLeft = planOf(theList("absent"), step(Campaign.Builtin.RANDOM));
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(), nothingLeft)
-                .sourcesThatPushAtTheApi())
-                .describedAs("the plan RESTest carries comes to this when a run is given no list "
-                        + "to push with: a quarter of the budget spent on ordinary invented "
-                        + "values under another name")
+        RandomTestCaseGenerator withAListToPushWith = new RandomTestCaseGenerator(pets, 1L,
+                List.of(Dictionaries.fuzzing().orElseThrow()), plan);
+        assertThat(withAListToPushWith.sourcesThatPushAtTheApi())
+                .describedAs("'my-good-values' was not handed over either, and that must not cost "
+                        + "the nominal strategy its place")
+                .containsExactly("fuzzing");
+        assertThat(sentOften(withAListToPushWith, search))
+                .describedAs("half the run is still the nominal strategy, which still has the "
+                        + "document's closed list to ask")
+                .contains("available");
+
+        RandomTestCaseGenerator withNothingToPushWith =
+                new RandomTestCaseGenerator(pets, 1L, List.of(), plan);
+        assertThat(withNothingToPushWith.sourcesThatPushAtTheApi())
+                .describedAs("nothing awkward to send, so the strategy that would have sent it is "
+                        + "left out rather than spending half the run on invented values under "
+                        + "another name")
                 .isEmpty();
+        assertThat(sentOften(withNothingToPushWith, search))
+                .describedAs("and every request now comes from the nominal strategy, so the "
+                        + "document's closed list is honoured every time - which is the thing "
+                        + "the dropped strategy had no step for")
+                .containsExactlyInAnyOrder("available", "sold");
+    }
 
-        Campaign plentyLeft = planOf(theList("absent"), step(Campaign.Builtin.ENUM),
-                step(Campaign.Builtin.EXAMPLE), step(Campaign.Builtin.RANDOM));
-        RandomTestCaseGenerator kept = new RandomTestCaseGenerator(pets, 1L, List.of(), plentyLeft);
-        assertThat(kept.generate(search))
-                .describedAs("a strategy that also asks the document what it says still has most "
-                        + "of its job, and dropping it would leave the run with nothing at all")
-                .isPresent();
+    @Test
+    @DisplayName("a strategy every source of which turned out to be missing is refused, since it "
+            + "would be drawn for its share and abandon every request unbuilt")
+    void a_strategy_that_can_fill_nothing_is_refused() {
+        ApiModel pets = ApiModel.of("Pets", "1.0",
+                List.of(Operation.of(HttpMethod.GET, "/pets")));
+        Campaign namesOnlyWhatIsMissing = new Campaign(
+                List.of(new Campaign.PlannedStrategy("mine", 100, List.of(theList("nowhere")))),
+                WhichOperations.everything());
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() -> new RandomTestCaseGenerator(pets, 1L, List.of(),
+                        namesOnlyWhatIsMissing))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("could not fill in a single value");
+    }
+
+    @Test
+    @DisplayName("a plan that can do nothing at all is refused, rather than quietly swapped for "
+            + "a different one")
+    void a_plan_that_can_do_nothing_is_refused() {
+        ApiModel pets = ApiModel.of("Pets", "1.0",
+                List.of(Operation.of(HttpMethod.GET, "/pets")));
+        Campaign everythingPushes = new Campaign(
+                List.of(new Campaign.PlannedStrategy("pushing", 100,
+                        List.of(theList("fuzzing"), step(Campaign.Builtin.RANDOM)))),
+                WhichOperations.everything());
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() -> new RandomTestCaseGenerator(pets, 1L, List.of(),
+                        everythingPushes))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nothing for the run to do");
+    }
+
+    /**
+     * Every distinct value this operation's {@code status} parameter received over many draws.
+     *
+     * <p>Written out rather than reusing the helper above because a strategy that pushes sends
+     * whatever it likes - an empty word, a null - and the point here is exactly what came out.
+     */
+    private static java.util.Set<String> sentOften(RandomTestCaseGenerator generator,
+            Operation operation) {
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+        for (int draw = 0; draw < 60; draw++) {
+            generator.generate(operation)
+                    .flatMap(testCase -> testCase.parameterValue("status",
+                            ParameterLocation.QUERY))
+                    .ifPresent(value -> seen.add(value.value()
+                            instanceof io.restest.core.json.JsonValue.JsonString text
+                            ? text.value() : String.valueOf(value.value())));
+        }
+        return seen;
     }
 
     /**

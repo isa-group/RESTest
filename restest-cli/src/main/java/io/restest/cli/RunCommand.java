@@ -212,6 +212,14 @@ final class RunCommand implements Callable<Integer> {
         PrintWriter out = spec.commandLine().getOut();
         PrintWriter err = spec.commandLine().getErr();
 
+        if (printTheCampaign && campaignFile != null) {
+            // Printing the plan RESTest carries while being handed another one is two questions
+            // at once, and answering the first silently would look like an answer to the second.
+            err.println("restest: --print-campaign writes out the plan RESTest follows when it is "
+                    + "given none, so there is nothing for it to say about " + campaignFile
+                    + ". Ask for one or the other");
+            return ExitCode.BAD_COMMAND_LINE;
+        }
         if (printTheCampaign) {
             // Before the document is read, and before the clock starts: this asks what RESTest
             // would do, not that it do anything.

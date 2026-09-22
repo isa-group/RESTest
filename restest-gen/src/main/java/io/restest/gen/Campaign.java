@@ -57,6 +57,12 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
             throw new IllegalArgumentException("a plan with no strategies in it would build no "
                     + "requests at all");
         }
+        List<String> named = strategies.stream().map(PlannedStrategy::name).toList();
+        if (named.size() != java.util.Set.copyOf(named).size()) {
+            throw new IllegalArgumentException("two strategies of a plan cannot share a name, "
+                    + "because a report names them and a reader could not tell which is which: "
+                    + named);
+        }
         int shares = strategies.stream().mapToInt(PlannedStrategy::share).sum();
         if (shares != WHOLE) {
             throw new IllegalArgumentException("the shares of a plan's strategies are how it "
@@ -124,26 +130,32 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
      * How much of what one side of a plan was given goes to each strategy in it.
      *
      * <p>In proportion to what the plan already gave them, and adding up to exactly the amount
-     * asked for: whatever the rounding leaves over goes to the largest, which is the one it
-     * changes least. A strategy can come out with nothing, which is how asking for no pushing at
-     * all leaves the pushing strategies out.
+     * asked for. Whole numbers do not divide evenly, so each gets its floor and whatever is left
+     * over goes one at a time to the strategies with the largest fractions - which is how every
+     * seat-allocation problem is solved, and the only way the total comes out right.
+     *
+     * <p>A strategy can come out with nothing. That happens when the side has more strategies in
+     * it than it has share to divide, and when the amount asked for is nothing at all; both mean
+     * the same thing, which is that the strategy does not run.
      */
     private static Map<String, Integer> divide(List<PlannedStrategy> side, int between) {
         Map<String, Integer> shares = new LinkedHashMap<>();
         int total = side.stream().mapToInt(PlannedStrategy::share).sum();
         int handedOut = 0;
         for (PlannedStrategy way : side) {
-            int portion = between == 0 ? 0 : Math.max(1, between * way.share() / total);
-            shares.put(way.name(), portion);
-            handedOut += portion;
+            int floor = between * way.share() / total;
+            shares.put(way.name(), floor);
+            handedOut += floor;
         }
-        if (handedOut != between && !side.isEmpty()) {
-            String largest = side.stream()
-                    .max(java.util.Comparator.comparingInt(way -> shares.get(way.name())))
-                    .orElseThrow().name();
-            // Never below nothing: a side with more strategies in it than it has share to divide
-            // cannot give them all a turn, and the ones that end with nothing are left out.
-            shares.put(largest, Math.max(0, shares.get(largest) + between - handedOut));
+        // The remainder, to whoever was rounded down hardest. Recomputed rather than kept in a
+        // second list, because a strategy that has already had one of these is no longer the
+        // hardest done by.
+        List<PlannedStrategy> byRemainder = new ArrayList<>(side);
+        byRemainder.sort(java.util.Comparator.comparingInt(
+                (PlannedStrategy way) -> between * way.share() % total).reversed());
+        for (int at = 0; handedOut < between; at++, handedOut++) {
+            String name = byRemainder.get(at % byRemainder.size()).name();
+            shares.put(name, shares.get(name) + 1);
         }
         return shares;
     }

@@ -171,9 +171,15 @@ class DeclaredSamplesAcrossTheCorpusTest {
                 .describedAs("the document says an owner is numbered 1, and an invented number "
                         + "addresses an owner that never existed")
                 .contains(JsonValue.of(1L));
-        assertThat(sent.stream().filter(JsonValue.of(1L)::equals).count())
-                .describedAs("and it is the one value most often sent, rather than one of many")
-                .isGreaterThan(sent.size() / 10);
+        java.util.Map<JsonValue, Long> howOften = sent.stream().collect(
+                java.util.stream.Collectors.groupingBy(value -> value,
+                        java.util.stream.Collectors.counting()));
+        assertThat(howOften.entrySet().stream()
+                .max(java.util.Map.Entry.comparingByValue()).orElseThrow().getKey())
+                .describedAs("and it is the value sent most often, which is what the weighting "
+                        + "of the plan RESTest carries is for: every other value here is invented "
+                        + "and invented ones do not repeat")
+                .isEqualTo(JsonValue.of(1L));
         assertThat(java.util.Set.copyOf(sent))
                 .describedAs("but not the only one: once the run has deleted owner 1, a generator "
                         + "that could send nothing else would ask for it until the budget ran out")
