@@ -97,7 +97,7 @@ row of M8 names the rows written *while* it runs.
 
 1. **11.1** the settings, first, so that every lever after it lands with its switch. **8.3** runs
    overnight in the meantime.
-2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** 🛑, **9.5** — reach. Each row is measured on a
+2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4**, **9.5** — reach. Each row is measured on a
    restarted containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measures
    the milestone as a whole, overnight, on the five.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
@@ -109,11 +109,12 @@ row of M8 names the rows written *while* it runs.
 7. After submission: **8.1**, **8.2** 🛑 for the paper, and the ⏭ rows in the order M3, M4, M5, M6,
    M7 unless the results say otherwise.
 
-Three things are asked of the maintainer now rather than at the row: 🛑 **9.4** takes the narrow
-version of the first of ADR-0017's open questions, which is on the deferred list; 🛑 **12.3** needs
-the manual's format, HTML or PDF, by 2 October; 🛑 **12.4** needs a decision on what is tagged if the
-manual is not ready — ADR-0024 recommends `v2.0.0-rc.1` for the submission and `v2.0.0` when the
-manual lands, with a check that the two commits differ in documentation files only.
+Three things were asked of the maintainer at the replan rather than at the row, and **all three
+were approved on 22 September 2026**: **9.4** takes the narrow version of the first of ADR-0017's
+open questions, which is on the deferred list; **12.3** writes the manual once and builds HTML and
+PDF from it, so that the only decision left — which output to publish, due 2 October — is a cheap
+one; **12.4** tags `v2.0.0-rc.1` for the submission if the manual is late and `v2.0.0` when it
+lands, with a check that the two commits differ in documentation files only.
 
 ---
 
@@ -338,7 +339,7 @@ number goes in the pull request. A row whose number is not better is not merged.
 | 9.1 ▶ | **A scheduler of its own, and an opening lap.** The choice of *what to send next* leaves `RunLoop` and `RandomTestCaseGenerator` and becomes one component that owns the clock (2.10b, absorbed): a strategy's share is a stretch of the budget rather than a draw per request, and the scheduler is the one place that decides which operation, which strategy, and — from 9.3 — which sequence. Its first job is an **opening lap**: before anything is drawn, every operation once, with the request it is most likely to accept — required parameters only, the document's own samples where it writes them — operations that create before operations that read, by method and then by path depth, so that `POST /owners` has answered before `GET /owners/{ownerId}` is tried. Charged to the budget like everything else, and reported as its own phase | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards; and the shares a plan writes are honoured as stretches of time rather than on average |
 | 9.2 ▶ | **Identifiers by resource** (the narrow version of 4.1). A path parameter is filled from the identifier of the resource its path names: `{petId}` under `/pets/{petId}` from the `id` of a reply to `GET /pets` or `POST /pets`, `{ownerId}` from `/owners`. By exact name first, which 2.5b already does; then by the resource the preceding path segment names, singular or plural, with or without an `Id`, `_id` or `ID` suffix; every candidate gated on type and declared format; the best few kept even when none is convincing, so no operation is left with nothing to try. No synonym table and no similarity score — those, and the measurement ADR-0017 asks for, stay in 4.1 | The operations behind a path parameter whose name is not the property's name — pet-clinic's `{petId}` against `id`, and most of the corpus — get identifiers that exist instead of invented ones, which is the difference between 404 and 2XX for half of a typical API |
 | 9.3 ▶ | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, recorded as one, the second test case naming the exchange its value came from (which 2.5b's provenance already does). Deletes are sent after the reads and updates of the same lap, not before. This is ADR-0013's rule that a sequence *creates* what it needs, built rather than restated | An API whose identifiers cannot be guessed — kafka-rest-proxy's generated cluster and notebook-manager's posted notebooks — is covered instead of answering 404 for an hour; and the identifier a lap needs is there before the lap needs it |
-| 9.4 ▶ 🛑 | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), taken with the maintainer's approval and no further. The scheduler keeps, per operation, a count of what it answered. An operation that has answered nothing but 401, 403, 404, 405 or 501 in its last *N* attempts has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, two numbers — *N* and the floor — both settings, no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
+| 9.4 ▶ | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler keeps, per operation, a count of what it answered. An operation that has answered nothing but 401, 403, 404, 405 or 501 in its last *N* attempts has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, two numbers — *N* and the floor — both settings, no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
 | 9.5 ▶ | **The request declares what it will accept** (ADR-0017 item 2): an `Accept` header built from the media types the operation's own 2XX responses declare, `*/*` when it declares none | An API serving a versioned media type stops answering 406 to a client that never said what it wanted; the corpus has one, and the undisclosed five may have more |
 
 ### Notes
@@ -445,8 +446,8 @@ when the code around them is next touched, never in a sweep.
 |---|---|---|
 | 12.1 ▶ | **The command line frozen** (ADR-0015 amended). `restest version`; `--header name:value`, repeatable, for authentication material handed over out of band — the competition hands tools "any required authentication material", and a header is the shape most of it takes; `--settings`, `--set` and `--print-settings` from 11.1; **Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not** (3.7, moved here — the third of the answers ADR-0015 lists is the one taken); `--help` complete and in plain words for every option; the exit codes as a table in the documentation. After this row, a change to the command line is a 2.x decision | The surface a user, a script and the benchmark adapter all depend on is complete and stops moving; and a run stopped early stops costing everything it had found |
 | 12.2 ▶ | **The documentation of a finished tool.** `README.md` as the front door: install, run, read a report, write a plan, write a dictionary, change a setting, the exit codes, the container image. `docs/` consolidated: the plan format, the dictionary format, the settings and their keys, the report's JSON shape, the fault catalogue as we render it. `CONTRIBUTING.md` and `docs/DESIGN.md` say what v2.0 is and what 2.x will be. Every command in every document run from a clean checkout before it is pasted | Somebody who has never seen the repository can install the tool and get a report in ten minutes, and can find out what any line of that report means without reading Java |
-| 12.3 ▶ 🛑 | **The user manual.** Written once, in Markdown under `docs/manual/`, and built to both HTML and PDF from that one source by a script in the repository, so that the format decision is about what is *published*, not about what is written. Chapters: what the tool is for, install, the first run, reading the report, plans, dictionaries, settings, the container image, the exit codes, troubleshooting, and a glossary. 🛑 **The format to publish — HTML site, PDF, or both — is the maintainer's decision, due 2 October** | A manual a person reads from the beginning, rather than documentation a person searches |
-| 12.4 ▶ 🛑 | **v2.0.0 tagged and submitted.** The tag is on the commit 8.6 measured; the image the tag builds is the image the competition receives; the harness repository is made public with the campaigns it holds; the submission is made on 8 October. 🛑 If 12.3 is not merged by then, `v2.0.0-rc.1` is tagged and submitted instead, `v2.0.0` follows when the manual lands, and a check in the pull request that lands it shows the two commits differ in documentation files only | The competition receives exactly what is published, under exactly the version the paper will cite |
+| 12.3 ▶ 🛑 | **The user manual.** Written once, in Markdown under `docs/manual/`, and built to both HTML and PDF from that one source by a script in the repository, so that the format decision is about what is *published*, not about what is written. Chapters: what the tool is for, install, the first run, reading the report, plans, dictionaries, settings, the container image, the exit codes, troubleshooting, and a glossary. The one-source-two-outputs approach was approved on 22 September; 🛑 **which output is linked from the README and the release — HTML, PDF, or both — is the maintainer's decision, due 2 October** | A manual a person reads from the beginning, rather than documentation a person searches |
+| 12.4 ▶ 🛑 | **v2.0.0 tagged and submitted.** The tag is on the commit 8.6 measured; the image the tag builds is the image the competition receives; the harness repository is made public with the campaigns it holds; the submission is made on 8 October. If 12.3 is not merged by then, `v2.0.0-rc.1` is tagged and submitted instead, `v2.0.0` follows when the manual lands, and a check in the pull request that lands it shows the two commits differ in documentation files only — approved on 22 September. 🛑 The tag itself is a supervision point | The competition receives exactly what is published, under exactly the version the paper will cite |
 | 12.5 ▶ 🛑 | **`master` replaced.** RESTest 1.x kept on a `v1.x` branch and under its existing tags, with its README pointing here; `v2` merged into `master`; `master` the default branch; the CI badge, the harness repository's pin and every link in the documentation moved; `v2` left in place until the harness repository has repinned, then deleted. From here on, work targets `master` | The rewrite is the tool: `git clone` gets v2.0, and 1.x is history that is still there |
 
 ### Notes
@@ -699,15 +700,15 @@ named for each, is under "Out of scope for v2.0" in [`docs/DESIGN.md`](docs/DESI
 
 Three of those rows have an open question against them, all raised by ADR-0017 and all of the same
 kind: each would have a run learn from what it has already seen. 🛑 None is started without explicit
-approval, and the first is the only one this plan asks for.
+approval; the first was asked for by this plan and approved on 22 September 2026, in its narrow form only.
 
 - **Scheduling.** The winner of the 2026 competition rewards its choice of *operation* for errors
   while rewarding its choice of parameters and values for success — go where it breaks, send
   requests that work — and weighted sampling over per-operation counters would do the same job with
   no learning and no hyper-parameters. At its narrowest it is hygiene: stop spending budget on
   operations that answer nothing but 405 or 401. **That narrowest version is [9.4](#m9--reach)**,
-  asked for at the replan of 22 September and taken only with the maintainer's approval; the
-  reward-shaped version stays here.
+  asked for at the replan of 22 September and approved the same day; the reward-shaped version
+  stays here.
 - **Predicting acceptance.** Whether M4.2 may score dependency candidates by what the API answered,
   which also costs the seed reproducibility ADR-0013 §7 promises.
 - **Error messages.** Whether a warm-up may read the *text* of an error to learn which parameter was

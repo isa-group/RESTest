@@ -1,6 +1,6 @@
 # ADR-0024: v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-22
 
 ## Context
@@ -65,9 +65,9 @@ that list as increments.
 
 If the manual is not merged by the submission date, the submission is tagged `v2.0.0-rc.1` and
 `v2.0.0` is tagged when the manual lands, with a check that the two commits differ in documentation
-only. The maintainer may instead tag `v2.0.0` without the manual and ship it in 2.0.1; the record
-recommends the first because it keeps *the submitted version is 2.0* and *2.0 has a manual* both
-true.
+only. The alternative — tag `v2.0.0` without the manual and ship it in 2.0.1 — was put to the
+maintainer and declined on 22 September 2026: the first keeps *the submitted version is 2.0* and
+*2.0 has a manual* both true.
 
 ### 2. What is in v2.0 is what moves a measurement, plus what closes the release
 
@@ -106,10 +106,11 @@ is today.
   The container image of 7.2a is the tool's own and knows nothing about being measured.
 - **The budget is the whole invocation** (ADR-0015, ADR-0017). The opening lap of 9.1 is charged to
   the clock like everything else. No preparation phase runs off it.
-- **The deferred list still needs approval.** This record asks for exactly one item from it — the
+- **The deferred list still needs approval.** This record asked for exactly one item from it — the
   narrowest version of the first open question of ADR-0017, weighted sampling over per-operation
-  counters with no reward and no learning rate, as 9.4 — and names the two neighbouring questions as
-  not taken. The reward-shaped version stays deferred.
+  counters with no reward and no learning rate, as 9.4 — and the maintainer approved it on
+  22 September 2026. The two neighbouring questions are not taken, and the reward-shaped version
+  stays deferred.
 - **The rest of the design principles are untouched**: zero configuration to start, never crash on a
   document, test cases as data, one event stream, no global state, nothing blocking the loop.
 
@@ -158,5 +159,8 @@ repository is made public as the replication package.
 - **Take all three open questions while asking for one.** Rejected. Questions 2 and 3 are online
   acceptance prediction and reading error text, each a deferred row of its own with costs ADR-0017
   spells out, and neither has the "no constant to calibrate" property that makes 9.4 defensible.
-- **Tag `v2.0.0` on 9 October whatever the state of the manual.** Not rejected; §1 recommends the
-  release candidate and leaves the choice to the maintainer.
+- **Tag `v2.0.0` on 9 October whatever the state of the manual.** Declined by the maintainer in
+  favour of the release candidate, §1.
+- **Write the manual for one format and decide the format first.** Rejected: it makes the format
+  decision expensive and puts it on the critical path. One Markdown source built to both HTML and
+  PDF was approved instead, and only the choice of which to publish is left, at no cost.

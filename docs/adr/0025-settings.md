@@ -1,6 +1,6 @@
 # ADR-0025: The numbers somebody decided live in one settings object, layered from four sources, and never in the plan
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-22
 
 ## Context
