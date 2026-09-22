@@ -25,6 +25,8 @@ import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
 import io.restest.core.settings.WrittenNumber;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -57,6 +59,16 @@ import java.util.Optional;
  * different ones without either noticing the other.
  */
 final class SettingsFromEverywhere {
+
+    /**
+     * The largest file of settings this will read.
+     *
+     * <p>A fact rather than a decision, which is why it is not itself a setting: the format has a
+     * few dozen lines in it, and a megabyte is a thousand times more than any real one. It is here
+     * so that pointing {@code --settings} at the wrong file - a database, a log, something that
+     * never ends - costs a sentence rather than the machine's memory.
+     */
+    private static final int LONGEST_FILE = 1024 * 1024;
 
     private SettingsFromEverywhere() {
     }
@@ -126,8 +138,18 @@ final class SettingsFromEverywhere {
      */
     private static Map<String, String> fromTheFile(Path file) {
         String text;
-        try {
-            text = Files.readString(file);
+        try (InputStream stream = Files.newInputStream(file)) {
+            // Bounded, like everything else this tool reads from outside itself. One byte past the
+            // bound, so that a file ending and a file being cut short can be told apart. The bound
+            // is not a setting, because it would have to be read out of the file it is bounding:
+            // it is a fact about the format instead, which has a few dozen lines in it.
+            byte[] read = stream.readNBytes(LONGEST_FILE + 1);
+            if (read.length > LONGEST_FILE) {
+                throw new SettingsException(file + " is larger than " + LONGEST_FILE + " bytes, "
+                        + "which is far larger than any file of settings: a file of settings has a "
+                        + "few dozen lines in it, so this is not one");
+            }
+            text = new String(read, StandardCharsets.UTF_8);
         } catch (IOException cannotRead) {
             throw new SettingsException("the settings in " + file + " could not be read: "
                     + cannotRead.getMessage());

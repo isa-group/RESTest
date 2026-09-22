@@ -229,6 +229,20 @@ class SettingsFromEverywhereTest {
         }
 
         @Test
+        @DisplayName("a file far larger than any file of settings is refused rather than read into "
+                + "memory, because --settings can be pointed at the wrong file")
+        void a_file_that_is_not_a_file_of_settings_at_all(@TempDir Path directory)
+                throws Exception {
+            Path enormous = directory.resolve("not-settings.yaml");
+            Files.writeString(enormous, "# " + "x".repeat(2 * 1024 * 1024) + "\n");
+
+            assertThatThrownBy(() -> SettingsFromEverywhere.gather(Optional.of(enormous), Map.of(),
+                    List.of()))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("far larger than any file of settings");
+        }
+
+        @Test
         @DisplayName("a file that is not a list of groups says what one looks like")
         void a_file_that_is_not_settings(@TempDir Path directory) throws Exception {
             Path file = fileSaying(directory, "- engine\n- report\n");
