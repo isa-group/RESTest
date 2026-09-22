@@ -119,9 +119,12 @@ is today.
 
 ### 5. Evaluation is part of the plan, not after it
 
-Every M9 and M10 row is measured before it is merged, on a restarted containerised API from the
-priority corpus, switched on against switched off, five seeds, and the number goes in the pull
-request. Each milestone is then screened as a whole on the five known APIs with short budgets, one
+The baseline is itself an ablation, over where a run's values come from — the document alone, the
+document and what the API returned, and those plus a hand-written dictionary per API — so that the
+worth of each source is known before any lever is built on it, and so that the most favourable case,
+which the competition does not offer, is known as a ceiling. Every M9 and M10 row is then measured
+before it is merged, on a restarted containerised API from the priority corpus, switched on against
+switched off, five seeds, and the number goes in the pull request. Each milestone is then screened as a whole on the five known APIs with short budgets, one
 switch off at a time, and a lever that moves nothing is switched off in the shipped settings. The
 dress rehearsal runs the competition's own protocol from the frozen commit for twenty-five hours,
 and nothing that changes a request is written while it runs. After the submission, the comparison
@@ -149,9 +152,10 @@ repository is made public as the replication package.
 - **This record stands on ADR-0017, which is still *Proposed*.** Five of its ideas are adopted here
   and four of its refusals are relied on. Accepting it is the maintainer's; until then the plan is
   built on a proposed record, knowingly.
-- **The paper is four pages and due eight weeks after the tool.** The field comparison and the
-  ablation are sized to that: five known APIs, three runs for the ablation groups, about a week of
-  machine time each.
+- **The paper is four pages and due eight weeks after the tool.** Ablations run at twenty minutes a
+  run, because they rank variants rather than post a number; the field comparison runs at the 2026
+  edition's own hour on its own eleven APIs, because its published table is the comparison and a
+  different scale would footnote every row.
 
 ## Alternatives considered
 

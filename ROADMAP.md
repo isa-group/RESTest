@@ -82,7 +82,7 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 
 | When | Gate | What has to be true |
 |---|---|---|
-| Tue 22 Sep | Replan accepted | This file, ADR-0024 and ADR-0025 reviewed. 8.3 launched the same night |
+| Tue 22 Sep | Replan accepted | This file, ADR-0024 and ADR-0025 reviewed. 8.3 launched the same night, its three plans and the five dictionaries written first |
 | Wed 23 Sep | Registered | The competition's submission system holds the tool's name and authors; the entry is updated freely until the deadline, so registering costs nothing and removes one thing that can go wrong on 8 October |
 | Sun 27 Sep | M9 measured | 2.9 and 9.1–9.4 merged; 8.4 running overnight |
 | Fri 2 Oct | M10 measured | 10.1–10.3 and 11.2 merged; 8.5 running overnight; which output of the manual to publish decided (12.3) |
@@ -90,7 +90,7 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 | Thu 8 Oct | **Submission** | 8.6 read; v2.0.0 tagged from the frozen commit (12.4); tool submitted, one day before the deadline |
 | Fri 9 Oct | Deadline | Anywhere on Earth. Nothing is submitted on this day by plan |
 | Mon 12 Oct | `master` replaced | 12.5, once the tag stands |
-| 12 Oct – 8 Nov | The paper's numbers | 8.1 and 8.2 on the machine; 2.1 work in the tree |
+| 12 Oct – 1 Nov | The paper's numbers | 8.1 and 8.2 on the machine; 2.1 work in the tree |
 | Fri 13 Nov | Results | — |
 | Fri 4 Dec | Solution paper | Four pages, IEEE format; the tables come from 8.1 and 8.2 |
 
@@ -517,12 +517,12 @@ answer, and each row below names what is written while it runs.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 8.3 ▶ | **The baseline.** The tip of `v2` after 2.5b, on the eleven APIs of the 2026 edition — the 2027 five among them — one hour each, one run. Its numbers are what every switch of 8.4 and 8.5 is compared against, and the six APIs that are not in the priority corpus are the check that nothing is being tuned to five documents. **Runs alongside 11.1.** About eleven hours, overnight | Every later claim of "better" has a number to be better than, on APIs the tool was not written against |
+| 8.3 ▶ | **The baseline is an ablation over where values come from.** The tip of `v2` after 2.5b, twenty minutes per run, one run, three plans: **declared and invented** — enumerations, samples and defaults from the document, plus invented values, and nothing with a memory; **plus observed** — the plan RESTest ships, which adds what the API itself has returned; **plus dictionaries** — the shipped plan with a hand-written list of values per API passed with `--dictionary`. The first two on the eleven APIs of the 2026 edition, the third on the 2027 five, since a dictionary has to be written per API. Every variant is a plan file or a command-line flag in the harness repository; nothing here changes. About nine hours, overnight. **Runs alongside 11.1** | What each source is worth is known before any lever is built on top of it, and the third plan gives the ceiling: how good the tool is when somebody who knows the API hands it the values — which the competition will not do |
 | 8.4 ▶ | **Screening M9.** The 2027 five, twenty minutes each, one run: the full tool, then each M9 switch off in turn. About ten hours, overnight after 9.4 merges. **Runs alongside 10.1.** A lever that does not move its measurement is switched off in the shipped settings and stays in the code | What each reach lever is worth is known before the break levers are built on top of it, and a lever that costs more than it earns is found before the dress rehearsal |
 | 8.5 ▶ | **Screening M10.** The same shape for the M10 switches, counting distinct 5XX messages and branch coverage. About eight hours, overnight after 10.3 merges. **Runs alongside 12.1 and 12.2** | The same, for the break levers |
 | 8.6 ▶ 🛑 | **The dress rehearsal.** The competition's protocol exactly: the five known APIs, one hour, five runs, eight cores and sixteen gigabytes, the benchmark-compliant image from the harness repository, built from the frozen commit on top of 7.2a's image — the artefact 12.4 submits — started at noon on 6 October. Twenty-five hours. **Runs alongside 12.3 only** — nothing that changes behaviour is written while it runs. 🛑 Its results are read on 8 October; the only change they may cause is a fix for a run that failed outright, re-measured on that API alone for one hour before the tag | The number the tool will post in the competition is known, with its variance, before the tool is submitted — and the image the competition receives is one that has already run for twenty-five hours |
-| 8.1 ⏭ | **The field**, after submission. The tools the benchmark carries adapters for — RESTest 1.x, EvoMaster, Schemathesis, RestTestGen, CATS, and the 2026 winner if an adapter exists by then — on the 2027 five, under the protocol. About twenty-five hours per tool. 12–25 October | The table that goes in the paper, with error bars, against published tools rather than against ourselves |
-| 8.2 ⏭ 🛑 | **The ablation and the replication package**, after submission. Not one switch at a time — nine levers at twenty-five hours each is more machine than there is — but by group: everything on; reach off; break off; hygiene off; the memory of observed values off (a plan without the line); everything off. Three runs each, about ninety hours, 26 October – 8 November. The harness repository public with every campaign's pinned commits and raw data, so a reviewer reproduces any number in the paper from two commands | Every claim in the paper is a measurement somebody else can repeat, and the paper says what each idea is worth rather than that the whole is good |
+| 8.1 ⏭ | **The field**, after submission, at the 2026 edition's own scale so that its published table is the comparison. RESTest 2.0 on the eleven APIs the 2026 edition ran on, one hour, five runs: fifty-five hours. The 2026 report gives every other tool's numbers on those APIs at that budget, so they are not re-run here; RESTest 1.x alone is re-run on the same machine, three runs, as the calibration point between the organisers' hardware and ours — about thirty-three hours. 12–25 October | The table that goes in the paper: RESTest 2.0 beside the whole 2026 field on the APIs and budget that field was measured on, with the hardware difference bounded by a tool that appears in both columns |
+| 8.2 ⏭ 🛑 | **The ablation and the replication package**, after submission, at twenty minutes per run like 8.3. Two axes. *Sources*, 8.3's three plans again on the final tool; *levers*, by group rather than one switch at a time: everything on; reach off; break off; hygiene off; everything off. Eight variants — the shipped plan with everything on is in both axes — on the 2027 five, five runs each: about sixty-five hours, 26 October – 1 November. The harness repository public with every campaign's pinned commits and raw data, so a reviewer reproduces any number in the paper from two commands | Every claim in the paper is a measurement somebody else can repeat, and the paper says what each idea is worth rather than that the whole is good |
 
 ### Notes
 
@@ -532,10 +532,26 @@ next best thing: real APIs the tool has never been pointed at, with adapters tha
 lever that helps on the five and hurts on the six is a lever tuned to five documents, and 8.3 is
 where that would show.
 
-**8.4 and 8.5 — twenty minutes, on purpose.** The area under the curve is decided in the first
-minutes of an hour, operations covered plateaus early, and a screening exists to *rank levers*, not
-to post a number. Twenty minutes per run keeps a milestone's screening to one night, which is what
-lets development continue at the same pace. The hour is 8.6's, where the number matters.
+**8.3 — the three plans, and why the third is a ceiling rather than a baseline.** The first two
+differ by one line: the `observed` source in the shipped plan's weighted group, which is the only
+source with a memory (ADR-0021 §6). Taking it out is what ADR-0023 built the plan file for, so the
+first variant is a file the harness repository holds and the second is the tool with no arguments.
+The third adds lists of values written for each API by hand — or by a capable model, working from
+the document and from a look at the running API, with the model, the prompt and the date written
+into the campaign's README, because a number nobody can reproduce is not a number. It is the most
+favourable case, and **it is not the competition's case**: there, the documents of five APIs are
+unseen until the container starts, and the most a submission could do is have the adapter generate
+a dictionary inside the hour with a small model running on the benchmark's machine, charged to the
+budget like everything else (ADR-0017, ADR-0024 §4). Whether that is worth doing is a decision for
+the harness repository, taken on the gap 8.3 measures between the second plan and the third — and
+nothing in this repository would change for it: the dictionary is a file in a published format
+handed over with `--dictionary`, and the tool neither knows nor cares who wrote it.
+
+**8.3, 8.4, 8.5 — twenty minutes, on purpose.** An ablation ranks variants; it does not post a
+number. The area under the curve is decided in the first minutes of an hour and operations covered
+plateaus early, so twenty minutes per run keeps a whole ablation to one night, which is what lets
+development continue at the same pace. The hour is for the campaigns that are compared with
+somebody else's — 8.6 and 8.1.
 
 **8.6 — the one campaign nothing is allowed to interrupt.** Twenty-five hours on the machine the
 tool is built on, started with two working days left. If it slips a day, the submission slips to the
@@ -545,6 +561,18 @@ and the freeze is not negotiable for anything that changes a request.
 **8.1 and 8.2 — after the submission, not before.** Neither changes what is submitted, both take
 days of machine time, and the paper is due eight weeks after the tool. Running them first would cost
 the calendar its margin for nothing the competition sees.
+
+**8.1 — why the hour, and why the eleven.** The 2026 report is the one table of published numbers
+for the tools we are compared with, and it was measured on eleven APIs at one hour. Matching its
+scale is what makes the comparison a comparison; a shorter run or a different set would leave every
+row with a footnote. The report averaged ten runs where 8.1 averages five, and ran on the
+organisers' machine where 8.1 runs on ours — the re-run of RESTest 1.x is there so that the paper
+can say by how much the machines differ, with a number.
+
+**8.2 — the sources are an axis, not a footnote.** 8.3 will have measured them on the tool as it was
+in September; the paper needs them on the tool as it shipped, because the levers of M9 and M10
+change what a memory is worth — a producer sent on purpose is a different source of identifiers
+from one remembered by luck.
 
 ---
 
