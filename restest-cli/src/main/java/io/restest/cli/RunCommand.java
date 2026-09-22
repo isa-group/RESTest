@@ -17,12 +17,13 @@ package io.restest.cli;
 
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
-import io.restest.core.exec.EngineSettings;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.model.SpecificationIssue;
-import io.restest.core.spec.SpecificationParser;
+import io.restest.core.settings.Settings;
+import io.restest.core.settings.SettingsException;
+import io.restest.core.settings.SettingsInEffect;
 import io.restest.core.store.InteractionStore;
 import io.restest.exec.OkHttpEngine;
 import io.restest.gen.Campaign;
@@ -83,13 +84,6 @@ final class RunCommand implements Callable<Integer> {
 
     /** How many unreadable parts of a document to name before saying how many are left. */
     private static final int ISSUES_SHOWN = 5;
-
-    /**
-     * How much longer than the engine's own patience to wait, after the deadline, for answers to
-     * requests that had already gone out. The engine gives up on a request by itself, so this only
-     * has to outlast that; it exists so a run cannot hang for ever on an API that never replies.
-     */
-    private static final Duration STRAGGLER_GRACE = Duration.ofSeconds(10);
 
     /**
      * Everything RESTest writes into an output directory.
@@ -190,6 +184,29 @@ final class RunCommand implements Callable<Integer> {
     private boolean printTheCampaign;
 
     @Option(
+            names = "--settings",
+            paramLabel = "<file>",
+            description = "A file of settings, in YAML, saying how the tool itself should behave - "
+                    + "how hard it pushes, how much it keeps, how deep it goes. "
+                    + "--print-settings writes out the ones in force as a starting point.")
+    private Path settingsFile;
+
+    @Option(
+            names = "--set",
+            paramLabel = "<group.key=value>",
+            description = "One setting, for instance --set engine.maxConcurrency=1 for an API too "
+                    + "fragile to be asked two things at once. Repeat for several. Wins over "
+                    + "--settings and over the environment.")
+    private List<String> settingsTyped = new ArrayList<>();
+
+    @Option(
+            names = "--print-settings",
+            description = "Write out the settings this command would use, each with where its "
+                    + "value came from, and stop. Save it, change a line, and hand it back with "
+                    + "--settings.")
+    private boolean printTheSettings;
+
+    @Option(
             names = "--store",
             description = "Keep every request and reply in run.sqlite, so the run can be examined "
                     + "again later without asking the API anything. Off unless asked for: a minute "
@@ -207,8 +224,6 @@ final class RunCommand implements Callable<Integer> {
         return spec.commandLine().getParseResult().hasMatchedOption("--fuzzing");
     }
 
-    private final SpecificationParser parser = new SwaggerSpecificationParser();
-    private final EngineSettings engineSettings = EngineSettings.defaults();
 
     @Override
     public Integer call() {
@@ -223,6 +238,31 @@ final class RunCommand implements Callable<Integer> {
                     + ". Ask for one or the other");
             return ExitCode.BAD_COMMAND_LINE;
         }
+        if (printTheCampaign && printTheSettings) {
+            // Two questions, and printing either answer alone would read as an answer to both.
+            // Unlike --settings, which --print-settings is happy to be given: the settings it
+            // prints are the ones this command would use, file and all, which is the useful
+            // answer. A plan is printed instead of being read, so the two cannot be combined.
+            err.println("restest: --print-campaign writes out a plan and --print-settings writes "
+                    + "out the settings. Ask for one or the other");
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        // Gathered before anything else is decided, and before anything is printed, because
+        // everything after this - how the engine behaves, what an invented value looks like, how
+        // much the report keeps - is read out of it. A settings file or a --set this version cannot
+        // accept ends the command here, with nothing sent and nothing printed: running with
+        // different numbers from the ones somebody asked for would produce a result that answers a
+        // question nobody put, and answering some other question of theirs while ignoring the
+        // mistake would leave them to find it later.
+        SettingsInEffect configuration;
+        try {
+            configuration = SettingsFromEverywhere.gather(Optional.ofNullable(settingsFile),
+                    System.getenv(), settingsTyped);
+        } catch (SettingsException refused) {
+            err.println("restest: " + refused.getMessage());
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        Settings settings = configuration.settings();
         if (printTheCampaign) {
             // Before the document is read, and before the clock starts: this asks what RESTest
             // would do, not that it do anything.
@@ -233,6 +273,13 @@ final class RunCommand implements Callable<Integer> {
                 err.println("restest: " + cannotRead.getMessage());
                 return ExitCode.TOOL_FAILED;
             }
+        }
+        if (printTheSettings) {
+            // Like --print-campaign: a question about the tool, answered without a document and
+            // without starting the clock. Printed after the four layers have been gathered, so
+            // what it shows is what this very command would have used.
+            out.print(configuration.asAFile());
+            return ExitCode.NO_FAULTS;
         }
         if (specification == null) {
             err.println("Missing required parameter: '<specification>'");
@@ -257,8 +304,8 @@ final class RunCommand implements Callable<Integer> {
         // API is being asked nothing - and a tool that spends its time preparing instead of testing
         // is exactly what that measurement exists to catch. Start the clock afterwards, and such a
         // run reports itself as flawless.
-        try (HttpEngine engine = new OkHttpEngine(engineSettings)) {
-            ApiModel model = parser.parse(specification);
+        try (HttpEngine engine = new OkHttpEngine(settings.engine())) {
+            ApiModel model = new SwaggerSpecificationParser(settings.document()).parse(specification);
             Dictionaries.Found found = Dictionaries.gather(dictionaries, model);
             found.problems().forEach(problem -> err.println("restest: " + problem));
             // Every list this run holds, not only the ones somebody handed over: the question a
@@ -287,7 +334,7 @@ final class RunCommand implements Callable<Integer> {
                         : plan.campaign();
                 generator = new RandomTestCaseGenerator(model,
                         seed == null ? new java.util.SplittableRandom().nextLong() : seed,
-                        found.dictionaries(), campaign);
+                        found.dictionaries(), campaign, settings);
             } catch (IllegalArgumentException outOfRange) {
                 // Asking for something the command line does not offer, which is the same kind of
                 // mistake as misspelling an option and answers with the same number.
@@ -319,16 +366,18 @@ final class RunCommand implements Callable<Integer> {
                 return ExitCode.NOTHING_TO_TEST;
             }
             return testing(model, generator, testable, address, directory, startedAt, engine,
-                    out, err);
+                    configuration, out, err);
         }
     }
 
     private int testing(ApiModel model, RandomTestCaseGenerator generator, List<Operation> testable,
-            String address, Path directory, Instant startedAt, HttpEngine engine, PrintWriter out,
-            PrintWriter err) {
+            String address, Path directory, Instant startedAt, HttpEngine engine,
+            SettingsInEffect configuration, PrintWriter out, PrintWriter err) {
+        Settings settings = configuration.settings();
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
-        ConsoleReport console = ConsoleReport.to(out, generator.sourcesThatPushAtTheApi());
+        ConsoleReport console =
+                ConsoleReport.to(out, generator.sourcesThatPushAtTheApi(), settings.report());
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;
@@ -360,15 +409,19 @@ final class RunCommand implements Callable<Integer> {
                 rules = OracleListener.standard(model, drained);
                 drained.subscribe(rules);
                 drained.subscribe(console);
-                drained.subscribe(JsonReport.to(reportFile));
+                drained.subscribe(JsonReport.to(reportFile, configuration));
 
                 drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address));
-                describe(out, model, generator, testable.size());
+                describe(out, model, generator, configuration, testable.size());
 
                 try {
                     outcome = RunLoop.run(testable, generator, address, startedAt.plus(budget),
-                            RunLoop.WORK_AHEAD_FACTOR * engineSettings.maxConcurrency(),
-                            engineSettings.readTimeout().plus(STRAGGLER_GRACE), engine, drained);
+                            settings.schedule().workAheadFactor() * settings.engine()
+                                    .maxConcurrency(),
+                            settings.schedule().announcementsAllowedToPileUp(),
+                            settings.engine().readTimeout()
+                                    .plus(settings.schedule().stragglerGrace()),
+                            engine, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
                     // this, the run's summary and its report file would both be missing, and the
@@ -513,7 +566,7 @@ final class RunCommand implements Callable<Integer> {
     }
 
     private void describe(PrintWriter out, ApiModel model, RandomTestCaseGenerator generator,
-            int testable) {
+            SettingsInEffect configuration, int testable) {
         int setAside = generator.operationsThePlanSetAside().size();
         out.println(testable + " of "
                 + (testable + generator.untestableOperations().size() + setAside)
@@ -530,6 +583,16 @@ final class RunCommand implements Callable<Integer> {
         if (generator.whatListensToTheRun().isPresent()) {
             out.println("  values from the API's own replies, so the seed alone does not repeat "
                     + "this run" + (keepTheRun ? "" : "; --store keeps what it sent"));
+        }
+        // An environment variable is invisible in the command somebody typed and in the transcript
+        // they paste into a bug report, so a run configured by one has to say so somewhere a person
+        // will look. All of them are in report.json; this is the line that sends them there.
+        long changed = configuration.rows().stream()
+                .filter(row -> row.source() != io.restest.core.settings.SettingSource.DEFAULT)
+                .count();
+        if (changed > 0) {
+            out.println("  " + changed + " setting(s) are not what RESTest does by default; "
+                    + "--print-settings lists them with where each came from");
         }
         report(out, model.issues());
         out.println();

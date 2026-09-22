@@ -30,6 +30,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.SchemaReference;
+import io.restest.core.settings.MemorySettings;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,61 +84,37 @@ public final class ObservedValues implements RunListener {
     /** The word a plan uses to ask for this source. */
     public static final String NAME = "observed";
 
-    /**
-     * How many values are kept under any one name.
-     *
-     * <p>Small on purpose. What this is for is a value that is true <em>now</em> - an identifier
-     * that still exists, a reference that still resolves - and the oldest thing under a name is the
-     * likeliest to have been deleted since. Keeping thousands would also mean a long run spending
-     * its memory on things it will never send.
-     */
-    static final int MOST_VALUES_UNDER_ONE_NAME = 20;
-
-    /**
-     * How many different names are kept at all.
-     *
-     * <p>A guard rather than a design: an API whose replies carry made-up property names - a map of
-     * identifiers written as an object, say - would otherwise grow this without limit for as long
-     * as the run lasted. Well above anything a real document declares; the largest body in our
-     * corpus of fifty specifications names 97 properties.
-     */
-    static final int MOST_NAMES = 2_000;
-
-    /** How far into a reply the search for named values goes. */
-    private static final int AS_DEEP_AS_A_REPLY_IS_READ = 6;
-
-    /**
-     * How long one remembered word or number may be, written out.
-     *
-     * <p>The same length invention will build up to, and for the same reason: beyond it a value
-     * stops being something an API meant anybody to send back. The numbers matter as much as the
-     * words, because a short thing written can be an enormous thing meant - {@code 1e9999999} is
-     * ten characters in a reply and ten million in a web address.
-     */
-    static final int LONGEST_VALUE_KEPT = 10_000;
-
-    /**
-     * The largest reply that is read at all.
-     *
-     * <p>Reading one costs time on the thread that carries announcements out to everybody listening,
-     * and a listener that falls behind eventually slows the whole run down. A reply this size is
-     * not a resource anybody meant to send back; it is a listing, a dump or a file.
-     */
-    private static final int LONGEST_REPLY_READ = 512 * 1024;
-
     private final ApiModel model;
-    private final Remembered underTheirOwnNames =
-            new Remembered(ValueDictionary.Keying.NAME);
-    private final Remembered underTheNameOfTheirShape =
-            new Remembered(ValueDictionary.Keying.SCHEMA);
+    private final MemorySettings settings;
+    private final Remembered underTheirOwnNames;
+    private final Remembered underTheNameOfTheirShape;
 
     /**
-     * A memory for this API.
+     * A memory for this API, of the size RESTest uses when nobody has said otherwise.
      *
      * @param model the API being tested, which is what says what shape a reply has
      */
     public ObservedValues(ApiModel model) {
+        this(model, MemorySettings.defaults());
+    }
+
+    /**
+     * A memory for this API, of the size asked for.
+     *
+     * @param model the API being tested, which is what says what shape a reply has
+     * @param settings how much is remembered: how many values under one name, how many names, how
+     *     large a value and a reply, and how far into a reply the search goes
+     */
+    public ObservedValues(ApiModel model, MemorySettings settings) {
         this.model = Objects.requireNonNull(model, "model");
+        this.settings = Objects.requireNonNull(settings, "settings");
+        this.underTheirOwnNames = new Remembered(ValueDictionary.Keying.NAME, settings);
+        this.underTheNameOfTheirShape = new Remembered(ValueDictionary.Keying.SCHEMA, settings);
+    }
+
+    /** How much this memory keeps, which is also what decides how large a value may be. */
+    MemorySettings settings() {
+        return settings;
     }
 
     /** Every named piece of every reply, under its own name. */
@@ -174,10 +151,10 @@ public final class ObservedValues implements RunListener {
      * JSON document is not a value, and the half that arrived cannot be told apart from a whole one
      * that happens to be invalid.
      */
-    private static Optional<JsonValue> readable(HttpResponseRecord response) {
+    private Optional<JsonValue> readable(HttpResponseRecord response) {
         Payload body = response.body().orElse(null);
         if (body == null || body.truncated() || body.size() == 0
-                || body.size() > LONGEST_REPLY_READ || !isJson(body.mediaType())) {
+                || body.size() > settings.longestReplyRead() || !isJson(body.mediaType())) {
             return Optional.empty();
         }
         try {
@@ -228,7 +205,7 @@ public final class ObservedValues implements RunListener {
     }
 
     private Optional<String> nameOfOneThing(CanonicalSchema schema, int hops) {
-        if (hops > AS_DEEP_AS_A_REPLY_IS_READ) {
+        if (hops > settings.asDeepAsAReplyIsRead()) {
             return Optional.empty();
         }
         if (schema instanceof ArraySchema list) {
@@ -255,7 +232,7 @@ public final class ObservedValues implements RunListener {
      * exactly that.
      */
     private void remember(JsonValue reply, Optional<String> shape, InteractionId from, int depth) {
-        if (depth > AS_DEEP_AS_A_REPLY_IS_READ) {
+        if (depth > settings.asDeepAsAReplyIsRead()) {
             return;
         }
         if (reply instanceof JsonValue.JsonArray list) {
@@ -281,7 +258,7 @@ public final class ObservedValues implements RunListener {
      * property is not knowing a value for it.
      */
     private void rememberNamedPieces(JsonValue.JsonObject thing, InteractionId from, int depth) {
-        if (depth > AS_DEEP_AS_A_REPLY_IS_READ) {
+        if (depth > settings.asDeepAsAReplyIsRead()) {
             return;
         }
         for (Map.Entry<String, JsonValue> piece : thing.members().entrySet()) {
@@ -327,16 +304,17 @@ public final class ObservedValues implements RunListener {
      * in it is exactly as unsendable as the photo, and is what actually arrives, because a reply's
      * awkward values sit inside the things it returns rather than on their own.
      */
-    static boolean smallEnoughToSend(JsonValue value) {
+    boolean smallEnoughToSend(JsonValue value) {
         return switch (value) {
-            case JsonValue.JsonString text -> text.value().length() <= LONGEST_VALUE_KEPT;
+            case JsonValue.JsonString text ->
+                    text.value().length() <= settings.longestValueKept();
             case JsonValue.JsonNumber number ->
                     number.value().precision() + Math.abs((long) number.value().scale())
-                            <= LONGEST_VALUE_KEPT;
+                            <= settings.longestValueKept();
             case JsonValue.JsonObject thing ->
-                    thing.members().values().stream().allMatch(ObservedValues::smallEnoughToSend);
+                    thing.members().values().stream().allMatch(this::smallEnoughToSend);
             case JsonValue.JsonArray list ->
-                    list.elements().stream().allMatch(ObservedValues::smallEnoughToSend);
+                    list.elements().stream().allMatch(this::smallEnoughToSend);
             // Nothing and true or false, neither of which has a size.
             case JsonValue.JsonNull ignored -> true;
             case JsonValue.JsonBoolean ignored -> true;
@@ -363,16 +341,18 @@ public final class ObservedValues implements RunListener {
     static final class Remembered implements Dictionary {
 
         private final ValueDictionary.Keying keying;
+        private final MemorySettings settings;
         private final ConcurrentMap<String, List<Observation>> byKey = new ConcurrentHashMap<>();
 
-        Remembered(ValueDictionary.Keying keying) {
+        Remembered(ValueDictionary.Keying keying, MemorySettings settings) {
             this.keying = keying;
+            this.settings = settings;
         }
 
         void remember(String key, JsonValue value, InteractionId from) {
             // One thread writes here: the one the run's announcements are carried out on. That is
             // what lets the cap be read and then acted on, and it is why nothing here locks.
-            if (!byKey.containsKey(key) && byKey.size() >= MOST_NAMES) {
+            if (!byKey.containsKey(key) && byKey.size() >= settings.mostNames()) {
                 return;
             }
             byKey.compute(key, (ignored, kept) -> {
@@ -380,7 +360,7 @@ public final class ObservedValues implements RunListener {
                         new ArrayList<>(kept == null ? List.of() : kept);
                 latest.removeIf(seen -> seen.value().equals(value));
                 latest.add(new Observation(value, from));
-                while (latest.size() > MOST_VALUES_UNDER_ONE_NAME) {
+                while (latest.size() > settings.mostValuesUnderOneName()) {
                     latest.remove(0);
                 }
                 return List.copyOf(latest);

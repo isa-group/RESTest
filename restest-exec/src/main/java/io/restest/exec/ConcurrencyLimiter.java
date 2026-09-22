@@ -53,13 +53,6 @@ import java.util.concurrent.locks.ReentrantLock;
 final class ConcurrencyLimiter {
 
     /**
-     * How much slower than the best answer so far counts as "the API is struggling". Two is
-     * deliberately forgiving: normal APIs vary by more than a few percent, and reacting to that
-     * would leave the limit oscillating rather than settling.
-     */
-    private static final double SLOWDOWN_FACTOR = 2.0;
-
-    /**
      * How much of the running average one answer replaces. A fifth: slow enough that a single odd
      * answer barely moves it, quick enough to follow an API that genuinely changes pace within a
      * dozen requests.
@@ -71,6 +64,9 @@ final class ConcurrencyLimiter {
     private final int minimum;
     private final int maximum;
 
+    /** How much slower than the best answer so far counts as "the API is struggling". */
+    private final double slowdownFactor;
+
     private int limit;
     private int inFlight;
     private boolean ranOutOfSlots;
@@ -79,6 +75,7 @@ final class ConcurrencyLimiter {
     ConcurrencyLimiter(EngineSettings settings) {
         this.minimum = settings.minConcurrency();
         this.maximum = settings.maxConcurrency();
+        this.slowdownFactor = settings.slowdownFactor();
         this.limit = settings.initialConcurrency();
     }
 
@@ -129,7 +126,7 @@ final class ConcurrencyLimiter {
                 limit = Math.max(minimum, limit / 2);
             } else {
                 boolean struggling = usualResponseNanos > 0
-                        && responseNanos > usualResponseNanos * SLOWDOWN_FACTOR;
+                        && responseNanos > usualResponseNanos * slowdownFactor;
                 usualResponseNanos = usualResponseNanos == 0
                         ? responseNanos
                         : usualResponseNanos * (1 - WEIGHT_OF_ONE_ANSWER)

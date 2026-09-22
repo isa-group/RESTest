@@ -335,6 +335,54 @@ final class ArchitectureRules {
     private static final String RANDOM_PACKAGE = RandomGenerator.class.getPackageName() + ".";
 
     /**
+     * Only the command line reads the environment the tool was started in.
+     *
+     * <p>Every number somebody decided about how RESTest behaves is a setting, and settings are
+     * gathered once, in one place, and handed to whatever needs them. A class that reached out to
+     * {@code System.getenv} or {@code System.getProperty} at the point where it needed a value
+     * would be global state with a friendly name: the second run in the same program would read
+     * what the first one's environment said, which is exactly what design principle 6 forbids. It
+     * would also be invisible - unprintable by {@code --print-settings}, unrecorded in the report -
+     * so a run configured that way is one nobody can explain afterwards.
+     *
+     * <p>Both ways of asking are covered, and so is {@code System.getProperties}, which hands back
+     * the whole map and would otherwise be the way round the other two. Calls and method references
+     * both, for the reason spelled out on {@link #TERMINATE_THE_PROCESS}.
+     *
+     * <p>What this does <em>not</em> reach is a library doing it inside itself. The HTTP client
+     * reads proxy settings, the database driver reads a temporary directory; neither is ours to
+     * forbid, and neither is a decision this project took.
+     */
+    static ArchRule onlyOneModuleReadsTheEnvironment(String root, String module) {
+        return noClasses()
+                .that().resideOutsideOfPackage(root + "." + module + "..")
+                .and().resideInAPackage(root + "..")
+                .should(READ_THE_ENVIRONMENT)
+                .as("only " + root + "." + module + " reads the environment or the system "
+                        + "properties (ADR-0025)");
+    }
+
+    private static final ArchCondition<JavaClass> READ_THE_ENVIRONMENT =
+            new ArchCondition<>("read the environment or the system properties") {
+                @Override
+                public void check(JavaClass item, ConditionEvents events) {
+                    Stream.<JavaAccess<?>>concat(
+                                    item.getMethodCallsFromSelf().stream(),
+                                    item.getMethodReferencesFromSelf().stream())
+                            .filter(ArchitectureRules::readsTheEnvironment)
+                            .forEach(access -> events.add(SimpleConditionEvent.satisfied(
+                                    access, access.getDescription())));
+                }
+            };
+
+    private static boolean readsTheEnvironment(JavaAccess<?> access) {
+        return System.class.getName().equals(access.getTargetOwner().getName())
+                && ("getenv".equals(access.getName())
+                        || "getProperty".equals(access.getName())
+                        || "getProperties".equals(access.getName()));
+    }
+
+    /**
      * The domain-model module holds no network, parser or other heavy dependency. This checks the
      * "no network" half, which is the one a well-meaning change is most likely to breach by accident.
      */

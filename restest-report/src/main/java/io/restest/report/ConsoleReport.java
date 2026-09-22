@@ -22,6 +22,7 @@ import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
+import io.restest.core.settings.ReportSettings;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -59,17 +60,6 @@ public final class ConsoleReport implements RunListener {
     /** How many particular disagreements to print under one fault before saying how many remain. */
     private static final int DETAILS_SHOWN = 10;
 
-    /**
-     * How many faults to print in full before the screen stops being the right place for them.
-     *
-     * <p>A run that keeps testing for as long as it was given will ask an API the same question
-     * thousands of times, and an API that is broken is broken every time. Printing all of them
-     * scrolls everything worth reading off the top of the screen, so past this many the screen says
-     * so once and stops. The count at the end is of all of them, printed or not, and the run's own
-     * file counts every one of them too and describes the first few of each kind.
-     */
-    private static final int FAULTS_SHOWN = 50;
-
     private final Appendable out;
     private final Map<FaultCategory, Integer> counts = new LinkedHashMap<>();
 
@@ -88,30 +78,43 @@ public final class ConsoleReport implements RunListener {
     /** How many requests carried at least one value from one of them. */
     private long awkward;
 
-    private ConsoleReport(Appendable out, Set<String> awkwardSources) {
+    /** How many faults to print in full before the screen stops being the right place for them. */
+    private final int faultsShown;
+
+    private ConsoleReport(Appendable out, Set<String> awkwardSources, ReportSettings settings) {
         this.out = Objects.requireNonNull(out, "out");
         this.awkwardSources = Set.copyOf(Objects.requireNonNull(awkwardSources, "awkwardSources"));
+        this.faultsShown = settings.faultsShownOnTheConsole();
     }
 
     /** A report that writes wherever you tell it to. */
     public static ConsoleReport to(Appendable out) {
-        return new ConsoleReport(out, Set.of());
+        return new ConsoleReport(out, Set.of(), ReportSettings.defaults());
     }
 
     /**
-     * A report that writes wherever you tell it to, and knows which lists a run pushes with.
+     * A report that writes wherever you tell it to, knows which lists a run pushes with, and is
+     * told how many faults belong on a screen.
      *
      * <p>Part of a run is spent on requests built from values nobody sensible would send. Whatever
      * those earn - a refusal, or an acceptance, or the API falling over - lands in the same counts
      * as everything else, and a summary that did not separate them would read as though the API
      * were behaving that way towards ordinary traffic.
      *
+     * <p>A run that keeps testing for as long as it was given will ask an API the same question
+     * thousands of times, and an API that is broken is broken every time. Printing all of them
+     * scrolls everything worth reading off the top of the screen, so past the number given here the
+     * screen says so once and stops. The count at the end is of all of them, printed or not.
+     *
      * @param out where to write
      * @param awkwardSources the names of the lists a run pushes at the API with
+     * @param settings how much of what was found belongs on a screen
      * @return the report
      */
-    public static ConsoleReport to(Appendable out, Set<String> awkwardSources) {
-        return new ConsoleReport(out, awkwardSources);
+    public static ConsoleReport to(Appendable out, Set<String> awkwardSources,
+            ReportSettings settings) {
+        return new ConsoleReport(out, awkwardSources,
+                Objects.requireNonNull(settings, "settings"));
     }
 
     /**
@@ -162,8 +165,8 @@ public final class ConsoleReport implements RunListener {
     private void print(Finding finding) {
         faults++;
         counts.merge(finding.category(), 1, Integer::sum);
-        if (faults > FAULTS_SHOWN) {
-            if (faults == FAULTS_SHOWN + 1) {
+        if (faults > faultsShown) {
+            if (faults == faultsShown + 1) {
                 write("... more faults are being found; every one of them is counted in the run's "
                         + "report and in the total below");
                 write("");

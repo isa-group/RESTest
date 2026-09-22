@@ -13,6 +13,9 @@ restest run api.yaml --url http://localhost:9966 --campaign plan.yaml
 The decisions behind the format are in [ADR-0023](adr/0023-the-campaign-file.md). What a list of
 values is, and how one is written, is [the dictionary format](dictionary-format.md).
 
+A plan is about the API. How the tool itself behaves — how hard it pushes, how much it keeps, how
+deep it goes — is [the settings](settings.md), which travel with a machine rather than with an API.
+
 ## What a plan says
 
 ```yaml

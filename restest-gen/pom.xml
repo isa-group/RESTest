@@ -28,20 +28,6 @@
         </dependency>
 
         <!--
-            Reads the lists of values a run is given. YAML rather than JSON because those files are
-            the part of this tool somebody is most likely to write by hand, and because the
-            specifications they sit beside are written in it too. A YAML reader also reads JSON,
-            which is a subset of it, so a file written either way is read either way.
-
-            Pinned in the parent, where it already was: it arrives through swagger-parser as well,
-            and the two have to move together.
-        -->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-        </dependency>
-
-        <!--
             Builds a string that matches a regular expression. A specification states the characters
             it will accept as a `pattern`, and working backwards from one to a string that satisfies
             it is a small compiler - a parser for a dialect that is not quite Java's, and a walk over

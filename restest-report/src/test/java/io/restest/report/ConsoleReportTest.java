@@ -30,6 +30,27 @@ class ConsoleReportTest {
     private final ConsoleReport report = ConsoleReport.to(screen);
 
     @Test
+    @DisplayName("how many faults belong on a screen is a setting: told two, it prints two and "
+            + "says so, while still counting every one of them")
+    void how_many_faults_reach_the_screen_is_a_setting() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen, java.util.Set.of(),
+                new io.restest.core.settings.ReportSettings(5, 1_000, 24L * 1024, 2));
+
+        for (int found = 0; found < 6; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        }
+
+        assertThat(screen.toString().split("F100", -1).length - 1)
+                .describedAs("two written out, and the line that says the screen has stopped "
+                        + "being the right place for them")
+                .isEqualTo(2);
+        assertThat(report.faults())
+                .describedAs("the count is of all of them, printed or not")
+                .isEqualTo(6);
+    }
+
+    @Test
     @DisplayName("a fault is printed with its kind, its operation, what is wrong, and a command")
     void a_fault_is_printed_with_everything_needed_to_check_it() {
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));

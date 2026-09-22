@@ -16,7 +16,6 @@
 module io.restest.gen {
     requires io.restest.core;
     requires io.restest.idl;
-    requires org.yaml.snakeyaml;
     // An automatic module: the jar carries no descriptor of its own, so this name comes from its
     // file name. See ADR-0022, which weighs that against writing a regular-expression engine here.
     requires rgxgen;

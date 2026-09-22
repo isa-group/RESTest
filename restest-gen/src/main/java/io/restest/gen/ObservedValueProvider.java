@@ -279,7 +279,7 @@ public final class ObservedValueProvider implements ValueProvider {
         // returned reaches this without having been measured at all: the thing is filed under the
         // name of its shape in one piece. A number of eight characters that cannot be written down
         // at all, or a word of four hundred kilobytes, arrives this way and no other.
-        return couldSatisfy(was, wanted) && ObservedValues.smallEnoughToSend(was)
+        return couldSatisfy(was, wanted) && seen.smallEnoughToSend(was)
                 ? Optional.of(was)
                 : Optional.empty();
     }
@@ -423,7 +423,7 @@ public final class ObservedValueProvider implements ValueProvider {
      * not fine written into a web address. Single words and numbers need no check, having been
      * measured before they were kept.
      */
-    private static boolean canGoThere(JsonValue value, ValueRequest request) {
+    private boolean canGoThere(JsonValue value, ValueRequest request) {
         if (!RequestBuilder.canBeSentFrom(value, request.location())) {
             return false;
         }
@@ -432,7 +432,7 @@ public final class ObservedValueProvider implements ValueProvider {
                         || value instanceof JsonValue.JsonArray)) {
             return true;
         }
-        return JsonText.write(value).length() <= ObservedValues.LONGEST_VALUE_KEPT;
+        return JsonText.write(value).length() <= seen.settings().longestValueKept();
     }
 
     /**

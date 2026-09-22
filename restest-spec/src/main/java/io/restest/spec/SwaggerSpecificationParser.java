@@ -20,6 +20,7 @@ import io.restest.core.model.Server;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.restest.core.settings.DocumentSettings;
 import io.restest.core.spec.SpecificationParser;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Json31;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -65,11 +67,24 @@ import java.util.Optional;
  */
 public final class SwaggerSpecificationParser implements SpecificationParser {
 
-    /** Generous, but not unbounded: a hung server must not hang the run that asked for its document. */
-    private static final int URL_TIMEOUT_MILLIS = 10_000;
+    /** How long to wait for a document served over the network, and how much of it to read. */
+    private final DocumentSettings settings;
 
-    /** Far larger than any real specification; a bound against an unbounded or hostile response. */
-    private static final int MAX_DOCUMENT_BYTES = 64 * 1024 * 1024;
+    /** A parser that reads a document the way RESTest does when nobody has said otherwise. */
+    public SwaggerSpecificationParser() {
+        this(DocumentSettings.defaults());
+    }
+
+    /**
+     * A parser that waits and reads as far as it is told to.
+     *
+     * @param settings how long to wait for a document fetched over the network, and the largest
+     *     one to read at all. A hung server must not hang the run that asked for its document, and
+     *     a server that answers for ever must not fill its memory
+     */
+    public SwaggerSpecificationParser(DocumentSettings settings) {
+        this.settings = Objects.requireNonNull(settings, "settings");
+    }
 
     @Override
     public ApiModel parse(String location) {
@@ -77,7 +92,17 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
             return incomplete(SpecificationIssue.document("location", "no location was given"));
         }
 
-        Optional<String> content = read(location);
+        Optional<String> content;
+        try {
+            content = read(location);
+        } catch (TooLarge tooLarge) {
+            // Said plainly, and with the name of the thing to change. Left to be discovered by the
+            // reader after this, the same document would be reported as one somebody wrote wrongly.
+            return incomplete(SpecificationIssue.document("location",
+                    "the description at '" + location + "' is larger than this run will read, "
+                            + "which is document.mostBytesRead = " + settings.mostBytesRead()
+                            + " bytes"));
+        }
         if (content.isEmpty()) {
             return incomplete(SpecificationIssue.document("location",
                     "nothing could be read from '" + location + "'"));
@@ -208,12 +233,20 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
      * exists but is not valid UTF-8 is reported for what it is - unreadable content - rather than
      * mistaken for a location nothing answered at.
      */
-    private static Optional<String> read(String location) {
+    private Optional<String> read(String location) throws TooLarge {
         try {
             Path path = Path.of(location);
             if (Files.isReadable(path) && !Files.isDirectory(path)) {
-                return Optional.of(decode(Files.readAllBytes(path)));
+                // Bounded like every other way in. A file on this machine is the one somebody
+                // chose deliberately, so it is the least likely of the three to be enormous by
+                // surprise - but the bound is published as the largest description that is read at
+                // all, and a bound with an exception in it is not the thing that was promised.
+                try (InputStream stream = Files.newInputStream(path)) {
+                    return Optional.of(decode(readBounded(stream)));
+                }
             }
+        } catch (TooLarge tooLarge) {
+            throw tooLarge;
         } catch (InvalidPathException | IOException ignored) {
             // Falls through: not every location is a valid local path, and that is not an error yet.
         }
@@ -222,17 +255,23 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
             if (stream != null) {
                 return Optional.of(decode(readBounded(stream)));
             }
+        } catch (TooLarge tooLarge) {
+            throw tooLarge;
         } catch (IOException ignored) {
             // Falls through to the URL attempt.
         }
         if (location.startsWith("http://") || location.startsWith("https://")) {
             try {
                 URLConnection connection = URI.create(location).toURL().openConnection();
-                connection.setConnectTimeout(URL_TIMEOUT_MILLIS);
-                connection.setReadTimeout(URL_TIMEOUT_MILLIS);
+                int patience = (int) Math.min(Integer.MAX_VALUE,
+                        settings.fetchTimeout().toMillis());
+                connection.setConnectTimeout(patience);
+                connection.setReadTimeout(patience);
                 try (InputStream stream = connection.getInputStream()) {
                     return Optional.of(decode(readBounded(stream)));
                 }
+            } catch (TooLarge tooLarge) {
+                throw tooLarge;
             } catch (IOException | IllegalArgumentException ignored) {
                 // A malformed URL (an illegal character, for instance) is exactly as unreachable as
                 // one that is well-formed but answers nothing; both report the same way.
@@ -243,11 +282,29 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
     }
 
     /**
-     * Every byte, up to a ceiling no real specification approaches - a bound against an unbounded or
-     * hostile response, not a claim about how large a real document can be.
+     * Every byte, up to the ceiling a run was given - a bound against an unbounded or hostile
+     * answer, not a claim about how large a real specification can be.
+     *
+     * <p>One byte more than the ceiling is asked for, so that "the description ended" and "I
+     * stopped reading" can be told apart. They read identically otherwise, and a half-read
+     * description is not a small description: it is a description that breaks off in the middle of
+     * a line, which every reader after this would report as a document somebody wrote wrongly.
+     * Saying which of the two happened is the difference between a person fixing their file and a
+     * person hunting for a mistake that is not there.
      */
-    private static byte[] readBounded(InputStream stream) throws IOException {
-        return stream.readNBytes(MAX_DOCUMENT_BYTES);
+    private byte[] readBounded(InputStream stream) throws IOException {
+        byte[] read = stream.readNBytes(settings.mostBytesRead() + 1);
+        if (read.length > settings.mostBytesRead()) {
+            throw new TooLarge();
+        }
+        return read;
+    }
+
+    /** A description longer than this run is willing to read. */
+    private static final class TooLarge extends IOException {
+
+        @java.io.Serial
+        private static final long serialVersionUID = 1L;
     }
 
     private static String decode(byte[] bytes) {

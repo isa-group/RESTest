@@ -59,30 +59,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 final class RunLoop {
 
-    /**
-     * How many requests may be waiting for an answer at once, as a multiple of what the engine will
-     * ever have in flight.
-     *
-     * <p>The engine decides the real number for itself, moving it up and down as the API turns out
-     * to be fast or slow. This is only a ceiling on how far ahead the loop may run, and it sits
-     * above the engine's own so the engine is never left with a free slot while the next request is
-     * still being invented.
-     */
-    static final int WORK_AHEAD_FACTOR = 2;
-
-    /**
-     * How many announcements may be waiting to reach the reports before the loop pauses.
-     *
-     * <p>Judging a reply against the document, writing it to the run's file and printing a fault all
-     * take time, and an API on the same machine can answer faster than all three together. Without a
-     * limit the backlog grows for as long as the run lasts, and a long run against a fast API ends
-     * by running out of memory rather than by running out of time.
-     *
-     * <p>Pausing is the honest response: the tool was not testing, and it was the tool's own work
-     * that stopped it, so the pause is counted as time the tool wasted and shows up in the summary.
-     */
-    static final int ANNOUNCEMENTS_ALLOWED_TO_PILE_UP = 1_000;
-
     /** How long to wait before looking again at whether the reports have caught up. */
     private static final Duration CATCH_UP_PAUSE = Duration.ofMillis(5);
 
@@ -124,6 +100,12 @@ final class RunLoop {
      * @param baseUrl where the API is
      * @param deadline when to stop inventing new requests
      * @param workAhead how many requests may be waiting for an answer at once
+     * @param announcementsAllowedToPileUp how many announcements may be waiting to reach the
+     *     reports before the loop pauses to let them catch up. Judging a reply, writing it to the
+     *     run's file and printing a fault all take time, and an API on the same machine can answer
+     *     faster than all three together; without a limit the backlog grows for as long as the run
+     *     lasts, and a long run against a fast API ends by running out of memory rather than out of
+     *     time. Pausing is the honest response, and is counted as time the tool wasted
      * @param howLongToWaitForStragglers how long to go on waiting, past the deadline, for answers to
      *     requests that had already gone out
      * @param engine what sends them
@@ -131,8 +113,8 @@ final class RunLoop {
      * @return what the loop did with the time
      */
     static Outcome run(List<Operation> operations, RandomTestCaseGenerator generator,
-            String baseUrl, Instant deadline, int workAhead, Duration howLongToWaitForStragglers,
-            HttpEngine engine, EventStream events) {
+            String baseUrl, Instant deadline, int workAhead, int announcementsAllowedToPileUp,
+            Duration howLongToWaitForStragglers, HttpEngine engine, EventStream events) {
         Objects.requireNonNull(generator, "generator");
         Objects.requireNonNull(baseUrl, "baseUrl");
         Objects.requireNonNull(deadline, "deadline");
@@ -158,7 +140,7 @@ final class RunLoop {
             if (!waitForASlot(slots, deadline)) {
                 break;
             }
-            pauseWhileTheReportsCatchUp(events, deadline);
+            pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp);
 
             Operation operation = operations.get(next);
             Optional<TestCase> testCase = generator.generate(operation);
@@ -301,8 +283,9 @@ final class RunLoop {
         return workAhead - slots.availablePermits();
     }
 
-    private static void pauseWhileTheReportsCatchUp(EventStream events, Instant deadline) {
-        while (events.undelivered() > ANNOUNCEMENTS_ALLOWED_TO_PILE_UP
+    private static void pauseWhileTheReportsCatchUp(EventStream events, Instant deadline,
+            int allowedToPileUp) {
+        while (events.undelivered() > allowedToPileUp
                 && Instant.now().isBefore(deadline)) {
             try {
                 Thread.sleep(CATCH_UP_PAUSE);

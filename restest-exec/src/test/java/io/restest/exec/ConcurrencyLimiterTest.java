@@ -182,6 +182,40 @@ class ConcurrencyLimiterTest {
         }
     }
 
+    @Test
+    @DisplayName("how much slower counts as struggling is a setting: told to be forgiving, the "
+            + "engine keeps the same number of requests in flight where it would have backed off")
+    void how_forgiving_to_be_is_a_setting() throws InterruptedException {
+        ConcurrencyLimiter forgiving = new ConcurrencyLimiter(EngineSettings.defaults()
+                .withConcurrency(1, 4, 16)
+                .withSlowdownFactor(1_000));
+        for (int i = 0; i < 5; i++) {
+            forgiving.observe(FAST, false);
+        }
+
+        forgiving.observe(SLOW, false);
+
+        assertThat(forgiving.limit())
+                .describedAs("the same answer lowers the limit at the usual setting, and an API "
+                        + "that is simply uneven rather than struggling is what this is for")
+                .isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("and told to be strict, it backs off where it would have carried on")
+    void being_strict_is_the_same_setting() {
+        ConcurrencyLimiter strict = new ConcurrencyLimiter(EngineSettings.defaults()
+                .withConcurrency(1, 4, 16)
+                .withSlowdownFactor(1.01));
+        for (int i = 0; i < 5; i++) {
+            strict.observe(USUAL, false);
+        }
+
+        strict.observe(USUAL * 2, false);
+
+        assertThat(strict.limit()).isEqualTo(3);
+    }
+
     private static ConcurrencyLimiter limiter(int minimum, int initial, int maximum) {
         return new ConcurrencyLimiter(
                 EngineSettings.defaults().withConcurrency(minimum, initial, maximum));

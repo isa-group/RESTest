@@ -82,14 +82,15 @@ class ProductionArchitectureTest {
         check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "core", "com.fasterxml.."));
     }
 
-    // The YAML reader stays inside the module that reads the lists of values a run is given. It
-    // also arrives through the specification parser, which is why the rule names the two modules
-    // allowed to hold it rather than one: leaking it anywhere else would put a second document
-    // reader into a module that already has one. See ADR-0020.
+    // The YAML reader moved to restest-core when a third part of the tool came to need it, the
+    // same way the JSON library did, and the rule moved with it rather than being dropped. It also
+    // arrives through the specification parser, which is why the rule names two modules rather than
+    // one: leaking it anywhere else would put a second document reader into a module that already
+    // has one. See ADR-0006, Amendment (M11.1), and ADR-0020.
     @Test
-    @DisplayName("only restest-gen and restest-spec reference the YAML reader (ADR-0004)")
-    void only_restest_gen_and_restest_spec_reference_the_yaml_reader() {
-        check(ArchitectureRules.onlyTheseModulesDependOn(ROOT, java.util.Set.of("gen", "spec"),
+    @DisplayName("only restest-core and restest-spec reference the YAML reader (ADR-0004)")
+    void only_restest_core_and_restest_spec_reference_the_yaml_reader() {
+        check(ArchitectureRules.onlyTheseModulesDependOn(ROOT, java.util.Set.of("core", "spec"),
                 "org.yaml.."));
     }
 
@@ -128,6 +129,16 @@ class ProductionArchitectureTest {
     @DisplayName("only restest-cli terminates the process (ADR-0004)")
     void only_restest_cli_terminates_the_process() {
         check(ArchitectureRules.onlyOneModuleMayTerminateTheProcess(ROOT, "cli"));
+    }
+
+    // Every number somebody decided is a setting, gathered once by the command line and handed to
+    // whatever needs it. A class that asked the environment at the point of use would make that
+    // value global, invisible to --print-settings and to the report, and shared between two runs in
+    // the same program. See ADR-0025.
+    @Test
+    @DisplayName("only restest-cli reads the environment or the system properties (ADR-0025)")
+    void only_restest_cli_reads_the_environment() {
+        check(ArchitectureRules.onlyOneModuleReadsTheEnvironment(ROOT, "cli"));
     }
 
     @Test

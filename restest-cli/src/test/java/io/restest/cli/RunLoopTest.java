@@ -31,6 +31,7 @@ import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
+import io.restest.core.settings.ScheduleSettings;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.nio.charset.StandardCharsets;
@@ -66,6 +67,10 @@ class RunLoopTest {
 
     /** Long enough that a healthy run always drains, short enough that a stuck one does not hang. */
     private static final Duration PATIENT = Duration.ofSeconds(5);
+
+    /** How many announcements the loop under test lets pile up before it pauses for the reports. */
+    private static final int ANNOUNCEMENTS_ALLOWED =
+            ScheduleSettings.defaults().announcementsAllowedToPileUp();
 
     private final ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
     private final ApiEngine engine = new ApiEngine();
@@ -142,7 +147,7 @@ class RunLoopTest {
 
         assertThat(watched.highestSeen)
                 .describedAs("the backlog is held near its limit rather than growing all run")
-                .isLessThan(RunLoop.ANNOUNCEMENTS_ALLOWED_TO_PILE_UP * 2L);
+                .isLessThan(ANNOUNCEMENTS_ALLOWED * 2L);
     }
 
     @Test
@@ -154,6 +159,37 @@ class RunLoopTest {
 
         assertThat(heard.completed.get()).isEqualTo((int) outcome.sent());
         assertThat(heard.planned.get()).isEqualTo((int) outcome.sent());
+    }
+
+    @Test
+    @DisplayName("how far ahead of the API the loop may work is a number it is told, so a run set "
+            + "to one request at a time has one request at a time")
+    void how_far_ahead_to_work_is_a_setting() {
+        engine.takes(request -> Duration.ofMillis(2));
+
+        run(BUDGET, 1, ANNOUNCEMENTS_ALLOWED, events -> { });
+
+        assertThat(engine.mostAtOnce.get())
+                .describedAs("at the usual setting this run has several in flight at once")
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("and how many announcements may wait for the reports is another, so a run told to "
+            + "let fewer pile up lets fewer pile up")
+    void how_many_announcements_may_wait_is_a_setting() {
+        engine.takes(request -> Duration.ofMillis(1));
+
+        Undelivered watched = new Undelivered();
+        run(BUDGET, WORK_AHEAD, 4, events -> {
+            events.subscribe(slowListener());
+            watched.stream = events;
+        });
+
+        assertThat(watched.highestSeen)
+                .describedAs("held near the four it was given rather than near the thousand it "
+                        + "would otherwise have been")
+                .isLessThan(ANNOUNCEMENTS_ALLOWED);
     }
 
     @Test
@@ -182,7 +218,7 @@ class RunLoopTest {
         RunLoop.Outcome outcome;
         try (EventStream events = new EventStream()) {
             outcome = RunLoop.run(model.operations(), generator(), "https://api.example?key=abc",
-                    Instant.now().plusSeconds(30), WORK_AHEAD, PATIENT, engine, events);
+                    Instant.now().plusSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events);
         }
 
         assertThat(outcome.sent()).isZero();
@@ -199,17 +235,24 @@ class RunLoopTest {
     void no_operations_is_not_a_run() {
         try (EventStream events = new EventStream()) {
             assertThatThrownBy(() -> RunLoop.run(List.of(), generator(), "https://api.example",
-                    Instant.now().plusSeconds(1), WORK_AHEAD, PATIENT, engine, events))
+                    Instant.now().plusSeconds(1), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("nothing to do");
         }
     }
 
     private RunLoop.Outcome run(Duration budget, java.util.function.Consumer<EventStream> setUp) {
+        return run(budget, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, setUp);
+    }
+
+    /** The same, told how far ahead to work and how many announcements may wait for the reports. */
+    private RunLoop.Outcome run(Duration budget, int workAhead, int announcementsAllowed,
+            java.util.function.Consumer<EventStream> setUp) {
         try (EventStream events = new EventStream()) {
             setUp.accept(events);
             return RunLoop.run(model.operations(), generator(), "https://api.example",
-                    Instant.now().plus(budget), WORK_AHEAD, PATIENT, engine, events);
+                    Instant.now().plus(budget), workAhead, announcementsAllowed, PATIENT, engine,
+                    events);
         }
     }
 

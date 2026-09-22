@@ -156,7 +156,9 @@ how to reproduce it locally.
 - **Unit tests with coverage thresholds** on the core and the oracles.
 - **Architecture tests**: dependencies point inwards; no global mutable state; nothing outside the
   specification module touches the third-party parser; nothing blocks the request loop; no process
-  termination outside the command-line module.
+  termination outside the command-line module; nothing outside the command-line module reads the
+  environment or the system properties, so that every number a run uses arrives by constructor and
+  two runs in one program can differ.
 - **Mutation testing** on the oracle and constraint packages — deliberately corrupt our own code and
   check that the tests notice. "Our tool finds bugs" is more credible when our own oracle logic has
   a measured score.
@@ -377,6 +379,7 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Constraint solver | Choco, behind an interface | 4.10.x |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
 | JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.1 |
+| YAML reader for the files a person writes | `org.yaml:snakeyaml`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M11.1) | 2.6 |
 | Strings matching a regular expression | `com.github.curious-odd-man:rgxgen`, confined to `restest-gen` ([ADR-0022](adr/0022-the-characters-a-value-is-made-of.md)) | 3.0 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
 | Assertions | AssertJ | 3.27.7 |

@@ -41,6 +41,10 @@ import java.util.Objects;
  * @param maxConcurrency the most requests the engine will ever have in flight. This is the promise
  *     that the tool stays a test tool and does not turn into a load generator against somebody's
  *     staging environment
+ * @param slowdownFactor how much slower than the best answer so far counts as "the API is
+ *     struggling", at which point the engine keeps fewer requests in flight. Two is deliberately
+ *     forgiving: normal APIs vary by more than a few percent, and reacting to that would leave the
+ *     number of requests in flight oscillating rather than settling
  * @param maxRetainedResponseBytes how much of a reply body is kept. Beyond this the reply is kept as
  *     a truncated payload that still remembers how long the whole thing was, so a report can say "12
  *     MB of JSON" without the run holding 12 MB per response in memory
@@ -57,6 +61,7 @@ public record EngineSettings(
         int minConcurrency,
         int initialConcurrency,
         int maxConcurrency,
+        double slowdownFactor,
         long maxRetainedResponseBytes,
         boolean followRedirects,
         String userAgent) {
@@ -71,6 +76,7 @@ public record EngineSettings(
             1,
             4,
             16,
+            2.0,
             DEFAULT_MAX_RETAINED_RESPONSE_BYTES,
             false,
             "RESTest/2.0");
@@ -94,6 +100,16 @@ public record EngineSettings(
                     + ") is outside the range the engine is allowed to use, " + minConcurrency
                     + " to " + maxConcurrency);
         }
+        if (!(slowdownFactor > 1) || !Double.isFinite(slowdownFactor)) {
+            // The second half is not belt and braces. A number typed as 1e400 is larger than a
+            // double can hold and arrives here as infinity, which satisfies "greater than 1" and
+            // then cannot be written down again - so a run would be configured with a value no
+            // report could state.
+            throw new IllegalArgumentException("slowdownFactor must be greater than 1 and a number "
+                    + "that can be written down: at 1 every answer slower than the fastest one so "
+                    + "far would count as the API struggling, and the engine would never settle: "
+                    + slowdownFactor);
+        }
         if (maxRetainedResponseBytes < 1) {
             throw new IllegalArgumentException("maxRetainedResponseBytes must be at least 1; an "
                     + "engine that keeps nothing of a reply has nothing to judge: "
@@ -112,20 +128,20 @@ public record EngineSettings(
 
     public EngineSettings withConnectTimeout(Duration value) {
         return new EngineSettings(value, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, maxRetainedResponseBytes, followRedirects,
-                userAgent);
+                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
+                followRedirects, userAgent);
     }
 
     public EngineSettings withReadTimeout(Duration value) {
         return new EngineSettings(connectTimeout, value, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, maxRetainedResponseBytes, followRedirects,
-                userAgent);
+                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
+                followRedirects, userAgent);
     }
 
     public EngineSettings withWriteTimeout(Duration value) {
         return new EngineSettings(connectTimeout, readTimeout, value, minConcurrency,
-                initialConcurrency, maxConcurrency, maxRetainedResponseBytes, followRedirects,
-                userAgent);
+                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
+                followRedirects, userAgent);
     }
 
     /**
@@ -138,7 +154,7 @@ public record EngineSettings(
      */
     public EngineSettings withConcurrency(int minimum, int initial, int maximum) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minimum, initial,
-                maximum, maxRetainedResponseBytes, followRedirects, userAgent);
+                maximum, slowdownFactor, maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     /** One request at a time, for an API too fragile to be asked two questions at once. */
@@ -146,20 +162,29 @@ public record EngineSettings(
         return withConcurrency(1, 1, 1);
     }
 
+    /** How much slower than its best answer counts as the API struggling. Greater than one. */
+    public EngineSettings withSlowdownFactor(double value) {
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
+                initialConcurrency, maxConcurrency, value, maxRetainedResponseBytes,
+                followRedirects, userAgent);
+    }
+
     public EngineSettings withMaxRetainedResponseBytes(long value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, value, followRedirects, userAgent);
+                initialConcurrency, maxConcurrency, slowdownFactor, value, followRedirects,
+                userAgent);
     }
 
     public EngineSettings withFollowRedirects(boolean value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, maxRetainedResponseBytes, value, userAgent);
+                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
+                value, userAgent);
     }
 
     public EngineSettings withUserAgent(String value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, maxRetainedResponseBytes, followRedirects,
-                value);
+                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
+                followRedirects, value);
     }
 
     private static void positive(Duration value, String what) {

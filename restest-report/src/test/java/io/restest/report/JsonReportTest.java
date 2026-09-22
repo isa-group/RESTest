@@ -21,6 +21,7 @@ import io.restest.core.event.RunEvent;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.oracle.Finding;
+import io.restest.core.settings.ReportSettings;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -228,6 +229,29 @@ class JsonReportTest {
     }
 
     @Test
+    @DisplayName("how many write-ups a file holds is a setting: told two, it writes two, and says "
+            + "in its own limits block that two is what it was told")
+    void how_much_is_written_out_is_a_setting() {
+        io.restest.core.settings.Settings told = io.restest.core.settings.Settings.from(
+                java.util.Map.of("report.writeUpsPerOperationAndKind", "2"));
+        JsonReport report = JsonReport.inMemory(fixedClock(),
+                io.restest.core.settings.SettingsInEffect.of(told));
+        for (int found = 0; found < 20; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver("GET /pets")));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+
+        assertThat(array(written, "findings").elements())
+                .describedAs("at the usual setting this would be five")
+                .hasSize(2);
+        assertThat(number(object(written, "limits"), "writeUpsPerOperationAndKind")).isEqualTo(2);
+        assertThat(number(object(written, "totals"), "faults"))
+                .describedAs("and every one of them is still counted")
+                .isEqualTo(20);
+    }
+
+    @Test
     @DisplayName("a thousand faults of one kind get a handful of write-ups rather than a thousand")
     void very_many_faults_are_counted_in_full_and_written_in_part() {
         JsonValue.JsonObject written = afterFinding(1250, Runs::fellOver);
@@ -238,7 +262,7 @@ class JsonReportTest {
                 .isEqualTo(1250);
         assertThat(array(written, "findings").elements())
                 .describedAs("but the file does not grow without limit")
-                .hasSize(JsonReport.WRITE_UPS_PER_OPERATION_AND_KIND);
+                .hasSize(ReportSettings.defaults().writeUpsPerOperationAndKind());
         assertThat(number(totals, "faultsWrittenInFull") + number(totals, "faultsCountedOnly"))
                 .describedAs("written out or only counted: every fault is one of the two, and the "
                         + "two add up to all of them")
@@ -337,12 +361,12 @@ class JsonReportTest {
 
         JsonValue.JsonObject limits = object(written, "limits");
         assertThat(number(limits, "writeUpsPerOperationAndKind"))
-                .isEqualTo(JsonReport.WRITE_UPS_PER_OPERATION_AND_KIND);
-        assertThat(number(limits, "writeUpsInTotal")).isEqualTo(JsonReport.WRITE_UPS_IN_TOTAL);
+                .isEqualTo(ReportSettings.defaults().writeUpsPerOperationAndKind());
+        assertThat(number(limits, "writeUpsInTotal")).isEqualTo(ReportSettings.defaults().writeUpsInTotal());
         assertThat(number(limits, "mostBodyBytesKept"))
                 .describedAs("a reader who finds a reply cut short should be able to tell it was us "
                         + "who cut it, and at what length, without knowing which version wrote this")
-                .isEqualTo((int) JsonReport.MOST_BODY_BYTES_KEPT);
+                .isEqualTo((int) ReportSettings.defaults().mostBodyBytesKept());
     }
 
     @Test
@@ -360,7 +384,7 @@ class JsonReportTest {
         assertThat(text(body, "text").length())
                 .describedAs("without this a single write-up is as big as the API felt like being, "
                         + "and counting write-ups would bound nothing at all")
-                .isLessThanOrEqualTo((int) JsonReport.MOST_BODY_BYTES_KEPT);
+                .isLessThanOrEqualTo((int) ReportSettings.defaults().mostBodyBytesKept());
         assertThat(number(body, "wireLength"))
                 .describedAs("and it says how much really arrived, so our trimming is never "
                         + "mistaken for the API having sent less than it did")

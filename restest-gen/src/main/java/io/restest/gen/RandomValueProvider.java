@@ -35,6 +35,7 @@ import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.restest.core.settings.GenerationSettings;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -83,52 +84,15 @@ import java.util.random.RandomGenerator;
  */
 public final class RandomValueProvider implements ValueProvider {
 
-    /** Where optional nesting stops: below this, only what the specification insists on is built. */
-    private static final int MAX_DEPTH = 4;
-
-    /** Where everything stops, however insistent the specification is. */
-    private static final int HARD_DEPTH = 8;
-
     private static final String LETTERS =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    /** Enough to look like a real value, short enough that no API refuses it for being long. */
-    private static final int DEFAULT_STRING_LENGTH = 8;
-
-    /** The longest string invented when the specification does not demand more. */
-    private static final int USUAL_LONGEST_STRING = 64;
-
-    /** Beyond this, a demanded length is declined rather than built. */
-    private static final int LONGEST_STRING = 10_000;
-
-    /** Room to move in, for a number the specification left unbounded. */
-    private static final BigDecimal DEFAULT_LOWEST = BigDecimal.ZERO;
-    private static final BigDecimal DEFAULT_HIGHEST = BigDecimal.valueOf(1000);
-
-    /** Decimal places for a number that is allowed to have them. */
-    private static final int DECIMAL_PLACES = 2;
-
-    private static final int DEFAULT_ITEMS = 2;
-    private static final int USUAL_MOST_ITEMS = 4;
-
-    /** Beyond this, a demanded number of items is declined rather than built. */
-    private static final int MOST_ITEMS = 100;
-
-    /** How often a property the specification does not require is included anyway. */
-    private static final double OPTIONAL_PROPERTY_CHANCE = 0.5;
-
-    /** How often a value that is allowed to be absent is sent as nothing at all. */
-    private static final int NULL_IN_ONE_IN = 8;
-
-    /** How many times a fresh element is attempted for a list whose items must all differ. */
-    private static final int UNIQUE_ATTEMPTS = 8;
-
-    /** How many times a value is invented again after one that could not be put in the request. */
-    private static final int SENDABLE_ATTEMPTS = 8;
 
     private final ApiModel model;
     private final RandomGenerator random;
     private final ValueProvider inside;
+
+    /** How long, how deep and how many: what an invented value is allowed to look like. */
+    private final GenerationSettings settings;
     private final Map<Spelling, Optional<MatchingStrings>> spellings = new LinkedHashMap<>();
 
     /**
@@ -154,9 +118,24 @@ public final class RandomValueProvider implements ValueProvider {
      *     already asked everybody ahead of it
      */
     public RandomValueProvider(ApiModel model, RandomGenerator random, ValueProvider inside) {
+        this(model, random, inside, GenerationSettings.defaults());
+    }
+
+    /**
+     * The same, with the shapes an invented value is allowed to take.
+     *
+     * @param model the API, needed to look up shapes the specification refers to by name
+     * @param random where the values come from
+     * @param inside who to ask about the contents of a list or an object before inventing them
+     * @param settings how long an invented word is, how many items a list holds, how deep nesting
+     *     goes, and how many times any of it is attempted again
+     */
+    public RandomValueProvider(ApiModel model, RandomGenerator random, ValueProvider inside,
+            GenerationSettings settings) {
         this.model = Objects.requireNonNull(model, "model");
         this.random = Objects.requireNonNull(random, "random");
         this.inside = Objects.requireNonNull(inside, "inside");
+        this.settings = Objects.requireNonNull(settings, "settings");
     }
 
     @Override
@@ -169,7 +148,7 @@ public final class RandomValueProvider implements ValueProvider {
         // list allowed no items - runs out of attempts and says it has no value to offer. Saying
         // so is the point: the operation is then reported as one that cannot be tested, instead of
         // being counted among those being tested while every one of its requests is thrown away.
-        for (int attempt = 0; attempt < SENDABLE_ATTEMPTS; attempt++) {
+        for (int attempt = 0; attempt < settings.sendableAttempts(); attempt++) {
             Optional<JsonValue> invented = value(request, request.schema(), 0);
             if (invented.isEmpty()) {
                 return Optional.empty();
@@ -187,7 +166,7 @@ public final class RandomValueProvider implements ValueProvider {
     }
 
     private Optional<JsonValue> value(ValueRequest request, CanonicalSchema schema, int depth) {
-        if (depth > HARD_DEPTH) {
+        if (depth > settings.hardNestingDepth()) {
             return Optional.empty();
         }
         // Nobody is asked about a pointer to a shape, only about the shape it points at. What is on
@@ -205,7 +184,8 @@ public final class RandomValueProvider implements ValueProvider {
         // and "empty" differently and both deserve trying - except in the path, where nothing at all
         // would silently address a different resource.
         if (schema.metadata().nullable() && request.location() != ParameterLocation.PATH
-                && random.nextInt(NULL_IN_ONE_IN) == 0) {
+                && settings.nullInOneIn() > 0
+                && random.nextInt(settings.nullInOneIn()) == 0) {
             return Optional.of(JsonValue.NULL);
         }
         return switch (schema) {
@@ -253,7 +233,7 @@ public final class RandomValueProvider implements ValueProvider {
         // everywhere and useful almost nowhere - but never more than it allows: a string that must
         // be empty is empty.
         long lowest = Math.min(schema.minLength().orElse(1), stated);
-        if (lowest > LONGEST_STRING) {
+        if (lowest > settings.longestString()) {
             return Optional.empty();
         }
 
@@ -315,8 +295,8 @@ public final class RandomValueProvider implements ValueProvider {
      * The longest value worth building: what the shape allows, or the usual limit, whichever is
      * smaller - and always at least what the shape insists on.
      */
-    private static long longestWorthSending(long lowest, long stated) {
-        return Math.min(stated, Math.max(lowest, USUAL_LONGEST_STRING));
+    private long longestWorthSending(long lowest, long stated) {
+        return Math.min(stated, Math.max(lowest, settings.usualLongestString()));
     }
 
     /** A word of no particular kind, of a length the specification allows. */
@@ -349,10 +329,10 @@ public final class RandomValueProvider implements ValueProvider {
 
         BigDecimal lowest = tighter(schema.minimum(),
                 schema.exclusiveMinimum().map(bound -> nextAbove(bound, step, whole)), true)
-                .orElse(DEFAULT_LOWEST);
+                .orElse(settings.lowestNumber());
         BigDecimal highest = tighter(schema.maximum(),
                 schema.exclusiveMaximum().map(bound -> nextBelow(bound, step, whole)), false)
-                .orElseGet(() -> lowest.max(DEFAULT_LOWEST).add(DEFAULT_HIGHEST));
+                .orElseGet(() -> lowest.max(settings.lowestNumber()).add(settings.roomAboveIt()));
         if (lowest.compareTo(highest) > 0) {
             return Optional.empty();
         }
@@ -386,7 +366,7 @@ public final class RandomValueProvider implements ValueProvider {
                 ? chosen.setScale(0, RoundingMode.DOWN)
                 // A number allowed to have decimals gets them: an API that stores a price or a
                 // latitude is never exercised by a tool that only ever sends whole numbers.
-                : chosen.setScale(Math.max(DECIMAL_PLACES, lowest.scale()), RoundingMode.DOWN);
+                : chosen.setScale(Math.max(settings.decimalPlaces(), lowest.scale()), RoundingMode.DOWN);
     }
 
     /** The nearest value on the step at or below the choice, or above it if that falls out of range. */
@@ -401,27 +381,27 @@ public final class RandomValueProvider implements ValueProvider {
     }
 
     /** The smallest value strictly above an exclusive bound, on the step when there is one. */
-    private static BigDecimal nextAbove(BigDecimal bound, BigDecimal step, boolean whole) {
+    private BigDecimal nextAbove(BigDecimal bound, BigDecimal step, boolean whole) {
         return bound.add(step != null ? step : smallestStep(bound, whole));
     }
 
-    private static BigDecimal nextBelow(BigDecimal bound, BigDecimal step, boolean whole) {
+    private BigDecimal nextBelow(BigDecimal bound, BigDecimal step, boolean whole) {
         return bound.subtract(step != null ? step : smallestStep(bound, whole));
     }
 
-    private static BigDecimal smallestStep(BigDecimal bound, boolean whole) {
+    private BigDecimal smallestStep(BigDecimal bound, boolean whole) {
         return whole ? BigDecimal.ONE
-                : BigDecimal.ONE.movePointLeft(Math.max(bound.scale(), DECIMAL_PLACES));
+                : BigDecimal.ONE.movePointLeft(Math.max(bound.scale(), settings.decimalPlaces()));
     }
 
     private Optional<JsonValue> list(ValueRequest request, ArraySchema schema, int depth) {
-        int lowest = schema.minItems().orElse(depth >= MAX_DEPTH ? 0 : 1);
-        if (lowest > MOST_ITEMS) {
+        int lowest = schema.minItems().orElse(depth >= settings.optionalNestingDepth() ? 0 : 1);
+        if (lowest > settings.mostItems()) {
             return Optional.empty();
         }
         int stated = schema.maxItems().orElse(Integer.MAX_VALUE);
-        int highest = Math.min(stated, Math.max(lowest, USUAL_MOST_ITEMS));
-        int wanted = depth >= MAX_DEPTH || lowest == highest
+        int highest = Math.min(stated, Math.max(lowest, settings.usualMostItems()));
+        int wanted = depth >= settings.optionalNestingDepth() || lowest == highest
                 ? lowest
                 : lowest + random.nextInt(highest - lowest + 1);
 
@@ -446,7 +426,7 @@ public final class RandomValueProvider implements ValueProvider {
      */
     private Optional<JsonValue> element(ValueRequest request, ArraySchema schema, int depth,
             List<JsonValue> already) {
-        int attempts = schema.uniqueItems() ? UNIQUE_ATTEMPTS : 1;
+        int attempts = schema.uniqueItems() ? settings.uniqueAttempts() : 1;
         for (int attempt = 0; attempt < attempts; attempt++) {
             Optional<JsonValue> element =
                     value(request.aboutAPieceOf(schema.items()), schema.items(), depth + 1);
@@ -494,7 +474,8 @@ public final class RandomValueProvider implements ValueProvider {
 
         for (Map.Entry<String, CanonicalSchema> property : optional) {
             boolean needed = members.size() < fewest;
-            boolean wanted = depth < MAX_DEPTH && random.nextDouble() < OPTIONAL_PROPERTY_CHANCE;
+            boolean wanted = depth < settings.optionalNestingDepth()
+                    && random.nextDouble() < settings.optionalPropertyChance();
             if (members.size() >= most || (!needed && !wanted)) {
                 continue;
             }
@@ -569,7 +550,7 @@ public final class RandomValueProvider implements ValueProvider {
             return Optional.empty();
         }
         ValueRequest about = request.aboutTheShapeNamed(reference.name(), shape.get());
-        if (depth >= MAX_DEPTH) {
+        if (depth >= settings.optionalNestingDepth()) {
             // Deep enough that nothing more is invented here - but somebody may still know this
             // value, and being too deep to build is not a reason to stop asking. Without this, a
             // shape the document named and one written out where it is used would behave

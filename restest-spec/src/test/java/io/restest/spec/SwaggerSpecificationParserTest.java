@@ -26,8 +26,11 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Drives {@link SwaggerSpecificationParser} through real documents: the priority corpus, a 2.0
@@ -37,6 +40,36 @@ import org.junit.jupiter.api.Test;
 class SwaggerSpecificationParserTest {
 
     private final SwaggerSpecificationParser parser = new SwaggerSpecificationParser();
+
+    @Test
+    @DisplayName("the largest description read is a setting, and it holds for a file on this "
+            + "machine as well as for one fetched over the network")
+    void the_largest_description_read_is_a_setting(@TempDir Path directory) throws Exception {
+        Path document = directory.resolve("openapi.yaml");
+        Files.writeString(document, """
+                openapi: 3.0.3
+                info: {title: Small API, version: "1.0"}
+                paths:
+                  /pets:
+                    get:
+                      operationId: listPets
+                      responses: {"200": {description: ok}}
+                """);
+
+        ApiModel whole = parser.parse(document.toString());
+        ApiModel cut = new SwaggerSpecificationParser(
+                new io.restest.core.settings.DocumentSettings(java.time.Duration.ofSeconds(1), 20))
+                .parse(document.toString());
+
+        assertThat(whole.operations()).isNotEmpty();
+        assertThat(cut.operations()).isEmpty();
+        assertThat(cut.issues()).singleElement().asString()
+                .describedAs("a description the tool cut short is not a description somebody "
+                        + "wrote wrongly, and saying so is the difference between fixing a file "
+                        + "and hunting for a mistake that is not there")
+                .contains("larger than this run will read")
+                .contains("document.mostBytesRead");
+    }
 
     @Test
     @DisplayName("a plain OAS 3.0.x document from the priority corpus reads without crashing")

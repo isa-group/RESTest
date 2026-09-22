@@ -20,11 +20,11 @@
  * shapes ({@code schema}) that data must follow. Every other part of RESTest is built on top of
  * these definitions.
  *
- * <p>Ten packages are exported and one is not. {@code io.restest.core.internal} holds small
- * helpers shared between the other ten and is deliberately kept internal, so it can change freely
- * without affecting anything built on top of this module.
+ * <p>Eleven packages are exported and one is not. {@code io.restest.core.internal} holds small
+ * helpers shared between the other eleven and is deliberately kept internal, so it can change
+ * freely without affecting anything built on top of this module.
  *
- * <p>Two of the ten have names close enough to be worth telling apart on sight.
+ * <p>Two of the eleven have names close enough to be worth telling apart on sight.
  * {@code io.restest.core.execution} is data: one test attempt, the request sent, the reply received.
  * {@code io.restest.core.exec} is the door that produces that data - the interface an HTTP client
  * implements - and it is named after the module that implements it, {@code restest-exec}, exactly as
@@ -35,13 +35,15 @@
  * and the reporting code all share, without needing any of them itself - so depending on this module
  * never pulls in anything heavier than this module itself.
  *
- * <p>The single exception is a small library for reading and writing JSON text, used by
- * {@code io.restest.core.json}. It is here rather than further out because three separate parts of
- * RESTest need it and none of them can see the other two, and one answer to "what does this value
- * look like written down" is worth more than three.
+ * <p>The exceptions are two small libraries for turning text into values and back, both used by
+ * {@code io.restest.core.json}: one for JSON, one for the YAML that every file a person writes by
+ * hand for RESTest is written in. Both are here rather than further out because several separate
+ * parts of RESTest need them and none of those parts can see the others, and one answer to "what
+ * does this value look like written down" is worth more than three.
  */
 module io.restest.core {
     requires com.fasterxml.jackson.core;
+    requires org.yaml.snakeyaml;
 
     exports io.restest.core.event;
     exports io.restest.core.exec;
@@ -51,6 +53,7 @@ module io.restest.core {
     exports io.restest.core.model;
     exports io.restest.core.oracle;
     exports io.restest.core.schema;
+    exports io.restest.core.settings;
     exports io.restest.core.spec;
     exports io.restest.core.store;
 }
