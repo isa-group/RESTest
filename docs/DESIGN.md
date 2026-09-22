@@ -319,7 +319,7 @@ says why each waited.
 | Declared links, the CRUD lifecycle model, stateful oracles, Arazzo | 4.3, rest of 4.4, 4.5, 4.6 |
 | IDL, the constraint solver, constraint-based generation and its oracles | M5 |
 | Live constraint and flow sources; the overhead regression test | M6 |
-| Authentication inferred from the document; the external value provider; the dictionary cache | 2.6, 2.8, 2.7b |
+| Authentication inferred from the document; the external value provider; the dictionary cache; a dictionary skeleton printed from the document | 2.6, 2.8, 2.7b, 2.11 |
 | Maven Central, package managers, the native binary | 7.1, 7.2b, 7.3 |
 
 ## Out of scope for v2.0

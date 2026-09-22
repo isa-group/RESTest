@@ -8,8 +8,8 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
-still read true, and the milestones were numbered before the plan was turned round. 72 increments in
-13 milestones: 25 delivered, 20 more in v2.0, 27 after it.
+still read true, and the milestones were numbered before the plan was turned round. 73 increments in
+13 milestones: 25 delivered, 20 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -37,7 +37,7 @@ nothing in them is an increment of its own.
 |---|---|---|---|
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 2.9; 2.10b moved to 9.1; three rows wait | 9 / 13 |
+| M2 | Specification fidelity and input generation | 2.9; 2.10b moved to 9.1; four rows wait | 9 / 14 |
 | M9 | Reach — every operation the API will answer, answered early | all | 0 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 0 / 2 |
@@ -175,6 +175,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.9 ▶ | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
 | 2.10a ✅ [#317](https://github.com/isa-group/RESTest/pull/317) | The campaign file (ADR-0023): named strategies with a share of the run, an ordered list of named sources with weighted groups among them, and the operation filter ADR-0013 §6 asks for. The shares and the order that were constants in `RandomTestCaseGenerator`'s constructor move into a file RESTest ships, prints with `--print-campaign` and reads back with `--campaign`. Three of §2's ideas dropped as saying what the structure already said, and §6's `safeOnly` answered by `methods` | Where a run's values come from stops being a decision somebody took once for everybody: it is a file you print, change one line of and hand back — and the source M2.5b adds has somewhere to be asked for |
 | 2.10b → [9.1](#m9--reach) | The scheduler takes the budget: time-keeping moves out of `RunLoop`, and a phase becomes a stretch of the clock rather than a share drawn per request | A share of the budget is honoured as one, rather than on average |
+| 2.11 ⏭ | **A dictionary skeleton printed from the document.** `restest dictionary --skeleton <spec>` writes the file the dictionary format asks a person to write by hand: one block per operation, named by method and path, and under it every place a value can go with an empty list and a comment saying what the document wants there — leaving out what the document has settled, an enumeration, a read-only property, a body written out in full. The companion of `--print-campaign`: the tool prints the file, a person or a program fills it, the tool reads it back. Written first as a script beside the harness for the source ablation of 8.3, where filling one block at a time turned out to be the shape a small model could work in | Writing a dictionary stops needing any reasoning about the document: the tool says where the values go and what shape they take, and filling the lists is a job a person does in an afternoon or a program does one operation at a time |
 
 ### Notes
 
@@ -293,6 +294,15 @@ weights. The lesson is about the metric — how often the tool quotes the docume
 the API it reaches — and 2.5b loosens the tension rather than removing it, by putting identifiers
 that are real *and* varied into the same group: measured the same way, 27.8 of pet-clinic's
 operations answered 2XX without that source and 31.6 with it.
+
+**2.11 — a row born in the harness.** The source ablation of 8.3 needed a dictionary per API, and
+the first attempt split each into two files by hand — one for the names that mean one thing
+across the API, one for the names that do not — which needed judgement no procedure could carry.
+One file keyed by operation and place, with one block per operation, needs none: a script walks
+the document and prints every operation with every place a value can go, and filling it is a job
+done one block at a time. That script is the tool's job, not the harness's, so it becomes a row
+here, after v2.0; the dictionary format's own documentation already describes the file it prints
+under "Writing one of these from a specification".
 
 **2.8 — "never blocking" is proved here, by its own test.** A slow provider must not stall the
 run. Not by waiting for M6.2's overhead regression test, which lands much later and checks the

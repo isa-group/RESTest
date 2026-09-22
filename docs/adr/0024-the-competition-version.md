@@ -93,7 +93,7 @@ proper with its synonym table and its measurement against word vectors (the rest
 the lifecycle model and Arazzo (the rest of 4.4, 4.6); IDL, the solver and constraint-based
 generation, whole (M5); live constraint and flow sources (6.1); the overhead regression test (6.2);
 authentication inferred from the document (2.6); the external value provider (2.8); the dictionary
-writer and cache (2.7b); Maven Central, Homebrew, SDKMAN, jbang and the native binary (7.1, 7.2b,
+writer and cache (2.7b); a dictionary skeleton printed from the document (2.11); Maven Central, Homebrew, SDKMAN, jbang and the native binary (7.1, 7.2b,
 7.3). Each keeps its row and its number, and `restest-idl` ships in v2.0 as the module descriptor it
 is today.
 
