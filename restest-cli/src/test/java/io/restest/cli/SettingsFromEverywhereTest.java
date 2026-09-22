@@ -115,6 +115,41 @@ class SettingsFromEverywhereTest {
     }
 
     @Nested
+    @DisplayName("a value nobody gave that is not a default either")
+    class WorkedOut {
+
+        private static final SettingKey START =
+                SettingKey.named("engine.initialConcurrency").orElseThrow();
+
+        @Test
+        @DisplayName("says it was worked out, because calling it a default would put two different "
+                + "values under one word in two results directories")
+        void a_derived_value_says_so() {
+            SettingsInEffect careful = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),
+                    List.of("engine.maxConcurrency=1"));
+
+            assertThat(careful.settings().engine().initialConcurrency()).isEqualTo(1);
+            assertThat(careful.sourceOf(START)).isEqualTo(SettingSource.WORKED_OUT);
+        }
+
+        @Test
+        @DisplayName("and a value somebody did give says where they gave it, never worked out")
+        void a_given_value_is_never_called_worked_out() {
+            SettingsInEffect given = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),
+                    List.of("engine.maxConcurrency=1", "engine.initialConcurrency=1"));
+
+            assertThat(given.sourceOf(START)).isEqualTo(SettingSource.COMMAND_LINE);
+        }
+
+        @Test
+        @DisplayName("and a run nobody configured has nothing worked out at all")
+        void a_plain_run_works_nothing_out() {
+            assertThat(SettingsFromEverywhere.gather(Optional.empty(), Map.of(), List.of()).rows())
+                    .allSatisfy(row -> assertThat(row.source()).isEqualTo(SettingSource.DEFAULT));
+        }
+    }
+
+    @Nested
     @DisplayName("when two of them say something about the same setting")
     class WhoWins {
 

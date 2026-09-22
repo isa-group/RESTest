@@ -62,11 +62,13 @@ class SwaggerSpecificationParserTest {
                 .parse(document.toString());
 
         assertThat(whole.operations()).isNotEmpty();
-        assertThat(cut.operations())
-                .describedAs("twenty bytes is the first line and nothing else, so there is no "
-                        + "document left to read - which is the point of the bound")
-                .isEmpty();
-        assertThat(cut.issues()).isNotEmpty();
+        assertThat(cut.operations()).isEmpty();
+        assertThat(cut.issues()).singleElement().asString()
+                .describedAs("a description the tool cut short is not a description somebody "
+                        + "wrote wrongly, and saying so is the difference between fixing a file "
+                        + "and hunting for a mistake that is not there")
+                .contains("larger than this run will read")
+                .contains("document.mostBytesRead");
     }
 
     @Test

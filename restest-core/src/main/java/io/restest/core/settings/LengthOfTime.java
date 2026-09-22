@@ -125,9 +125,13 @@ public final class LengthOfTime {
         try {
             return Duration.parse(text);
         } catch (DateTimeParseException notADuration) {
-            throw refuse(asTyped);
-        } catch (ArithmeticException overflowed) {
-            throw tooLongToCount(asTyped);
+            // The platform reports both mistakes the same way - text that is not a length of time,
+            // and a length of time too long to count - and a person who typed the second would be
+            // sent to look for a spelling mistake that is not there. The two are told apart by what
+            // went wrong underneath: only the overflow carries an arithmetic failure with it.
+            throw notADuration.getCause() instanceof ArithmeticException
+                    ? tooLongToCount(asTyped)
+                    : refuse(asTyped);
         }
     }
 

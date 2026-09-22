@@ -70,29 +70,34 @@ class SettingsInEffectTest {
     }
 
     @Test
-    @DisplayName("a value nobody named and nobody defaulted says it was worked out, rather than "
-            + "claiming to be what the tool does by default")
-    void a_worked_out_value_says_so() {
+    @DisplayName("a value said to have been worked out is printed as that, so a results directory "
+            + "does not claim a derived value is what the tool does by default")
+    void a_worked_out_value_is_printed_as_one() {
         SettingKey start = SettingKey.named("engine.initialConcurrency").orElseThrow();
         SettingsInEffect careful = new SettingsInEffect(
                 Settings.from(Map.of("engine.maxConcurrency", "1")),
-                Map.of("engine.maxConcurrency", SettingSource.COMMAND_LINE));
+                Map.of("engine.maxConcurrency", SettingSource.COMMAND_LINE,
+                        "engine.initialConcurrency", SettingSource.WORKED_OUT));
 
         assertThat(careful.settings().engine().initialConcurrency()).isEqualTo(1);
-        assertThat(careful.sourceOf(start))
-                .describedAs("calling this a default would put two different values under one word "
-                        + "in two results directories, with nothing to explain the difference")
-                .isEqualTo(SettingSource.WORKED_OUT);
+        assertThat(careful.sourceOf(start)).isEqualTo(SettingSource.WORKED_OUT);
         assertThat(careful.asAFile()).contains("initialConcurrency: 1")
                 .contains("# worked out");
     }
 
     @Test
-    @DisplayName("and a value that really is the default still says default")
-    void an_untouched_value_says_default() {
+    @DisplayName("and what a caller did not name is what the tool does by default, which is what "
+            + "this says and nothing more")
+    void what_nobody_named_is_a_default() {
         SettingKey start = SettingKey.named("engine.initialConcurrency").orElseThrow();
 
         assertThat(SettingsInEffect.of(Settings.defaults()).sourceOf(start))
+                .isEqualTo(SettingSource.DEFAULT);
+        assertThat(SettingsInEffect.of(Settings.from(Map.of("engine.maxConcurrency", "1")))
+                .sourceOf(start))
+                .describedAs("working out which values were derived needs to know what somebody "
+                        + "gave, and this is handed settings rather than what was given - so it "
+                        + "says what it knows rather than guessing")
                 .isEqualTo(SettingSource.DEFAULT);
     }
 

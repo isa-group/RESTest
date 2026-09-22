@@ -77,9 +77,6 @@ public record GenerationSettings(
         int sendableAttempts,
         int writableBodyAttempts) {
 
-    /** How many characters a number these settings hold may take to write out. */
-    private static final int LONGEST_NUMBER = 1_000;
-
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
             0.5, 0.5, 8, 8, 8, 8);
@@ -150,17 +147,10 @@ public record GenerationSettings(
         }
     }
 
-    /**
-     * A number short enough to be written down, and therefore to be sent.
-     *
-     * <p>Measured in the characters it takes rather than in how large it is, because the two are
-     * different questions: {@code 1e999999999} is eleven characters typed and a thousand million
-     * written out. Left unchecked, one line of a settings file would put that number into every
-     * printed file and every report a run writes.
-     */
+    /** A number short enough to be written down, and therefore to be sent. */
     private static void writable(BigDecimal value, String what) {
-        if ((long) value.precision() + Math.abs((long) value.scale()) > LONGEST_NUMBER) {
-            throw new IllegalArgumentException(what + " takes more than " + LONGEST_NUMBER
+        if (WrittenNumber.tooLongToWrite(value)) {
+            throw new IllegalArgumentException(what + " takes more than " + WrittenNumber.LONGEST
                     + " characters to write down, which is longer than anything a request could "
                     + "carry");
         }

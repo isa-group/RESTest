@@ -90,14 +90,26 @@ class LengthOfTimeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"PT2562047788015216H", "PT9223372036854775807S"})
-    @DisplayName("and so is one written in the formal spelling, which refuses it as text that is "
-            + "not a length of time at all")
+    @ValueSource(strings = {"PT2562047788015216H", "PT153722867280912931M"})
+    @DisplayName("and so is one written in the formal spelling, told apart from a spelling mistake "
+            + "so that the refusal sends somebody to the right place")
     void formal_lengths_too_long(String typed) {
         assertThatThrownBy(() -> LengthOfTime.parse(typed))
-                .describedAs("what matters is that it is turned down rather than overflowing; "
-                        + "the formal spelling is refused by the platform before this sees it")
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .describedAs("this is a length of time, just one too long to count - so telling "
+                        + "somebody to check their spelling would send them hunting for a mistake "
+                        + "that is not there")
+                .hasMessageContaining("longer than any length of time RESTest can write down");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PTX", "P", "PT", "PT1X"})
+    @DisplayName("while text in the formal spelling that is simply wrong is still answered with "
+            + "the spellings that work")
+    void formal_text_that_is_simply_wrong(String typed) {
+        assertThatThrownBy(() -> LengthOfTime.parse(typed))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("is not a length of time");
     }
 
     @ParameterizedTest

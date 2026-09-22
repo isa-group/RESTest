@@ -23,6 +23,7 @@ import io.restest.core.settings.SettingSource;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
+import io.restest.core.settings.WrittenNumber;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -81,7 +82,31 @@ final class SettingsFromEverywhere {
                 take(fromTheFile(named), SettingSource.FILE, values, sources));
         take(fromTheEnvironment(environment), SettingSource.ENVIRONMENT, values, sources);
         take(fromTheCommandLine(typed), SettingSource.COMMAND_LINE, values, sources);
-        return new SettingsInEffect(Settings.from(values), sources);
+        Settings settings = Settings.from(values);
+        noteWhatWasWorkedOut(settings, sources);
+        return new SettingsInEffect(settings, sources);
+    }
+
+    /**
+     * Marks the settings nobody gave and that are not what the tool does by default either.
+     *
+     * <p>Some settings are places inside a range, and moving the range moves them: asking for one
+     * request in flight also moves where the engine starts, without anybody mentioning it. Recorded
+     * as a default, two results directories would carry different values under the same word with
+     * nothing in either to explain the difference.
+     *
+     * <p>Decided here, where what somebody gave is known, rather than by a rule that compares a
+     * value with the default and guesses - a guess would call an embedder's own choices "worked
+     * out" and put that in their report.
+     */
+    private static void noteWhatWasWorkedOut(Settings settings,
+            Map<String, SettingSource> sources) {
+        SettingKey.all().forEach(key -> {
+            if (!sources.containsKey(key.fullName())
+                    && !settings.written(key).equals(Settings.defaults().written(key))) {
+                sources.put(key.fullName(), SettingSource.WORKED_OUT);
+            }
+        });
     }
 
     private static void take(Map<String, String> given, SettingSource source,
@@ -141,11 +166,17 @@ final class SettingsFromEverywhere {
      * thing, so what a reader made of it is turned straight back into text and read again as the
      * kind of thing the setting takes. That keeps one answer to "what values does this setting
      * accept", whichever of the four places a value arrived from.
+     *
+     * <p>A number is asked how long it is before it is written out. {@code 1e999999999} is eleven
+     * characters in the file and a thousand million written down, so writing it out to find out
+     * whether it is acceptable is the thing that fills the machine's memory. Every other layer
+     * hands over text that is already as long as it is going to be; this is the one that does not.
      */
     private static String written(String key, JsonValue value, Path file) {
         return switch (value) {
             case JsonValue.JsonString text -> text.value();
-            case JsonValue.JsonNumber number -> number.value().toPlainString();
+            case JsonValue.JsonNumber number -> WrittenNumber.written(number.value(),
+                    file + ": " + key);
             case JsonValue.JsonBoolean yesOrNo -> String.valueOf(yesOrNo.value());
             case JsonValue.JsonNull ignored -> throw new SettingsException(file + ": " + key
                     + " has no value. Leave the line out to keep what RESTest does by default");

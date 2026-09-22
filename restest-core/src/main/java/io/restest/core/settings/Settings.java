@@ -302,6 +302,7 @@ public record Settings(
         return value.toPlainString();
     }
 
+
     private static void mustExist(String name) {
         if (SettingKey.named(name).isEmpty()) {
             throw new SettingsException("there is no setting called '" + name + "'"

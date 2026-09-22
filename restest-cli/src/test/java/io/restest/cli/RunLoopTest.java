@@ -31,9 +31,9 @@ import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
+import io.restest.core.settings.ScheduleSettings;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.spec.SwaggerSpecificationParser;
-import io.restest.core.settings.ScheduleSettings;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -162,6 +162,37 @@ class RunLoopTest {
     }
 
     @Test
+    @DisplayName("how far ahead of the API the loop may work is a number it is told, so a run set "
+            + "to one request at a time has one request at a time")
+    void how_far_ahead_to_work_is_a_setting() {
+        engine.takes(request -> Duration.ofMillis(2));
+
+        run(BUDGET, 1, ANNOUNCEMENTS_ALLOWED, events -> { });
+
+        assertThat(engine.mostAtOnce.get())
+                .describedAs("at the usual setting this run has several in flight at once")
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("and how many announcements may wait for the reports is another, so a run told to "
+            + "let fewer pile up lets fewer pile up")
+    void how_many_announcements_may_wait_is_a_setting() {
+        engine.takes(request -> Duration.ofMillis(1));
+
+        Undelivered watched = new Undelivered();
+        run(BUDGET, WORK_AHEAD, 4, events -> {
+            events.subscribe(slowListener());
+            watched.stream = events;
+        });
+
+        assertThat(watched.highestSeen)
+                .describedAs("held near the four it was given rather than near the thousand it "
+                        + "would otherwise have been")
+                .isLessThan(ANNOUNCEMENTS_ALLOWED);
+    }
+
+    @Test
     @DisplayName("a run against an address where nothing is listening gives up rather than spinning")
     void an_address_with_nothing_behind_it_stops_the_run_early() {
         engine.answers = false;
@@ -211,10 +242,17 @@ class RunLoopTest {
     }
 
     private RunLoop.Outcome run(Duration budget, java.util.function.Consumer<EventStream> setUp) {
+        return run(budget, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, setUp);
+    }
+
+    /** The same, told how far ahead to work and how many announcements may wait for the reports. */
+    private RunLoop.Outcome run(Duration budget, int workAhead, int announcementsAllowed,
+            java.util.function.Consumer<EventStream> setUp) {
         try (EventStream events = new EventStream()) {
             setUp.accept(events);
             return RunLoop.run(model.operations(), generator(), "https://api.example",
-                    Instant.now().plus(budget), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events);
+                    Instant.now().plus(budget), workAhead, announcementsAllowed, PATIENT, engine,
+                    events);
         }
     }
 

@@ -256,15 +256,37 @@ settles it everywhere else - a number is kept with its trailing zeros stripped, 
 three - rather than by quoting numbers in the printed file, which would have made every line of it
 read like text.
 
+A third round of review found the rule had a hole in the layer that matters most. Every layer but
+one hands over text that is already as long as it is going to be; a *file* hands over what a YAML
+reader made of it, and turning `1e999999999` back into text to check it is the thing that fills the
+machine's memory. So the tool hung and then died with an out-of-memory failure and exit `1` -
+*faults found* - for the one input the round before had made safe everywhere else. A number is now
+asked how long it is before anything writes it out, from its own bookkeeping rather than by writing
+it out, and the answer is one rule in one place that both the file layer and the generation settings
+ask.
+
+Two smaller things went with it. A length of time too long to count, written in the formal spelling,
+was refused with advice about spelling — because the platform reports "not a length of time" and
+"too long to count" identically, and only the failure underneath tells them apart. And a description
+cut short by `document.mostBytesRead` was handed to the reader half-written, which reported it as a
+document somebody had written wrongly; one byte more than the bound is read now, so *the description
+ended* and *I stopped reading* can be told apart and the second says so.
+
 ### A value nobody gave, and that is not a default either, says so
 
 The derived starting concurrency above created a third case for §3's *where did this come from*
 column: nobody named it, and it is not what the code says by default. Recorded as `default` it would
 have put two different values under one word in two results directories, with nothing in either to
 explain the difference — which is the one thing that column exists to prevent. `SettingSource` gains
-a fifth member, *worked out*, decided by a rule rather than by a list: a value nobody named that
-differs from the built-in default was worked out from one that was named. Any future derived default
-is labelled correctly without anybody remembering to.
+a fifth member, *worked out*: a value nobody named that differs from the built-in default was worked
+out from one that was named. Any future derived default is labelled correctly without anybody
+remembering to.
+
+Where that is decided matters, and the first attempt put it in the wrong place. Deciding it inside
+the thing that holds the settings meant guessing, because that thing is handed settings rather than
+what somebody gave — so a program embedding RESTest and passing its own settings got a report
+calling its choices *worked out*, which is false. It is decided where the four layers are known,
+which is the one place that can tell a value nobody gave from a value somebody gave.
 
 ### The architecture rule is in place and proved
 

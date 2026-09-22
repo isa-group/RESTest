@@ -61,18 +61,7 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
      */
     public SettingSource sourceOf(SettingKey key) {
         Objects.requireNonNull(key, "key");
-        SettingSource named = sources.get(key.fullName());
-        if (named != null) {
-            return named;
-        }
-        // Nobody named it, and it is still not what the code says by default - so it was worked out
-        // from something that was named. Where the engine starts is the one that does this today:
-        // it is a place inside the concurrency range, so moving the range moves it. Saying
-        // "default" here would put two different values under the same word in two results
-        // directories, with nothing in either to explain the difference.
-        return settings.written(key).equals(Settings.defaults().written(key))
-                ? SettingSource.DEFAULT
-                : SettingSource.WORKED_OUT;
+        return sources.getOrDefault(key.fullName(), SettingSource.DEFAULT);
     }
 
     /**
