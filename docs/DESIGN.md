@@ -29,7 +29,8 @@ grammar and the test corpus do.
 | Specification formats | OpenAPI 2.0 (by conversion), 3.0.x and 3.1.x, through a single parser backend. Not 3.2, which is too recent to justify a second backend, and not 4.x, which has no specification text |
 | Testing style | Black-box only: the specification and the API's responses, never its source |
 | Test kinds | Stateless single requests, and stateful sequences across several operations |
-| Distribution | Command-line tool, library dependency, container image, and native binary |
+| Distribution | v2.0: command-line tool and container image, published from every tag. Library dependency, package managers and native binary follow in 2.x |
+| Release line | **v2.0 is the version submitted to the 2027 REST League** (tools due 9 October 2026). What that put first and what it left for 2.1 is [ADR-0024](adr/0024-the-competition-version.md); the calendar is in [`ROADMAP.md`](../ROADMAP.md) |
 
 Black-box is a property of the *tool*, not of the evaluation. Measuring how much of an API's code a
 run exercises requires instrumenting that API, which a benchmark harness does from outside; the tool
@@ -128,7 +129,11 @@ database inside the request loop. The store is for looking back; the event strea
 These are architectural requirements rather than features, and they are the whole of what
 "extensible" means here. Each is verified during its milestone by writing a throwaway
 implementation, demonstrating it, and deleting it — so that the seam is known to be real rather than
-assumed.
+assumed. In v2.0 the non-blocking engine, `Oracle` and `FeedbackListener` have shipped
+implementations — the engine and its idle-time accounting since M1, the two oracles since 1.6, and
+the budget hygiene of M9 for the listener — which is a stronger proof than a throwaway one. Not yet
+exercised, and proven when their milestones are taken after v2.0: `ExternalDataProvider`,
+`ConstraintSource` and `FlowSource`, and `CorpusOracle` ([ADR-0024](adr/0024-the-competition-version.md)).
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
 named after any technology, and no dependency on any model library.
@@ -194,6 +199,11 @@ and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reason
 
 Fault reports use the WFC codes rather than a taxonomy of our own, for the same reason: a fault
 count is only meaningful next to somebody else's fault count.
+
+Every behaviour a run can do without — an opening lap, a mutation operator, a scheduling rule — has
+a switch in the settings ([ADR-0025](adr/0025-settings.md)), and a run records which switches it ran
+with. An ablation is therefore a campaign with one line changed rather than a branch per variant,
+and its results say what they measured.
 
 ## Related tools
 
@@ -279,8 +289,8 @@ configurations. RESTest 2.0 is a ground-up rewrite; the reasoning is in
 
 The columns *stateless techniques* and *stateful techniques* name the core algorithmic strategy, not
 every configuration option. **OAS** — specification versions the tool accepts. **BB/WB** — B =
-black-box only; B+W = black-box and white-box modes both available. The last row shows the design
-target for RESTest 2.0.
+black-box only; B+W = black-box and white-box modes both available. The last two rows show RESTest
+2.0 as it ships, and what the roadmap adds after it.
 
 | Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
 |---|---|---|---|---|---|---|---|
@@ -292,7 +302,25 @@ target for RESTest 2.0.
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/master) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
-| **RESTest 2.0** (this tool) | Java | 2.0, 3.0.x, 3.1.x | B | CBT (IDL), random, ART, feedback-guided | ODG-based sequence construction | Random, IDL-constrained, external providers | Status code classification, schema validation, corpus oracles, WFC codes |
+| **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing; budget hygiene from per-operation counters | Identifier reuse from replies, by name and by the resource a path names; producer-then-consumer sequences; delete-then-read and create-twice operators | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
+| RESTest 2.x (planned) | Java | 2.0, 3.0.x, 3.1.x | B | + CBT (IDL), ART, external providers | + property-level dependency graph, CRUD lifecycle model, declared links | + IDL-constrained, external providers | + WFC catalogue, HTTP-semantics, stateful and constraint-aware oracles, corpus oracles |
+
+## After v2.0
+
+Planned, numbered in [`ROADMAP.md`](../ROADMAP.md), and taken in order once v2.0 has shipped — no
+approval is needed to start them, unlike the table that follows. [ADR-0024](adr/0024-the-competition-version.md)
+says why each waited.
+
+| Item | Roadmap rows |
+|---|---|
+| The WFC oracle catalogue, HTTP-semantics oracles, per-operation oracle configuration | 3.1, 3.2, 3.4 |
+| `CorpusOracle`, offline re-checking, the report formats beyond console and JSON | 3.3, 3.5, 3.6 |
+| The dependency graph over every property, with its synonym table and its measurement | rest of 4.1, 4.2 |
+| Declared links, the CRUD lifecycle model, stateful oracles, Arazzo | 4.3, rest of 4.4, 4.5, 4.6 |
+| IDL, the constraint solver, constraint-based generation and its oracles | M5 |
+| Live constraint and flow sources; the overhead regression test | M6 |
+| Authentication inferred from the document; the external value provider; the dictionary cache | 2.6, 2.8, 2.7b |
+| Maven Central, package managers, the native binary | 7.1, 7.2b, 7.3 |
 
 ## Out of scope for v2.0
 
@@ -320,7 +348,10 @@ Three of these rows have an open question against them, all raised by
 competition, and all of the same kind: each would have a run learn from what it has already seen.
 
 - Whether the choice of which operation to call next may be steered by counters over what each
-  operation has been answering.
+  operation has been answering. *Its narrowest version — withdrawing budget from operations whose
+  recent answers all say the request can never work as asked, with no reward and no learning rate —
+  is 9.4 in [`ROADMAP.md`](../ROADMAP.md), approved on 22 September 2026; the reward-shaped version
+  stays here.*
 - Whether the choice among inferred dependency candidates may be scored by what the API answered.
 - Whether a warm-up may read the *text* of an error reply rather than only its status code.
 
