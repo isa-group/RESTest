@@ -57,7 +57,12 @@ class DocumentedSettingsTest {
 
     @BeforeAll
     static void readThePage() throws IOException {
-        page = Files.readString(settingsPage());
+        // Line endings taken out on the way in. A checkout on Windows turns every line of a
+        // document into a carriage return and a line feed, and this project's rules about line
+        // endings are deliberately narrow - they cover the files a shell has to execute and
+        // nothing else, because a blanket rule rewrites the whole repository the day it fires.
+        // What is being compared here is what the page says, which is the same either way.
+        page = Files.readString(settingsPage()).replace("\r\n", "\n");
     }
 
     @Test
