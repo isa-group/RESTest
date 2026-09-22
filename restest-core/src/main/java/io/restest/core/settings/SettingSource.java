@@ -23,11 +23,26 @@ package io.restest.core.settings;
  * in, then what was typed on the command line. When a run behaves unexpectedly the first question
  * is which of the four decided a particular number, so every run says so - on the screen when asked,
  * and in the report it writes, whether asked or not.
+ *
+ * <p>There is a fifth answer, and it is the honest one for a value nobody gave: some settings are
+ * places inside a range, and moving the range moves them. Those say so rather than claiming to be
+ * what the tool does by default, because they are not.
  */
 public enum SettingSource {
 
     /** Nobody said otherwise, so this is what RESTest does. */
     DEFAULT("default"),
+
+    /**
+     * Nobody named this one either, but it is not what RESTest does by default: it was worked out
+     * from a setting that <em>was</em> named.
+     *
+     * <p>Where the engine starts is the one that does this today. It is a place inside the range of
+     * how many requests may be in flight, so asking for one request at a time moves it to one
+     * without anybody mentioning it. Calling that a default would put two different values under
+     * the same word in two results directories, with nothing in either to explain the difference.
+     */
+    WORKED_OUT("worked out"),
 
     /** A file named with {@code --settings}. */
     FILE("file"),

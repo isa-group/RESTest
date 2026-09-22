@@ -221,6 +221,40 @@ into `restest-core` beside the JSON reader, which is where the M1.6 amendment to
 [ADR-0006](0006-event-stream-and-store.md) put the same argument the first time. That amendment
 records it.
 
+### A setting is only accepted if it can be written back out
+
+Three ordinary things to type got past every check and then killed the run with a Java stack trace
+and exit `4`, where this record promises exit `2` before a request is sent: a number larger than the
+machine can hold (`1e400`, which becomes infinity and satisfies *greater than one*), a length of time
+longer than milliseconds can count, and a number written in eleven characters that is a thousand
+million characters written out.
+
+The rule that closes all three, and that whoever adds a setting should keep: **a value is accepted
+only if the tool can write it back out in the spelling it reads.** Lengths of time finer than a
+millisecond and longer than about 292 million years are refused, because the spelling has no unit
+below `ms` and none above what milliseconds can count. A number that is not finite is refused where
+it is bounded. A number taking more than a thousand characters to write out is refused, measured in
+characters rather than magnitude, since the two are different questions.
+
+That rule is not tidiness. Printing the settings and recording them in the report are promises made
+in §3, and a value that cannot be printed breaks both — long after the line that caused it.
+
+The escaping of what is printed follows from the same rule. A value with a line break in it was
+written into the file as a line break, which split one setting across two lines and came back with
+the break turned into a space. Text is now escaped the way a double-quoted YAML scalar is, and the
+round trip is asserted by reading the printed file back rather than by comparing the string it
+produced.
+
+### A value nobody gave, and that is not a default either, says so
+
+The derived starting concurrency above created a third case for §3's *where did this come from*
+column: nobody named it, and it is not what the code says by default. Recorded as `default` it would
+have put two different values under one word in two results directories, with nothing in either to
+explain the difference — which is the one thing that column exists to prevent. `SettingSource` gains
+a fifth member, *worked out*, decided by a rule rather than by a list: a value nobody named that
+differs from the built-in default was worked out from one that was named. Any future derived default
+is labelled correctly without anybody remembering to.
+
 ### The architecture rule is in place and proved
 
 `System.getenv`, `System.getProperty` and `System.getProperties` are forbidden outside

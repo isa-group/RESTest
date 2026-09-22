@@ -229,6 +229,29 @@ class JsonReportTest {
     }
 
     @Test
+    @DisplayName("how many write-ups a file holds is a setting: told two, it writes two, and says "
+            + "in its own limits block that two is what it was told")
+    void how_much_is_written_out_is_a_setting() {
+        io.restest.core.settings.Settings told = io.restest.core.settings.Settings.from(
+                java.util.Map.of("report.writeUpsPerOperationAndKind", "2"));
+        JsonReport report = JsonReport.inMemory(fixedClock(),
+                io.restest.core.settings.SettingsInEffect.of(told));
+        for (int found = 0; found < 20; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver("GET /pets")));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+
+        assertThat(array(written, "findings").elements())
+                .describedAs("at the usual setting this would be five")
+                .hasSize(2);
+        assertThat(number(object(written, "limits"), "writeUpsPerOperationAndKind")).isEqualTo(2);
+        assertThat(number(object(written, "totals"), "faults"))
+                .describedAs("and every one of them is still counted")
+                .isEqualTo(20);
+    }
+
+    @Test
     @DisplayName("a thousand faults of one kind get a handful of write-ups rather than a thousand")
     void very_many_faults_are_counted_in_full_and_written_in_part() {
         JsonValue.JsonObject written = afterFinding(1250, Runs::fellOver);

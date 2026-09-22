@@ -24,7 +24,7 @@
  * helpers shared between the other eleven and is deliberately kept internal, so it can change
  * freely without affecting anything built on top of this module.
  *
- * <p>Two of the ten have names close enough to be worth telling apart on sight.
+ * <p>Two of the eleven have names close enough to be worth telling apart on sight.
  * {@code io.restest.core.execution} is data: one test attempt, the request sent, the reply received.
  * {@code io.restest.core.exec} is the door that produces that data - the interface an HTTP client
  * implements - and it is named after the module that implements it, {@code restest-exec}, exactly as

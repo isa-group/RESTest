@@ -75,6 +75,50 @@ class LengthOfTimeTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {
+            "9223372036854775807h",
+            "9223372036854775807m",
+            "9223372036854775807",
+            "99999999999999999999",
+    })
+    @DisplayName("a length of time too long to write down is refused, rather than wrapping round "
+            + "to a small one or dying where it is printed")
+    void lengths_too_long_to_write_down(String typed) {
+        assertThatThrownBy(() -> LengthOfTime.parse(typed))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("longer than any length of time RESTest can write down");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PT2562047788015216H", "PT9223372036854775807S"})
+    @DisplayName("and so is one written in the formal spelling, which refuses it as text that is "
+            + "not a length of time at all")
+    void formal_lengths_too_long(String typed) {
+        assertThatThrownBy(() -> LengthOfTime.parse(typed))
+                .describedAs("what matters is that it is turned down rather than overflowing; "
+                        + "the formal spelling is refused by the platform before this sees it")
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PT0.0005S", "PT0.0000001S", "PT1.5001S"})
+    @DisplayName("a length of time finer than a millisecond is refused, because writing it out "
+            + "would hand back a different length")
+    void lengths_finer_than_this_can_write(String typed) {
+        assertThatThrownBy(() -> LengthOfTime.parse(typed))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("finer than a millisecond");
+    }
+
+    @Test
+    @DisplayName("the longest length of time there is can still be written out and read back")
+    void the_longest_one_still_works() {
+        Duration longest = Duration.ofMillis(Long.MAX_VALUE);
+
+        assertThat(LengthOfTime.parse(LengthOfTime.written(longest))).isEqualTo(longest);
+    }
+
+    @ParameterizedTest
     @CsvSource({
             "PT0S, 0s",
             "PT0.5S, 500ms",

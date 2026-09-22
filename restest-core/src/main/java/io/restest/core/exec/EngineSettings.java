@@ -100,10 +100,15 @@ public record EngineSettings(
                     + ") is outside the range the engine is allowed to use, " + minConcurrency
                     + " to " + maxConcurrency);
         }
-        if (!(slowdownFactor > 1)) {
-            throw new IllegalArgumentException("slowdownFactor must be greater than 1: at 1 every "
-                    + "answer slower than the fastest one so far would count as the API "
-                    + "struggling, and the engine would never settle: " + slowdownFactor);
+        if (!(slowdownFactor > 1) || !Double.isFinite(slowdownFactor)) {
+            // The second half is not belt and braces. A number typed as 1e400 is larger than a
+            // double can hold and arrives here as infinity, which satisfies "greater than 1" and
+            // then cannot be written down again - so a run would be configured with a value no
+            // report could state.
+            throw new IllegalArgumentException("slowdownFactor must be greater than 1 and a number "
+                    + "that can be written down: at 1 every answer slower than the fastest one so "
+                    + "far would count as the API struggling, and the engine would never settle: "
+                    + slowdownFactor);
         }
         if (maxRetainedResponseBytes < 1) {
             throw new IllegalArgumentException("maxRetainedResponseBytes must be at least 1; an "

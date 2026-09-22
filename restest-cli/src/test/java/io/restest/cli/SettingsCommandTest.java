@@ -58,10 +58,7 @@ class SettingsCommandTest {
     static void startTheApi() {
         api = new WireMockServer(options().dynamicPort());
         api.start();
-        api.stubFor(any(urlMatching(".*")).willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{}")));
+        answersEverythingWith("{}");
     }
 
     @AfterAll
@@ -141,6 +138,24 @@ class SettingsCommandTest {
         }
 
         @Test
+        @DisplayName("a value with a line break in it comes back out of the printed file as "
+                + "itself, rather than splitting one setting across two lines")
+        void an_awkward_value_survives_the_file(@TempDir Path directory) throws Exception {
+            String awkward = "mine/1.0\ninjected: 99";
+            run("run", "--set", "engine.userAgent=" + awkward, "--print-settings");
+            Path saved = directory.resolve("mine.yaml");
+            Files.writeString(saved, screen.toString());
+            screen.getBuffer().setLength(0);
+
+            assertThat(run("run", "--settings", saved.toString(), "--print-settings")).isZero();
+
+            assertThat(screen.toString())
+                    .contains("userAgent: \"mine/1.0\\ninjected: 99\"")
+                    .describedAs("and the break has not become a setting of its own")
+                    .doesNotContain("\ninjected: 99");
+        }
+
+        @Test
         @DisplayName("asking for the plan and the settings at once is refused, since printing "
                 + "either alone would read as an answer to both")
         void both_questions_at_once() {
@@ -188,6 +203,27 @@ class SettingsCommandTest {
 
             assertThat(screen.toString()).doesNotContain("strategies:");
             assertThat(problems.toString()).contains("there is no setting called");
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest
+        @org.junit.jupiter.params.provider.ValueSource(strings = {
+                "engine.slowdownFactor=1e400",
+                "engine.readTimeout=9223372036854775807",
+                "engine.readTimeout=9223372036854775807h",
+                "engine.readTimeout=PT0.0005S",
+                "generation.lowestNumber=1e999999999",
+        })
+        @DisplayName("a value larger or finer than the tool can write down answers 2 like any "
+                + "other, rather than a stack trace and 4")
+        void values_the_tool_cannot_write_down(String typed) {
+            assertThat(run("run", "--set", typed, "--print-settings"))
+                    .isEqualTo(ExitCode.BAD_COMMAND_LINE);
+
+            assertThat(problems.toString())
+                    .describedAs("a person who typed a number sees a sentence, not a stack trace")
+                    .startsWith("restest: ")
+                    .doesNotContain("\tat io.restest");
+            assertThat(screen.toString()).isEmpty();
         }
 
         @Test
@@ -264,21 +300,59 @@ class SettingsCommandTest {
         }
 
         @Test
-        @DisplayName("a setting the run actually obeys: a report told to quote nothing quotes "
-                + "nothing, and still counts everything")
+        @DisplayName("a setting the run actually obeys: the same run writes findings at the usual "
+                + "setting and none when told to quote none, while counting the same faults")
         void a_setting_the_run_obeys(@TempDir Path directory) throws Exception {
-            Path out = directory.resolve("out");
+            Path usual = directory.resolve("usual");
+            Path quiet = directory.resolve("quiet");
+            // An API that answers 200 with a body its own description does not allow, so every
+            // reply is a fault and there is certainly something for the report to quote.
+            api.resetAll();
+            api.stubFor(any(urlMatching(".*")).willReturn(aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("\"not the shape the document promised\"")));
+            try {
+                run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                        "--seed", "5", "--out", usual.toString());
+                run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                        "--seed", "5", "--set", "report.writeUpsInTotal=0",
+                        "--out", quiet.toString());
+            } finally {
+                answersEverythingWith("{}");
+            }
 
-            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
-                    "--set", "report.writeUpsInTotal=0", "--out", out.toString());
-
-            JsonValue report = JsonText.read(Files.readString(out.resolve("report.json")));
-            assertThat(member(report, "findings"))
-                    .isInstanceOfSatisfying(JsonValue.JsonArray.class,
-                            findings -> assertThat(findings.elements()).isEmpty());
-            assertThat(member(member(report, "limits"), "writeUpsInTotal"))
-                    .isEqualTo(JsonValue.of(0));
+            assertThat(findingsIn(usual))
+                    .describedAs("the setting is only worth testing against a run that would "
+                            + "otherwise have written something")
+                    .isNotZero();
+            assertThat(findingsIn(quiet)).isZero();
+            assertThat(faultsIn(quiet))
+                    .describedAs("nothing is quoted, and everything is still counted")
+                    .isNotZero();
         }
+    }
+
+    /** Puts the shared API back the way every test here but one expects to find it. */
+    private static void answersEverythingWith(String body) {
+        api.resetAll();
+        api.stubFor(any(urlMatching(".*")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(body)));
+    }
+
+    /** How many faults a run wrote out whole. */
+    private static int findingsIn(Path out) throws Exception {
+        JsonValue report = JsonText.read(Files.readString(out.resolve("report.json")));
+        return ((JsonValue.JsonArray) member(report, "findings")).elements().size();
+    }
+
+    /** And how many it found, whether or not it wrote them out. */
+    private static int faultsIn(Path out) throws Exception {
+        JsonValue report = JsonText.read(Files.readString(out.resolve("report.json")));
+        return ((JsonValue.JsonNumber) member(member(report, "totals"), "faults"))
+                .value().intValueExact();
     }
 
     /** Every setting the report states, as "name value source", for reading in a test. */

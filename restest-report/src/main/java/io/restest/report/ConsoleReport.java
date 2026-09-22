@@ -93,23 +93,13 @@ public final class ConsoleReport implements RunListener {
     }
 
     /**
-     * A report that writes wherever you tell it to, and knows which lists a run pushes with.
+     * A report that writes wherever you tell it to, knows which lists a run pushes with, and is
+     * told how many faults belong on a screen.
      *
      * <p>Part of a run is spent on requests built from values nobody sensible would send. Whatever
      * those earn - a refusal, or an acceptance, or the API falling over - lands in the same counts
      * as everything else, and a summary that did not separate them would read as though the API
      * were behaving that way towards ordinary traffic.
-     *
-     * @param out where to write
-     * @param awkwardSources the names of the lists a run pushes at the API with
-     * @return the report
-     */
-    public static ConsoleReport to(Appendable out, Set<String> awkwardSources) {
-        return new ConsoleReport(out, awkwardSources, ReportSettings.defaults());
-    }
-
-    /**
-     * The same, told how many faults belong on a screen.
      *
      * <p>A run that keeps testing for as long as it was given will ask an API the same question
      * thousands of times, and an API that is broken is broken every time. Printing all of them

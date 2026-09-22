@@ -256,13 +256,6 @@ public record Settings(
         };
     }
 
-    /** Every setting and its value here, in the order they are printed. */
-    public Map<SettingKey, String> all() {
-        Map<SettingKey, String> values = new LinkedHashMap<>();
-        SettingKey.all().forEach(key -> values.put(key, written(key)));
-        return values;
-    }
-
     /** These settings with the engine's changed. */
     public Settings withEngine(EngineSettings value) {
         return new Settings(value, schedule, generation, memory, document, report);

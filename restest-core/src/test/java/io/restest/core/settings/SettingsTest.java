@@ -309,6 +309,43 @@ class SettingsTest {
                     .hasMessageContaining("at least 1");
         }
 
+        /**
+         * The values that used to get past every check and then kill the run.
+         *
+         * <p>Each of these is an ordinary thing to type. A number larger than the machine can hold
+         * became infinity and satisfied "greater than one"; a length of time longer than
+         * milliseconds can count wrapped round; a number written in eleven characters became a
+         * thousand million when written out. All three were accepted, and the run then died with a
+         * stack trace somewhere far away from the line that caused it.
+         */
+        @Test
+        @DisplayName("a value too large for the machine to hold is refused here, rather than "
+                + "accepted and then killing the run somewhere else")
+        void values_too_large_to_hold() {
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.slowdownFactor", "1e400")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("written down");
+
+            assertThatThrownBy(() -> Settings.from(
+                    Map.of("engine.readTimeout", "9223372036854775807")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("longer than any length of time");
+
+            assertThatThrownBy(() -> Settings.from(
+                    Map.of("engine.readTimeout", "9223372036854775807h")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("longer than any length of time");
+
+            assertThatThrownBy(() -> Settings.from(
+                    Map.of("generation.lowestNumber", "1e999999999")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("characters to write down");
+
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.readTimeout", "PT0.0005S")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("finer than a millisecond");
+        }
+
         @Test
         @DisplayName("two values that disagree with each other are refused naming both")
         void two_values_that_disagree() {
@@ -347,14 +384,6 @@ class SettingsTest {
                     .orElseThrow())).isEqualTo("0.0001");
         }
 
-        @Test
-        @DisplayName("every setting and its value can be listed at once, for printing")
-        void all_of_them_at_once() {
-            Map<SettingKey, String> all = Settings.defaults().all();
-
-            assertThat(all).hasSameSizeAs(SettingKey.all());
-            assertThat(all.keySet()).containsExactlyElementsOf(SettingKey.all());
-        }
     }
 
     @Nested

@@ -32,6 +32,11 @@ import java.util.regex.Pattern;
  * <p>One spelling, read in one place, so that how long to keep testing and how long to wait for a
  * reply are written the same way - on the command line, in a file of settings, and in whatever asks
  * next.
+ *
+ * <p>Nothing is accepted that could not be written back out in the same spelling. A length finer
+ * than a millisecond, and one so long that counting it in milliseconds overflows, are both refused
+ * rather than quietly rounded or wrapped - because what is printed is meant to be saved, changed in
+ * one line and handed back, and a value that changed on the way through would make that a trap.
  */
 public final class LengthOfTime {
 
@@ -54,8 +59,31 @@ public final class LengthOfTime {
         if (text.isEmpty()) {
             throw refuse(value);
         }
-        return text.regionMatches(true, 0, "P", 0, 1) ? formal(text, value)
-                : amountAndUnit(text, value);
+        return writable(text.regionMatches(true, 0, "P", 0, 1) ? formal(text, value)
+                : amountAndUnit(text, value), value);
+    }
+
+    /**
+     * The same length of time, if it is one this can write down again.
+     *
+     * <p>Two ways it might not be. Finer than a millisecond: there is no unit below {@code ms} in
+     * this spelling, so {@code PT0.0005S} would be written back as {@code 0s} and read again as a
+     * different length - and, for a timeout, as one that is then refused for being zero. And longer
+     * than milliseconds can count: past that, writing it out overflows rather than producing a large
+     * number.
+     */
+    private static Duration writable(Duration parsed, String asTyped) {
+        if (parsed.getNano() % 1_000_000 != 0) {
+            throw new IllegalArgumentException("'" + asTyped + "' is finer than a millisecond, and "
+                    + "a millisecond is the smallest length of time RESTest can write down");
+        }
+        try {
+            parsed.toMillis();
+        } catch (ArithmeticException tooLong) {
+            throw new IllegalArgumentException("'" + asTyped + "' is longer than any length of "
+                    + "time RESTest can write down, which is about 292 million years");
+        }
+        return parsed;
     }
 
     /**
@@ -98,7 +126,15 @@ public final class LengthOfTime {
             return Duration.parse(text);
         } catch (DateTimeParseException notADuration) {
             throw refuse(asTyped);
+        } catch (ArithmeticException overflowed) {
+            throw tooLongToCount(asTyped);
         }
+    }
+
+    /** What to say about a length of time too long for this to count, let alone write down. */
+    private static IllegalArgumentException tooLongToCount(String value) {
+        return new IllegalArgumentException("'" + value + "' is longer than any length of time "
+                + "RESTest can write down, which is about 292 million years");
     }
 
     private static Duration amountAndUnit(String text, String asTyped) {
@@ -106,14 +142,23 @@ public final class LengthOfTime {
         if (!matched.matches()) {
             throw refuse(asTyped);
         }
-        long amount = Long.parseLong(matched.group(1));
+        long amount;
+        try {
+            amount = Long.parseLong(matched.group(1));
+        } catch (NumberFormatException tooLong) {
+            throw tooLongToCount(asTyped);
+        }
         String unit = matched.group(2) == null ? "s" : matched.group(2).toLowerCase(Locale.ROOT);
-        return switch (unit) {
-            case "ms" -> Duration.ofMillis(amount);
-            case "s" -> Duration.ofSeconds(amount);
-            case "m" -> Duration.ofMinutes(amount);
-            case "h" -> Duration.ofHours(amount);
-            default -> throw refuse(asTyped);
-        };
+        try {
+            return switch (unit) {
+                case "ms" -> Duration.ofMillis(amount);
+                case "s" -> Duration.ofSeconds(amount);
+                case "m" -> Duration.ofMinutes(amount);
+                case "h" -> Duration.ofHours(amount);
+                default -> throw refuse(asTyped);
+            };
+        } catch (ArithmeticException overflowed) {
+            throw tooLongToCount(asTyped);
+        }
     }
 }

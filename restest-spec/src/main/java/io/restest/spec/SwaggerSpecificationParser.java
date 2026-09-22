@@ -227,7 +227,13 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
         try {
             Path path = Path.of(location);
             if (Files.isReadable(path) && !Files.isDirectory(path)) {
-                return Optional.of(decode(Files.readAllBytes(path)));
+                // Bounded like every other way in. A file on this machine is the one somebody
+                // chose deliberately, so it is the least likely of the three to be enormous by
+                // surprise - but the bound is published as the largest description that is read at
+                // all, and a bound with an exception in it is not the thing that was promised.
+                try (InputStream stream = Files.newInputStream(path)) {
+                    return Optional.of(decode(readBounded(stream)));
+                }
             }
         } catch (InvalidPathException | IOException ignored) {
             // Falls through: not every location is a valid local path, and that is not an error yet.

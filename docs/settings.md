@@ -81,6 +81,10 @@ numbers would answer a question nobody put, so RESTest stops before it sends any
 - **A value outside its range** is refused with the range, and with the other setting it disagrees
   with when there is one.
 - **A file that cannot be read** is refused, naming the file.
+- **A value the tool could not write back out** is refused: a length of time finer than a
+  millisecond or longer than milliseconds can count, a number too large for the machine to hold, a
+  number that would take more than a thousand characters to write out. Every setting has to survive
+  being printed and recorded, or `--print-settings` and `report.json` would break on it later.
 
 ## Where a run says how it was configured
 
@@ -97,6 +101,12 @@ be compared line by line.
 And a run whose settings are not the ones RESTest ships says so on the screen, once, because an
 environment variable is invisible in the command you typed and in the transcript you paste into a
 bug report.
+
+One source is worth knowing about: **worked out**. A few settings are places inside a range, and
+moving the range moves them. `--set engine.maxConcurrency=1` also moves where the engine starts,
+without you mentioning it, and that value is recorded as *worked out* rather than as a default —
+because it is not what the tool does by default, and two results directories would otherwise carry
+different values under the same word.
 
 ## The lengths of time
 
@@ -174,6 +184,7 @@ spelling `--budget` takes.
 | `writeUpsInTotal` | `1000` | and how many in the whole file |
 | `mostBodyBytesKept` | `24576` | how much of any one body the report quotes |
 | `faultsShownOnTheConsole` | `50` | how many faults are printed in full before the screen stops being the place |
+
 ## Two things worth knowing
 
 **Moving the concurrency range moves where the engine starts.** `initialConcurrency` is where to

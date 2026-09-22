@@ -18,11 +18,11 @@
     <dependencies>
         <!--
           The first of the two third-party libraries this module carries, and only its streaming
-          reader and writer, not the object mapper: RESTest's own JSON values are turned into text and back here, and
-          there is no use for a library that maps Java objects to JSON. It lives in this module
-          because three others need it and none of them may see the other two - the stored run, the
-          report written at the end of a run, and the schema location an oracle hands to the
-          validator. See ADR-0006, Amendment (M1.6).
+          reader and writer, not the object mapper: RESTest's own JSON values are turned into text
+          and back here, and there is no use for a library that maps Java objects to JSON. It lives
+          in this module because three others need it and none of them may see the other two - the
+          stored run, the report written at the end of a run, and the schema location an oracle
+          hands to the validator. See ADR-0006, Amendment (M1.6).
         -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

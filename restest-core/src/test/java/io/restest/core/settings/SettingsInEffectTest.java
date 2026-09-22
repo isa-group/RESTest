@@ -17,6 +17,8 @@ package io.restest.core.settings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.json.JsonValue;
+import io.restest.core.json.YamlText;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -63,6 +65,33 @@ class SettingsInEffectTest {
         assertThat(configured.sourceOf(MAX_CONCURRENCY)).isEqualTo(SettingSource.COMMAND_LINE);
         assertThat(configured.sourceOf(READ_TIMEOUT))
                 .describedAs("its neighbours are still what the code decided")
+                .isEqualTo(SettingSource.DEFAULT);
+    }
+
+    @Test
+    @DisplayName("a value nobody named and nobody defaulted says it was worked out, rather than "
+            + "claiming to be what the tool does by default")
+    void a_worked_out_value_says_so() {
+        SettingKey start = SettingKey.named("engine.initialConcurrency").orElseThrow();
+        SettingsInEffect careful = new SettingsInEffect(
+                Settings.from(Map.of("engine.maxConcurrency", "1")),
+                Map.of("engine.maxConcurrency", SettingSource.COMMAND_LINE));
+
+        assertThat(careful.settings().engine().initialConcurrency()).isEqualTo(1);
+        assertThat(careful.sourceOf(start))
+                .describedAs("calling this a default would put two different values under one word "
+                        + "in two results directories, with nothing to explain the difference")
+                .isEqualTo(SettingSource.WORKED_OUT);
+        assertThat(careful.asAFile()).contains("initialConcurrency: 1")
+                .contains("# worked out");
+    }
+
+    @Test
+    @DisplayName("and a value that really is the default still says default")
+    void an_untouched_value_says_default() {
+        SettingKey start = SettingKey.named("engine.initialConcurrency").orElseThrow();
+
+        assertThat(SettingsInEffect.of(Settings.defaults()).sourceOf(start))
                 .isEqualTo(SettingSource.DEFAULT);
     }
 
@@ -122,12 +151,49 @@ class SettingsInEffectTest {
                 .contains("followRedirects: false");
     }
 
-    @Test
-    @DisplayName("text with a quotation mark in it survives being printed")
-    void awkward_text_is_escaped() {
-        Settings odd = Settings.from(Map.of("engine.userAgent", "a \"quoted\" name\\here"));
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+            "a \"quoted\" name\\here",
+            "two\nlines",
+            "a\ttab and a\rreturn",
+            "an invisible \u0001 character",
+            "trailing space ",
+    })
+    @DisplayName("a value with something awkward in it comes back out of the printed file exactly "
+            + "as it went in, which is what makes printing it safe")
+    void awkward_text_survives_the_round_trip(String awkward) {
+        Settings odd = Settings.from(Map.of("engine.userAgent", awkward));
 
-        assertThat(SettingsInEffect.of(odd).asAFile())
-                .contains("userAgent: \"a \\\"quoted\\\" name\\\\here\"");
+        assertThat(readBack(SettingsInEffect.of(odd)).get("engine.userAgent"))
+                .describedAs("a line break written as itself would split one setting across two "
+                        + "lines, and come back with the break turned into a space")
+                .isEqualTo(awkward);
+    }
+
+    @ParameterizedTest
+    @MethodSource("everySetting")
+    @DisplayName("every setting comes back out of the printed file with the value it went in with")
+    void every_value_survives_the_round_trip(SettingKey key) {
+        assertThat(readBack(SettingsInEffect.of(Settings.defaults())).get(key.fullName()))
+                .isEqualTo(Settings.defaults().written(key));
+    }
+
+    /** What a printed file says, read back the way the command line reads one. */
+    private static Map<String, String> readBack(SettingsInEffect printed) {
+        JsonValue read = YamlText.read(printed.asAFile(), "a printed file");
+        Map<String, String> values = new LinkedHashMap<>();
+        ((JsonValue.JsonObject) read).members().forEach((group, held) ->
+                ((JsonValue.JsonObject) held).members().forEach((key, value) ->
+                        values.put(group + "." + key, written(value))));
+        return values;
+    }
+
+    private static String written(JsonValue value) {
+        return switch (value) {
+            case JsonValue.JsonString text -> text.value();
+            case JsonValue.JsonNumber number -> number.value().toPlainString();
+            case JsonValue.JsonBoolean yesOrNo -> String.valueOf(yesOrNo.value());
+            default -> throw new AssertionError("a printed file held " + value);
+        };
     }
 }

@@ -61,7 +61,18 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
      */
     public SettingSource sourceOf(SettingKey key) {
         Objects.requireNonNull(key, "key");
-        return sources.getOrDefault(key.fullName(), SettingSource.DEFAULT);
+        SettingSource named = sources.get(key.fullName());
+        if (named != null) {
+            return named;
+        }
+        // Nobody named it, and it is still not what the code says by default - so it was worked out
+        // from something that was named. Where the engine starts is the one that does this today:
+        // it is a place inside the concurrency range, so moving the range moves it. Saying
+        // "default" here would put two different values under the same word in two results
+        // directories, with nothing in either to explain the difference.
+        return settings.written(key).equals(Settings.defaults().written(key))
+                ? SettingSource.DEFAULT
+                : SettingSource.WORKED_OUT;
     }
 
     /**
@@ -134,17 +145,43 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
     /**
      * A value written so that reading the file back gives the same value.
      *
-     * <p>Text is quoted; everything else is a number, a length of time or a yes-or-no, and those
-     * are written bare. A length of time has to be quoted as well, because {@code 30s} unquoted is
-     * a word and {@code 10} unquoted is a number, and only one of the two would survive the trip
-     * through a reader that does not know which setting it is reading.
+     * <p>Text is quoted; everything else is a number, a length of time or a yes-or-no. A length of
+     * time is quoted as well, because {@code 30s} unquoted is a word and {@code 10} unquoted is a
+     * number, and only one of the two would survive the trip through a reader that does not know
+     * which setting it is reading.
+     *
+     * <p>Inside the quotes, a backslash and a quotation mark are escaped for the obvious reason,
+     * and so is every character that would otherwise end the line or be invisible. A line break in
+     * a value is the case worth naming: written as itself it would split one setting across two
+     * lines, and the file would come back with the break silently turned into a space.
      */
     private static String quoted(Row row) {
         return switch (row.key().kind()) {
-            case TEXT, LENGTH_OF_TIME -> "\"" + row.value()
-                    .replace("\\", "\\\\")
-                    .replace("\"", "\\\"") + "\"";
+            case TEXT, LENGTH_OF_TIME -> "\"" + escaped(row.value()) + "\"";
             case WHOLE_NUMBER, NUMBER, YES_OR_NO -> row.value();
         };
     }
+
+    /** One piece of text, written so that a reader hands back exactly what went in. */
+    private static String escaped(String value) {
+        StringBuilder written = new StringBuilder(value.length() + 2);
+        value.codePoints().forEach(letter -> {
+            switch (letter) {
+                case '\\' -> written.append("\\\\");
+                case '"' -> written.append("\\\"");
+                case '\n' -> written.append("\\n");
+                case '\r' -> written.append("\\r");
+                case '\t' -> written.append("\\t");
+                default -> {
+                    if (Character.isISOControl(letter)) {
+                        written.append(String.format("\\x%02x", letter));
+                    } else {
+                        written.appendCodePoint(letter);
+                    }
+                }
+            }
+        });
+        return written.toString();
+    }
+
 }
