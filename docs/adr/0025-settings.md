@@ -1,0 +1,147 @@
+# ADR-0025: The numbers somebody decided live in one settings object, layered from four sources, and never in the plan
+
+**Status:** Proposed
+**Date:** 2026-09-22
+
+## Context
+
+Counting the named constants in the production modules — `static final` numbers with a name and a
+comment — gives about eighty. Some are facts: `500` is a server error, a file format has a version
+`1`, HTTP says what a status class is. Most are **decisions**: how many requests may be in flight and
+how fast that number grows, how many bytes of a reply are kept, how deep an invented body goes and
+how long an invented string is, how many values the memory of what the API returned keeps under one
+name, how many write-ups the JSON report quotes per operation, how long the tool waits for a document
+fetched over the network, how many announcements may pile up before the loop slows down.
+
+Every one of them was decided on purpose, with a comment saying why, and none of them can be changed
+without recompiling. Three things want that changed.
+
+**A user with an API that is not the one we imagined.** A fragile API wants one request at a time;
+`EngineSettings.withoutConcurrency()` exists for exactly that and no command-line option reaches it.
+A slow one wants a longer read timeout. An API that returns replies of a megabyte wants more of them
+kept, or less.
+
+**An experiment that wants a behaviour off.** ADR-0024 puts nine behavioural levers into v2.0 and
+asks for an ablation that measures each. An ablation by branch — one commit per variant — is nine
+builds of the container image, nine pinned commits, and a results directory nobody can compare
+without reading git. An ablation by switch is one image and one line per variant.
+
+**Two runs in one process.** Design principle 6 says two runs must coexist in one JVM. A setting read
+from a system property or an environment variable at the point of use is global state with a
+friendly name: the second run reads the first one's answer.
+
+### What the plan file is, and is not
+
+ADR-0023's plan says *where a run's values come from* and *which operations it may touch*. It travels
+with an API: somebody writes one per API, and it means the same thing on every machine. The numbers
+above are about the *tool* — how hard it pushes, how much it keeps, how deep it goes — and they
+travel with a machine or with an experiment. The maintainer's instruction is that they do not go in
+the plan, and the reason is the one above: a plan that carried a concurrency would be wrong on the
+next machine, and an experiment that changed a concurrency would have to rewrite a file about the API.
+
+### What is already there
+
+`EngineSettings` in `restest-core`: an immutable record of the engine's numbers with `with*` methods
+and defaults in code, built in `restest-cli` and handed to the engine by constructor. It is the shape
+this record generalises. Nothing reads it from anywhere; the command line does not expose it.
+
+## Decision
+
+### 1. One `Settings`, typed, immutable, in `restest-core`
+
+`Settings` is a record of records, one per concern, each the shape `EngineSettings` already has:
+
+| Group | Key prefix | What it holds |
+|---|---|---|
+| engine | `engine.*` | timeouts, the concurrency range and its slowdown factor, retained response bytes, redirects, user agent |
+| schedule | `schedule.*` | the work-ahead factor, how many announcements may pile up, the straggler grace; from M9, the opening lap, the hygiene window and floor, and the switches of every scheduling lever |
+| generation | `generation.*` | depths, string lengths, item counts, the null rate, attempt counts, the optional-parameter distribution; from M10, the switches of every mutation and shape operator |
+| memory | `memory.*` | how many observed values are kept under one name, how many names, the longest value kept, the longest reply read, how deep a reply is read |
+| sequences | `sequences.*` | from M9 and M10, the switches of the producer-then-consumer sequence and of each sequence operator |
+| document | `document.*` | the largest document read, the fetch timeout, the nesting limits |
+| report | `report.*` | write-ups per operation and kind, in total, body bytes kept, faults shown on the console |
+| store | `store.*` | batch size and the longest an interaction waits before it is written |
+
+Defaults live in code, beside the thing they configure, with the comment that already explains
+them. The record is built once and passed by constructor; nothing reads a setting from a static
+anywhere, and an architecture test forbids `System.getenv` and `System.getProperty` outside
+`restest-cli`.
+
+### 2. Four layers, in a fixed order, assembled in the command-line module
+
+```
+defaults in code
+  ← a settings file, YAML, given with --settings <path>
+    ← environment variables, RESTEST_<GROUP>_<KEY>   (RESTEST_ENGINE_MAX_CONCURRENCY=8)
+      ← --set group.key=value, repeated              (--set engine.maxConcurrency=8)
+```
+
+Later layers win. Keys are the same words in every layer — `engine.maxConcurrency` in the file and
+on the command line, `RESTEST_ENGINE_MAX_CONCURRENCY` in the environment, the camel case split on
+upper-case letters — so a person learns one name. No file is required and no file is looked for in a
+default location: zero configuration means the tool starts with nothing beside it, and a file found
+by accident in a working directory is a run nobody can explain.
+
+An unknown key is refused, with the nearest known key named. A value of the wrong type or outside
+its range is refused with the range. Refused means exit code 2, before a request is sent.
+
+### 3. The effective settings are printable and recorded
+
+`restest run --print-settings` prints every key, its effective value and where it came from —
+*default*, *file*, *environment*, *command line* — and stops, the way `--print-campaign` prints the
+plan. The same table goes into `report.json` under `settings`, so a run says how it was configured
+and an ablation's results directory carries its own variant with it.
+
+### 4. Every behavioural lever has a switch, and the switches are listed
+
+From this record on, an increment that adds a behaviour a run can do without — an opening lap, a
+mutation operator, a sequence shape, a scheduling rule — ships a boolean under its group that turns
+it off, default on unless the screening campaign says otherwise. A documented page lists every
+switch, what it turns off and what it costs, and names the plan variants that complete an ablation
+(the memory of observed values is a *source*, so switching it off is a plan without the `observed`
+line, not a setting). A test checks that the page and the code agree.
+
+### 5. What moves and what stays
+
+A constant moves into the settings if a reasonable user or a reasonable experiment might want a
+different value. A constant that is a fact — a status code, a format version, a unit conversion —
+stays a constant. The first tranche is the groups above; the rest move when the code around them is
+next touched, never in a sweep, and the comment that justified the constant becomes the comment on
+the default.
+
+## Consequences
+
+- **ADR-0015 is amended**: `--settings`, `--set` and `--print-settings` join the surface, and are
+  frozen with it at 12.1.
+- **`report.json` grows a `settings` block.** Readers of the report that do not know it ignore it.
+- **The plan file does not change.** It is about the API; this is about the tool. A key that could
+  go in either goes here, and the test for which is whether it would mean the same thing for a
+  different API on the same machine.
+- **An ablation is one image and one variable per variant**, and its result names its own variant.
+- **Two runs in one JVM keep different settings**, because there is no static to share.
+- **Every M9 and M10 pull request is one row longer**: the switch, and its line on the page.
+- **A first user-facing knob for the engine.** `--set engine.maxConcurrency=1` is the answer to "my
+  API falls over when asked two things at once", and it did not exist.
+
+## Alternatives considered
+
+- **System properties alone** (`-Drestest.engine.maxConcurrency=8`). No file to explain, and every
+  Java user knows them. Rejected: they are invisible from `--help`, awkward through the launcher and
+  hostile to the native binary of 7.3, and read at the point of use they are global state. They are
+  not one of the four layers, on purpose.
+- **Environment variables alone.** Natural in a container, which is where the benchmark runs the
+  tool. Rejected as the *only* layer: a flat namespace of eighty upper-case names is not a document
+  a person reads, and there is no way to hand a colleague "the settings I used" but a shell script.
+  They are the third layer because containers are real.
+- **One command-line option per number.** What CATS and EvoMaster do. Rejected: eighty options in
+  `--help`, and a command-line contract (ADR-0015) that changes every time a constant moves. `--set`
+  gives the command line the reach without the surface.
+- **A file alone, in a default location** (`restest.yaml` beside the document, or under the user's
+  home). Rejected for the default location: a file found by accident changes a run nobody can
+  explain, and the tool is supposed to start with nothing beside it. Accepted as a layer when named
+  with `--settings`.
+- **Settings inside the plan file, under a `settings:` key.** One file, one format, one option.
+  Rejected by the maintainer, for the reason in the context: the two travel with different things.
+- **Leave the constants where they are and add switches only.** Cheapest. Rejected: the same
+  mechanism carries both, the switches need the layering and the printing anyway, and the constants
+  are the part a user asks for.

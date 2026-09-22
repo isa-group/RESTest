@@ -12,6 +12,9 @@ Work breakdown: `ROADMAP.md`.
 
 **Design target:** an unknown API, no human configuration, a fixed time budget.
 
+**Release target:** v2.0 is the version submitted to the 2027 REST League (tools due 2026-10-09).
+`ROADMAP.md` is ordered by that calendar and says what waits for 2.1; the reasoning is ADR-0024.
+
 ## Language
 
 English only — code, comments, tests, commits, branches, issues, pull requests, documentation.
@@ -33,7 +36,8 @@ No exceptions.
 - One increment = one branch = one pull request, named `feat/<milestone>-<n>-<slug>`,
   e.g. `feat/m1-2-specification-parser`.
 - Squash-merge into `v2`. Never merge into `master`.
-- Take the next increment from `ROADMAP.md`, in order, unless told otherwise.
+- Take the next increment from `ROADMAP.md`, in the order of work it states — not in numerical
+  order — unless told otherwise.
 
 ## Pull requests
 
@@ -78,6 +82,10 @@ was edited.
   explicit approval, even
   if it looks easy. That list includes dependency inference, semantic-oracle inference, metamorphic
   relations, response classifiers and search-based scheduling.
+- **Tuning numbers live in the settings, never in the campaign file, and every behaviour lever
+  lands with a switch** (ADR-0025), so an experiment can turn it off without a code change. A
+  constant that is a decision rather than a fact does not stay a constant when the code around it is
+  touched.
 - **Never weaken an architecture test, a coverage threshold or a mutation threshold to make a build
   pass.** If a rule is wrong, say so and propose changing it deliberately.
 - **No code from RESTest 1.x is copied.** Ideas, the IDL grammar and the test corpus, yes. Source
