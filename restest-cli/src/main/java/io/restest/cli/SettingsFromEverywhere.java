@@ -24,7 +24,6 @@ import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -105,9 +104,6 @@ final class SettingsFromEverywhere {
         try {
             text = Files.readString(file);
         } catch (IOException cannotRead) {
-            throw new SettingsException("the settings in " + file + " could not be read: "
-                    + cannotRead.getMessage());
-        } catch (UncheckedIOException cannotRead) {
             throw new SettingsException("the settings in " + file + " could not be read: "
                     + cannotRead.getMessage());
         }
