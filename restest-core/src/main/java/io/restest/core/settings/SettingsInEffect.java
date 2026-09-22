@@ -142,13 +142,20 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
         return written.toString();
     }
 
+    /** Whether YAML refuses to carry this letter as itself. */
+    private static boolean notPrintable(int letter) {
+        return (letter >= 0xD800 && letter <= 0xDFFF) || letter == 0xFFFE || letter == 0xFFFF;
+    }
+
     /**
      * A value written so that reading the file back gives the same value.
      *
-     * <p>Text is quoted; everything else is a number, a length of time or a yes-or-no. A length of
-     * time is quoted as well, because {@code 30s} unquoted is a word and {@code 10} unquoted is a
-     * number, and only one of the two would survive the trip through a reader that does not know
-     * which setting it is reading.
+     * <p>Text is quoted, and so is a length of time: {@code 30s} unquoted is a word and {@code 10}
+     * unquoted is a number, and only one of the two would survive the trip through a reader that
+     * does not know which setting it is reading. Numbers are written bare, which they can be
+     * because a number these settings hold is kept the way this tool keeps every number - trailing
+     * zeros stripped, so that {@code 1}, {@code 1.0} and {@code 1E+0} are one value rather than
+     * three.
      *
      * <p>Inside the quotes, a backslash and a quotation mark are escaped for the obvious reason,
      * and so is every character that would otherwise end the line or be invisible. A line break in
@@ -175,6 +182,11 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
                 default -> {
                     if (Character.isISOControl(letter)) {
                         written.append(String.format("\\x%02x", letter));
+                    } else if (notPrintable(letter)) {
+                        // A letter YAML will not carry as itself: half of a pair that never got
+                        // its other half, or one of the two code points the format reserves.
+                        // Written as itself it would make a file the tool could not read back.
+                        written.append(String.format("\\u%04x", letter));
                     } else {
                         written.appendCodePoint(letter);
                     }
@@ -183,5 +195,6 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
         });
         return written.toString();
     }
+
 
 }

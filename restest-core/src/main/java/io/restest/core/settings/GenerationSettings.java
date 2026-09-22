@@ -39,7 +39,8 @@ import java.util.Objects;
  * @param hardNestingDepth where everything stops, however insistent the description is
  * @param usualLongestString the longest word invented when the description does not demand more
  * @param longestString beyond this, a demanded length is declined rather than built
- * @param lowestNumber where an invented number starts, when the description states no bottom
+ * @param lowestNumber where an invented number starts, when the description states no bottom.
+ *     Kept with its trailing zeros stripped, so {@code 1000} and {@code 1E+3} are one value
  * @param roomAboveIt how far above that it may go, when the description states no top. A width
  *     rather than a ceiling: a description that states a bottom of its own gets this much room
  *     above that bottom, so the room to move in is the same wherever the numbers begin
@@ -88,6 +89,12 @@ public record GenerationSettings(
         Objects.requireNonNull(roomAboveIt, "roomAboveIt");
         writable(lowestNumber, "lowestNumber");
         writable(roomAboveIt, "roomAboveIt");
+        // Kept the way this tool keeps every number, so that one written 1000, another written
+        // 1E+3 and a third written 1000.00 are one value rather than three. Without it, printing
+        // these settings and handing the file back would produce settings that differ from the
+        // ones printed - equal as numbers, unequal as values - and nothing would say why.
+        lowestNumber = lowestNumber.stripTrailingZeros();
+        roomAboveIt = roomAboveIt.stripTrailingZeros();
         atLeastOne(optionalNestingDepth, "optionalNestingDepth");
         atLeastOne(hardNestingDepth, "hardNestingDepth");
         atLeastOne(usualLongestString, "usualLongestString");

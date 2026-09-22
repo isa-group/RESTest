@@ -171,6 +171,40 @@ class SettingsInEffectTest {
     }
 
     @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({
+            "generation.lowestNumber, 1E+2",
+            "generation.roomAboveIt, 1.50",
+            "generation.lowestNumber, 0.000001",
+            "engine.slowdownFactor, 1.500",
+            "engine.readTimeout, 3600s",
+            "engine.maxRetainedResponseBytes, 9223372036854775807",
+    })
+    @DisplayName("a value that is written to a particular number of places keeps them: how many "
+            + "places a number has is itself what one of these settings decides")
+    void the_exact_number_survives_the_round_trip(String key, String typed) {
+        Settings asked = Settings.from(Map.of(key, typed));
+
+        assertThat(Settings.from(Map.of(key, readBack(SettingsInEffect.of(asked)).get(key))))
+                .describedAs("%s written as %s came back as something else", key, typed)
+                .isEqualTo(asked);
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+            "a\uD800lone half of a pair",
+            "one of the two YAML reserves \uFFFE",
+            "an emoji \uD83D\uDE00, which is a pair and is fine",
+    })
+    @DisplayName("a letter YAML will not carry as itself is written as an escape, so the printed "
+            + "file is one the tool can still read")
+    void letters_yaml_will_not_carry(String awkward) {
+        Settings odd = Settings.from(Map.of("engine.userAgent", awkward));
+
+        assertThat(readBack(SettingsInEffect.of(odd)).get("engine.userAgent"))
+                .isEqualTo(awkward);
+    }
+
+    @ParameterizedTest
     @MethodSource("everySetting")
     @DisplayName("every setting comes back out of the printed file with the value it went in with")
     void every_value_survives_the_round_trip(SettingKey key) {

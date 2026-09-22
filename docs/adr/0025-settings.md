@@ -245,6 +245,17 @@ the break turned into a space. Text is now escaped the way a double-quoted YAML 
 round trip is asserted by reading the printed file back rather than by comparing the string it
 produced.
 
+Two more values turned out to be in the same class once the rule was written down, and both were
+found by pointing the rule at the settings rather than by review. A letter YAML will not carry as
+itself - half of a surrogate pair that never got its other half - was accepted and then produced a
+printed file the tool refused to read; those are written as escapes now. And a number written to a
+particular number of places did not come back with them: {@code 1E+2} was printed as {@code 100},
+which is the same number written differently. That one is settled the way this project already
+settles it everywhere else - a number is kept with its trailing zeros stripped, exactly as
+`JsonValue.JsonNumber` has always done, so `1000`, `1E+3` and `1000.00` are one value rather than
+three - rather than by quoting numbers in the printed file, which would have made every line of it
+read like text.
+
 ### A value nobody gave, and that is not a default either, says so
 
 The derived starting concurrency above created a third case for §3's *where did this come from*

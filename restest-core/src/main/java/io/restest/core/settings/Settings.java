@@ -216,8 +216,8 @@ public record Settings(
             case "generation.usualLongestString" ->
                     String.valueOf(generation.usualLongestString());
             case "generation.longestString" -> String.valueOf(generation.longestString());
-            case "generation.lowestNumber" -> generation.lowestNumber().toPlainString();
-            case "generation.roomAboveIt" -> generation.roomAboveIt().toPlainString();
+            case "generation.lowestNumber" -> written(generation.lowestNumber());
+            case "generation.roomAboveIt" -> written(generation.roomAboveIt());
             case "generation.decimalPlaces" -> String.valueOf(generation.decimalPlaces());
             case "generation.usualMostItems" -> String.valueOf(generation.usualMostItems());
             case "generation.mostItems" -> String.valueOf(generation.mostItems());
@@ -289,6 +289,17 @@ public record Settings(
     /** A number, without the exponent Java would otherwise print for a small or large one. */
     private static String written(double value) {
         return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
+    }
+
+    /**
+     * A number, written the way a person writes one rather than with an exponent.
+     *
+     * <p>Safe to write plainly, and safe to read back, because a number these settings hold has
+     * already had its trailing zeros stripped: {@code 1E+2} and {@code 100} arrive here as one
+     * value, so writing either of them out and reading it again gives that same value.
+     */
+    private static String written(BigDecimal value) {
+        return value.toPlainString();
     }
 
     private static void mustExist(String name) {
