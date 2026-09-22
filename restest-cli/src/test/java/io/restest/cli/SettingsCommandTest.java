@@ -179,6 +179,18 @@ class SettingsCommandTest {
         }
 
         @Test
+        @DisplayName("a setting that does not exist is refused even when the command was going to "
+                + "print a plan rather than test anything, so the mistake is not left to be found "
+                + "later")
+        void a_bad_setting_is_refused_before_anything_is_printed() {
+            assertThat(run("run", "--print-campaign", "--set", "engine.nonsense=1"))
+                    .isEqualTo(ExitCode.BAD_COMMAND_LINE);
+
+            assertThat(screen.toString()).doesNotContain("strategies:");
+            assertThat(problems.toString()).contains("there is no setting called");
+        }
+
+        @Test
         @DisplayName("a settings file that cannot be read answers 2, and nothing is sent")
         void a_file_that_cannot_be_read(@TempDir Path directory) {
             assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",

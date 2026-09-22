@@ -247,6 +247,22 @@ final class RunCommand implements Callable<Integer> {
                     + "out the settings. Ask for one or the other");
             return ExitCode.BAD_COMMAND_LINE;
         }
+        // Gathered before anything else is decided, and before anything is printed, because
+        // everything after this - how the engine behaves, what an invented value looks like, how
+        // much the report keeps - is read out of it. A settings file or a --set this version cannot
+        // accept ends the command here, with nothing sent and nothing printed: running with
+        // different numbers from the ones somebody asked for would produce a result that answers a
+        // question nobody put, and answering some other question of theirs while ignoring the
+        // mistake would leave them to find it later.
+        SettingsInEffect configuration;
+        try {
+            configuration = SettingsFromEverywhere.gather(Optional.ofNullable(settingsFile),
+                    System.getenv(), settingsTyped);
+        } catch (SettingsException refused) {
+            err.println("restest: " + refused.getMessage());
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        Settings settings = configuration.settings();
         if (printTheCampaign) {
             // Before the document is read, and before the clock starts: this asks what RESTest
             // would do, not that it do anything.
@@ -258,20 +274,6 @@ final class RunCommand implements Callable<Integer> {
                 return ExitCode.TOOL_FAILED;
             }
         }
-        // Gathered before anything else is decided, because everything after this - how the
-        // engine behaves, what an invented value looks like, how much the report keeps - is read
-        // out of it. A settings file or a --set this version cannot accept ends the command here,
-        // with nothing sent: running with different numbers from the ones somebody asked for would
-        // produce a result that answers a question nobody put.
-        SettingsInEffect configuration;
-        try {
-            configuration = SettingsFromEverywhere.gather(Optional.ofNullable(settingsFile),
-                    System.getenv(), settingsTyped);
-        } catch (SettingsException refused) {
-            err.println("restest: " + refused.getMessage());
-            return ExitCode.BAD_COMMAND_LINE;
-        }
-        Settings settings = configuration.settings();
         if (printTheSettings) {
             // Like --print-campaign: a question about the tool, answered without a document and
             // without starting the clock. Printed after the four layers have been gathered, so
