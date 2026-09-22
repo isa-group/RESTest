@@ -129,9 +129,11 @@ database inside the request loop. The store is for looking back; the event strea
 These are architectural requirements rather than features, and they are the whole of what
 "extensible" means here. Each is verified during its milestone by writing a throwaway
 implementation, demonstrating it, and deleting it — so that the seam is known to be real rather than
-assumed. In v2.0 two of the five are proven: the non-blocking engine, measured by the benchmark's
-own clock, and `FeedbackListener`, whose first implementation is the budget hygiene of M9. The
-other three are proven when their milestones are taken, after v2.0 ([ADR-0024](adr/0024-the-competition-version.md)).
+assumed. In v2.0 the non-blocking engine, `Oracle` and `FeedbackListener` have shipped
+implementations — the engine and its idle-time accounting since M1, the two oracles since 1.6, and
+the budget hygiene of M9 for the listener — which is a stronger proof than a throwaway one. Not yet
+exercised, and proven when their milestones are taken after v2.0: `ExternalDataProvider`,
+`ConstraintSource` and `FlowSource`, and `CorpusOracle` ([ADR-0024](adr/0024-the-competition-version.md)).
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
 named after any technology, and no dependency on any model library.
@@ -346,9 +348,10 @@ Three of these rows have an open question against them, all raised by
 competition, and all of the same kind: each would have a run learn from what it has already seen.
 
 - Whether the choice of which operation to call next may be steered by counters over what each
-  operation has been answering. *Its narrowest version — withdrawing budget from operations that
-  only ever answer 401, 404 or 405, with no reward and no learning rate — is asked for as 9.4 in
-  [`ROADMAP.md`](../ROADMAP.md); the reward-shaped version stays here.*
+  operation has been answering. *Its narrowest version — withdrawing budget from operations whose
+  recent answers all say the request can never work as asked, with no reward and no learning rate —
+  is 9.4 in [`ROADMAP.md`](../ROADMAP.md), approved on 22 September 2026; the reward-shaped version
+  stays here.*
 - Whether the choice among inferred dependency candidates may be scored by what the API answered.
 - Whether a warm-up may read the *text* of an error reply rather than only its status code.
 

@@ -75,13 +75,13 @@ Four milestones are added to the roadmap and taken before anything else:
 
 | Milestone | What it is | Measurement it moves |
 |---|---|---|
-| M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations that only ever answer 401, 404 or 405; an `Accept` header | Operations covered, coverage, and the area under both |
+| M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations whose recent answers all say *this will never work as asked* — 9.4 names the codes, and they are a setting | Operations covered, coverage, and the area under both |
 | M10 Break | Mutations of requests the API accepted; bodies of the wrong shape; sequences over real resources — delete then read, create twice | Unique server failures and the error branches of the API |
 | M11 Settings | One place for every number decided during development, layered from defaults, a file, the environment and the command line; every lever with a switch (ADR-0025) | None directly. It is what makes the ablation a campaign rather than a branch per variant |
 | M12 Closing | The list in §1 | None. It is what makes the submission a release |
 
-Three increments already on the roadmap are taken with them: 2.9 (optional parameters drawn by
-count), 7.2a (the container image and release on tag, split from 7.2), and four campaigns added to
+Two increments already on the roadmap are taken with them — 2.9 (optional parameters drawn by
+count) and 7.2a (the container image and release on tag, split from 7.2) — and four campaigns added to
 M8 — a baseline, a screening after each of M9 and M10, and a dress rehearsal under the competition's
 exact protocol from the frozen commit.
 
@@ -103,7 +103,10 @@ is today.
   APIs, and a lever that helps on five documents and hurts on the fifty of the wider corpus is not
   merged. Every M9 and M10 row is measured on the priority corpus and checked on the rest.
 - **The harness stays outside** (ADR-0011). What crosses the boundary is the published command line.
-  The container image of 7.2a is the tool's own and knows nothing about being measured.
+  The container image of 7.2a is the tool's own and knows nothing about being measured; the
+  benchmark-compliant image the competition asks for is the harness repository's, built on top of it,
+  and that repository — source and Dockerfile — is what is submitted and what the dress rehearsal
+  runs.
 - **The budget is the whole invocation** (ADR-0015, ADR-0017). The opening lap of 9.1 is charged to
   the clock like everything else. No preparation phase runs off it.
 - **The deferred list still needs approval.** This record asked for exactly one item from it — the
@@ -140,6 +143,12 @@ repository is made public as the replication package.
   v2.0 rather than the tool it will be.
 - **`FeedbackListener` acquires a milestone.** ADR-0017 noticed the seam had none; 9.4 is its first
   implementation.
+- **Two decisions ADR-0013 left to M4 are taken at 9.3**, because M4 is now after v2.0: the unit of
+  work of a sequence, and what to do about interference between concurrent sequences. 9.3 amends
+  ADR-0013 with both.
+- **This record stands on ADR-0017, which is still *Proposed*.** Five of its ideas are adopted here
+  and four of its refusals are relied on. Accepting it is the maintainer's; until then the plan is
+  built on a proposed record, knowingly.
 - **The paper is four pages and due eight weeks after the tool.** The field comparison and the
   ablation are sized to that: five known APIs, three runs for the ablation groups, about a week of
   machine time each.

@@ -54,7 +54,7 @@ this record generalises. Nothing reads it from anywhere; the command line does n
 | Group | Key prefix | What it holds |
 |---|---|---|
 | engine | `engine.*` | timeouts, the concurrency range and its slowdown factor, retained response bytes, redirects, user agent |
-| schedule | `schedule.*` | the work-ahead factor, how many announcements may pile up, the straggler grace; from M9, the opening lap, the hygiene window and floor, and the switches of every scheduling lever |
+| schedule | `schedule.*` | the work-ahead factor, how many announcements may pile up, the straggler grace; from M9, the opening lap, the hygiene window, floor and code list, and the switches of every scheduling lever. Until 9.1 these numbers live in `RunLoop`, in the command-line module; 11.1 creates the group there and 9.1 carries it to the scheduler |
 | generation | `generation.*` | depths, string lengths, item counts, the null rate, attempt counts, the optional-parameter distribution; from M10, the switches of every mutation and shape operator |
 | memory | `memory.*` | how many observed values are kept under one name, how many names, the longest value kept, the longest reply read, how deep a reply is read |
 | sequences | `sequences.*` | from M9 and M10, the switches of the producer-then-consumer sequence and of each sequence operator |
@@ -83,7 +83,9 @@ default location: zero configuration means the tool starts with nothing beside i
 by accident in a working directory is a run nobody can explain.
 
 An unknown key is refused, with the nearest known key named. A value of the wrong type or outside
-its range is refused with the range. Refused means exit code 2, before a request is sent.
+its range is refused with the range. Refused means the exit code a plan file that cannot be read
+already gets — `2`, *the command line was wrong*, since a file the command line named is part of
+what it asked for — before a request is sent, and ADR-0015's table says so from 12.1.
 
 ### 3. The effective settings are printable and recorded
 
@@ -112,7 +114,8 @@ the default.
 ## Consequences
 
 - **ADR-0015 is amended**: `--settings`, `--set` and `--print-settings` join the surface, and are
-  frozen with it at 12.1.
+  frozen with it at 12.1; exit code `2` is stated to cover a settings or plan file the command line
+  named and the tool could not accept.
 - **`report.json` grows a `settings` block.** Readers of the report that do not know it ignore it.
 - **The plan file does not change.** It is about the API; this is about the tool. A key that could
   go in either goes here, and the test for which is whether it would mean the same thing for a

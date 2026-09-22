@@ -8,8 +8,8 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
-still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 25 delivered, 21 more in v2.0, 27 after it.
+still read true, and the milestones were numbered before the plan was turned round. 72 increments in
+13 milestones: 25 delivered, 20 more in v2.0, 27 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -38,7 +38,7 @@ nothing in them is an increment of its own.
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
 | M2 | Specification fidelity and input generation | 2.9; 2.10b moved to 9.1; three rows wait | 9 / 13 |
-| M9 | Reach — every operation the API will answer, answered early | all | 0 / 5 |
+| M9 | Reach — every operation the API will answer, answered early | all | 0 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 0 / 2 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 0 / 6 |
@@ -61,7 +61,15 @@ getting there *early*; the **Fault detection** ranking is the first alone.
 | Unique server failures | Distinct 5XX replies, told apart by their error message | Requests that break things in *different* ways: mutations of accepted requests (10.1), bodies of the wrong shape (10.2), sequences over real resources — delete then read, create twice (10.3). The tool's own oracles play no part: the benchmark counts the 5XX itself |
 | Operations covered | Operations that answered 2XX at least once | Identifiers that exist (2.5b ✅, 9.2), a producer sent before its consumer (9.3), the required-only request drawn often (2.9), no budget spent on operations that can never answer (9.4) |
 | Code coverage | Methods, statements and branches the API executed | Everything above, plus variety: values, optional parameters and body properties that change from request to request (2.5a ✅, 2.7c ✅, 10.2) |
-| Area under each curve | The same three, integrated over the hour | An opening lap that sends every operation its best request in the first seconds (9.1), 0% idle time (✅, measured by the benchmark's own clock at 1.9), and the identifiers a lap needs before the lap needs them (9.3) |
+| Area under each curve | The same three, integrated over the hour | An opening lap that sends every operation its best request in the first seconds (9.1), 0% idle time (✅, measured by the benchmark's own clock at 1.9), and the identifiers a lap needs before the lap needs them (9.3). The `Accept` header ADR-0017 asked for ships since 2.5a |
+
+One thing the call for participation says twice, differently: the Efficiency ranking is defined as
+the three areas under the curve, and the badge for winning it is described as coverage "with the
+lowest resource consumption footprint". This plan takes the definition rather than the description
+— nothing here is optimised for CPU or memory — but 11.1 makes the concurrency range a setting so
+the shipped default can be changed in a line if the organisers say the badge reads the other way,
+and 8.6 records the container's CPU and memory alongside its results so the question can be
+answered with a number. Asking the organisers which reading holds is on the maintainer.
 
 Two things follow for the plan. **Nothing that only improves the tool's verdicts is in v2.0** — the
 WFC oracles of M3, the stateful oracles of 4.5, the constraint oracles of 5.5 — because the benchmark
@@ -75,9 +83,10 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 | When | Gate | What has to be true |
 |---|---|---|
 | Tue 22 Sep | Replan accepted | This file, ADR-0024 and ADR-0025 reviewed. 8.3 launched the same night |
-| Sun 27 Sep | M9 measured | 9.1–9.5 merged; 8.4 running overnight |
-| Fri 2 Oct | M10 measured | 10.1–10.3 merged; 8.5 running overnight; the manual's format decided (12.3) |
-| Tue 6 Oct, noon | **Behaviour freeze** | Every ▶ row of M9, M10, M11 and 12.1 merged and measured; 7.2a builds the image; 8.6 starts from that commit |
+| Wed 23 Sep | Registered | The competition's submission system holds the tool's name and authors; the entry is updated freely until the deadline, so registering costs nothing and removes one thing that can go wrong on 8 October |
+| Sun 27 Sep | M9 measured | 2.9 and 9.1–9.4 merged; 8.4 running overnight |
+| Fri 2 Oct | M10 measured | 10.1–10.3 and 11.2 merged; 8.5 running overnight; which output of the manual to publish decided (12.3) |
+| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9, M10, M11, 12.1, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
 | Thu 8 Oct | **Submission** | 8.6 read; v2.0.0 tagged from the frozen commit (12.4); tool submitted, one day before the deadline |
 | Fri 9 Oct | Deadline | Anywhere on Earth. Nothing is submitted on this day by plan |
 | Mon 12 Oct | `master` replaced | 12.5, once the tag stands |
@@ -97,7 +106,7 @@ row of M8 names the rows written *while* it runs.
 
 1. **11.1** the settings, first, so that every lever after it lands with its switch. **8.3** runs
    overnight in the meantime.
-2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4**, **9.5** — reach. Each row is measured on a
+2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** — reach. Each row is measured on a
    restarted containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measures
    the milestone as a whole, overnight, on the five.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
@@ -222,7 +231,7 @@ left out are named in ADR-0021 with the numbers, so that reversing either is a d
 takes on evidence.
 
 Both halves of the original note survive. ADR-0017 asks for the `Accept` header, built from the media
-types the operation's own 2XX responses declare; we send none today, and one of the five
+types the operation's own 2XX responses declare; 2.5a sends it, and one of the five
 specifications in the priority corpus serves a versioned media type. The samples come from 2.2, which
 read every sample a document writes for a *parameter* and deliberately left the ones on a request
 body alone, because bodies were not generated yet and `RequestBodyModel` had nowhere to put them
@@ -323,9 +332,11 @@ alongside it, which is what a weighted group is for (ADR-0020 §5).
 
 ## Towards v2.0
 
-The five milestones below are the competition version, in the order the calendar takes them: M11
-first so that every lever lands with its switch, M9 and M10 because they move the measurements, M8
-between them because a lever nobody measured is a guess, and M12 to close.
+The five milestones below are the competition version, listed M9, M10, M11, M12 and then M8;
+[the order of work](#the-order-of-work) says when each is taken — M11 first so that every lever
+lands with its switch, M9 and M10 because they move the measurements, M8's campaigns between them
+because a lever nobody measured is a guess, and M12 to close. Two rows outside them are also in
+v2.0: **2.9** in M2 and **7.2a** in M7.
 
 ## M9 — Reach
 
@@ -336,11 +347,10 @@ number goes in the pull request. A row whose number is not better is not merged.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 9.1 ▶ | **A scheduler of its own, and an opening lap.** The choice of *what to send next* leaves `RunLoop` and `RandomTestCaseGenerator` and becomes one component that owns the clock (2.10b, absorbed): a strategy's share is a stretch of the budget rather than a draw per request, and the scheduler is the one place that decides which operation, which strategy, and — from 9.3 — which sequence. Its first job is an **opening lap**: before anything is drawn, every operation once, with the request it is most likely to accept — required parameters only, the document's own samples where it writes them — operations that create before operations that read, by method and then by path depth, so that `POST /owners` has answered before `GET /owners/{ownerId}` is tried. Charged to the budget like everything else, and reported as its own phase | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards; and the shares a plan writes are honoured as stretches of time rather than on average |
+| 9.1 ▶ | **A scheduler of its own, and an opening lap.** The choice of *what to send next* leaves `RunLoop` and `RandomTestCaseGenerator` and becomes one component that owns the clock (2.10b, absorbed): a strategy's share is a stretch of the budget rather than a draw per request, and the scheduler is the one place that decides which operation, which strategy, and — from 9.3 — which sequence. Its first job is an **opening lap**: before anything is drawn, every operation once, with the request it is most likely to accept — required parameters only, the document's own samples where it writes them — operations that create before operations that read, by method and then by path depth, so that `POST /owners` has answered before `GET /owners/{ownerId}` is tried. Charged to the budget like everything else, and reported as its own phase. One small thing rides along: an operation that declares no 2XX media type gets `Accept: */*`, the one case 2.5a's `Accept` header left out | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards; and the shares a plan writes are honoured as stretches of time rather than on average |
 | 9.2 ▶ | **Identifiers by resource** (the narrow version of 4.1). A path parameter is filled from the identifier of the resource its path names: `{petId}` under `/pets/{petId}` from the `id` of a reply to `GET /pets` or `POST /pets`, `{ownerId}` from `/owners`. By exact name first, which 2.5b already does; then by the resource the preceding path segment names, singular or plural, with or without an `Id`, `_id` or `ID` suffix; every candidate gated on type and declared format; the best few kept even when none is convincing, so no operation is left with nothing to try. No synonym table and no similarity score — those, and the measurement ADR-0017 asks for, stay in 4.1 | The operations behind a path parameter whose name is not the property's name — pet-clinic's `{petId}` against `id`, and most of the corpus — get identifiers that exist instead of invented ones, which is the difference between 404 and 2XX for half of a typical API |
 | 9.3 ▶ | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, recorded as one, the second test case naming the exchange its value came from (which 2.5b's provenance already does). Deletes are sent after the reads and updates of the same lap, not before. This is ADR-0013's rule that a sequence *creates* what it needs, built rather than restated | An API whose identifiers cannot be guessed — kafka-rest-proxy's generated cluster and notebook-manager's posted notebooks — is covered instead of answering 404 for an hour; and the identifier a lap needs is there before the lap needs it |
-| 9.4 ▶ | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler keeps, per operation, a count of what it answered. An operation that has answered nothing but 401, 403, 404, 405 or 501 in its last *N* attempts has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, two numbers — *N* and the floor — both settings, no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
-| 9.5 ▶ | **The request declares what it will accept** (ADR-0017 item 2): an `Accept` header built from the media types the operation's own 2XX responses declare, `*/*` when it declares none | An API serving a versioned media type stops answering 406 to a client that never said what it wanted; the corpus has one, and the undisclosed five may have more |
+| 9.4 ▶ | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler keeps, per operation, a count of what it answered. An operation whose last *N* answers were all of the kinds that say *this will never work as asked* — the shipped list is 401, 403, 404, 405 and 501, and the list is a setting — has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, three settings — *N*, the floor and the list — no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
 
 ### Notes
 
@@ -366,6 +376,20 @@ with its own oracles in 4.5. 9.3 is *producer, then consumer*, chosen because it
 missing identifier has, and because 10.3 can build its operators on it — delete then read is
 producer, consumer, consumer. The lifecycle model, and the oracles that need it, wait.
 
+**9.3 — the two decisions ADR-0013 left to M4, taken here and recorded there.** ADR-0013 deferred
+the *unit of work* of a sequence and *interference* between concurrent sequences to M4, and M4 is
+now after v2.0, so 9.3 takes both and amends ADR-0013 in its pull request. The unit of work is the
+sequence: one worker sends the producer, reads its reply, and sends the consumer with what came
+back, and the consumer's value comes from *its own* producer's reply rather than from the memory of
+observed values — which is ADR-0013's rule, *a sequence creates what it needs*, taken literally.
+Interference is accepted rather than prevented: with the engine's concurrency on, another unit may
+delete or recreate the same resource between the two steps, so a 404 on the consumer is not by
+itself attributable. That costs 9.3 nothing the competition scores — the benchmark counts 2XX and
+5XX, not our attribution — and it is exactly why 4.5's stateful oracles wait: they need the
+attribution, and the attribution needs a decision about concurrency that 9.3 does not take. 9.2 is
+not a new borrowing: the plan's `observed` source has filled parameters from what other requests
+returned since 2.5b, under ADR-0021's amendment, and 9.2 widens its keying rather than its licence.
+
 **9.4 — the line it stands on.** `docs/DESIGN.md` defers "search-based or reinforcement-learning
 scheduling", and ADR-0017 argues that the narrowest useful version of steering by counters is
 hygiene rather than learning: no constant that needs a paper to justify it, nothing that has to be
@@ -389,7 +413,7 @@ counting distinct 5XX messages and branch coverage rather than operations covere
 |---|---|---|
 | 10.1 ▶ | **Mutations of accepted requests** — the generator half of 3.1b, under ADR-0013 §4. A listener on the event stream keeps a bounded index of the test cases that actually returned 2XX (§5), and operators take one and change exactly one thing: drop a required parameter, send the wrong type, step outside a documented bound by exactly one (2.3 returns here, as promised), break an enumeration, break a pattern, send a required parameter in a location it was not declared in (ADR-0017 item 5), oversize a string or an array, send `null`, send the empty value. A third strategy in the shipped plan with a share of its own. The test case gains the **intent** of §3 — *I believe these values are acceptable*, *I expect this refused and here is what I broke*, *I do not know* — as data; the oracles that read it are 3.1's and wait | The tool stops only asking "does this work?" and starts asking "what happens when one thing is wrong?" — which is where the 500s that a correct request never reaches live, one code path per operator |
 | 10.2 ▶ | **Bodies of the wrong shape.** 2.7a's fuzzing changes *values*; this changes the *shape*: a leaf of the wrong kind, the root of the wrong kind — an array where an object was declared — an empty body, a body that is not JSON at all, the wrong `Content-Type` for a valid body, nesting far deeper than the schema, arrays far longer than any limit, the numeric extremes of every width. Each one a named operator, each one attributable | The parsing and binding layers of the API — the code that runs *before* the operation's own — are exercised, and those layers fail in their own distinct ways |
-| 10.3 ▶ | **Sequence operators over real resources**, built on 9.3's sequences: delete a resource and then read it, update it and delete it again; create the same thing twice; update one resource with the identifier of another; send the identifier of something just deleted to every consumer that takes one. Each is a named sequence with an intent, and the memory of what was deleted is the same bounded listener 10.1 keeps | The server failures that only appear across several requests — the dangling reference, the double delete, the duplicate key — which single requests never reach and which the stateful tools we are measured against do reach |
+| 10.3 ▶ | **Sequence operators over real resources**, built on 9.3's sequences and kept inside one unit of work each: create a resource, delete it, then read it, update it and delete it again; create the same thing twice; create two resources and update one with the other's identifier; create, delete, and send the deleted identifier to every consumer that takes one. Each is a named sequence with an intent, every identifier it uses is one the same sequence created, and what a unit knows about what it deleted stays in that unit | The server failures that only appear across several requests — the dangling reference, the double delete, the duplicate key — which single requests never reach and which the stateful tools we are measured against do reach |
 
 ### Notes
 
@@ -411,6 +435,12 @@ concern, and it is one operators do well: each says exactly which structural rul
 **10.3 — the oracles are not here either.** 4.5's stateful oracles — use after free, update
 idempotency — would judge these sequences. The benchmark judges them for us, by counting the 5XX;
 4.5 waits, and 10.3 records enough on each sequence for 4.5 to judge it offline later.
+
+**10.3 — why every operator creates its own victim.** 9.3 accepts that concurrent units interfere.
+An operator that borrowed a deleted identifier from another unit's memory would then be sending
+something whose state it cannot know, and "delete then read" would mean nothing. Keeping each
+operator to resources its own sequence created is what lets its name stay true: the one thing the
+sequence did to that resource is the one thing the sequence knows about it.
 
 ## M11 — Settings
 
@@ -447,7 +477,7 @@ when the code around them is next touched, never in a sweep.
 | 12.1 ▶ | **The command line frozen** (ADR-0015 amended). `restest version`; `--header name:value`, repeatable, for authentication material handed over out of band — the competition hands tools "any required authentication material", and a header is the shape most of it takes; `--settings`, `--set` and `--print-settings` from 11.1; **Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not** (3.7, moved here — the third of the answers ADR-0015 lists is the one taken); `--help` complete and in plain words for every option; the exit codes as a table in the documentation. After this row, a change to the command line is a 2.x decision | The surface a user, a script and the benchmark adapter all depend on is complete and stops moving; and a run stopped early stops costing everything it had found |
 | 12.2 ▶ | **The documentation of a finished tool.** `README.md` as the front door: install, run, read a report, write a plan, write a dictionary, change a setting, the exit codes, the container image. `docs/` consolidated: the plan format, the dictionary format, the settings and their keys, the report's JSON shape, the fault catalogue as we render it. `CONTRIBUTING.md` and `docs/DESIGN.md` say what v2.0 is and what 2.x will be. Every command in every document run from a clean checkout before it is pasted | Somebody who has never seen the repository can install the tool and get a report in ten minutes, and can find out what any line of that report means without reading Java |
 | 12.3 ▶ 🛑 | **The user manual.** Written once, in Markdown under `docs/manual/`, and built to both HTML and PDF from that one source by a script in the repository, so that the format decision is about what is *published*, not about what is written. Chapters: what the tool is for, install, the first run, reading the report, plans, dictionaries, settings, the container image, the exit codes, troubleshooting, and a glossary. The one-source-two-outputs approach was approved on 22 September; 🛑 **which output is linked from the README and the release — HTML, PDF, or both — is the maintainer's decision, due 2 October** | A manual a person reads from the beginning, rather than documentation a person searches |
-| 12.4 ▶ 🛑 | **v2.0.0 tagged and submitted.** The tag is on the commit 8.6 measured; the image the tag builds is the image the competition receives; the harness repository is made public with the campaigns it holds; the submission is made on 8 October. If 12.3 is not merged by then, `v2.0.0-rc.1` is tagged and submitted instead, `v2.0.0` follows when the manual lands, and a check in the pull request that lands it shows the two commits differ in documentation files only — approved on 22 September. 🛑 The tag itself is a supervision point | The competition receives exactly what is published, under exactly the version the paper will cite |
+| 12.4 ▶ 🛑 | **v2.0.0 tagged and submitted.** The tag is on the commit 8.6 measured. **What the competition receives is the harness repository** — the tool's source at that commit and the benchmark-compliant `Dockerfile` that wraps 7.2a's image in the loop the benchmark expects — made public and checked with the benchmark's own compliance tooling before the freeze, not after; 8.6 runs that image and no other, so the artefact submitted is the artefact rehearsed. The submission is made on 8 October. If 12.3 is not merged by then, `v2.0.0-rc.1` is tagged and submitted instead, `v2.0.0` follows when the manual lands, and a check in the pull request that lands it shows the two commits differ in documentation files only — approved on 22 September. 🛑 The tag itself is a supervision point | The competition receives exactly what is published, under exactly the version the paper will cite |
 | 12.5 ▶ 🛑 | **`master` replaced.** RESTest 1.x kept on a `v1.x` branch and under its existing tags, with its README pointing here; `v2` merged into `master`; `master` the default branch; the CI badge, the harness repository's pin and every link in the documentation moved; `v2` left in place until the harness repository has repinned, then deleted. From here on, work targets `master` | The rewrite is the tool: `git clone` gets v2.0, and 1.x is history that is still there |
 
 ### Notes
@@ -488,9 +518,9 @@ answer, and each row below names what is written while it runs.
 | # | Increment | What it enables |
 |---|---|---|
 | 8.3 ▶ | **The baseline.** The tip of `v2` after 2.5b, on the eleven APIs of the 2026 edition — the 2027 five among them — one hour each, one run. Its numbers are what every switch of 8.4 and 8.5 is compared against, and the six APIs that are not in the priority corpus are the check that nothing is being tuned to five documents. **Runs alongside 11.1.** About eleven hours, overnight | Every later claim of "better" has a number to be better than, on APIs the tool was not written against |
-| 8.4 ▶ | **Screening M9.** The 2027 five, twenty minutes each, one run: the full tool, then each M9 switch off in turn. About twelve hours, overnight after 9.5 merges. **Runs alongside 10.1.** A lever that does not move its measurement is switched off in the shipped settings and stays in the code | What each reach lever is worth is known before the break levers are built on top of it, and a lever that costs more than it earns is found before the dress rehearsal |
+| 8.4 ▶ | **Screening M9.** The 2027 five, twenty minutes each, one run: the full tool, then each M9 switch off in turn. About ten hours, overnight after 9.4 merges. **Runs alongside 10.1.** A lever that does not move its measurement is switched off in the shipped settings and stays in the code | What each reach lever is worth is known before the break levers are built on top of it, and a lever that costs more than it earns is found before the dress rehearsal |
 | 8.5 ▶ | **Screening M10.** The same shape for the M10 switches, counting distinct 5XX messages and branch coverage. About eight hours, overnight after 10.3 merges. **Runs alongside 12.1 and 12.2** | The same, for the break levers |
-| 8.6 ▶ 🛑 | **The dress rehearsal.** The competition's protocol exactly: the five known APIs, one hour, five runs, eight cores and sixteen gigabytes, the container image built by 7.2a from the frozen commit, started at noon on 6 October. Twenty-five hours. **Runs alongside 12.3 only** — nothing that changes behaviour is written while it runs. 🛑 Its results are read on 8 October; the only change they may cause is a fix for a run that failed outright, re-measured on that API alone for one hour before the tag | The number the tool will post in the competition is known, with its variance, before the tool is submitted — and the image the competition receives is one that has already run for twenty-five hours |
+| 8.6 ▶ 🛑 | **The dress rehearsal.** The competition's protocol exactly: the five known APIs, one hour, five runs, eight cores and sixteen gigabytes, the benchmark-compliant image from the harness repository, built from the frozen commit on top of 7.2a's image — the artefact 12.4 submits — started at noon on 6 October. Twenty-five hours. **Runs alongside 12.3 only** — nothing that changes behaviour is written while it runs. 🛑 Its results are read on 8 October; the only change they may cause is a fix for a run that failed outright, re-measured on that API alone for one hour before the tag | The number the tool will post in the competition is known, with its variance, before the tool is submitted — and the image the competition receives is one that has already run for twenty-five hours |
 | 8.1 ⏭ | **The field**, after submission. The tools the benchmark carries adapters for — RESTest 1.x, EvoMaster, Schemathesis, RestTestGen, CATS, and the 2026 winner if an adapter exists by then — on the 2027 five, under the protocol. About twenty-five hours per tool. 12–25 October | The table that goes in the paper, with error bars, against published tools rather than against ourselves |
 | 8.2 ⏭ 🛑 | **The ablation and the replication package**, after submission. Not one switch at a time — nine levers at twenty-five hours each is more machine than there is — but by group: everything on; reach off; break off; hygiene off; the memory of observed values off (a plan without the line); everything off. Three runs each, about ninety hours, 26 October – 8 November. The harness repository public with every campaign's pinned commits and raw data, so a reviewer reproduces any number in the paper from two commands | Every claim in the paper is a measurement somebody else can repeat, and the paper says what each idea is worth rather than that the whole is good |
 
@@ -520,9 +550,11 @@ the calendar its margin for nothing the competition sees.
 
 ## After v2.0
 
-Nothing below is in the competition version. The rows keep their numbers and their notes — the
-notes are evidence and arguments that still hold — and are taken after 12.5 in the order M3, M4, M5,
-M6, M7, unless the results of 8.1 and 8.2 say otherwise. Rows marked → have had a narrow version
+Nothing below is in the competition version, with one exception marked ▶: **7.2a**, the container
+image and release on tag, which the freeze needs and which sits in M7 because that is where its
+siblings are. The other rows keep their numbers and their notes — the notes are evidence and
+arguments that still hold — and are taken after 12.5 in the order M3, M4, M5, M6, M7, unless the
+results of 8.1 and 8.2 say otherwise. Rows marked → have had a narrow version
 taken into M9, M10 or M12; what the arrow leaves behind is still here, still numbered, still owed.
 
 ## M3 — Oracles, faults and reporting
@@ -641,9 +673,11 @@ in v2.0 as the module descriptor it is today, and the documentation says so.
 ### Notes
 
 **7.2a — two Dockerfiles, on purpose.** The harness repository has one, which builds the tool from a
-commit and wraps it in the loop the benchmark expects. This one is the tool's own: it knows nothing
-about being measured, and it is what a user pulls. The harness's Dockerfile is free to start from
-this image once it exists, and that is the harness repository's decision to take.
+commit and wraps it in the loop the benchmark expects; that one is what the competition asks for and
+what 12.4 submits. This one is the tool's own: it knows nothing about being measured, and it is what
+a user pulls. From 7.2a the harness's Dockerfile starts from this image rather than building the tool
+again, so that the image the competition runs and the image a user pulls are the same bytes with a
+loop around them — and 8.6 rehearses with the wrapped one.
 
 ---
 
