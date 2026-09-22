@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,15 +53,34 @@ class CampaignCommandTest {
     static void startTheApi() {
         api = new WireMockServer(options().dynamicPort());
         api.start();
+        answersEverythingWith("{}");
+    }
+
+    /** An API that says yes to everything, with the same body every time. */
+    private static void answersEverythingWith(String body) {
+        api.resetAll();
         api.stubFor(any(urlMatching(".*")).willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody("{}")));
+                .withBody(body)));
     }
 
     @AfterAll
     static void stopTheApi() {
         api.stop();
+    }
+
+    /**
+     * Puts the shared API back the way every test here but one expects to find it.
+     *
+     * <p>After each test rather than at the end of the one that changes it: a restore written as
+     * the last line of that test does not run when an assertion above it fails, and one failure
+     * would then be followed by a cascade of failures in whatever ran next - the worst signal there
+     * is to debug.
+     */
+    @AfterEach
+    void putTheApiBack() {
+        answersEverythingWith("{}");
     }
 
     @Test
@@ -127,6 +147,39 @@ class CampaignCommandTest {
                 .describedAs("and the name nothing answered to is quoted back, since a plan "
                         + "written against an older document is the usual reason")
                 .contains("thereIsNoSuchOperation");
+    }
+
+
+    @Test
+    @DisplayName("a plan asking for what the API returns sends it back, and says the seed no "
+            + "longer repeats the run on its own")
+    void what_the_api_returned_goes_back_out(@TempDir Path directory) throws Exception {
+        answersEverythingWith("{\"id\": 5, \"name\": \"Melibea\", \"tag\": \"cat\"}");
+        Path plan = directory.resolve("plan.yaml");
+        Files.writeString(plan, """
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 100
+                    sources:
+                      - source: enum
+                      - source: observed
+                      - source: random
+                """);
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
+                .isBetween(0, 1);
+
+        assertThat(api.getServeEvents().getServeEvents().stream()
+                .map(event -> event.getRequest().getBodyAsString())
+                .filter(body -> body.contains("Melibea")))
+                .describedAs("the API said a pet of this API is called Melibea, and the next body "
+                        + "this run built carried that name rather than an invented word")
+                .isNotEmpty();
+        assertThat(screen.toString())
+                .describedAs("and the run says the seed it printed no longer repeats it on its own")
+                .contains("values from the API's own replies");
     }
 
     @Test

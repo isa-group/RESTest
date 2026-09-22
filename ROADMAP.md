@@ -76,7 +76,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
 | 2.4 ✅ [#316](https://github.com/isa-group/RESTest/pull/316) | What a document says about the **characters** of a value, read where what it says about its length already is (ADR-0022). The kind it names — `date-time`, `date`, `email`, `uuid`, `uri`, `ipv4` and the thirteen others, nineteen in all — built from the platform's own parsers rather than looked up in a list, so every value is different and every value is correct; and the spelling it states as a `pattern` built by a library, with every candidate held against the rule again before it is sent and the length the same shape demands honoured alongside it. **No format dictionary is shipped**, which reverses that much of ADR-0013 §1 and ADR-0020 §5: a list sees only its key, while a shape states its kind, its spelling and its lengths at once and all three have to hold together | A date parameter gets a date instead of a random word, and an operation is no longer refused before anything worth testing happens: 225 places across the corpus name a kind of value, 25 of them in the priority corpus, and the 10 spelling rules in pet-clinic are satisfied rather than broken |
 | 2.5a ✅ [#313](https://github.com/isa-group/RESTest/pull/313) | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
-| 2.5b *(after 2.10a)* | The memory of what the API has returned, as dictionaries under the two keyings the format already has — one leaf by its name, a whole resource by its shape — filled by a listener on the event stream (ADR-0021 §6). With it, the operator that changes one leaf of an observed resource and sends it back. **Brings forward the runtime resource pool of 4.2**, and is the first strategy in the tool reproduced by replay rather than from the seed | A body stops being invented from nothing wherever the API has already shown what a real one looks like: 92% of the leaves in the corpus's bodies carry a name some reply also carries |
+| 2.5b ✅ | The memory of what the API has returned (ADR-0021 §6): one listener on the event stream filling the two dictionaries the format already has — one value under its own name, a whole resource under the name of its shape — and `observed`, the word a plan names to draw on them. A resource is cut down to what the operation accepts - `readOnly` gone, what the operation never declared gone, what nobody could send gone - and has **one value in it replaced by a different one** before it goes back, because an unchanged copy asks a POST for a duplicate; where nothing in it can be varied it goes as it came and the run records that. Keyed by the name and not by the way down to it, which answers ADR-0021's open question on a measurement rather than on RESTler's example. **Brings forward the runtime resource pool of 4.2**, and is the first source in the tool whose runs are reproduced by replay rather than from the seed | A request stops inventing what the API has already shown it. In the shipped plan, measured on two containerised APIs restarted before every run with the plans alternating seed by seed: 27.8 of pet-clinic's operations answered 2XX without it and 31.6 with it, better on every one of five seeds, and 5.6 against 6.8 on gestão-hospital. Counting replies rather than operations it is better on all ten runs. It needs time to fill: against the pet shop the smoke gate starts, a ten-second run earns 9% fewer 2XX replies with it and a sixty-second run 27% more. 89% of the 2,125 values inside the corpus's request bodies carry a name some reply of the same API also carries |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
 | 2.7b | Dictionary writer and disk cache. **Not taken in its numbered place:** it waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8. Skip it and go on to 2.8 | Good values computed once are kept, rather than worked out again every run |
@@ -123,9 +123,9 @@ judged. That copy is gone, because nothing is excused any more.
 corpus: writing one entry per parameter, one per body and one per property inside those bodies gives
 553 places - every parameter, every body, and every path inside either - of which the format as
 shipped at 2.7a could fill the 200 parameter names and the 47 bodies. Entries for everything else
-loaded and did nothing. 2.5b keeps what an API returned as dictionaries keyed by name and by shape, and what it
-would fill is the leaves of request bodies — so landing it first would have built a mechanism that
-could not reach its consumer.
+loaded and did nothing. 2.5b keeps what an API returned as dictionaries keyed by name and by shape,
+and what it fills is the values inside request bodies — so landing it first would have built a
+mechanism that could not reach its consumer.
 
 **2.5 — one row that became two, and a promise narrowed on evidence.** ADR-0021 settles how a body
 is built and splits the row: 2.5a builds bodies from the schema and the document's own samples, with
@@ -147,14 +147,27 @@ read every sample a document writes for a *parameter* and deliberately left the 
 body alone, because bodies were not generated yet and `RequestBodyModel` had nowhere to put them
 (ADR-0019 §5).
 
-**2.5b — why the mutation is of a leaf and not of a resource.** The question it answers is whether a
-body is better built from the shape the document declares or from a resource the API has already
-handed back. Measured: the body's named shape is also returned by some 2XX for 16 of the 44 named
-bodies in the priority corpus — and for **none** of the 9 in flight-search or the 12 in
-kafka-rest-proxy — while 92% of the leaves inside those bodies carry a property name that some reply
-also carries. So what is observed is reused leaf by leaf, whole resources are one source among
-several rather than the mechanism, and neither needs a new interface: both are the dictionary of
-ADR-0020 under a keying it already has.
+**2.5b — why the mutation is of a leaf and not of a resource, and what the increment settled.** The
+question it answers is whether a body is better built from the shape the document declares or from a
+resource the API has already handed back. Measured: the body's named shape is also returned by some
+2XX for 16 of the 44 named bodies in the priority corpus — and for **none** of the 9 in
+flight-search or the 12 in kafka-rest-proxy — while about 90% of the leaves inside those bodies carry
+a property name that some reply also carries. So what is observed is reused leaf by leaf, whole
+resources are one source among several rather than the mechanism, and neither needs a new interface:
+both are the dictionary of ADR-0020 under a keying it already has.
+
+Taking it settled three things, all in [ADR-0021's amendment](docs/adr/0021-how-a-request-body-is-built.md#amendment-m25b).
+**The keying is the name, and the format takes no sixth one:** counted over the corpus, 1,886 of the
+2,125 values inside request bodies carry a name some 2XX of the same API also carries and 1,700 sit
+at an address one carries, so the way down to a value reaches strictly less — and it would need a
+rule for turning a reply's own addresses into a body's, which the name does not. What it would have
+told apart is 57 names, 47 of which differ only in a declared form and 10 of which disagree about
+the kind of value and are refused anyway. **Adding the source cost two classes rather than one**,
+because a value read out of a reply should name the exchange it came from and a dictionary hands
+back bare values; neither `ValueProvider` nor `Dictionary` changed. And **the shipped plan names
+it**, on the end-to-end measurement in the row, which is what makes a default run one that `--seed`
+no longer repeats on its own — said in `--help`, in the plan's own comments, and in a line the run
+prints under the seed.
 
 **2.7 — one row that became two.** It read "value dictionary format, reader, writer, disk cache",
 and the writer and the cache exist to keep values the tool worked out at a cost — of which it
@@ -173,7 +186,9 @@ only some kinds of operation**, so that writes could be pushed at harder than re
 use is that split, and it was the sole cause of every awkward thing in the format — shares that
 summed to 175, redistribution, per-operation validation, operations no strategy served. A strategy
 without a scope already means every operation, so it can be added later without breaking a file
-anybody has written, and 2.5b will say how the budget should actually be split.
+anybody has written. 2.5b was expected to supply the evidence for how the budget should be split and
+**did not**: what it measured was where a value comes from, not how much of a run goes on which kind
+of operation, and those are different questions. The scope stays unbuilt and the question stays open.
 
 **What the shipped plan does with the document's own samples was decided three times, and the
 third time it was measured properly.** Asked in turn, a source that answers stops the ones behind
@@ -185,8 +200,9 @@ identifier a document names stops existing partway through, and a plan that cann
 the same 404 until the budget runs out. Against a containerised pet-clinic **restarted before every
 run**, five seeds each: ranked 16.8 operations answered 2XX, weighted 19.6. So the shipped plan
 weights. The lesson is about the metric — how often the tool quotes the document is not how much of
-the API it reaches — and 2.5b removes the tension entirely with identifiers that are real and
-varied.
+the API it reaches — and 2.5b loosens the tension rather than removing it, by putting identifiers
+that are real *and* varied into the same group: measured the same way, 27.8 of pet-clinic's
+operations answered 2XX without that source and 31.6 with it.
 
 **2.8 — "never blocking" is proved here, by its own test.** A slow provider must not stall the
 run. Not by waiting for M6.2's overhead regression test, which lands much later and checks the

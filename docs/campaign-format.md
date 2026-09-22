@@ -85,6 +85,7 @@ silently shadow RESTest's own samples, and nobody reading the file could tell wh
 | `enum` | the closed list of values the document says it accepts |
 | `example` | the sample values the document's author wrote down |
 | `default` | the value the document says applies when the caller sends nothing |
+| `observed` | what the API itself has already sent back, earlier in this run |
 | `random` | a value invented to fit the shape |
 
 `enum` is worth putting first and leaving there. A closed list is not advice: it is the whole set of
@@ -97,6 +98,38 @@ one value, so a parameter left to it never varies and is never exercised near it
 example says *5 is a value that works*, and is usually a value that existed in the API its author
 was looking at, which is why an identifier from a document reaches a real row and an invented one
 reaches a 404.
+
+### `observed`, the one source with a memory
+
+Every other source reads the document, which says the same thing whoever asks and whenever. This one
+listens to the API. When a request comes back with a reply the API was happy with, what that reply
+contained is kept, and the next request that needs a value of the same name sends one the API itself
+produced — an identifier that exists, a reference that resolves, a name spelled the way the API
+spells it. Of the values inside the request bodies of our fifty-document corpus, 89% carry a name
+some reply of the same API also carries.
+
+Asked for a whole thing the document gives a name to — "send me an `Owner`" — it offers an owner the
+API returned, with the parts the API only ever *sends* taken out of it (that is what `readOnly`
+means) and one value inside it replaced by a different one. Sending an unchanged copy would usually
+ask the API to create a duplicate; changing one thing asks it to accept something new that is
+otherwise exactly as real as what it sent. Where nothing different can be had — every value in it is
+one no other source can fill — it goes as it came back, and the run records that it was unchanged
+rather than naming a value that was not.
+
+It can only offer a value that fits: the kind has to match, and where the document states the closed
+list of values it accepts, a value seen elsewhere in the API is not made acceptable by having been
+seen.
+
+**It costs one promise, and the cost is real.** A run whose plan names `observed` cannot be repeated
+by giving it the same `--seed` again: what it sends depends on what the API answered, and an API
+answers differently on a different day. The same number gets you a similar run, not the same one.
+What you have instead is the record: `--store` keeps every request and reply of the run you actually
+had, so a surprising result can be examined rather than chased. Sending those stored requests again
+is a separate command and is not built yet. Take `observed` out of your plan and the seed means
+exactly what it always did.
+
+`observed` is a word, not a list: it is one of RESTest's own sources, so a file of your own called
+`observed` is a different thing entirely and is named with `dictionary: observed` as usual.
 
 ### Every list you handed over
 

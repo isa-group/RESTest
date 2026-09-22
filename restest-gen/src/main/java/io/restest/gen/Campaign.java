@@ -309,8 +309,8 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
     /**
      * The sources that are part of the tool rather than a file somebody wrote.
      *
-     * <p>Each is one statement a document can make about a value, except the last, which is what
-     * happens when the document makes none that help.
+     * <p>Each is one statement a document can make about a value, except the last two: what the API
+     * has already been seen to send, and what is invented when nothing else has anything to say.
      */
     public enum Builtin {
 
@@ -320,6 +320,17 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
         EXAMPLE,
         /** The value the document says the API uses when the caller sends nothing. */
         DEFAULT,
+        /**
+         * What the API itself has already sent back, earlier in the same run.
+         *
+         * <p>The one source with a memory. Everything else here reads the document, which says the
+         * same thing whoever is asked and whenever; this one knows that a pet with identifier 7
+         * exists because the API said so a moment ago. The price is that a run drawing on it is not
+         * repeated by starting it again with the same number - what it sends depends on what the
+         * API answered - so the same number gets a similar run rather than the same one, and what
+         * was kept of the run that did happen is what somebody goes back to.
+         */
+        OBSERVED,
         /** A value invented to fit the shape, when nothing better is on offer. */
         RANDOM;
 

@@ -142,7 +142,10 @@ final class RunCommand implements Callable<Integer> {
             names = "--seed",
             paramLabel = "<number>",
             description = "Fixes the random choices, so the same command makes the same requests. "
-                    + "One is chosen, and printed, when this is omitted.")
+                    + "One is chosen, and printed, when this is omitted. A plan drawing on what "
+                    + "the API has already returned is the exception: what it sends depends on "
+                    + "what came back, so the same number makes a similar run rather than the "
+                    + "same one. --store keeps every request and reply of it.")
     private Long seed;
 
     @Option(
@@ -349,6 +352,11 @@ final class RunCommand implements Callable<Integer> {
                         }
                     });
                 }
+                // Before the rules and the reports, because this one is what the next request is
+                // built from: the sooner an identifier the API has just handed back is in hand,
+                // the sooner a request can carry it. Nothing here is subscribed at all unless the
+                // plan asked for a source that learns from the replies.
+                generator.whatListensToTheRun().ifPresent(drained::subscribe);
                 rules = OracleListener.standard(model, drained);
                 drained.subscribe(rules);
                 drained.subscribe(console);
@@ -515,6 +523,13 @@ final class RunCommand implements Callable<Integer> {
         // things: one is what the document makes impossible, the other is what somebody asked for.
         if (setAside > 0) {
             out.println("  " + setAside + " left alone by the plan");
+        }
+        // The seed has just been printed, and for this plan it promises less than it usually does.
+        // Saying so here rather than leaving somebody to find out by running the same command
+        // twice and getting two different runs.
+        if (generator.whatListensToTheRun().isPresent()) {
+            out.println("  values from the API's own replies, so the seed alone does not repeat "
+                    + "this run" + (keepTheRun ? "" : "; --store keeps what it sent"));
         }
         report(out, model.issues());
         out.println();

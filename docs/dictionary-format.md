@@ -206,10 +206,11 @@ gets asked what it does with the unexpected. Those are kept apart: an API stops 
 thing it does not like, so one odd value among good ones teaches nothing that a request of all odd
 values does not.
 
-**Which lists feed which kind of request is decided by the plan, by name.** Today the plan is built
-in and names one list, `fuzzing` — the one RESTest carries, and any of yours called the same. Every
-other list feeds ordinary requests. When the campaign file arrives you write the plan yourself, and
-one list can feed two kinds of request, or two lists one kind.
+**Which lists feed which kind of request is decided by the plan, by name**, and the plan is
+[a file you can write](campaign-format.md). The one RESTest carries names one list, `fuzzing` — the
+one RESTest ships, and any of yours called the same — for the requests that push at the API, and
+asks for every other list you handed over when building requests meant to work. In a plan of your
+own, one list can feed two kinds of request, or two lists one kind.
 
 Among the lists feeding ordinary requests, the order is how much each one knows about the value:
 
@@ -241,6 +242,15 @@ enumeration at all, because the alternative is an operation that can never be te
 > and leaves the rest of the API alone, which is usually what somebody adding "a few good names"
 > wants. Having your values sent *as well as* invented ones is a different thing, and RESTest cannot
 > do it yet.
+
+### `observed` is not one of these
+
+A run can also draw on **what the API itself has sent back**, which is filed under the same two
+keyings as a list of yours: a value under its own name, and a whole thing under the name of its
+shape. It is not a file, though, and there is nothing here to write for it. A plan asks for it with
+`source: observed`, the way it asks for the document's own samples, and
+[the campaign format](campaign-format.md) says what it does and what it costs. A file of yours
+called `observed` is an ordinary list with an ordinary name, and a plan names it the ordinary way.
 
 ## What a run says about your file
 

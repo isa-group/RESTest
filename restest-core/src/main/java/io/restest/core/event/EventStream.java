@@ -45,7 +45,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * <p>A listener that throws does not stop the run or the other listeners. The failure is counted,
  * and {@link #listenerFailures()} says how many there have been, so a broken report shows up as a
- * number rather than as silence.
+ * number rather than as silence. What the listener was half-way through is its own business: it is
+ * not told what happened and nothing here undoes it, so a listener that keeps something of its own
+ * has to be able to be interrupted anywhere. Running out of memory is the one failure still left to
+ * end this thread, because a listener is not the reason for it and nothing here could carry on
+ * anyway.
  *
  * <p>There is one of these per run and nothing static in it, so two runs in the same program never
  * see each other's events.
@@ -237,7 +241,7 @@ public final class EventStream implements AutoCloseable {
             for (RunListener listener : listeners) {
                 try {
                     listener.on(event);
-                } catch (RuntimeException | LinkageError broken) {
+                } catch (RuntimeException | LinkageError | StackOverflowError broken) {
                     // A report that cannot cope with one event must not cost the rest of the run,
                     // nor the other listeners' view of it. Counted so it is visible afterwards.
                     //
@@ -246,7 +250,13 @@ public final class EventStream implements AutoCloseable {
                     // killed this thread outright and took the whole of the rest of the run's
                     // reporting with it, silently. That is precisely the failure this class exists
                     // to prevent, and a broken listener is a broken listener however it says so.
-                    // Errors that say the machine itself is in trouble are still left to propagate.
+                    //
+                    // StackOverflowError for the same reason, found the same way: a listener that
+                    // walks something the API sent can be handed something nested deeply enough to
+                    // run out of room, and this thread dying takes every report with it while
+                    // leaving nothing blamed. Running out of room inside one listener says that
+                    // listener met something it could not cope with, not that the machine is in
+                    // trouble. Errors that do say that are still left to propagate.
                     failures.incrementAndGet();
                 }
             }
