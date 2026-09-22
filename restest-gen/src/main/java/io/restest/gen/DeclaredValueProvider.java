@@ -89,6 +89,21 @@ public final class DeclaredValueProvider implements ValueProvider {
         return new DeclaredValueProvider(random, true, false);
     }
 
+    /**
+     * A provider that offers only the value a document says applies when the caller sends nothing.
+     *
+     * <p>The other half of the pair above, and separable for the same reason: a plan names the two
+     * apart, because they are two different statements about a value. One says what the API will
+     * accept; this one says what it does if you say nothing at all.
+     *
+     * @param random unused here, since a default is one value, but taken so that every source is
+     *     built the same way
+     * @return the provider
+     */
+    public static DeclaredValueProvider onlyTheStatedDefault(RandomGenerator random) {
+        return new DeclaredValueProvider(random, false, true);
+    }
+
 
     @Override
     public Optional<GeneratedValue> offer(ValueRequest request) {
@@ -126,8 +141,20 @@ public final class DeclaredValueProvider implements ValueProvider {
                 .toList();
     }
 
+    /**
+     * What a report prints beside a value this offered.
+     *
+     * <p>Which of the two statements it reads, when it reads only one, because a plan names them
+     * apart and a run that says "declared" could mean either. The one that reads both keeps the
+     * older word, which is the one every stored run so far was written with.
+     */
     @Override
     public String name() {
-        return "declared";
+        if (readsTheList && readsTheDefault) {
+            return "declared";
+        }
+        return readsTheList
+                ? Campaign.Builtin.ENUM.inAPlan()
+                : Campaign.Builtin.DEFAULT.inAPlan();
     }
 }

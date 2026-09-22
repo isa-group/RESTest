@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-55 increments in 9 milestones, 23 of them delivered. One increment = one branch = one pull request
+56 increments in 9 milestones, 24 of them delivered. One increment = one branch = one pull request
 into `v2`. Take them in order unless told otherwise.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
@@ -27,7 +27,7 @@ nothing in them is an increment of its own.
 |---|---|---|
 | M0 | Foundations | 3 / 3 ✅ |
 | M1 | Walking skeleton | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 7 / 13 |
+| M2 | Specification fidelity and input generation | 8 / 14 |
 | M3 | Oracles, faults and reporting | 0 / 8 |
 | M4 | Stateful testing | 0 / 6 |
 | M5 | IDL and constraint-based generation | 0 / 5 |
@@ -76,14 +76,15 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
 | 2.4 ✅ [#316](https://github.com/isa-group/RESTest/pull/316) | What a document says about the **characters** of a value, read where what it says about its length already is (ADR-0022). The kind it names — `date-time`, `date`, `email`, `uuid`, `uri`, `ipv4` and the thirteen others, nineteen in all — built from the platform's own parsers rather than looked up in a list, so every value is different and every value is correct; and the spelling it states as a `pattern` built by a library, with every candidate held against the rule again before it is sent and the length the same shape demands honoured alongside it. **No format dictionary is shipped**, which reverses that much of ADR-0013 §1 and ADR-0020 §5: a list sees only its key, while a shape states its kind, its spelling and its lengths at once and all three have to hold together | A date parameter gets a date instead of a random word, and an operation is no longer refused before anything worth testing happens: 225 places across the corpus name a kind of value, 25 of them in the priority corpus, and the 10 spelling rules in pet-clinic are satisfied rather than broken |
 | 2.5a ✅ [#313](https://github.com/isa-group/RESTest/pull/313) | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
-| 2.5b | The memory of what the API has returned, as dictionaries under the two keyings the format already has — one leaf by its name, a whole resource by its shape — filled by a listener on the event stream (ADR-0021 §6). With it, the operator that changes one leaf of an observed resource and sends it back. **Brings forward the runtime resource pool of 4.2**, and is the first strategy in the tool reproduced by replay rather than from the seed | A body stops being invented from nothing wherever the API has already shown what a real one looks like: 92% of the leaves in the corpus's bodies carry a name some reply also carries |
+| 2.5b *(after 2.10a)* | The memory of what the API has returned, as dictionaries under the two keyings the format already has — one leaf by its name, a whole resource by its shape — filled by a listener on the event stream (ADR-0021 §6). With it, the operator that changes one leaf of an observed resource and sends it back. **Brings forward the runtime resource pool of 4.2**, and is the first strategy in the tool reproduced by replay rather than from the seed | A body stops being invented from nothing wherever the API has already shown what a real one looks like: 92% of the leaves in the corpus's bodies carry a name some reply also carries |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
 | 2.7b | Dictionary writer and disk cache. **Not taken in its numbered place:** it waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8. Skip it and go on to 2.8 | Good values computed once are kept, rather than worked out again every run |
 | 2.7c ✅ [#315](https://github.com/isa-group/RESTest/pull/315) | **A dictionary reaches inside a request body** (ADR-0020, amended): a place is named by the way down to it — `body.owner.email`, `body.tags[].label` — and the same ordered list of sources that fills a parameter now fills every piece of a body. An operation answers to its `operationId` **or** to `GET /pets/{petId}`, so a file can be written from the specification with no reasoning about which. Every entry that could never be used is named when the file is read, before a request is sent. **Taken out of order, before 2.5b**, which is built on the keyings this fixes | About half of what anybody writes in a dictionary stops being ignored: of the 553 places the priority corpus has, a list could fill 247 and now fills 435 — 415 of them end to end — while the other 118 are ones the document settles by itself, which the run now says out loud. A file generated from an OpenAPI document — the way most of them will be — is checked against that document before any API is touched |
 | 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
 | 2.9 | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
-| 2.10 | The scheduler and the campaign file that tells it what to do (ADR-0013 §2 and §6): named strategies, each with a share of the budget and an ordered list of groups over named sources, where a group either stops at the first answer or **samples among the sources that answered, by weight**. The scheduler becomes the one component that knows what time it is, and carries the filters §6 gives it: which HTTP methods to exercise, whether to keep to the ones HTTP calls *safe*, and named operations to restrict a campaign to. The shares and weights 2.7a left as constants move into the file, and ADR-0013's open question gets the campaigns that answer it | A campaign is described rather than compiled in: how much of the time goes on each kind of request, which lists of values are preferred for which kinds of value and how often, and which operations and methods to touch at all — so a run against an API somebody cares about can be told to keep to the methods that only read |
+| 2.10a ✅ [#317](https://github.com/isa-group/RESTest/pull/317) | The campaign file (ADR-0023): named strategies with a share of the run, an ordered list of named sources with weighted groups among them, and the operation filter ADR-0013 §6 asks for. The shares and the order that were constants in `RandomTestCaseGenerator`'s constructor move into a file RESTest ships, prints with `--print-campaign` and reads back with `--campaign`. Three of §2's ideas dropped as saying what the structure already said, and §6's `safeOnly` answered by `methods` | Where a run's values come from stops being a decision somebody took once for everybody: it is a file you print, change one line of and hand back — and the source M2.5b adds has somewhere to be asked for |
+| 2.10b | The scheduler takes the budget: time-keeping moves out of `RunLoop`, and a phase becomes a stretch of the clock rather than a share drawn per request | A share of the budget is honoured as one, rather than on average |
 
 ### Notes
 
@@ -161,6 +162,31 @@ currently computes none. Splitting it was the alternative to shipping half a row
 carries the half that has a consumer today. Every value the tool has now is either already on disk
 or free to work out again, so a cache would keep things that cost nothing — which is why 2.7b waits
 for a consumer rather than being taken in its numbered place.
+
+**2.10 — one row that became two, one feature designed and dropped, and a default settled by
+measurement.** The row carries two separable subjects: *which values go into a request*, which is
+the file, and *which requests are built and when*, which is the scheduler taking the budget from
+`RunLoop`. Only the first is what 2.5b needed, so only the first was taken.
+
+A third subject was designed, written into a plan and dropped before any code: **a strategy serving
+only some kinds of operation**, so that writes could be pushed at harder than reads. Its one real
+use is that split, and it was the sole cause of every awkward thing in the format — shares that
+summed to 175, redistribution, per-operation validation, operations no strategy served. A strategy
+without a scope already means every operation, so it can be added later without breaking a file
+anybody has written, and 2.5b will say how the budget should actually be split.
+
+**What the shipped plan does with the document's own samples was decided three times, and the
+third time it was measured properly.** Asked in turn, a source that answers stops the ones behind
+it, so a parameter whose document offers one sample gets that value for a whole run — true of 125
+places in the priority corpus against 13 enumerations and no declared defaults at all. Ranking the
+sample first looked right on a unit-level figure: on `getOwner` it sends the documented identifier
+every time, against about a third when weighted. End to end it is worse. A run deletes rows, so the
+identifier a document names stops existing partway through, and a plan that cannot vary it sends
+the same 404 until the budget runs out. Against a containerised pet-clinic **restarted before every
+run**, five seeds each: ranked 16.8 operations answered 2XX, weighted 19.6. So the shipped plan
+weights. The lesson is about the metric — how often the tool quotes the document is not how much of
+the API it reaches — and 2.5b removes the tension entirely with identifiers that are real and
+varied.
 
 **2.8 — "never blocking" is proved here, by its own test.** A slow provider must not stall the
 run. Not by waiting for M6.2's overhead regression test, which lands much later and checks the

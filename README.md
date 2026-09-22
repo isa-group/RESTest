@@ -110,6 +110,14 @@ surnames the API actually holds — go in a YAML file next to the specification 
 with `--dictionary`, which takes a file or a directory and may be repeated;
 [docs/dictionary-format.md](docs/dictionary-format.md) is the format.
 
+Which of those a run prefers, and in what proportion, is itself a file. `restest run
+--print-campaign` writes out the plan RESTest follows when it is given none: which sources fill in
+a value and in what order, how much of the run pushes at the API, and which operations it may touch
+at all. Save it, change a line, hand it back with `--campaign`. One line worth knowing about is the
+filter, since a run writes to whatever it is pointed at — `methods: [GET, HEAD, OPTIONS, TRACE]`
+keeps it to the requests HTTP calls *safe*. [docs/campaign-format.md](docs/campaign-format.md) is
+the format.
+
 Nothing else is required. `--url` is only needed when the document does not name an address you
 can reach; it says which machine, so an API the document describes as living under a directory is
 still tested there unless you give a path of your own. `--budget` defaults to a minute. The whole

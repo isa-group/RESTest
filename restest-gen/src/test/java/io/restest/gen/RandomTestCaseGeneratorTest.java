@@ -568,10 +568,13 @@ class RandomTestCaseGeneratorTest {
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
                 ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
-                List.of(ofOurOwn("Leo")), 0);
+                List.of(ofOurOwn("Leo")), chaining());
 
         assertThat(generator.generate(search).orElseThrow()
                 .parameterValue("name", ParameterLocation.QUERY).orElseThrow().value())
+                .describedAs("a plan that asks the lists before anything else sends what they say. "
+                        + "The plan RESTest carries weighs them against the rest instead, which is "
+                        + "its own decision and measured where it is made")
                 .isEqualTo(io.restest.core.json.JsonValue.of("Leo"));
     }
 
@@ -587,22 +590,58 @@ class RandomTestCaseGeneratorTest {
                 Parameter.of("name", ParameterLocation.QUERY, true, sampled)));
         ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
 
+        // Within one step of a plan, this ranking is the tool's own and no plan has to state it:
+        // a list somebody wrote for this parameter knows more about this value than a list of
+        // every piece of text in the world, so it is asked first.
         assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("name", "for this parameter")), 0), search))
-                .describedAs("somebody wrote it for this parameter, so it knows more than a sample "
-                        + "written for the shape")
+                List.of(keyed("type", "for any text at all"),
+                        keyed("name", "for this parameter")), chaining()), search))
+                .describedAs("somebody wrote it for this parameter, so it is asked before a list "
+                        + "written for a whole kind of value, whatever order the files arrived in")
                 .isEqualTo("for this parameter");
+
+        // Where a list sits against the document's own sample is the plan's business now, and
+        // both sides of it are sayable. This is the arrangement the tool used to hard-wire.
         assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("type", "for any text at all")), 0), search))
-                .describedAs("a list for every piece of text knows less than the document's own "
-                        + "sample of this one")
-                .isEqualTo("from the document");
+                List.of(keyed("type", "for any text at all")),
+                planOf(theList("ours"), step(Campaign.Builtin.EXAMPLE))), search))
+                .describedAs("named before the document, a list is asked before it")
+                .isEqualTo("for any text at all");
         assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("schema", "for this shape")), 0), search))
-                .describedAs("a document declares a shape once and however many parameters refer "
-                        + "to it get the same one, so a list for a shape is about a kind of value "
-                        + "and the document's sample of this parameter still goes first")
+                List.of(keyed("type", "for any text at all")),
+                planOf(step(Campaign.Builtin.EXAMPLE), theList("ours"))), search))
+                .describedAs("named after it, a list for every piece of text knows less than the "
+                        + "document's own sample of this one, and the sample wins")
                 .isEqualTo("from the document");
+    }
+
+    @Test
+    @DisplayName("a weighted plan does not pin a parameter to one value: where the document offers "
+            + "one sample, invention still gets a turn")
+    void a_weighted_plan_varies_what_a_pinned_parameter_receives() {
+        io.restest.core.schema.CanonicalSchema sampled = new StringSchema(
+                SchemaMetadata.none().withExamples(
+                        List.of(io.restest.core.json.JsonValue.of("the one sample"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, sampled)));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                ApiModel.of("Pets", "1.0", List.of(search)), 4242L, List.of(),
+                planOf(new Campaign.Entry.Group(List.of(
+                        new Campaign.Share(
+                                new Campaign.Source.Builtin(Campaign.Builtin.EXAMPLE), 50),
+                        new Campaign.Share(
+                                new Campaign.Source.Builtin(Campaign.Builtin.RANDOM), 50)))));
+
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+        for (int draw = 0; draw < 40; draw++) {
+            seen.add(sent(generator, search));
+        }
+        assertThat(seen)
+                .describedAs("the whole reason a plan can weight its sources instead of ordering "
+                        + "them: asked in turn, the sample would be the only value ever sent")
+                .contains("the one sample")
+                .hasSizeGreaterThan(1);
     }
 
     @Test
@@ -679,7 +718,7 @@ class RandomTestCaseGeneratorTest {
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
                          "values": {"POST /owners": {
                             "body": [{"city": "whole"}], "body.city": ["a piece"]}}}""",
-                        "ours")), 0);
+                        "ours")), chaining());
 
         for (int draw = 0; draw < 10; draw++) {
             JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow()
@@ -785,7 +824,8 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(updatePet), 4242L,
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
-                         "values": {"PUT /pets/{petId}": {"petId": ["7"]}}}""", "ours")), 0);
+                         "values": {"PUT /pets/{petId}": {"petId": ["7"]}}}""", "ours")),
+                chaining());
 
         TestCase testCase = generator.generate(updatePet).orElseThrow();
 
@@ -825,6 +865,163 @@ class RandomTestCaseGeneratorTest {
                 ((JsonValue.JsonObject) body).member("a").orElseThrow()).member("b").orElseThrow())
                 .member("c").orElseThrow()).member("d"))
                 .contains(JsonValue.of("from the list"));
+    }
+
+    @Test
+    @DisplayName("a plan keeps the run to the operations it names, and what it left alone is kept "
+            + "apart from what the document made impossible")
+    void a_plan_narrows_which_operations_are_tested() {
+        Operation listing = Operation.of(HttpMethod.GET, "/pets");
+        Operation adding = Operation.of(HttpMethod.POST, "/pets");
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(listing, adding));
+        Campaign safeOnly = new Campaign(
+                List.of(new Campaign.PlannedStrategy("nominal", 100,
+                        List.of(step(Campaign.Builtin.RANDOM)))),
+                WhichOperations.of(java.util.Set.of(HttpMethod.GET), List.of()));
+
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(pets, 1L, List.of(), safeOnly);
+
+        assertThat(generator.testableOperations()).containsExactly(listing);
+        assertThat(generator.operationsThePlanSetAside())
+                .describedAs("somebody asked for this one to be left alone, which is not the same "
+                        + "as the document making it impossible, and a run that confused the two "
+                        + "would report a plan working exactly as intended as a fault in the API")
+                .containsExactly(adding.id());
+        assertThat(generator.untestableOperations()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the strategy that pushes is left out when there is no list to push with, and a "
+            + "strategy that merely lost a list of its own is not")
+    void a_strategy_that_cannot_do_its_job_is_dropped() {
+        io.restest.core.schema.CanonicalSchema onlyThese = new StringSchema(
+                SchemaMetadata.none().withEnumeration(List.of(
+                        JsonValue.of("available"), JsonValue.of("sold"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("status", ParameterLocation.QUERY, true, onlyThese)));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        // A plan of the shape anybody writes for a list of their own, beside one that pushes.
+        Campaign plan = new Campaign(List.of(
+                new Campaign.PlannedStrategy("nominal", 50,
+                        List.of(theList("my-good-values"), step(Campaign.Builtin.ENUM))),
+                new Campaign.PlannedStrategy("pushing", 50,
+                        List.of(theList("fuzzing"), step(Campaign.Builtin.RANDOM)))),
+                WhichOperations.everything());
+
+        RandomTestCaseGenerator withAListToPushWith = new RandomTestCaseGenerator(pets, 1L,
+                List.of(Dictionaries.fuzzing().orElseThrow()), plan);
+        assertThat(withAListToPushWith.sourcesThatPushAtTheApi())
+                .describedAs("'my-good-values' was not handed over either, and that must not cost "
+                        + "the nominal strategy its place")
+                .containsExactly("fuzzing");
+        assertThat(sentOften(withAListToPushWith, search))
+                .describedAs("half the run is still the nominal strategy, which still has the "
+                        + "document's closed list to ask")
+                .contains("available");
+
+        RandomTestCaseGenerator withNothingToPushWith =
+                new RandomTestCaseGenerator(pets, 1L, List.of(), plan);
+        assertThat(withNothingToPushWith.sourcesThatPushAtTheApi())
+                .describedAs("nothing awkward to send, so the strategy that would have sent it is "
+                        + "left out rather than spending half the run on invented values under "
+                        + "another name")
+                .isEmpty();
+        assertThat(sentOften(withNothingToPushWith, search))
+                .describedAs("and every request now comes from the nominal strategy, so the "
+                        + "document's closed list is honoured every time - which is the thing "
+                        + "the dropped strategy had no step for")
+                .containsExactlyInAnyOrder("available", "sold");
+    }
+
+    @Test
+    @DisplayName("a strategy every source of which turned out to be missing is refused, since it "
+            + "would be drawn for its share and abandon every request unbuilt")
+    void a_strategy_that_can_fill_nothing_is_refused() {
+        ApiModel pets = ApiModel.of("Pets", "1.0",
+                List.of(Operation.of(HttpMethod.GET, "/pets")));
+        Campaign namesOnlyWhatIsMissing = new Campaign(
+                List.of(new Campaign.PlannedStrategy("mine", 100, List.of(theList("nowhere")))),
+                WhichOperations.everything());
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() -> new RandomTestCaseGenerator(pets, 1L, List.of(),
+                        namesOnlyWhatIsMissing))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("could not fill in a single value");
+    }
+
+    @Test
+    @DisplayName("a plan that can do nothing at all is refused, rather than quietly swapped for "
+            + "a different one")
+    void a_plan_that_can_do_nothing_is_refused() {
+        ApiModel pets = ApiModel.of("Pets", "1.0",
+                List.of(Operation.of(HttpMethod.GET, "/pets")));
+        Campaign everythingPushes = new Campaign(
+                List.of(new Campaign.PlannedStrategy("pushing", 100,
+                        List.of(theList("fuzzing"), step(Campaign.Builtin.RANDOM)))),
+                WhichOperations.everything());
+
+        org.assertj.core.api.Assertions
+                .assertThatThrownBy(() -> new RandomTestCaseGenerator(pets, 1L, List.of(),
+                        everythingPushes))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("nothing for the run to do");
+    }
+
+    /**
+     * Every distinct value this operation's {@code status} parameter received over many draws.
+     *
+     * <p>Written out rather than reusing the helper above because a strategy that pushes sends
+     * whatever it likes - an empty word, a null - and the point here is exactly what came out.
+     */
+    private static java.util.Set<String> sentOften(RandomTestCaseGenerator generator,
+            Operation operation) {
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+        for (int draw = 0; draw < 60; draw++) {
+            generator.generate(operation)
+                    .flatMap(testCase -> testCase.parameterValue("status",
+                            ParameterLocation.QUERY))
+                    .ifPresent(value -> seen.add(value.value()
+                            instanceof io.restest.core.json.JsonValue.JsonString text
+                            ? text.value() : String.valueOf(value.value())));
+        }
+        return seen;
+    }
+
+    /**
+     * Every source asked in turn, the first answer taken, with the run's own lists after the
+     * closed list and before the document.
+     *
+     * <p>The arrangement the tool had before a plan could be written down, and still the one that
+     * makes a preference absolute rather than likely. The tests that are about which source is
+     * <em>preferred</em> use this, because a weighted plan answers that question with a
+     * probability and an assertion cannot be made about one draw.
+     */
+    private static Campaign chaining() {
+        return planOf(step(Campaign.Builtin.ENUM), everyListGiven(),
+                step(Campaign.Builtin.EXAMPLE), step(Campaign.Builtin.DEFAULT),
+                step(Campaign.Builtin.RANDOM));
+    }
+
+    /** One strategy taking the whole run, asking these in turn. */
+    private static Campaign planOf(Campaign.Entry... sources) {
+        return new Campaign(
+                List.of(new Campaign.PlannedStrategy("nominal", 100, List.of(sources))),
+                WhichOperations.everything());
+    }
+
+    private static Campaign.Entry step(Campaign.Builtin source) {
+        return new Campaign.Entry.Single(new Campaign.Source.Builtin(source));
+    }
+
+    private static Campaign.Entry everyListGiven() {
+        return new Campaign.Entry.Single(new Campaign.Source.EveryListGiven());
+    }
+
+    private static Campaign.Entry theList(String named) {
+        return new Campaign.Entry.Single(new Campaign.Source.OneList(named));
     }
 
     private static String sent(RandomTestCaseGenerator generator, Operation operation) {

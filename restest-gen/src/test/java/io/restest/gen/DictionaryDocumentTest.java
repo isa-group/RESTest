@@ -38,6 +38,27 @@ import org.junit.jupiter.api.Test;
 /** Reading a list of values somebody wrote down, and finding the ones that apply to an input. */
 class DictionaryDocumentTest {
 
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("which keyings speak about one value in particular, which "
+            + "is what decides whether a list is asked before the document or after it")
+    void which_keyings_are_about_one_value() {
+        assertThat(ValueDictionary.Keying.NAME.isAboutOneValueInParticular())
+                .describedAs("a name is somebody meaning that value wherever it turns up")
+                .isTrue();
+        assertThat(ValueDictionary.Keying.OPERATION_AND_PARAMETER.isAboutOneValueInParticular())
+                .describedAs("and an operation and a place in it is as particular as it gets")
+                .isTrue();
+        assertThat(ValueDictionary.Keying.SCHEMA.isAboutOneValueInParticular())
+                .describedAs("a document declares a shape once and however many parameters refer "
+                        + "to it get the same one, so a list written for a shape is about a kind "
+                        + "of value - reclassifying it would reorder every plan that says "
+                        + "'dictionaries: given'")
+                .isFalse();
+        assertThat(ValueDictionary.Keying.TYPE.isAboutOneValueInParticular()).isFalse();
+        assertThat(ValueDictionary.Keying.FORMAT.isAboutOneValueInParticular()).isFalse();
+    }
+
+
     @Test
     @DisplayName("values are found under the kind of value wanted, and under the bucket for all kinds")
     void keyed_by_type() {

@@ -137,20 +137,53 @@ class DeclaredSamplesAcrossTheCorpusTest {
                 .isEqualTo(ValueOrigin.declared(ValueOrigin.Declared.Statement.EXAMPLE));
     }
 
+    /**
+     * The identifier an API is measured on is sent, and it is not the only one sent.
+     *
+     * <p>This test used to demand the document's own identifier on every single request, and that
+     * demand was wrong in a way only a real API showed. An identifier a document writes down is
+     * real until the run deletes that row - and a run does delete rows, from the increment that
+     * gave it request bodies onwards. A generator that cannot vary the value then sends the same
+     * 404 for the rest of the run, and the three operations that take an owner never recover.
+     *
+     * <p>Measured against a containerised pet-clinic, restarting it before every run, five seeds
+     * apiece: sending the document's identifier every time covered 16.8 operations on average,
+     * and choosing among it and the alternatives covered 19.6. So what is asked for here is what
+     * actually helps - that the author's identifier is among what goes out, and that it is not
+     * the only thing that ever does.
+     */
     @Test
-    @DisplayName("the identifiers an API is measured on stop being invented and start being its own")
+    @DisplayName("the identifiers an API is measured on are its own, and are not the only ones "
+            + "tried, because a run deletes the rows its document names")
     void the_priority_corpus_sends_the_identifiers_its_authors_wrote() {
         ApiModel petClinic = petClinic();
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(petClinic, 20260918L);
         Operation owner = petClinic.operation(
                 io.restest.core.model.OperationId.of("getOwner")).orElseThrow();
 
-        assertThat(generator.generate(owner).orElseThrow()
-                .parameterValue("ownerId", io.restest.core.model.ParameterLocation.PATH)
-                .orElseThrow().value())
-                .describedAs("the document says an owner is numbered 1; inventing a number instead "
-                        + "addresses an owner that does not exist")
+        java.util.List<JsonValue> sent = java.util.stream.IntStream.range(0, 200)
+                .mapToObj(draw -> generator.generate(owner).orElseThrow()
+                        .parameterValue("ownerId", io.restest.core.model.ParameterLocation.PATH)
+                        .orElseThrow().value())
+                .toList();
+
+        assertThat(sent)
+                .describedAs("the document says an owner is numbered 1, and an invented number "
+                        + "addresses an owner that never existed")
+                .contains(JsonValue.of(1L));
+        java.util.Map<JsonValue, Long> howOften = sent.stream().collect(
+                java.util.stream.Collectors.groupingBy(value -> value,
+                        java.util.stream.Collectors.counting()));
+        assertThat(howOften.entrySet().stream()
+                .max(java.util.Map.Entry.comparingByValue()).orElseThrow().getKey())
+                .describedAs("and it is the value sent most often, which is what the weighting "
+                        + "of the plan RESTest carries is for: every other value here is invented "
+                        + "and invented ones do not repeat")
                 .isEqualTo(JsonValue.of(1L));
+        assertThat(java.util.Set.copyOf(sent))
+                .describedAs("but not the only one: once the run has deleted owner 1, a generator "
+                        + "that could send nothing else would ask for it until the budget ran out")
+                .hasSizeGreaterThan(1);
     }
 
     /**

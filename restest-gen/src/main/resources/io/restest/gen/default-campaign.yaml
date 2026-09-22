@@ -1,0 +1,77 @@
+# What a run does when nobody has said otherwise.
+#
+# This is the plan RESTest follows with no --campaign of your own. It is a file rather than
+# something written into the tool so that you can read it, copy it and change one line, which
+# is the whole point of the format: print it with `restest run --print-campaign`, save it, edit
+# it, and pass it back with --campaign.
+#
+# Two strategies. Most of the run builds requests meant to work, from whatever the document and
+# your own lists of values have to say. The rest pushes at the API with values nobody sensible
+# would send, which is how an API gets asked what it does when something unexpected arrives -
+# looking not for a refusal, which is a fair answer, but for the API falling over.
+#
+# The shares add up to 100, and so do the weights inside any one group.
+
+version: 1
+
+strategies:
+
+  # Requests meant to work.
+  - name: nominal
+    share: 75
+    sources:
+
+      # A closed list of accepted values is not advice: it is the whole set of values the API
+      # will take, so where the document states one, nothing else may be sent there.
+      - source: enum
+
+      # Everywhere else, four sources are asked at once and one of their answers is chosen.
+      #
+      # Asking them in turn instead would pin a parameter to one value for a whole run, and that
+      # costs more than it sounds. Measured against a containerised pet-clinic, restarting it
+      # before every run: asked in turn, 16.8 of its operations answered 2XX; chosen among, 19.6.
+      # The reason is that a run deletes things. An identifier the document writes down is real
+      # until the run deletes that row, and a plan that cannot vary it then sends the same 404
+      # for the rest of the run - getOwner, updateOwner and deleteOwner never recover.
+      #
+      # A source with nothing to say does not get its share, and it passes to the others. With no
+      # lists of your own handed over, which is the ordinary case, the fifty below goes to the
+      # other three.
+      - weighted:
+
+          # What the document's author wrote down. Usually a value that existed in the API they
+          # were looking at, which is why it is worth more than anything invented.
+          - source: example
+            weight: 20
+
+          # Invented to fit the shape. Here rather than after the group on purpose: a source
+          # below a group is never reached for any value the group could answer.
+          - source: random
+            weight: 25
+
+          # Every list of values passed with --dictionary, the ones written for a particular
+          # place asked before the ones written for a whole kind of value. Nothing by default;
+          # when there is one it is the most specific thing anybody knows about this API, which
+          # is why it is weighted highest of the four.
+          - dictionaries: given
+            weight: 50
+
+          # What the API uses when the caller sends nothing. One value, so it never varies,
+          # which is why it is asked least.
+          - source: default
+            weight: 5
+
+  # Requests built from values nobody sensible would send.
+  - name: fuzzing
+    share: 25
+    sources:
+
+      # The list of awkward values that travels with RESTest. Add to it by handing over a list
+      # of your own under the same name.
+      - dictionary: fuzzing
+
+      # For the values that list has nothing sendable for - a parameter whose shape has no kind
+      # to look up, in a place its one catch-all value cannot be written into. Without this the
+      # whole request would be abandoned, and the operation would send nothing at all while
+      # still being counted among those under test.
+      - source: random
