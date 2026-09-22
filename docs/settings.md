@@ -47,6 +47,119 @@ environments use — capitals, and an underscore wherever the name has a capital
 to behave the same way in every directory, and a file found by accident is a run nobody can explain
 afterwards.
 
+## The template, in full
+
+This is what `restest run --print-settings` writes. It is generated from the settings themselves
+rather than kept as a file in this repository, so it cannot drift from what the tool actually does,
+and so that it can say where each value came from — which a file sitting in a repository could never
+know. A test keeps the copy below in step with it.
+
+Save it, change the lines you care about, delete the rest or leave them, and hand it back with
+`--settings`. Every line is optional: what you leave out keeps the value RESTest uses.
+
+```yaml
+# The settings this run uses, and where each of its values came from.
+#
+# Save this, change a line, and hand it back with --settings <file>. The same
+# values can be given as --set engine.maxConcurrency=8 on the command line, or as
+# RESTEST_ENGINE_MAX_CONCURRENCY=8 in the environment. What is typed on the command
+# line wins over the environment, which wins over a file, which wins over what
+# RESTest does when nobody has said otherwise.
+#
+# These are settings of the tool. Where a run's values come from, and which
+# operations it may touch, is a plan instead: --print-campaign writes one out.
+
+engine:
+  # how long to wait for the API to accept a connection at all
+  connectTimeout: "10s"       # default
+  # how long to wait for the API to answer once connected
+  readTimeout: "30s"          # default
+  # how long to wait while sending a request body
+  writeTimeout: "10s"         # default
+  # the fewest requests kept in flight, however badly the API behaves
+  minConcurrency: 1           # default
+  # how many requests are in flight before anything is known about the API
+  initialConcurrency: 4       # default
+  # the most requests ever in flight at once. 1 for a fragile API
+  maxConcurrency: 16          # default
+  # how much slower than its best answer so far counts as the API struggling
+  slowdownFactor: 2           # default
+  # how much of a reply body is kept in memory
+  maxRetainedResponseBytes: 1048576 # default
+  # whether a redirection is followed instead of being reported
+  followRedirects: false      # default
+  # what the tool calls itself in the User-Agent header
+  userAgent: "RESTest/2.0"    # default
+
+schedule:
+  # how many requests may await an answer, as a multiple of maxConcurrency
+  workAheadFactor: 2          # default
+  # how many announcements may await the reports before the run pauses
+  announcementsAllowedToPileUp: 1000 # default
+  # how long past the deadline to wait for answers already asked for
+  stragglerGrace: "10s"       # default
+
+generation:
+  # below this depth, only what the description insists on is built
+  optionalNestingDepth: 4     # default
+  # where building stops, however insistent the description is
+  hardNestingDepth: 8         # default
+  # the longest word invented when the description does not demand more
+  usualLongestString: 64      # default
+  # beyond this, a demanded length is declined rather than built
+  longestString: 10000        # default
+  # where an invented number starts, when the description states no bottom
+  lowestNumber: 0             # default
+  # how far above that it may go, when the description states no top
+  roomAboveIt: 1000           # default
+  # decimal places for a number allowed to have them
+  decimalPlaces: 2            # default
+  # the most items put in a list when the description does not demand more
+  usualMostItems: 4           # default
+  # beyond this, a demanded number of items is declined rather than built
+  mostItems: 100              # default
+  # how often an optional property is included anyway, between 0 and 1
+  optionalPropertyChance: 0.5 # default
+  # how often an optional parameter is included anyway, between 0 and 1
+  optionalParameterChance: 0.5 # default
+  # one time in this many, a value allowed to be absent is sent as nothing
+  nullInOneIn: 8              # default
+  # how many times a fresh element is attempted for a list of distinct items
+  uniqueAttempts: 8           # default
+  # how many times a value is invented again after an unsendable one
+  sendableAttempts: 8         # default
+  # how many bodies are drawn while looking for one its media type can carry
+  writableBodyAttempts: 8     # default
+
+memory:
+  # how many values the run remembers under any one name. 0 remembers none
+  mostValuesUnderOneName: 20  # default
+  # how many different names are remembered at all
+  mostNames: 2000             # default
+  # how long one remembered word or number may be, written out
+  longestValueKept: 10000     # default
+  # the largest reply the run reads looking for values to remember
+  longestReplyRead: 524288    # default
+  # how far into a reply that search goes
+  asDeepAsAReplyIsRead: 6     # default
+
+document:
+  # how long to wait for a description fetched over the network
+  fetchTimeout: "10s"         # default
+  # the largest description that is read at all
+  mostBytesRead: 67108864     # default
+
+report:
+  # how many faults of one kind, on one operation, are written out whole
+  writeUpsPerOperationAndKind: 5 # default
+  # and how many in the whole file
+  writeUpsInTotal: 1000       # default
+  # how much of any one body the report quotes
+  mostBodyBytesKept: 24576    # default
+  # how many faults are printed in full before the screen stops being the place
+  faultsShownOnTheConsole: 50 # default
+```
+
 ## What a settings file looks like
 
 ```yaml
@@ -120,16 +233,16 @@ spelling `--budget` takes.
 
 | Setting | Default | What it does |
 |---|---|---|
-| `connectTimeout` | `"10s"` | how long to wait for the API to accept a connection at all |
-| `readTimeout` | `"30s"` | how long to wait for the API to answer once connected |
-| `writeTimeout` | `"10s"` | how long to wait while sending a request body |
+| `connectTimeout` | `10s` | how long to wait for the API to accept a connection at all |
+| `readTimeout` | `30s` | how long to wait for the API to answer once connected |
+| `writeTimeout` | `10s` | how long to wait while sending a request body |
 | `minConcurrency` | `1` | the fewest requests kept in flight, however badly the API behaves |
 | `initialConcurrency` | `4` | how many requests are in flight before anything is known about the API |
 | `maxConcurrency` | `16` | the most requests ever in flight at once. 1 for a fragile API |
 | `slowdownFactor` | `2` | how much slower than its best answer so far counts as the API struggling |
 | `maxRetainedResponseBytes` | `1048576` | how much of a reply body is kept in memory |
 | `followRedirects` | `false` | whether a redirection is followed instead of being reported |
-| `userAgent` | `"RESTest/2.0"` | what the tool calls itself in the User-Agent header |
+| `userAgent` | `RESTest/2.0` | what the tool calls itself in the User-Agent header |
 
 ### `schedule.*`
 
@@ -137,7 +250,7 @@ spelling `--budget` takes.
 |---|---|---|
 | `workAheadFactor` | `2` | how many requests may await an answer, as a multiple of maxConcurrency |
 | `announcementsAllowedToPileUp` | `1000` | how many announcements may await the reports before the run pauses |
-| `stragglerGrace` | `"10s"` | how long past the deadline to wait for answers already asked for |
+| `stragglerGrace` | `10s` | how long past the deadline to wait for answers already asked for |
 
 ### `generation.*`
 
@@ -173,7 +286,7 @@ spelling `--budget` takes.
 
 | Setting | Default | What it does |
 |---|---|---|
-| `fetchTimeout` | `"10s"` | how long to wait for a description fetched over the network |
+| `fetchTimeout` | `10s` | how long to wait for a description fetched over the network |
 | `mostBytesRead` | `67108864` | the largest description that is read at all |
 
 ### `report.*`

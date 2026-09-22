@@ -272,6 +272,22 @@ cut short by `document.mostBytesRead` was handed to the reader half-written, whi
 document somebody had written wrongly; one byte more than the bound is read now, so *the description
 ended* and *I stopped reading* can be told apart and the second says so.
 
+### The template is generated, and the page that shows it is checked
+
+RESTest carries the plan it follows as a real file, so that anybody can print it, copy it and change
+a line. The settings are not carried that way and should not be: §1 puts the defaults in code beside
+the thing they configure, so a file of them shipped alongside would be a second statement of the same
+numbers, free to disagree with the first. It also could not do the half of the job that matters -
+saying where each value came from - because a file sitting in a repository does not know what the
+environment said.
+
+What was missing is smaller and real: somebody reading this project without building it could see
+the plan RESTest ships and could not see what a file of settings looks like. So the page documents
+the template in full, and a test compares what the page shows with what the tool writes, along with
+every row of its list of settings - name, value and explanation. A page that is a copy of something
+that changes is a promise somebody breaks by accident; checking it is what makes writing it down
+safe. The test caught its first disagreement on the commit that introduced it.
+
 ### A value nobody gave, and that is not a default either, says so
 
 The derived starting concurrency above created a third case for §3's *where did this come from*

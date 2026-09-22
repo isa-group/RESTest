@@ -143,7 +143,8 @@ them without a file: `--set engine.maxConcurrency=1`, which is the answer to an 
 when asked two things at once. The same names work as environment variables,
 `RESTEST_ENGINE_MAX_CONCURRENCY=1`, which is how a container is configured. Every run writes the lot
 into `report.json`, so a directory of results carries the configuration that produced it.
-[docs/settings.md](docs/settings.md) is the list.
+[docs/settings.md](docs/settings.md) is the list, and it shows the file `--print-settings` writes so
+you can see one without building anything.
 
 Nothing else is required. `--url` is only needed when the document does not name an address you
 can reach; it says which machine, so an API the document describes as living under a directory is
