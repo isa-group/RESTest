@@ -432,9 +432,9 @@ final class RunCommand implements Callable<Integer> {
                     // Inside this block so that an announcement going wrong still leaves the
                     // summary and the report.
                     Instant said = Instant.now();
-                    unreadable(model).forEach(issue -> drained.publish(
+                    model.unreadableOperations().forEach(issue -> drained.publish(
                             new RunEvent.OperationSkipped(said, issue.operation().orElseThrow(),
-                                    issue.message())));
+                                    whyNot(issue))));
                     generator.untestableOperations().forEach((operation, reason) ->
                             drained.publish(new RunEvent.OperationSkipped(said, operation, reason)));
                     // The deadline is the moment the command started plus the budget, not the
@@ -574,7 +574,7 @@ final class RunCommand implements Callable<Integer> {
      */
     private int nothingToTest(PrintWriter err, ApiModel model, RandomTestCaseGenerator generator) {
         var refused = generator.untestableOperations();
-        List<SpecificationIssue> unreadable = unreadable(model);
+        List<SpecificationIssue> unreadable = model.unreadableOperations();
         int setAside = generator.operationsThePlanSetAside().size();
         // The plan is asked about first, and only about what could be read: an operation the plan
         // set aside is one somebody asked to leave alone, and blaming the document for it would
@@ -588,12 +588,17 @@ final class RunCommand implements Callable<Integer> {
                             : "; " + unreadable.size() + " more could not be read at all"));
         } else if (refused.isEmpty() && unreadable.isEmpty()) {
             err.println("restest: the document describes no operation that could be tested");
+        } else if (refused.isEmpty()) {
+            err.println("restest: none of the " + unreadable.size() + " operations in the document "
+                    + "can be tested; the first says: " + whyNot(unreadable.get(0)));
         } else {
-            // What could not be read comes first, as it does everywhere else a run names them.
-            String first = unreadable.isEmpty()
-                    ? refused.values().iterator().next() : unreadable.get(0).message();
-            err.println("restest: none of the " + (refused.size() + unreadable.size())
-                    + " operations in the document can be tested; the first says: " + first);
+            // The reason quoted is one the generator gave, whenever it gave one: that operation
+            // was read and kept by the plan, so its reason is why this run is empty. One that could
+            // not be read may be one the plan would have left alone, and is counted beside it.
+            err.println("restest: none of the " + refused.size() + " operations in the document "
+                    + "can be tested; the first says: " + refused.values().iterator().next()
+                    + (unreadable.isEmpty() ? ""
+                            : "; " + unreadable.size() + " more could not be read at all"));
         }
         report(err, model.issues());
         return ExitCode.NOTHING_TO_TEST;
@@ -604,8 +609,8 @@ final class RunCommand implements Callable<Integer> {
         int setAside = generator.operationsThePlanSetAside().size();
         // Every operation the document describes, including the ones it could not be read for.
         out.println(testable + " of "
-                + (testable + generator.untestableOperations().size() + unreadable(model).size()
-                        + setAside)
+                + (testable + generator.untestableOperations().size()
+                        + model.unreadableOperations().size() + setAside)
                 + " operations can be tested, seed " + generator.seed()
                 + ", budget " + human(budget));
         // Said as its own line rather than folded into the count, because the two are different
@@ -635,18 +640,16 @@ final class RunCommand implements Callable<Integer> {
     }
 
     /**
-     * The operations the document could not be read for at all, each with what reading it said, in
-     * the order it was read.
+     * Why an operation the document could not be read for is not tested, with where it is.
      *
-     * <p>They never became operations, so the generator never judged them and they are nowhere in
-     * what it will or will not build. They are counted and named beside the ones it refused, but
-     * kept apart from them: an operation the generator can build may share a name with one of these,
-     * because a document can give two operations one name, and it must not be taken for it.
+     * <p>Where, because it never became an operation and nothing else about it is known: a document
+     * can give two operations one name, and the place in the document is what tells the one that
+     * could not be read from the one that could. These are counted and named beside the operations
+     * the generator refused, but kept apart from them, because the generator's list is also what it
+     * checks before building a request, and the readable one must not be taken for this.
      */
-    private static List<SpecificationIssue> unreadable(ApiModel model) {
-        return model.issues().stream()
-                .filter(issue -> issue.skipsAnOperation() && issue.operation().isPresent())
-                .toList();
+    private static String whyNot(SpecificationIssue unreadable) {
+        return unreadable.message() + " (" + unreadable.location() + ")";
     }
 
     /** Names what could not be read, because skipping something silently is the same as losing it. */

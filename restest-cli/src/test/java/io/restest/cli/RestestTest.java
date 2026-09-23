@@ -396,7 +396,7 @@ class RestestTest {
     void an_operation_that_could_not_be_read_is_counted_and_named(@TempDir Path directory)
             throws Exception {
         String named = "  searchPets: the operation could not be represented: minProperties (5) is "
-                + "greater than maxProperties (2), so no value can satisfy both";
+                + "greater than maxProperties (2), so no value can satisfy both (paths./pets.get)";
 
         int answer = run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
                 "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
@@ -445,8 +445,41 @@ class RestestTest {
                 .describedAs("it describes one, which could not be read; not none")
                 .contains("none of the 1 operations in the document can be tested; the first says: "
                         + "the operation could not be represented: minProperties (5) is greater "
-                        + "than maxProperties (2), so no value can satisfy both")
+                        + "than maxProperties (2), so no value can satisfy both (paths./pets.get)")
                 .doesNotContain("describes no operation");
+    }
+
+    @Test
+    @DisplayName("when nothing can be tested, the reason quoted is one given for an operation that was "
+            + "read, and the ones that could not be read are counted beside it")
+    void the_reason_quoted_is_one_given_for_an_operation_that_was_read(@TempDir Path directory)
+            throws Exception {
+        Path document = Files.writeString(directory.resolve("both.yaml"), """
+                openapi: 3.1.0
+                info: {title: Pet Search, version: '1'}
+                paths:
+                  /pets/search:
+                    get:
+                      operationId: searchPets
+                      requestBody:
+                        required: true
+                        content: {application/json: {schema: {type: object}}}
+                      responses: {'200': {description: the pets that match}}
+                  /pets:
+                    get:
+                      operationId: listPets
+                      parameters:
+                        - {name: filter, in: query, schema: {minProperties: 5, maxProperties: 2}}
+                      responses: {'200': {description: every pet}}
+                """);
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.resolve("out").toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString()).contains("none of the 1 operations in the document can be "
+                + "tested; the first says: it requires a request body, and RESTest cannot send one "
+                + "with a GET request; 1 more could not be read at all");
     }
 
     @Test
@@ -485,7 +518,8 @@ class RestestTest {
                 "1 operation could not be tested:",
                 "  getVet: the operation could not be represented: the path template "
                         + "'/clinics/{clinicId}/vets/{vetId}' has no parameter to fill 'clinicId', "
-                        + "so no request could be assembled");
+                        + "so no request could be assembled (paths./clinics/{clinicId}/vets/{vetId}"
+                        + ".get)");
         api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/vets/[0-9]+")));
     }
 

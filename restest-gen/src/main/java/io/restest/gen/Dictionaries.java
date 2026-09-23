@@ -66,6 +66,10 @@ public final class Dictionaries {
     /** What an entry is guilty of when the document has no such operation at all. */
     private static final String NO_SUCH_OPERATION = "no such operation in this API";
 
+    /** And when it has one, but could not be read for it, so nothing is ever sent to it. */
+    private static final String UNREADABLE_OPERATION =
+            "an operation the document could not be read for";
+
     private Dictionaries() {
     }
 
@@ -374,6 +378,9 @@ public final class Dictionaries {
         }
         Map<String, Operation> operations = new java.util.LinkedHashMap<>();
         model.operations().forEach(operation -> operations.put(operation.id().value(), operation));
+        Set<String> unreadable = new java.util.HashSet<>();
+        model.unreadableOperations().forEach(issue ->
+                unreadable.add(issue.operation().orElseThrow().value()));
 
         Map<String, List<String>> byReason = new java.util.LinkedHashMap<>();
         int entries = 0;
@@ -383,9 +390,13 @@ public final class Dictionaries {
             Operation operation = operations.get(named.getKey());
             if (operation == null) {
                 // Every entry under it is dead, not one: the operation is the only part of the key
-                // that is wrong, and counting it once would under-report a whole block of them.
+                // that is wrong, and counting it once would under-report a whole block of them. One
+                // the document describes but could not be read for is not missing, and saying so
+                // would contradict the run, which names it among the operations it could not test.
+                String why = unreadable.contains(named.getKey())
+                        ? UNREADABLE_OPERATION : NO_SUCH_OPERATION;
                 named.getValue().keySet().forEach(place ->
-                        byReason.computeIfAbsent(NO_SUCH_OPERATION, ignored -> new ArrayList<>())
+                        byReason.computeIfAbsent(why, ignored -> new ArrayList<>())
                                 .add(place + " in " + named.getKey()));
                 continue;
             }

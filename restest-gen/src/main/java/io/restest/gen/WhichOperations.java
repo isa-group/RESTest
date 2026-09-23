@@ -124,10 +124,10 @@ public final class WhichOperations {
         }
         // One the document could not be read for is still one of the API's operations. Telling the
         // plan's author the API does not have it, while the run names it as one it could not test,
-        // would be two answers to one question.
-        model.issues().stream()
-                .filter(issue -> issue.skipsAnOperation())
-                .forEach(issue -> issue.operation().ifPresent(id -> answersTo.add(id.value())));
+        // would be two answers to one question. Only its identifier is known, so only a plan naming
+        // it that way is answered.
+        model.unreadableOperations().forEach(issue ->
+                answersTo.add(issue.operation().orElseThrow().value()));
         List<String> stale = new ArrayList<>();
         only.stream().filter(name -> !answersTo.contains(name)).forEach(stale::add);
         return List.copyOf(stale);

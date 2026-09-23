@@ -254,10 +254,11 @@ operations a run could not test, which
 [ADR-0006's amendment naming what a run skips](0006-event-stream-and-store.md#amendment-naming-what-a-run-skips)
 puts in the summary and in `report.json`, held only the ones whose request could not be built.
 
-Now the command counts them and names them, first, with what reading said, from the issues that
-say an operation was skipped: in the count, after the summary's verdict, in `report.json`, and in
-the reason it quotes when nothing at all can be tested - which used to say that the document
-described no operation, of a document describing one it could not read.
+Now the command counts them and names them, first, with what reading said and where in the
+document, from the issues that say an operation was skipped: in the count, after the summary's
+verdict, in `report.json`, and in the reason it quotes when nothing at all can be tested - which
+used to say that the document described no operation, of a document describing one it could not
+read. `ApiModel.unreadableOperations()` is the one place that picks those issues out.
 
 **Kept apart from the generator's list, not added to it.** The generator's list of operations it
 cannot test is also what it checks before building a request, and an operation it can build may
@@ -265,13 +266,19 @@ share its name with one that could not be read: a document can give two operatio
 operation copied under a deeper path, say, whose copy has a gap nothing fills - and the parser
 renames duplicates only among the operations it built. Added to that list, the unreadable one
 stopped the readable one from ever being sent while it was counted as testable. So the command
-reads the parser's issues itself, and the generator's list is what it was.
+reads the parser's issues itself, and the generator's list is what it was. The place in the
+document goes with the reason for the same cause: it is what tells the unreadable copy from the
+readable original that shares its name.
 
 **The plan is not asked about them, and says so where it matters.** What a plan's filter matches
 is an operation, and these never became one, so they are named whatever the plan says. When the
 plan leaves nothing to test, it is still the plan that is blamed - the choice is made on what could
-be read - with how many more could not be read said beside it; and a plan naming an operation that
-could not be read is not told the API has no such operation.
+be read - with how many more could not be read said beside it; when the operations that were read
+were all refused, one of their reasons is the one quoted, with the unreadable ones counted beside
+it. A plan naming an operation that could not be read by its identifier is not told the API has no
+such operation, and neither is a list of values written for one - it is told the operation could not
+be read. By method and path it still is: only the identifier of an operation the parser dropped is
+known.
 
 **What is still not counted.** Operations under a path item written as a reference to another part
 of the document are not found at all - the parser records one issue for the whole path item - so
