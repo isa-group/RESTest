@@ -336,8 +336,9 @@ class RunLoopTest {
                     planned.add(sent.testCase());
                 }
             });
+            // Three seconds: the whole first round has to fit, on the slowest machine CI has.
             Scheduler scheduler = new Scheduler(generator, WITH_A_FIRST_ROUND,
-                    Instant.now().plusSeconds(2), InstantSource.system(), events::publish);
+                    Instant.now().plusSeconds(3), InstantSource.system(), events::publish);
             RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
                     PATIENT, engine, events);
         }

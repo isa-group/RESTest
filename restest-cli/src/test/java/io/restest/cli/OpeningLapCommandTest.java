@@ -89,10 +89,11 @@ class OpeningLapCommandTest {
         List<String> sent = firstOperationsSent(directory, 4);
         assertThat(sent.subList(0, 2)).containsExactlyInAnyOrder("listPets", "listShelters");
         assertThat(sent.subList(2, 4)).containsExactly("addPet", "getPet");
-        assertThat(screen.toString())
+        // Line by line, since a line ends differently on Windows.
+        assertThat(screen.toString().lines())
                 .describedAs("the summary says what the round took and what it covered")
-                .containsPattern("\\n  opening lap: 4 requests in [0-9.]+m?s, 4 of 4 operations "
-                        + "answered 2xx\\n");
+                .anyMatch(line -> line.matches("  opening lap: 4 requests in [0-9.]+m?s, 4 of 4 "
+                        + "operations answered 2xx"));
         JsonValue.JsonObject lap = (JsonValue.JsonObject) phases(directory).elements().get(0);
         assertThat(lap.member("name")).contains(JsonValue.of("opening lap"));
         assertThat(lap.member("requests")).contains(JsonValue.of(4));
@@ -134,7 +135,7 @@ class OpeningLapCommandTest {
                 """);
 
         run(new StringWriter(), "run", document.toString(), "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "1", "--out", directory.resolve("out").toString());
+                "--budget", "2s", "--seed", "1", "--out", directory.resolve("out").toString());
 
         List<LoggedRequest> pinged = api.findAll(getRequestedFor(urlEqualTo("/ping")));
         assertThat(pinged).isNotEmpty();

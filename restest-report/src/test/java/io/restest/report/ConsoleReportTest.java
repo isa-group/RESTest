@@ -211,8 +211,13 @@ class ConsoleReportTest {
         report.on(new RunEvent.PhaseFinished(Instant.EPOCH.plusMillis(850), "opening lap", false));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
 
-        assertThat(screen.toString()).contains("2 requests to 2 operations in 10.0s, 30% of it idle\n"
-                + "  opening lap: 2 requests in 850ms, 1 of 2 operations answered 2xx\n");
+        // Compared line by line: the report ends a line the way the machine it runs on does, which
+        // on Windows is not the same character as everywhere else.
+        java.util.List<String> lines = screen.toString().lines().toList();
+        int summary = lines.indexOf("2 requests to 2 operations in 10.0s, 30% of it idle");
+        assertThat(summary).describedAs("the first line of the summary is there").isNotNegative();
+        assertThat(lines.get(summary + 1))
+                .isEqualTo("  opening lap: 2 requests in 850ms, 1 of 2 operations answered 2xx");
     }
 
     @Test
