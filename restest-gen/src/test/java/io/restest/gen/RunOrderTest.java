@@ -22,12 +22,16 @@ import io.restest.core.execution.TestCase;
 import io.restest.core.json.JsonText;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
+import io.restest.core.settings.ScheduleSettings;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +75,56 @@ class RunOrderTest {
             lines.add(written(generator.generate(operation)));
         }
 
+        assertThat(String.join("\n", lines) + "\n").isEqualTo(pinned(lines));
+    }
+
+    @Test
+    @DisplayName("the scheduler, with the first round switched off, sends what the loop always sent")
+    void the_scheduler_without_a_first_round_sends_what_was_always_sent() throws IOException {
+        ApiModel model = petClinic();
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED);
+        ScheduleSettings noFirstRound = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
+                false, Duration.ofSeconds(2));
+        Instant now = Instant.parse("2026-09-23T10:00:00Z");
+        Scheduler scheduler = new Scheduler(generator, noFirstRound, now.plusSeconds(60),
+                InstantSource.fixed(now), announced -> { });
+
+        List<String> lines = new ArrayList<>();
+        while (lines.size() < REQUESTS) {
+            if (scheduler.next() instanceof Scheduler.Step.Send send) {
+                lines.add(written(scheduler.testCaseFor(send)));
+            }
+        }
+
+        assertThat(String.join("\n", lines) + "\n").isEqualTo(pinned(lines));
+    }
+
+    @Test
+    @DisplayName("and with the first round on, what follows the round is still what was always sent")
+    void what_follows_the_first_round_is_what_was_always_sent() throws IOException {
+        ApiModel model = petClinic();
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED);
+        Instant now = Instant.parse("2026-09-23T10:00:00Z");
+        Scheduler scheduler = new Scheduler(generator, ScheduleSettings.defaults(),
+                now.plusSeconds(60), InstantSource.fixed(now), announced -> { });
+
+        // The round draws on numbers of its own, so the ordinary requests after it are the ones a
+        // run without it would have sent. Nothing here has any replies to remember, so the only
+        // thing that could make them differ is the round moving the generator's own numbers on.
+        List<String> lines = new ArrayList<>();
+        int inTheRound = 0;
+        while (lines.size() < REQUESTS) {
+            if (scheduler.next() instanceof Scheduler.Step.Send send) {
+                String line = written(scheduler.testCaseFor(send));
+                if (send.inTheOpeningLap()) {
+                    inTheRound++;
+                } else {
+                    lines.add(line);
+                }
+            }
+        }
+
+        assertThat(inTheRound).isEqualTo(model.operations().size());
         assertThat(String.join("\n", lines) + "\n").isEqualTo(pinned(lines));
     }
 
