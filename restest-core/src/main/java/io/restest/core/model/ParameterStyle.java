@@ -25,9 +25,9 @@ import java.util.Objects;
  * will reject a request written in the other. RESTest needs to be told which style applies, so it is
  * recorded here rather than guessed.
  *
- * <p>The names are OpenAPI's, spelled the way constants are; {@link #written} spells each one the way
- * a document does. Where a document says nothing, {@link #defaultFor} gives the default the format
- * defines.
+ * <p>The names are OpenAPI's, written here in capitals - {@code DEEP_OBJECT} - and {@link #written}
+ * gives the spelling a document uses, {@code deepObject}. Where a document says nothing,
+ * {@link #defaultFor} gives the default the format defines.
  */
 public enum ParameterStyle {
     /** {@code ;name=value}, path only. */
@@ -59,9 +59,9 @@ public enum ParameterStyle {
     }
 
     /**
-     * The style as a description of an API writes it: {@code deepObject} rather than
-     * {@code DEEP_OBJECT}. Anything a person reads names it this way, because it is the word they
-     * will look for in their own document.
+     * The style as OpenAPI 3 writes it: {@code deepObject} rather than {@code DEEP_OBJECT}. The
+     * messages that explain what RESTest made of a description name it this way, because it is the
+     * word a reader searches their document for.
      */
     public String written() {
         return switch (this) {

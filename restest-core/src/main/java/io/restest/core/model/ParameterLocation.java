@@ -64,9 +64,10 @@ public enum ParameterLocation {
     BODY;
 
     /**
-     * The location as a description of an API writes it: {@code query} rather than {@code QUERY}.
-     * Anything a person reads names it this way, because it is the word they will look for in their
-     * own document.
+     * The location as OpenAPI 3 writes it after {@code in:} - {@code query} rather than
+     * {@code QUERY}. The messages that explain what RESTest made of a description name it this way,
+     * because it is the word a reader searches their document for. {@link #BODY}, which OpenAPI 3
+     * never writes there, gives {@code body}.
      */
     public String written() {
         return name().toLowerCase(java.util.Locale.ROOT);
