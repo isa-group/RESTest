@@ -8,8 +8,8 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
-still read true, and the milestones were numbered before the plan was turned round. 72 increments in
-13 milestones: 27 delivered, 18 more in v2.0, 27 after it.
+still read true, and the milestones were numbered before the plan was turned round. 73 increments in
+13 milestones: 28 delivered, 17 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -37,8 +37,8 @@ nothing in them is an increment of its own.
 |---|---|---|---|
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 2.10b moved to 9.1; three rows wait | 10 / 13 |
-| M9 | Reach — every operation the API will answer, answered early | all | 0 / 4 |
+| M2 | Specification fidelity and input generation | 2.10b came back from 9.1 for 2.1; four rows wait | 10 / 14 |
+| M9 | Reach — every operation the API will answer, answered early | all | 1 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 0 / 6 |
@@ -174,7 +174,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.8 ⏭ | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
 | 2.9 ✅ [#321](https://github.com/isa-group/RESTest/pull/321) | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts and is drawn about half the time instead, whatever the count. Of the corpus's 1,420 operations, 232 have four or more optional parameters and 71 have eleven; of the five priority APIs' 150 operations, only three have more than one, so a live measurement on pet-clinic could not show it either way (proved by construction: at most one optional parameter draws identically under both mechanisms) and was not expected to |
 | 2.10a ✅ [#317](https://github.com/isa-group/RESTest/pull/317) | The campaign file (ADR-0023): named strategies with a share of the run, an ordered list of named sources with weighted groups among them, and the operation filter ADR-0013 §6 asks for. The shares and the order that were constants in `RandomTestCaseGenerator`'s constructor move into a file RESTest ships, prints with `--print-campaign` and reads back with `--campaign`. Three of §2's ideas dropped as saying what the structure already said, and §6's `safeOnly` answered by `methods` | Where a run's values come from stops being a decision somebody took once for everybody: it is a file you print, change one line of and hand back — and the source M2.5b adds has somewhere to be asked for |
-| 2.10b → [9.1](#m9--reach) | The scheduler takes the budget: time-keeping moves out of `RunLoop`, and a phase becomes a stretch of the clock rather than a share drawn per request | A share of the budget is honoured as one, rather than on average |
+| 2.10b ⏭ | **A strategy's share honoured as a stretch of the clock** rather than drawn per request. The row's other half - time-keeping moving out of `RunLoop` - was absorbed into 9.1, which built the scheduler; this half came back from it, because it moves none of the competition's measurements and a strategy chosen by the clock would make a run with no memory unrepeatable from its seed ([ADR-0026](docs/adr/0026-what-a-run-sends-first.md) §7) | A share of the budget is honoured as one, rather than on average |
 
 ### Notes
 
@@ -358,9 +358,9 @@ number goes in the pull request. A row whose number is not better is not merged.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 9.1 ▶ | **A scheduler of its own, and an opening lap.** The choice of *what to send next* leaves `RunLoop` and `RandomTestCaseGenerator` and becomes one component that owns the clock (2.10b, absorbed): a strategy's share is a stretch of the budget rather than a draw per request, and the scheduler is the one place that decides which operation, which strategy, and — from 9.3 — which sequence. Its first job is an **opening lap**: before anything is drawn, every operation once, with the request it is most likely to accept — required parameters only, the document's own samples where it writes them — operations that create before operations that read, by method and then by path depth, so that `POST /owners` has answered before `GET /owners/{ownerId}` is tried. Charged to the budget like everything else, and reported as its own phase. One small thing rides along: an operation that declares no 2XX media type gets `Accept: */*`, the one case 2.5a's `Accept` header left out | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards; and the shares a plan writes are honoured as stretches of time rather than on average |
+| 9.1 ✅ [#322](https://github.com/isa-group/RESTest/pull/322) | **A scheduler of its own, and an opening lap.** The choice of *what to send next* left `RunLoop`: a `Scheduler` holds the deadline and the order, and the loop does what it says ([ADR-0026](docs/adr/0026-what-a-run-sends-first.md)). Its first job is an **opening lap**, before anything is drawn: every operation once, with the request it is most likely to accept - the parameters it requires and no others, a body wherever one is described, the plan's own sources asked in turn, a closed list of accepted values first and then what the API has already returned - in five steps, lists, creations, reads of one thing, changes, deletions, each waiting at most `schedule.openingLapPatience` for the answers to the one before to be heard. Charged to the budget, announced as a phase of its own and reported in the summary and in `report.json`; `schedule.openingLap` switches it off. An operation that declares no 2XX media type gets `Accept: */*`. **Three things differ from the row as approved, on the corpus's evidence**: the order goes by step rather than by method and then path depth, a value the API returned ranks above the document's sample, and a body goes wherever one is described rather than only where it is marked required - see the notes. **Not taken**: shares as stretches of time, back in 2.10b for 2.1 | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards. Measured against two containerised APIs restarted before every run, five seeds, a minute each, the lap switched on against off: kafka-rest-proxy had 28.6 operations answered 2XX two seconds in against 14.2, and the area under that curve rose 17%, better on every seed; pet-clinic had 30.8 five seconds in against 19.6, the area up 15%, better on four seeds of five. Both ended the minute higher too: 34.2 operations against 29.6, and 32.2 against 30.8 |
 | 9.2 ▶ | **Identifiers by resource** (the narrow version of 4.1). A path parameter is filled from the identifier of the resource its path names: `{petId}` under `/pets/{petId}` from the `id` of a reply to `GET /pets` or `POST /pets`, `{ownerId}` from `/owners`. By exact name first, which 2.5b already does; then by the resource the preceding path segment names, singular or plural, with or without an `Id`, `_id` or `ID` suffix; every candidate gated on type and declared format; the best few kept even when none is convincing, so no operation is left with nothing to try. No synonym table and no similarity score — those, and the measurement ADR-0017 asks for, stay in 4.1 | The operations behind a path parameter whose name is not the property's name — pet-clinic's `{petId}` against `id`, and most of the corpus — get identifiers that exist instead of invented ones, which is the difference between 404 and 2XX for half of a typical API |
-| 9.3 ▶ | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, recorded as one, the second test case naming the exchange its value came from (which 2.5b's provenance already does). Deletes are sent after the reads and updates of the same lap, not before. This is ADR-0013's rule that a sequence *creates* what it needs, built rather than restated | An API whose identifiers cannot be guessed — kafka-rest-proxy's generated cluster and notebook-manager's posted notebooks — is covered instead of answering 404 for an hour; and the identifier a lap needs is there before the lap needs it |
+| 9.3 ▶ | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, recorded as one, the second test case naming the exchange its value came from (which 2.5b's provenance already does). This is ADR-0013's rule that a sequence *creates* what it needs, built rather than restated | An API whose identifiers cannot be guessed — kafka-rest-proxy's generated cluster and notebook-manager's posted notebooks — is covered instead of answering 404 for an hour; and the identifier a lap needs is there before the lap needs it |
 | 9.4 ▶ | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler keeps, per operation, a count of what it answered. An operation whose last *N* answers were all of the kinds that say *this will never work as asked* — the shipped list is 401, 403, 404, 405 and 501, and the list is a setting — has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, three settings — *N*, the floor and the list — no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
 
 ### Notes
@@ -374,6 +374,33 @@ and the lap cannot be built without something that owns the order requests go ou
 and this is no exception: the lap is the first seconds of the hour, reported as its own phase in the
 summary and in `report.json`, so that a reader knows how long it took and what it covered. The
 competition's clock starts when the container starts; so does ours.
+
+**9.1 — what was built differs from the row as approved, and why.** Reading the priority corpus
+against the row found that 49 of kafka-rest-proxy's 50 operations need a `{cluster_id}` that only
+`GET /v3/clusters` can supply, and that the document's sample for it, `cluster-1`, does not exist.
+Ordering by method and then by depth sends every `POST` before that read, and ranking samples first
+sends `cluster-1` everywhere. On 23 September the maintainer chose five steps - lists, creations,
+reads of one thing, changes, deletions - each waiting for the one before: over a finer grouping by
+how many gaps a path has, judged more mechanism than the gain warrants, and over a simpler four
+steps, reads, creations, changes and deletions, which sends the reads that need a cluster beside the
+read that yields one. And a ranking that puts what the API returned before the document's samples,
+with no switch of its own, since it only differs where the two compete. The body goes wherever one
+is described because most documents never mark one required: 110 `POST` bodies unmarked against 58
+marked, across the corpus. Without its waits the lap had 11 to 18 of kafka-rest-proxy's operations
+answer it rather than 28 to 30. [ADR-0026](docs/adr/0026-what-a-run-sends-first.md) records the
+alternatives and the measurement.
+
+**9.1 — 2.10b's other half went back.** The row absorbed "a phase becomes a stretch of the clock
+rather than a share drawn per request". That half moves none of the competition's measurements and
+would cost a run with no memory its seed, so it went back to 2.10b, for 2.1, and the share is still
+drawn per request.
+
+**9.1 — what 9.3 still owes.** The lap links requests only indirectly, through the memory of values
+kept by name, and only once, at the start. 9.3's producer-then-consumer sequence carries one reply to
+one consumer whenever a consumer needs an identifier nobody has - after a deletion, or where only a
+creation makes one - and 10.3's operators are built on that unit; the lap does neither. The part of
+9.3's text the lap already does, deletes after the reads and updates of the same round, came out of
+9.3's row.
 
 **9.2 — what it is not.** 4.1 is a graph over every parameter, body property and response property
 of every operation, with a similarity score, a synonym table carried as data, and a measurement

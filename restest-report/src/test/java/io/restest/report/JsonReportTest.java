@@ -195,6 +195,48 @@ class JsonReportTest {
         assertThat(report.asText()).isPresent();
     }
 
+    @Test
+    @DisplayName("each stretch of the run is written with how long it took and what it achieved")
+    void each_stretch_of_the_run_is_written() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        io.restest.core.execution.TestCase first = io.restest.core.execution.TestCase.of(
+                io.restest.core.model.OperationId.of("POST /pets"), java.util.List.of());
+        io.restest.core.execution.TestCase second = io.restest.core.execution.TestCase.of(
+                io.restest.core.model.OperationId.of("GET /pets/{petId}"), java.util.List.of());
+        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(new RunEvent.PhaseStarted(WHEN, "opening lap"));
+        report.on(new RunEvent.TestCasePlanned(WHEN, first));
+        report.on(new RunEvent.TestCasePlanned(WHEN, second));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.answering(first, 201)));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.neverAnswering(second)));
+        report.on(new RunEvent.PhaseFinished(WHEN.plusMillis(850), "opening lap", false));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+        JsonValue.JsonArray phases = array(written, "phases");
+        assertThat(phases.elements()).hasSize(1);
+        JsonValue.JsonObject lap = (JsonValue.JsonObject) phases.elements().get(0);
+        assertThat(text(lap, "name")).isEqualTo("opening lap");
+        assertThat(text(lap, "startedAt")).isEqualTo(WHEN.toString());
+        assertThat(text(lap, "finishedAt")).isEqualTo(WHEN.plusMillis(850).toString());
+        assertThat(text(lap, "elapsed")).isEqualTo("PT0.85S");
+        assertThat(lap.member("cutShort")).contains(JsonValue.of(false));
+        assertThat(number(lap, "requests")).isEqualTo(2);
+        assertThat(number(lap, "operations")).isEqualTo(2);
+        assertThat(number(lap, "operationsAnswering2xx")).isEqualTo(1);
+        JsonValue.JsonObject byClass = object(object(lap, "replies"), "byClass");
+        assertThat(number(byClass, "2xx")).isEqualTo(1);
+        assertThat(number(byClass, "noReply")).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a run with no stretch of its own writes an empty list, not nothing")
+    void a_run_without_stretches_writes_an_empty_list() {
+        JsonValue.JsonArray phases = array(run(JsonReport.inMemory(fixedClock())), "phases");
+
+        assertThat(phases.elements()).isEmpty();
+    }
+
     private static JsonValue.JsonObject run(JsonReport report) {
         report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
         report.on(new RunEvent.TestCasePlanned(WHEN,

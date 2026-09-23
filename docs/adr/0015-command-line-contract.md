@@ -583,3 +583,18 @@ line named and the tool could not accept*.
 
 **Nothing else changes.** A run with no settings behaves exactly as it did, since the defaults are
 the constants that were in the code before, and every existing option keeps its meaning.
+
+## Amendment (M9.1)
+
+**Date:** 2026-09-23
+
+**The loop is still not a scheduler, and now there is one.** The M1.7 decision describes the run as
+"a `for` loop and a queue. It is not a scheduler: no weights, no phases, no strategy selection."
+The loop kept its half - the slots, answers dealt with as they arrive, the pause for the reports,
+the drain at the deadline - and asks a `Scheduler` what to send next and when the time is up.
+Answers are still dealt with the moment they arrive. What is new is one deliberate, bounded wait
+before sending: at the start of a run, each step of the first round is sent only once the answers to
+the step before are in and have been heard by the listeners, for at most
+`schedule.openingLapPatience` and never past the deadline. The part of that wait with nothing in
+flight is counted in the idle time like every other pause. The summary gains one line saying what that round took and what it bought,
+and `report.json` a `phases` block. [ADR-0026](0026-what-a-run-sends-first.md).

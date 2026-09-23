@@ -243,3 +243,17 @@ for it, by supplying identifiers that are real *and* varied.
   strength of a unit-level measurement and rejected on the end-to-end one in §8. Kept here because
   the mistake is instructive: the metric that favoured it counted how often the tool quoted the
   document, which is not the same as how much of the API it reached.
+
+---
+
+## Amendment (M9.1)
+
+**Date:** 2026-09-23
+
+**Time-keeping has moved out of `RunLoop`, and the share has not moved with it.** The consequences
+above say moving time-keeping out of the loop is M2.10b. The scheduler of M9.1 now holds the
+deadline, but a strategy's share is still drawn per request and honoured on average: honouring it as
+a stretch of the clock was set aside for 2.1 ([ADR-0026](0026-what-a-run-sends-first.md) §7). The
+plan file does not change. The first round of a run draws on the plan's first strategy that does not
+push at the API, with its groups asked in turn rather than chosen among, and `docs/campaign-format.md`
+says so.

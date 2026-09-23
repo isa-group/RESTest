@@ -38,6 +38,7 @@ import io.restest.core.settings.GenerationSettings;
 import io.restest.core.settings.Settings;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,17 @@ import java.util.stream.Stream;
  * <p>Operations that take a body get one: the shape the document declares is filled in the same way
  * every other value is, so creating and updating things is tested rather than skipped. The body is
  * sent as JSON where the document offers it and as the fields of a web form otherwise.
+ *
+ * <p>It can also build, for any operation, the one request that operation is most likely to accept,
+ * which is what a run sends each operation first. That request carries everything the API requires
+ * and nothing it does not, except a body wherever the document describes one, because an operation
+ * that takes a body rarely works without it whatever the document says. Its values come from the
+ * same sources as an ordinary request, asked one after another instead of chosen among, in the order
+ * most likely to be accepted: the closed list of values the document accepts, where it states one;
+ * then a value the API has already handed back, then a list somebody wrote, then the document's own
+ * sample, then its default, and only then one invented to fit. Building it
+ * draws on numbers of its own, so asking for it changes nothing about the ordinary requests that
+ * follow.
  *
  * <p>Not every operation can be attempted even so, and the ones that cannot are named rather than
  * quietly skipped: one whose parameters are written in a way requests cannot yet be assembled for,
@@ -133,6 +145,12 @@ public final class RandomTestCaseGenerator {
     private final ObservedValues observed;
     private final Campaign campaign;
     private final List<Strategy> strategies;
+
+    /**
+     * How the one request an operation is most likely to accept is filled in, or {@code null} when
+     * the plan has no way of building a request meant to work.
+     */
+    private final Strategy likeliest;
     private final int sharesInTotal;
     private final List<Operation> testable;
     private final Map<OperationId, String> untestable;
@@ -253,6 +271,18 @@ public final class RandomTestCaseGenerator {
                 .findFirst()
                 .orElse(this.strategies.get(0))
                 .values();
+        // The ordinary way of building a request, with its choices turned into a ranking, and a
+        // sequence of numbers of its own. Built from a copy of the seed rather than split off the
+        // generator's own source, since splitting would move that source on and change every
+        // ordinary request after it - the one thing asking for these requests must never do.
+        this.likeliest = campaign.strategies().stream()
+                .filter(planned -> !planned.pushesAtTheApi())
+                .findFirst()
+                .map(planned -> new Strategy(planned.name(), planned.share(), false,
+                        valuesFor(askedInTurn(planned), dictionaries, model,
+                                new SplittableRandom(seed).split(), observed,
+                                settings.generation())))
+                .orElse(null);
 
         List<Operation> canBeTried = new ArrayList<>();
         Map<OperationId, String> cannot = new LinkedHashMap<>();
@@ -421,11 +451,62 @@ public final class RandomTestCaseGenerator {
         return fill(operation);
     }
 
-    private Optional<TestCase> fill(Operation operation) {
-        return fill(operation, nextStrategy());
+    /**
+     * The one request this operation is most likely to accept.
+     *
+     * <p>Everything the API requires and nothing it does not, except a body wherever the document
+     * describes one, since an operation that takes a body rarely works without it whatever the
+     * document says - though not one a {@code GET} or a {@code HEAD} merely accepts, which HTTP
+     * gives no meaning to and which would stop the request going out at all. Each value is taken
+     * from the first of the plan's ordinary sources that has one, in the order most likely to be
+     * accepted: the closed list of values the document accepts, what the API has already handed
+     * back, a list somebody wrote, the document's own sample, its default, and last a value
+     * invented to fit.
+     *
+     * <p>Drawn from numbers of its own, so the ordinary requests that follow are the same whether
+     * this was asked for or not.
+     *
+     * @param operation the operation to build it for
+     * @return the request, or empty if a value the API requires could not be found, if this
+     *     operation cannot be attempted at all, or if the plan has no way of building a request
+     *     meant to work
+     */
+    Optional<TestCase> likeliestRequest(Operation operation) {
+        Objects.requireNonNull(operation, "operation");
+        if (likeliest == null || untestable.containsKey(operation.id())) {
+            return Optional.empty();
+        }
+        return fill(operation, likeliest, Filling.LIKELIEST);
     }
 
-    private Optional<TestCase> fill(Operation operation, Strategy strategy) {
+    /**
+     * Whether this generator can build the request an operation is most likely to accept.
+     *
+     * <p>It cannot when every way the plan builds a request is meant to push at the API, because
+     * then nothing in the plan says where a value anybody believes in would come from.
+     */
+    boolean canBuildTheLikeliestRequest() {
+        return likeliest != null;
+    }
+
+    private Optional<TestCase> fill(Operation operation) {
+        return fill(operation, nextStrategy(), Filling.DRAWN);
+    }
+
+    /** How much of what an operation merely accepts goes into a request. */
+    private enum Filling {
+
+        /** Some of it, decided by chance, as every ordinary request is. */
+        DRAWN,
+
+        /**
+         * None of the optional parameters, and a body wherever one is described, except one a
+         * {@code GET} or a {@code HEAD} merely accepts.
+         */
+        LIKELIEST
+    }
+
+    private Optional<TestCase> fill(Operation operation, Strategy strategy, Filling filling) {
         List<ParameterValue> chosen = new ArrayList<>();
         int optionalRemaining = 0;
         for (Parameter parameter : operation.parameters()) {
@@ -441,7 +522,10 @@ public final class RandomTestCaseGenerator {
         // declared first.) Each optional parameter still to be decided is included with probability
         // exactly however many are still wanted divided by however many are still to be decided,
         // which is what leaves every equally-sized subset equally likely.
-        int stillToInclude = howManyOptionalParametersToInclude(optionalRemaining);
+        // Not drawn at all for the likeliest request, rather than drawn and ignored: drawing would
+        // move the generator's own numbers on, and the ordinary requests after it would change.
+        int stillToInclude = filling == Filling.DRAWN
+                ? howManyOptionalParametersToInclude(optionalRemaining) : 0;
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required()) {
                 boolean include = stillToInclude > 0 && (stillToInclude == optionalRemaining
@@ -465,7 +549,7 @@ public final class RandomTestCaseGenerator {
         if (declared.isEmpty()) {
             return Optional.of(TestCase.of(operation.id(), chosen));
         }
-        Optional<BodyValue> body = body(operation, declared.get(), strategy);
+        Optional<BodyValue> body = body(operation, declared.get(), strategy, filling);
         if (body.isEmpty()) {
             // An API that says it needs a body will refuse a request without one whatever else is
             // in it, so there is nothing to learn from sending it.
@@ -500,15 +584,25 @@ public final class RandomTestCaseGenerator {
     /**
      * The body to send with this request, if one is to be sent at all.
      *
-     * <p>A body the API insists on is always sent. One it merely accepts is left out some of the
-     * time, on its own chance rather than the one deciding how many optional parameters go in,
+     * <p>A body the API insists on is always sent, and so is one the API merely accepts when the
+     * request is the one most likely to be accepted. Otherwise one it merely accepts is left out
+     * some of the time, on its own chance rather than the one deciding how many optional
+     * parameters go in,
      * because an operation behaves differently depending on whether a body arrived, and a tool that
      * always sent one would only ever see one of those behaviours.
      */
     private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
-            Strategy strategy) {
-        if (!declared.required() && random.nextDouble() >= settings.generation().optionalBodyChance()) {
-            return Optional.empty();
+            Strategy strategy, Filling filling) {
+        if (!declared.required()) {
+            // Decided by chance for an ordinary request, and drawn exactly as it always was. For the
+            // likeliest request it is not drawn at all: the body goes, unless the method is one
+            // HTTP gives a body no meaning on, where it would stop the request being sent.
+            boolean leftOut = filling == Filling.DRAWN
+                    ? random.nextDouble() >= settings.generation().optionalBodyChance()
+                    : carriesNoBody(operation.method());
+            if (leftOut) {
+                return Optional.empty();
+            }
         }
         Optional<String> mediaType = RequestBuilder.mediaTypeToSend(declared);
         if (mediaType.isEmpty()) {
@@ -516,6 +610,18 @@ public final class RandomTestCaseGenerator {
         }
         return writableBody(operation, declared, mediaType.get(), strategy.values())
                 .map(value -> new BodyValue(mediaType.get(), value.value(), value.origin()));
+    }
+
+    /**
+     * Whether a request with this method has nowhere to put a body.
+     *
+     * <p>A {@code GET} or a {@code HEAD} with a body is one HTTP gives no meaning to and the client
+     * that sends requests refuses to build, so a body such a request merely accepts is left out of
+     * the request most likely to be accepted rather than being the reason it is never sent.
+     */
+    private static boolean carriesNoBody(io.restest.core.model.HttpMethod method) {
+        return method == io.restest.core.model.HttpMethod.GET
+                || method == io.restest.core.model.HttpMethod.HEAD;
     }
 
     /**
@@ -758,6 +864,52 @@ public final class RandomTestCaseGenerator {
             List<Dictionary> dictionaries) {
         return planned.pushesAtTheApi() && dictionaries.stream()
                 .noneMatch(held -> held.name().equals(PUSHES_AT_THE_API));
+    }
+
+    /**
+     * The same strategy with every group in it asked in turn rather than chosen among, the source
+     * likeliest to give a value the API will accept first.
+     *
+     * <p>Choosing among sources is right for a run that sends thousands of requests, because a
+     * value pinned to one source for a whole run stops being varied. It is wrong for one request
+     * that has one chance, which should simply carry the best value there is. Sources asked on
+     * their own keep the place the plan gave them: the plan's order says what it trusts.
+     */
+    private static Campaign.PlannedStrategy askedInTurn(Campaign.PlannedStrategy planned) {
+        List<Campaign.Entry> inTurn = new ArrayList<>();
+        for (Campaign.Entry entry : planned.sources()) {
+            switch (entry) {
+                case Campaign.Entry.Single single -> inTurn.add(single);
+                case Campaign.Entry.Group group -> group.among().stream()
+                        .map(Campaign.Share::source)
+                        .sorted(Comparator.comparingInt(RandomTestCaseGenerator::trustedFirst))
+                        .forEach(source -> inTurn.add(new Campaign.Entry.Single(source)));
+            }
+        }
+        return new Campaign.PlannedStrategy(planned.name(), planned.share(), inTurn);
+    }
+
+    /**
+     * Where a source comes in the ranking of the likeliest request, lowest first.
+     *
+     * <p>A closed list of accepted values first, because nothing outside it may be sent at all.
+     * Then a value the API itself has handed back, because it names something that exists - an
+     * identifier the API generated when it started, which no document can know, is the case this
+     * ranking exists for. Then a list somebody wrote for this API, then the sample the
+     * document's author wrote down, then the default, and last a value invented to fit the shape.
+     */
+    private static int trustedFirst(Campaign.Source source) {
+        return switch (source) {
+            case Campaign.Source.Builtin builtin -> switch (builtin.which()) {
+                case ENUM -> 0;
+                case OBSERVED -> 1;
+                case EXAMPLE -> 3;
+                case DEFAULT -> 4;
+                case RANDOM -> 5;
+            };
+            case Campaign.Source.OneList ignored -> 2;
+            case Campaign.Source.EveryListGiven ignored -> 2;
+        };
     }
 
     /**
