@@ -39,6 +39,9 @@ import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.restest.core.settings.Settings;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,6 +81,40 @@ class RandomTestCaseGeneratorTest {
             .withRequestBody(RequestBodyModel.ofShapes(true,
                     Map.of("multipart/form-data", ObjectSchema.of(Map.of()))));
 
+    /** Every one of these can be left out; nothing here is ever required. */
+    private static final List<String> FOUR_OPTIONAL_NAMES = List.of("a", "b", "c", "d");
+
+    private static final Operation FOUR_OPTIONAL_PARAMETERS = Operation.of(HttpMethod.GET, "/search",
+            FOUR_OPTIONAL_NAMES.stream()
+                    .map(name -> Parameter.of(name, ParameterLocation.QUERY, false, StringSchema.of()))
+                    .toList());
+
+    /** Two parameters an API insists on, eight it merely accepts, declared in between them. */
+    private static final List<String> EIGHT_OPTIONAL_NAMES =
+            List.of("opt1", "opt2", "opt3", "opt4", "opt5", "opt6", "opt7", "opt8");
+
+    private static final Operation TWO_REQUIRED_EIGHT_OPTIONAL = Operation.of(HttpMethod.GET,
+            "/search", List.of(
+                    Parameter.of("q", ParameterLocation.QUERY, true, StringSchema.of()),
+                    Parameter.of("opt1", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("opt2", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("opt3", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("opt4", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("sort", ParameterLocation.QUERY, true, StringSchema.of()),
+                    Parameter.of("opt5", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("opt6", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("opt7", ParameterLocation.QUERY, false, StringSchema.of()),
+                    Parameter.of("opt8", ParameterLocation.QUERY, false, StringSchema.of())));
+
+    /** Two optional parameters nothing can invent a value for, alongside two ordinary ones. */
+    private static final Operation MIXED_FILLABILITY = Operation.of(HttpMethod.GET, "/search", List.of(
+            Parameter.of("fillableOne", ParameterLocation.QUERY, false, StringSchema.of()),
+            Parameter.of("unfillableOne", ParameterLocation.QUERY, false,
+                    UnsupportedSchema.of("oneOf is not folded in yet")),
+            Parameter.of("fillableTwo", ParameterLocation.QUERY, false, StringSchema.of()),
+            Parameter.of("unfillableTwo", ParameterLocation.QUERY, false,
+                    UnsupportedSchema.of("oneOf is not folded in yet"))));
+
     @Test
     @DisplayName("every parameter the API requires is given a value")
     void required_parameters_are_always_filled_in() {
@@ -103,6 +140,144 @@ class RandomTestCaseGeneratorTest {
         assertThat(sent).describedAs("an API behaves differently depending on which optional "
                         + "parameters arrive, so a run has to try it both ways")
                 .contains(true).contains(false);
+    }
+
+    @Test
+    @DisplayName("the request asking for nothing beyond what is required stops being almost "
+            + "impossible to draw, however many optional parameters an operation offers")
+    void the_required_only_request_is_no_longer_rare() {
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                model(TWO_REQUIRED_EIGHT_OPTIONAL), 20260923L, List.of(),
+                planOf(step(Campaign.Builtin.RANDOM)));
+
+        List<TestCase> draws = IntStream.range(0, 4000)
+                .mapToObj(i -> generator.generate(TWO_REQUIRED_EIGHT_OPTIONAL).orElseThrow())
+                .toList();
+
+        assertThat(draws).describedAs("both parameters the API insists on are never left out, "
+                        + "whatever else is decided about the eight it merely accepts")
+                .allSatisfy(testCase -> {
+                    assertThat(testCase.parameterValue("q", ParameterLocation.QUERY)).isPresent();
+                    assertThat(testCase.parameterValue("sort", ParameterLocation.QUERY)).isPresent();
+                });
+        long requiredOnly = draws.stream()
+                .filter(testCase -> EIGHT_OPTIONAL_NAMES.stream().noneMatch(name -> testCase
+                        .parameterValue(name, ParameterLocation.QUERY).isPresent()))
+                .count();
+        assertThat(requiredOnly).describedAs("with eight optional parameters, deciding each one "
+                        + "with its own independent coin drew this about once in 256 attempts; "
+                        + "deciding how many first draws it about half the time, whatever the "
+                        + "count - out of %d draws, %d carried none of the eight", draws.size(),
+                        requiredOnly)
+                .isBetween(1200L, 2800L);
+    }
+
+    @Test
+    @DisplayName("which optional parameters are chosen does not favour the ones declared first")
+    void which_optional_parameters_are_chosen_is_not_positional() {
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(FOUR_OPTIONAL_PARAMETERS),
+                20260923L, List.of(), planOf(step(Campaign.Builtin.RANDOM)));
+
+        List<TestCase> draws = IntStream.range(0, 4000)
+                .mapToObj(i -> generator.generate(FOUR_OPTIONAL_PARAMETERS).orElseThrow())
+                .toList();
+
+        List<Long> countPerParameter = FOUR_OPTIONAL_NAMES.stream()
+                .map(name -> draws.stream()
+                        .filter(testCase -> testCase.parameterValue(name, ParameterLocation.QUERY)
+                                .isPresent())
+                        .count())
+                .toList();
+
+        assertThat(Collections.max(countPerParameter) - Collections.min(countPerParameter))
+                .describedAs("how often each of the four was included: %s - a mechanism that "
+                        + "settled how many first and then kept adding the earliest-declared ones "
+                        + "would spread these far apart instead of keeping them close",
+                        countPerParameter)
+                .isLessThan(400L);
+    }
+
+    @Test
+    @DisplayName("with no chance of continuing, a request never carries more than what is required")
+    void no_continue_chance_sends_only_what_is_required() {
+        Settings none = Settings.from(Map.of("generation.optionalParameterContinueChance", "0"));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(FOUR_OPTIONAL_PARAMETERS),
+                20260923L, List.of(), planOf(step(Campaign.Builtin.RANDOM)), none);
+
+        assertThat(IntStream.range(0, 50)
+                .mapToObj(i -> generator.generate(FOUR_OPTIONAL_PARAMETERS).orElseThrow()))
+                .allSatisfy(testCase -> assertThat(FOUR_OPTIONAL_NAMES).noneMatch(name -> testCase
+                        .parameterValue(name, ParameterLocation.QUERY).isPresent()));
+    }
+
+    @Test
+    @DisplayName("with every optional parameter a candidate, one nothing can fill a value for is "
+            + "still left out silently rather than failing the request")
+    void full_continue_chance_still_drops_what_cannot_be_filled() {
+        Settings all = Settings.from(Map.of("generation.optionalParameterContinueChance", "1"));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(MIXED_FILLABILITY),
+                20260923L, List.of(), planOf(step(Campaign.Builtin.RANDOM)), all);
+
+        assertThat(IntStream.range(0, 50)
+                .mapToObj(i -> generator.generate(MIXED_FILLABILITY).orElseThrow()))
+                .allSatisfy(testCase -> {
+                    assertThat(testCase.parameterValue("fillableOne", ParameterLocation.QUERY))
+                            .isPresent();
+                    assertThat(testCase.parameterValue("fillableTwo", ParameterLocation.QUERY))
+                            .isPresent();
+                    assertThat(testCase.parameterValue("unfillableOne", ParameterLocation.QUERY))
+                            .isEmpty();
+                    assertThat(testCase.parameterValue("unfillableTwo", ParameterLocation.QUERY))
+                            .isEmpty();
+                });
+    }
+
+    @Test
+    @DisplayName("how many optional parameters are included follows the intended distribution, not "
+            + "merely something else that happens to send none of them about as often")
+    void the_full_distribution_of_how_many_matches_what_was_intended() {
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(FOUR_OPTIONAL_PARAMETERS),
+                20260923L, List.of(), planOf(step(Campaign.Builtin.RANDOM)));
+
+        long[] howManyIncluded = new long[FOUR_OPTIONAL_NAMES.size() + 1];
+        for (int draw = 0; draw < 8000; draw++) {
+            TestCase testCase = generator.generate(FOUR_OPTIONAL_PARAMETERS).orElseThrow();
+            int included = (int) FOUR_OPTIONAL_NAMES.stream()
+                    .filter(name -> testCase.parameterValue(name, ParameterLocation.QUERY).isPresent())
+                    .count();
+            howManyIncluded[included]++;
+        }
+
+        // Deciding each of the four independently, at whatever single rate happens to send none
+        // of them about half the time too, would come out as roughly 2,750 / 3,350 / 1,550 / 350 /
+        // 20 here instead - closer on some of these than a size drawn one at a time would suggest,
+        // which is exactly why the first two counts, not just the share sending none, are what
+        // tells the two apart.
+        assertThat(howManyIncluded[0]).describedAs("none of the four, out of 8000 draws: %s",
+                        Arrays.toString(howManyIncluded))
+                .isBetween(3600L, 4400L);
+        assertThat(howManyIncluded[1]).describedAs("exactly one of the four, out of 8000 draws: %s",
+                        Arrays.toString(howManyIncluded))
+                .isBetween(1600L, 2400L);
+    }
+
+    @Test
+    @DisplayName("whether an optional body is sent follows its own setting, not the one deciding "
+            + "how many optional parameters go in")
+    void the_optional_body_chance_is_independent_of_the_parameter_count_chance() {
+        Operation search = Operation.of(HttpMethod.POST, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(
+                        Map.of("term", StringSchema.of())), false));
+        Settings neverBodyAlwaysParameters = Settings.from(Map.of(
+                "generation.optionalBodyChance", "0",
+                "generation.optionalParameterContinueChance", "1"));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(search), 20260923L,
+                List.of(), planOf(step(Campaign.Builtin.RANDOM)), neverBodyAlwaysParameters);
+
+        assertThat(IntStream.range(0, 50).mapToObj(i -> generator.generate(search).orElseThrow()))
+                .describedAs("the body's own chance is at 0 and the parameter count's is at 1 - if "
+                        + "body() read the wrong one, every request here would carry a body")
+                .allSatisfy(testCase -> assertThat(testCase.body()).isEmpty());
     }
 
     @Test

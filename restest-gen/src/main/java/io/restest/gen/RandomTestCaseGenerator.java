@@ -54,7 +54,10 @@ import java.util.stream.Stream;
  * out which operations it can attempt at all, and for each attempt it fills in every parameter the
  * API requires. Optional parameters are included some of the time and left out the rest, because an
  * API behaves differently depending on which of them arrive and a tool that always sent all of them
- * would only ever see one of those behaviours.
+ * would only ever see one of those behaviours. How many of them arrive on any one request is decided
+ * before which ones are, and decided to favour few: the request that asks for nothing beyond what
+ * the API strictly requires stays one this sends often, whatever else the operation happens to
+ * offer, rather than one that becomes rarer the more of them there are to choose from.
  *
  * <p>Where the values come from is not decided here any more. A <em>plan</em> says it - which
  * sources are asked, in what order, which of them are chosen among rather than ranked, how much of
@@ -423,9 +426,31 @@ public final class RandomTestCaseGenerator {
 
     private Optional<TestCase> fill(Operation operation, Strategy strategy) {
         List<ParameterValue> chosen = new ArrayList<>();
+        int optionalRemaining = 0;
         for (Parameter parameter : operation.parameters()) {
-            if (!parameter.required() && random.nextDouble() >= settings.generation().optionalParameterChance()) {
-                continue;
+            if (!parameter.required()) {
+                optionalRemaining++;
+            }
+        }
+        // Which ones, given how many: chosen one pass through the operation's own declared order,
+        // so that every subset of that size is exactly as likely as any other - not just a prefix
+        // of it. (A single running "keep going?" flag that stops for good at the first "no" would
+        // also favour small counts, but could only ever produce a prefix - never {B} alone, never
+        // {A, C} without {B} - which would quietly favour whichever parameters happen to be
+        // declared first.) Each optional parameter still to be decided is included with probability
+        // exactly however many are still wanted divided by however many are still to be decided,
+        // which is what leaves every equally-sized subset equally likely.
+        int stillToInclude = howManyOptionalParametersToInclude(optionalRemaining);
+        for (Parameter parameter : operation.parameters()) {
+            if (!parameter.required()) {
+                boolean include = stillToInclude > 0 && (stillToInclude == optionalRemaining
+                        || random.nextDouble() < (double) stillToInclude / optionalRemaining);
+                optionalRemaining--;
+                if (include) {
+                    stillToInclude--;
+                } else {
+                    continue;
+                }
             }
             Optional<GeneratedValue> value = strategy.values().offer(ask(operation, parameter));
             if (value.isPresent()) {
@@ -450,15 +475,38 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
+     * How many of an operation's optional parameters this request includes.
+     *
+     * <p>Drawn before any of them are chosen individually. Starts at zero, and whether to add one
+     * more - the first as much as any later one - is its own chance, asked again after every one
+     * added, so the count may stop anywhere from zero up to how many there are. That chance is
+     * more often no than yes, which is what keeps the request asking for nothing but what the API
+     * insists on a request this sends often, whatever else the operation offers - rather than one
+     * it all but never reaches once there are several such things to decide.
+     *
+     * @param howManyThereAre how many optional parameters the operation has
+     * @return how many of them this request will try to include, never more than that
+     */
+    private int howManyOptionalParametersToInclude(int howManyThereAre) {
+        int howManyToInclude = 0;
+        while (howManyToInclude < howManyThereAre
+                && random.nextDouble() < settings.generation().optionalParameterContinueChance()) {
+            howManyToInclude++;
+        }
+        return howManyToInclude;
+    }
+
+    /**
      * The body to send with this request, if one is to be sent at all.
      *
-     * <p>A body the API insists on is always sent. One it merely accepts is sent as often as an
-     * optional parameter is included, because an operation behaves differently depending on whether
-     * a body arrived, and a tool that always sent one would only ever see one of those behaviours.
+     * <p>A body the API insists on is always sent. One it merely accepts is left out some of the
+     * time, on its own chance rather than the one deciding how many optional parameters go in,
+     * because an operation behaves differently depending on whether a body arrived, and a tool that
+     * always sent one would only ever see one of those behaviours.
      */
     private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
             Strategy strategy) {
-        if (!declared.required() && random.nextDouble() >= settings.generation().optionalParameterChance()) {
+        if (!declared.required() && random.nextDouble() >= settings.generation().optionalBodyChance()) {
             return Optional.empty();
         }
         Optional<String> mediaType = RequestBuilder.mediaTypeToSend(declared);

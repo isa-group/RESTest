@@ -9,7 +9,7 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
 still read true, and the milestones were numbered before the plan was turned round. 72 increments in
-13 milestones: 26 delivered, 19 more in v2.0, 27 after it.
+13 milestones: 27 delivered, 18 more in v2.0, 27 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -37,7 +37,7 @@ nothing in them is an increment of its own.
 |---|---|---|---|
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 2.9; 2.10b moved to 9.1; three rows wait | 9 / 13 |
+| M2 | Specification fidelity and input generation | 2.10b moved to 9.1; three rows wait | 10 / 13 |
 | M9 | Reach — every operation the API will answer, answered early | all | 0 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
@@ -172,7 +172,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.7b ⏭ | Dictionary writer and disk cache. **Not taken in its numbered place:** it waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8. Skip it and go on to 2.8 | Good values computed once are kept, rather than worked out again every run |
 | 2.7c ✅ [#315](https://github.com/isa-group/RESTest/pull/315) | **A dictionary reaches inside a request body** (ADR-0020, amended): a place is named by the way down to it — `body.owner.email`, `body.tags[].label` — and the same ordered list of sources that fills a parameter now fills every piece of a body. An operation answers to its `operationId` **or** to `GET /pets/{petId}`, so a file can be written from the specification with no reasoning about which. Every entry that could never be used is named when the file is read, before a request is sent. **Taken out of order, before 2.5b**, which is built on the keyings this fixes | About half of what anybody writes in a dictionary stops being ignored: of the 553 places the priority corpus has, a list could fill 247 and now fills 435 — 415 of them end to end — while the other 118 are ones the document settles by itself, which the run now says out loud. A file generated from an OpenAPI document — the way most of them will be — is checked against that document before any API is touched |
 | 2.8 ⏭ | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
-| 2.9 ▶ | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
+| 2.9 ✅ [#321](https://github.com/isa-group/RESTest/pull/321) | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts and is drawn about half the time instead, whatever the count. Of the corpus's 1,420 operations, 232 have four or more optional parameters and 71 have eleven; of the five priority APIs' 150 operations, only three have more than one, so a live measurement on pet-clinic could not show it either way (proved by construction: at most one optional parameter draws identically under both mechanisms) and was not expected to |
 | 2.10a ✅ [#317](https://github.com/isa-group/RESTest/pull/317) | The campaign file (ADR-0023): named strategies with a share of the run, an ordered list of named sources with weighted groups among them, and the operation filter ADR-0013 §6 asks for. The shares and the order that were constants in `RandomTestCaseGenerator`'s constructor move into a file RESTest ships, prints with `--print-campaign` and reads back with `--campaign`. Three of §2's ideas dropped as saying what the structure already said, and §6's `safeOnly` answered by `methods` | Where a run's values come from stops being a decision somebody took once for everybody: it is a file you print, change one line of and hand back — and the source M2.5b adds has somewhere to be asked for |
 | 2.10b → [9.1](#m9--reach) | The scheduler takes the budget: time-keeping moves out of `RunLoop`, and a phase becomes a stretch of the clock rather than a share drawn per request | A share of the budget is honoured as one, rather than on average |
 
@@ -299,13 +299,24 @@ run. Not by waiting for M6.2's overhead regression test, which lands much later 
 tool's overall per-request overhead, not any one extension point.
 
 **2.9 — last in the table, dependent on nothing in it, and owed to ADR-0017.** It can be taken
-whenever, and what makes it worth taking early is this: `RandomTestCaseGenerator` decides each
+whenever, and what makes it worth taking early is this: `RandomTestCaseGenerator` decided each
 optional parameter with its own coin at one half, so for an operation with *n* of them the request
-carrying only what the API requires — the one most likely to be accepted — is drawn about once in 2ⁿ
-attempts. Eight optional parameters is once in 256. It is nominal generation rather than a
-deliberate violation, so it is not 2.3's subject. Whoever takes it measures the effect on how
-quickly operations are covered rather than assuming it: ADR-0017 is explicit that the assumption is
-untested, and being wrong about it is the cheapest thing in M2 to find out.
+carrying only what the API requires — the one most likely to be accepted — was drawn about once in 2ⁿ
+attempts. Eight optional parameters was once in 256. It is nominal generation rather than a
+deliberate violation, so it is not 2.3's subject.
+
+Measured rather than assumed, as ADR-0017 asks: of the corpus's 1,420 operations, 232 have four or
+more optional parameters and 71 have exactly eleven — where the old mechanism was worst, since an
+operation with eleven used to include each one 50% of the time and the required-only request about
+once in 2,048 attempts. Of the five priority APIs' 150 operations, only three have more than one
+optional parameter at all — flight-search's `scrape` (2), kafka-rest-proxy's `getKafkaAcls` (7) and
+`deleteKafkaAcls` (3) — so a live measurement against a restarted containerised pet-clinic, five
+seeds, showed a wash (27.8 operations answering 2XX before this row, 26.4 after, within the noise of
+a 30-second budget): pet-clinic has exactly one operation with any optional parameter, which draws
+identically either way by construction, so it could not have shown a difference. Kafka-rest-proxy is
+the one priority API this row has room to matter on; measuring it live needs a Kafka broker behind
+the REST proxy, which was not attempted here (recorded in [#321](https://github.com/isa-group/RESTest/pull/321)'s "Decisions
+taken" rather than assumed away).
 
 **2.10 — finishes what 2.7a started, and has to make its own case for weights now.** A weighted
 group divides one value between the sources that answered for it, so it needs two sources that
