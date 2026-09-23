@@ -39,6 +39,7 @@ import io.restest.spec.SwaggerSpecificationParser;
 import io.restest.store.SqliteInteractionStore;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -378,8 +379,15 @@ final class RunCommand implements Callable<Integer> {
         Settings settings = configuration.settings();
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
-        ConsoleReport console =
-                ConsoleReport.to(out, generator.sourcesThatPushAtTheApi(), settings.report());
+        // What this command has to say about the run before it begins - the count, the seed, the
+        // budget, what could not be read - is handed to the report that owns the screen while the
+        // run lasts, and printed by it under the line naming the API. Printed from here, it was
+        // written alongside that line rather than after it, and the two reached the screen in
+        // either order, now and then one inside the other: one command explaining itself two ways.
+        StringWriter introduction = new StringWriter();
+        describe(new PrintWriter(introduction), model, generator, configuration, testable.size());
+        ConsoleReport console = ConsoleReport.to(out, generator.sourcesThatPushAtTheApi(),
+                settings.report(), introduction.toString());
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;
@@ -414,7 +422,6 @@ final class RunCommand implements Callable<Integer> {
                 drained.subscribe(JsonReport.to(reportFile, configuration));
 
                 drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address));
-                describe(out, model, generator, configuration, testable.size());
 
                 try {
                     // Every operation this run will never try, and why, announced before anything

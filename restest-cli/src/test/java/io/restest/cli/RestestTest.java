@@ -95,6 +95,29 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("a run's first lines come out whole and in one order, however often it is run")
+    void the_first_lines_of_a_run_come_out_in_one_order(@TempDir Path directory) {
+        // Many times over, because what this guards against is two writers on one screen. With the
+        // count written by the command and the line above it by the report, about half the runs of
+        // one command in one program printed the count first, and now and then one line landed
+        // inside the other. The budget is spent before a request could go out, so each run is over
+        // in moments and asks the network nothing - on every system alike.
+        for (int again = 1; again <= 40; again++) {
+            StringWriter seen = new StringWriter();
+            PrintWriter out = new PrintWriter(seen);
+            Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", "http://127.0.0.1:1",
+                    "--budget", "1ms", "--seed", "20260923", "--out", directory.toString()},
+                    out, new PrintWriter(new StringWriter()));
+            out.flush();
+
+            assertThat(seen.toString().lines().limit(3))
+                    .describedAs("run %d of the same command", again)
+                    .containsExactly("RESTest testing Pet Shelter at http://127.0.0.1:1", "",
+                            "4 of 4 operations can be tested, seed 20260923, budget 1ms");
+        }
+    }
+
+    @Test
     @DisplayName("an API served from under a directory is tested there, not at the top of its server")
     void the_directory_the_document_declares_is_where_the_requests_go(@TempDir Path directory) {
         // Only under the directory. Anything asked for anywhere else on this server is answered the
@@ -345,11 +368,10 @@ class RestestTest {
                 "--out", directory.toString());
 
         assertThat(answer).describedAs("an operation that had to be skipped is not an error").isZero();
-        // Looked for anywhere on the screen rather than as a line of its own: the lines a run
-        // begins with are written by two threads, and one can land inside the other's line.
-        assertThat(screen.toString())
-                .contains("1 of 4 operations can be tested, seed 20260923, budget 1s");
         List<String> lines = screen.toString().lines().toList();
+        assertThat(lines.subList(0, 3)).containsExactly(
+                "RESTest testing Pet Shop at " + api.baseUrl(), "",
+                "1 of 4 operations can be tested, seed 20260923, budget 1s");
         int verdict = lines.indexOf("no faults found");
         assertThat(verdict).describedAs("the verdict is there").isNotNegative();
         assertThat(lines.subList(verdict + 1, lines.size()))
