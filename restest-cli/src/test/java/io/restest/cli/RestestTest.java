@@ -290,10 +290,11 @@ class RestestTest {
 
         assertThat(answer).isEqualTo(3);
         assertThat(problems.toString())
-                .describedAs("the API at this address is running; what stands in the way is the "
-                        + "document asking for something no request can carry")
+                .describedAs("the API at this address is running; what stands in the way is a "
+                        + "body RESTest cannot send with a GET")
                 .contains("none of the 1 operations in the document can be tested; the first "
-                        + "says: it requires a request body, and a GET request cannot carry one")
+                        + "says: it requires a request body, and RESTest cannot send one with a GET "
+                        + "request")
                 .doesNotContain("Check the address");
         assertThat(directory.resolve("report.json"))
                 .describedAs("nothing was attempted, so there is no run to report")

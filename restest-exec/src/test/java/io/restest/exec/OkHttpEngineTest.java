@@ -320,8 +320,8 @@ class OkHttpEngineTest {
     }
 
     @Test
-    @DisplayName("a GET or a HEAD carrying a body never leaves the machine, which is why no test "
-            + "case asks for one")
+    @DisplayName("a GET or a HEAD carrying a body never leaves the machine: the client refuses to "
+            + "build it")
     void a_body_on_a_get_or_a_head_is_never_sent() {
         for (HttpMethod method : List.of(HttpMethod.GET, HttpMethod.HEAD)) {
             Interaction interaction = engine.send(Requests.testCase(method, "/widgets/search"),
@@ -331,14 +331,14 @@ class OkHttpEngineTest {
             assertThat(interaction.outcome().toString()).contains("could not be assembled");
         }
         assertThat(api.getAllServeEvents())
-                .describedAs("refused by the client that sends requests, before the API heard "
-                        + "anything - so the rule that keeps these requests from being built has "
-                        + "to live where requests are built")
+                .describedAs("refused before the API heard anything. This is the rule the part "
+                        + "that decides which operations can be tested copies, and the test that "
+                        + "fails first if the client ever changes it")
                 .isEmpty();
     }
 
     @Test
-    @DisplayName("a DELETE may carry a body, which is where that rule stops")
+    @DisplayName("a DELETE carrying a body is sent with it, which is where that rule stops")
     void a_body_on_a_delete_is_sent() {
         api.stubFor(delete(urlEqualTo("/widgets/7")).willReturn(aResponse().withStatus(204)));
 
@@ -346,7 +346,10 @@ class OkHttpEngineTest {
                 Requests.json(HttpMethod.DELETE, url("/widgets/7"), "{\"reason\":\"sold\"}"));
 
         assertThat(interaction.response().orElseThrow().statusCode()).isEqualTo(204);
-        assertThat(interaction.request().body()).isPresent();
+        api.verify(com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor(
+                        urlEqualTo("/widgets/7"))
+                .withRequestBody(com.github.tomakehurst.wiremock.client.WireMock
+                        .equalToJson("{\"reason\":\"sold\"}")));
     }
 
     @Test

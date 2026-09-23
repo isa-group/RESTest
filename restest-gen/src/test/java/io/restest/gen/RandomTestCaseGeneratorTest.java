@@ -439,9 +439,9 @@ class RandomTestCaseGeneratorTest {
         assertThat(generator.untestableOperations())
                 .containsOnlyKeys(search.id(), probe.id())
                 .containsEntry(search.id(),
-                        "it requires a request body, and a GET request cannot carry one")
+                        "it requires a request body, and RESTest cannot send one with a GET request")
                 .containsEntry(probe.id(),
-                        "it requires a request body, and a HEAD request cannot carry one");
+                        "it requires a request body, and RESTest cannot send one with a HEAD request");
         assertThat(generator.generate(search))
                 .describedAs("the client that sends requests refuses to build a GET with a body, "
                         + "so a test case for one would be thrown away before it left the machine")
@@ -449,24 +449,9 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("a GET that insists on a body is told the reason that stays true, not a limit a "
-            + "later version may lift")
-    void a_get_insisting_on_a_body_is_told_the_lasting_reason() {
-        Operation upload = Operation.of(HttpMethod.GET, "/pets/photo")
-                .withRequestBody(RequestBodyModel.ofShapes(true,
-                        Map.of("multipart/form-data", ObjectSchema.of(Map.of()))));
-
-        assertThat(generatorFor(upload).untestableOperations())
-                .describedAs("a file upload may be written one day; a GET will still have no room "
-                        + "for it")
-                .containsEntry(upload.id(),
-                        "it requires a request body, and a GET request cannot carry one");
-    }
-
-    @Test
-    @DisplayName("an operation that can never be sent costs the others nothing: they are tested "
-            + "exactly as they would be without it")
-    void an_operation_that_can_never_be_sent_draws_nothing() {
+    @DisplayName("an operation RESTest cannot send costs the others nothing: they are tested exactly "
+            + "as they would be without it")
+    void an_operation_that_cannot_be_sent_draws_nothing() {
         Operation search = Operation.of(HttpMethod.GET, "/pets/search")
                 .withRequestBody(RequestBodyModel.json(
                         ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")), true));
@@ -488,13 +473,18 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("a GET that merely accepts a body is still tested")
-    void a_get_merely_accepting_a_body_is_tested() {
+    @DisplayName("a GET that merely accepts a body is still counted among the operations that can be "
+            + "tested")
+    void a_get_merely_accepting_a_body_is_still_counted_testable() {
         Operation search = Operation.of(HttpMethod.GET, "/pets/search")
                 .withRequestBody(RequestBodyModel.json(
                         ObjectSchema.of(Map.of("name", StringSchema.of())), false));
         RandomTestCaseGenerator generator = generatorFor(search);
 
+        // Counted, and rightly: a request without that body is one the document allows. What this
+        // does not say is that every request for it goes without the body. An ordinary request
+        // still draws it, on the same chance as any body an operation merely accepts, and the
+        // client refuses each request that carries it - a known gap, left for a change of its own.
         assertThat(generator.testableOperations()).containsExactly(search);
         assertThat(generator.untestableOperations()).isEmpty();
     }

@@ -1,12 +1,13 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Pet Search
   version: 1.0.0
   description: >
-    One operation, and one no request can carry: a search that insists on a body although it is a
-    GET. HTTP gives a body on a GET no meaning, and the client RESTest sends requests with refuses
-    to build one, so RESTest names it as an operation it cannot test instead of trying it for the
-    whole run and blaming the address when nothing ever answers.
+    One operation, and one RESTest cannot send: a search that insists on a body although it is a
+    GET. OpenAPI 3.1 permits a body there, and HTTP gives it no agreed meaning; the client RESTest
+    sends requests with refuses to build such a request at all. So RESTest names it as an operation
+    it cannot test, instead of trying it for the whole run and blaming the address when nothing ever
+    answers.
 paths:
   /pets/search:
     get:

@@ -54,10 +54,11 @@ import org.junit.jupiter.api.Test;
  * included: both of those documents say the body may be left out, so those operations are tested
  * without one.
  *
- * <p>One more count is pinned because it is zero. A {@code GET} or a {@code HEAD} has no room for a
- * body, and an operation that insists on one there is named as untestable rather than tried for the
- * whole run. No operation in the corpus even offers a body on either method, so that rule has never
- * had a case here to act on - and a document that adds one will say so by changing the number.
+ * <p>One more count is pinned because it is zero. The client that sends requests refuses to build a
+ * {@code GET} or a {@code HEAD} carrying a body, so an operation that insists on one there is named
+ * as untestable rather than tried for the whole run. No operation in the corpus even offers a body
+ * on either method, so that rule has never had a case here to act on - and a document that adds one
+ * will say so by changing the number.
  */
 class RequestBodiesAcrossTheCorpusTest {
 
@@ -145,7 +146,7 @@ class RequestBodiesAcrossTheCorpusTest {
     }
 
     @Test
-    @DisplayName("no operation in the corpus insists on a body where a request has no room for one")
+    @DisplayName("no operation in the corpus insists on a body on a GET or a HEAD")
     void no_operation_asks_for_a_body_on_a_get_or_a_head() {
         int looked = 0;
         List<String> offering = new ArrayList<>();
@@ -168,7 +169,7 @@ class RequestBodiesAcrossTheCorpusTest {
                     }
                 }
                 if (generator.untestableOperations().getOrDefault(operation.id(), "")
-                        .endsWith("request cannot carry one")) {
+                        .contains("RESTest cannot send one with a")) {
                     turnedAway.add(named);
                 }
             }
@@ -180,8 +181,8 @@ class RequestBodiesAcrossTheCorpusTest {
                         + "been read at all")
                 .isEqualTo(792);
         assertThat(turnedAway)
-                .describedAs("the operations turned away because their method has no room for a "
-                        + "body are exactly the ones that insist on one there")
+                .describedAs("the operations turned away because RESTest cannot send a body with "
+                        + "their method are exactly the ones that insist on one there")
                 .containsExactlyElementsOf(insisting);
         assertThat(insisting)
                 .describedAs("a GET or a HEAD that insists on a body - none in the corpus, measured "
