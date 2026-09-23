@@ -414,6 +414,14 @@ final class RunCommand implements Callable<Integer> {
                 drained.subscribe(JsonReport.to(reportFile, configuration));
 
                 drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address));
+                // Every operation this run will never try, and why, announced before anything is
+                // sent and in the order the document declares them, which is the order the
+                // generator keeps them in - so every report names them, and names them the same
+                // way each time the same command is run. The count below includes them; the names
+                // reach a person only through the reports, like everything else a run finds out.
+                Instant decided = Instant.now();
+                generator.untestableOperations().forEach((operation, reason) ->
+                        drained.publish(new RunEvent.OperationSkipped(decided, operation, reason)));
                 describe(out, model, generator, configuration, testable.size());
 
                 try {

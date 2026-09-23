@@ -417,6 +417,32 @@ class EventStreamTest {
                 .isThrownBy(() -> new RunEvent.PhaseFinished(Instant.EPOCH, "", true));
     }
 
+    @Test
+    @DisplayName("an operation that will not be tried is heard in the order it was announced, and "
+            + "always with a reason")
+    void a_skipped_operation_is_heard_in_order_and_says_why() {
+        List<String> heard = new CopyOnWriteArrayList<>();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.OperationSkipped skipped) {
+                    heard.add(skipped.operation().value());
+                }
+            });
+            // Not in alphabetical order, so that an order made up on the way would show.
+            events.publish(new RunEvent.OperationSkipped(Instant.EPOCH, OperationId.of("uploadPhoto"),
+                    "it requires a request body sent as multipart/form-data"));
+            events.publish(new RunEvent.OperationSkipped(Instant.EPOCH, OperationId.of("filterPets"),
+                    "the parameter 'filter' is written in the 'deepObject' style"));
+        }
+
+        assertThat(heard).containsExactly("uploadPhoto", "filterPets");
+        assertThatIllegalArgumentException()
+                .describedAs("a report prints the reason, and a blank one explains nothing")
+                .isThrownBy(() -> new RunEvent.OperationSkipped(Instant.EPOCH,
+                        OperationId.of("uploadPhoto"), " "));
+    }
+
     private static void sleep(Duration length) {
         try {
             Thread.sleep(length);

@@ -24,6 +24,8 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.restest.core.json.JsonText;
+import io.restest.core.json.JsonValue;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -320,6 +322,58 @@ class RestestTest {
                         + "that got no reply; there should be none")
                 .doesNotContain("no reply");
         api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/pets/search")));
+    }
+
+    @Test
+    @DisplayName("a run that can test some operations names the ones it cannot, and why, on the "
+            + "screen and in its report, in the order the document declares them and the same way "
+            + "every time")
+    void the_operations_a_run_cannot_try_are_named_on_the_screen_and_in_the_report(
+            @TempDir Path directory) throws Exception {
+        List<String> named = List.of(
+                "  uploadPhoto: it requires a request body, and the only way it is offered is "
+                        + "multipart/form-data, which cannot be written yet",
+                "  searchPets: it requires a request body, and RESTest cannot send one with a GET "
+                        + "request",
+                "  filterPets: the parameter 'filter' is written in the 'DEEP_OBJECT' style, which "
+                        + "is not assembled yet");
+
+        // The same command twice, each held to the same lines: explaining itself one way today and
+        // another way tomorrow is how a transcript in a bug report stops matching the tool.
+        for (String which : List.of("first", "second")) {
+            screen.getBuffer().setLength(0);
+            Path out = directory.resolve(which);
+            int answer = run("run", "pet-shop-with-operations-it-cannot-try.yaml",
+                    "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
+                    "--out", out.toString());
+
+            assertThat(answer)
+                    .describedAs("an operation that had to be skipped is not an error")
+                    .isZero();
+            List<String> lines = screen.toString().lines().toList();
+            assertThat(lines).contains("1 of 4 operations can be tested, seed 20260923, budget 1s");
+            int verdict = lines.indexOf("no faults found");
+            assertThat(verdict).describedAs("the %s run's verdict is there", which).isNotNegative();
+            assertThat(lines.subList(verdict + 1, lines.size()))
+                    .describedAs("the %s run names what it skipped straight after its verdict",
+                            which)
+                    .startsWith("3 operations could not be tested:", named.get(0), named.get(1),
+                            named.get(2));
+
+            JsonValue.JsonObject report = (JsonValue.JsonObject) JsonText.read(
+                    Files.readString(out.resolve("report.json")));
+            List<JsonValue.JsonObject> skipped =
+                    ((JsonValue.JsonArray) report.member("skippedOperations").orElseThrow())
+                            .elements().stream().map(JsonValue.JsonObject.class::cast).toList();
+            assertThat(skipped)
+                    .describedAs("the %s run's report says the same, operation by operation", which)
+                    .extracting(each -> "  " + text(each, "operation") + ": " + text(each, "reason"))
+                    .containsExactlyElementsOf(named);
+        }
+    }
+
+    private static String text(JsonValue.JsonObject parent, String name) {
+        return ((JsonValue.JsonString) parent.member(name).orElseThrow()).value();
     }
 
     @Test

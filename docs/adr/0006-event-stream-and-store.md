@@ -484,3 +484,39 @@ to the step before have been taken in by whoever keeps what the API returns - an
 still waiting cannot answer that safely, because a listener that announces something while it is
 being told something can make the count come out even with the last reply still queued. The record
 is [ADR-0026](0026-what-a-run-sends-first.md).
+
+## Amendment (naming what a run skips)
+
+**Date:** 2026-09-23
+
+**What a run cannot test is announced, and both reports name it.** `RunEvent` gains
+`OperationSkipped`: one per operation of the document that the run will not try, with the reason,
+announced by the command straight after `RunStarted` and before anything is sent, in the order the
+document declares the operations. [ADR-0007](0007-specification-parser-boundary.md) promised from
+the start that "the run summary states how many operations were skipped and why", and
+[ADR-0015](0015-command-line-contract.md) that a run "reports what it skipped" - but the reasons
+lived in the generator and reached a person only when nothing at all could be tested, and then only
+the first of them. A run that could test eleven of twenty operations printed the count and nothing
+else, and `report.json` held neither the operations nor the reasons.
+
+The JSON report writes them as `skippedOperations`, every one, in that order: `operation` and
+`reason`, and an empty list when there are none. It is not bounded, for the reason the tallies per
+operation are not: it is as long as the document, never as long as the run. The console names them
+after the summary's verdict, because they qualify it - "no faults found" says nothing about an
+operation that was never tried - the first `report.skippedOperationsShownOnTheConsole` of them by
+name, five unless somebody says otherwise, and the rest counted, with the report pointed at.
+
+**Why the summary rather than beside the count at the top.** The lines a run begins with, that count
+among them, are printed by the command rather than by a listener, and the one line a listener prints
+there - which address is being tested - already reaches the screen on either side of them: measured
+before this change, 90 of 200 runs of one command in one process, and 1 of 25 separate launches,
+printed the count first. A listener naming the operations there would join that race, and the
+command naming them itself would give the screen a second way of learning something the stream
+already carries. The summary is printed by a listener once the last answer is in, so its order is
+fixed. The race itself is older than this and is not fixed here.
+
+**Two kinds of operation are not announced.** One the plan left alone was not skipped: somebody
+asked for it to be left alone, and the count at the top already says how many. And one the parser
+could not read at all never becomes an operation for the generator to judge; it is named on the
+screen among the parts of the document that could not be read, and is missing from `report.json` in
+the same way these were. That is a gap of the same kind, left for a change of its own.
