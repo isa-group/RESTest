@@ -49,8 +49,11 @@ import java.util.Objects;
  * @param mostItems beyond this, a demanded number of items is declined rather than built
  * @param optionalPropertyChance how often a property the description does not require is included
  *     anyway, between 0 and 1
- * @param optionalParameterChance how often a parameter the API does not require is included anyway,
- *     between 0 and 1
+ * @param optionalBodyChance how often a request that merely accepts a body, rather than insisting
+ *     on one, sends it anyway, between 0 and 1
+ * @param optionalParameterContinueChance how often the count of optional parameters a request will
+ *     include grows by one more, asked again for each one until it stops growing or none are left
+ *     to add. Between 0 and 1
  * @param nullInOneIn how often a value that is allowed to be absent is sent as nothing at all: one
  *     time in this many. Zero never sends nothing
  * @param uniqueAttempts how many times a fresh element is attempted for a list whose items must all
@@ -71,7 +74,8 @@ public record GenerationSettings(
         int usualMostItems,
         int mostItems,
         double optionalPropertyChance,
-        double optionalParameterChance,
+        double optionalBodyChance,
+        double optionalParameterContinueChance,
         int nullInOneIn,
         int uniqueAttempts,
         int sendableAttempts,
@@ -79,7 +83,7 @@ public record GenerationSettings(
 
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
-            0.5, 0.5, 8, 8, 8, 8);
+            0.5, 0.5, 0.5, 8, 8, 8, 8);
 
     public GenerationSettings {
         Objects.requireNonNull(lowestNumber, "lowestNumber");
@@ -102,7 +106,8 @@ public record GenerationSettings(
         atLeastOne(sendableAttempts, "sendableAttempts");
         atLeastOne(writableBodyAttempts, "writableBodyAttempts");
         aShare(optionalPropertyChance, "optionalPropertyChance");
-        aShare(optionalParameterChance, "optionalParameterChance");
+        aShare(optionalBodyChance, "optionalBodyChance");
+        aShare(optionalParameterContinueChance, "optionalParameterContinueChance");
         if (decimalPlaces < 0) {
             throw new IllegalArgumentException("decimalPlaces cannot be negative; zero invents "
                     + "whole numbers where decimals are allowed: " + decimalPlaces);

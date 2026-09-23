@@ -137,8 +137,11 @@ public record Settings(
                 typed.number("generation.optionalPropertyChance",
                         BigDecimal.valueOf(DEFAULTS.generation.optionalPropertyChance()))
                         .doubleValue(),
-                typed.number("generation.optionalParameterChance",
-                        BigDecimal.valueOf(DEFAULTS.generation.optionalParameterChance()))
+                typed.number("generation.optionalBodyChance",
+                        BigDecimal.valueOf(DEFAULTS.generation.optionalBodyChance()))
+                        .doubleValue(),
+                typed.number("generation.optionalParameterContinueChance",
+                        BigDecimal.valueOf(DEFAULTS.generation.optionalParameterContinueChance()))
                         .doubleValue(),
                 typed.wholeNumber("generation.nullInOneIn", DEFAULTS.generation.nullInOneIn()),
                 typed.wholeNumber("generation.uniqueAttempts",
@@ -223,8 +226,9 @@ public record Settings(
             case "generation.mostItems" -> String.valueOf(generation.mostItems());
             case "generation.optionalPropertyChance" ->
                     written(generation.optionalPropertyChance());
-            case "generation.optionalParameterChance" ->
-                    written(generation.optionalParameterChance());
+            case "generation.optionalBodyChance" -> written(generation.optionalBodyChance());
+            case "generation.optionalParameterContinueChance" ->
+                    written(generation.optionalParameterContinueChance());
             case "generation.nullInOneIn" -> String.valueOf(generation.nullInOneIn());
             case "generation.uniqueAttempts" -> String.valueOf(generation.uniqueAttempts());
             case "generation.sendableAttempts" -> String.valueOf(generation.sendableAttempts());
