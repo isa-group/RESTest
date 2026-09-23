@@ -55,6 +55,22 @@ final class Runs {
                 Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42));
     }
 
+    /** The reply to one particular test case, so that its plan and its answer can be matched. */
+    static Interaction answering(TestCase testCase, int status) {
+        return Interaction.answered(testCase,
+                new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(), Optional.empty()),
+                new HttpResponseRecord(StatusLine.of(status), List.of(), Optional.empty()),
+                Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42));
+    }
+
+    /** One particular test case that never got a reply at all. */
+    static Interaction neverAnswering(TestCase testCase) {
+        return Interaction.transportFailure(testCase,
+                new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(), Optional.empty()),
+                "the connection was refused", Instant.parse("2026-09-13T10:00:00Z"),
+                Duration.ofMillis(42));
+    }
+
     static Finding fellOver() {
         return Finding.of(WfcFault.HTTP_STATUS_500, attempt("GET /pets", "/pets", 500),
                 "the API answered 500, so it fell over while handling this request");

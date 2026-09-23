@@ -23,7 +23,9 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -69,6 +71,15 @@ public final class EventStream implements AutoCloseable {
      * business being on it.
      */
     private static final Object END = new Object();
+
+    /**
+     * Put on the queue by {@link #awaitDelivery(Duration)}, and let go of when the thread that
+     * delivers reaches it. By then everything queued before it has been heard by every listener,
+     * and so has everything a listener announced in reply. Not a {@link RunEvent}, for the same
+     * reason the end marker is not.
+     */
+    private record Checkpoint(CountDownLatch reached) {
+    }
 
     private final BlockingQueue<Object> queued = new LinkedBlockingQueue<>();
 
@@ -169,6 +180,61 @@ public final class EventStream implements AutoCloseable {
     }
 
     /**
+     * Waits until everything announced so far has been heard by every listener, but no longer than
+     * this.
+     *
+     * <p>For the moments when what happens next depends on a listener having heard something: a
+     * request built from an identifier the API has just handed back can only carry it once whoever
+     * keeps what the API returns has been told. Counting what is still waiting cannot answer that
+     * safely, because a listener may announce something of its own while it is being told, and the
+     * count can come out even while the last reply is still queued behind it. A mark put on the
+     * queue cannot be passed like that: it is reached only once everything before it, and
+     * everything said in reply to that, has been delivered.
+     *
+     * <p>Once the run has ended there is nothing left to wait for, and the answer comes at once.
+     *
+     * @param atMost how long to wait at most. Zero does not wait at all
+     * @return whether everything announced before this was asked had been heard in time
+     * @throws IllegalStateException if a listener asks, which would be the thread that delivers
+     *     waiting for itself
+     */
+    public boolean awaitDelivery(Duration atMost) {
+        Objects.requireNonNull(atMost, "atMost");
+        if (Thread.currentThread() == deliverer) {
+            throw new IllegalStateException("a listener cannot wait for the listeners to catch up, "
+                    + "because it is the one they would be waiting for");
+        }
+        Checkpoint checkpoint = new Checkpoint(new CountDownLatch(1));
+        ending.readLock().lock();
+        try {
+            if (closed.get()) {
+                return undelivered() == 0;
+            }
+            queued.add(checkpoint);
+        } finally {
+            ending.readLock().unlock();
+        }
+        try {
+            return checkpoint.reached().await(nanosIn(atMost), TimeUnit.NANOSECONDS);
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    /** A length of time in the unit a wait is given in, never less than none nor more than any. */
+    private static long nanosIn(Duration length) {
+        if (length.isNegative()) {
+            return 0;
+        }
+        try {
+            return length.toNanos();
+        } catch (ArithmeticException longerThanAnyWait) {
+            return Long.MAX_VALUE;
+        }
+    }
+
+    /**
      * Ends the run's announcements and waits for the listeners to work through what is left, so
      * that a report is complete by the time this returns.
      *
@@ -218,6 +284,10 @@ public final class EventStream implements AutoCloseable {
                     return;
                 }
                 queued.add(END);
+                continue;
+            }
+            if (taken instanceof Checkpoint checkpoint) {
+                checkpoint.reached().countDown();
                 continue;
             }
             deliver((RunEvent) taken);

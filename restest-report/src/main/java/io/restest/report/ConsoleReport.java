@@ -69,6 +69,9 @@ public final class ConsoleReport implements RunListener {
 
     /** How many operations made the API fall over, worked out in one place for every report. */
     private final ServerErrors serverErrors = new ServerErrors();
+
+    /** What each stretch of the run achieved, worked out in one place for every report. */
+    private final Phases phases = new Phases();
     private int attempts;
     private int faults;
 
@@ -128,6 +131,7 @@ public final class ConsoleReport implements RunListener {
 
     @Override
     public void on(RunEvent event) {
+        phases.on(event);
         switch (event) {
             case RunEvent.RunStarted started -> {
                 began(started);
@@ -153,6 +157,12 @@ public final class ConsoleReport implements RunListener {
             case RunEvent.TestCasePlanned ignored -> {
                 // A planned test is not news until it has been sent; printing one line per plan
                 // would bury the faults, which are what this report exists to show.
+            }
+            case RunEvent.PhaseStarted ignored -> {
+                // Tallied above, and said once in the summary rather than as it happens.
+            }
+            case RunEvent.PhaseFinished ignored -> {
+                // The same.
             }
         }
     }
@@ -234,6 +244,13 @@ public final class ConsoleReport implements RunListener {
             write("nothing was tested");
             return;
         }
+        // How the run began, straight after how long it lasted: a reader who wants to know what
+        // the first round bought is looking at the time, and this is the line that answers it.
+        phases.all().forEach(phase -> write("  " + phase.name()
+                + (phase.cutShort() ? ", cut short by the budget" : "") + ": "
+                + phase.requests() + " requests in " + readable(phase.elapsed()) + ", "
+                + phase.operationsAnsweredWithASuccess() + " of " + phase.operations()
+                + " operations answered 2xx"));
         write("  " + repliesByClass.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getValue() + " " + entry.getKey())

@@ -86,6 +86,47 @@ public sealed interface RunEvent {
     }
 
     /**
+     * A stretch of the run with a purpose of its own has begun - the round at the start that sends
+     * every operation once, for instance.
+     *
+     * <p>Every request planned from now until the matching {@link PhaseFinished} belongs to it,
+     * which is how a report can say what that stretch achieved: how long it took, how many requests
+     * it sent, and how many operations it got an answer from.
+     *
+     * @param at    when it began
+     * @param phase what it is called, as a report would print it
+     */
+    record PhaseStarted(Instant at, String phase) implements RunEvent {
+        public PhaseStarted {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(phase, "phase");
+            if (phase.isBlank()) {
+                throw new IllegalArgumentException("a stretch of the run has a name, which a "
+                        + "report prints");
+            }
+        }
+    }
+
+    /**
+     * That stretch of the run is over.
+     *
+     * @param at       when it ended
+     * @param phase    what it is called, the same name it began with
+     * @param cutShort whether it ended because the time ran out, rather than because it had done
+     *                 everything it set out to do
+     */
+    record PhaseFinished(Instant at, String phase, boolean cutShort) implements RunEvent {
+        public PhaseFinished {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(phase, "phase");
+            if (phase.isBlank()) {
+                throw new IllegalArgumentException("a stretch of the run has a name, which a "
+                        + "report prints");
+            }
+        }
+    }
+
+    /**
      * The run is over. Carries how long it took and what the engine saw, so that a report can say
      * how much of the time was spent waiting for the API rather than working.
      */

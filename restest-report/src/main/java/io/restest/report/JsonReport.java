@@ -181,6 +181,9 @@ public final class JsonReport implements RunListener {
     private EngineStatistics engine = EngineStatistics.none();
     private JsonValue written;
 
+    /** What each stretch of the run achieved, worked out in one place for every report. */
+    private final Phases phases = new Phases();
+
     private final ReportSettings limits;
     private final SettingsInEffect configuration;
 
@@ -240,6 +243,7 @@ public final class JsonReport implements RunListener {
 
     @Override
     public void on(RunEvent event) {
+        phases.on(event);
         switch (event) {
             case RunEvent.RunStarted started -> {
                 api = started.api();
@@ -257,6 +261,12 @@ public final class JsonReport implements RunListener {
             }
             case RunEvent.TestCasePlanned ignored -> {
                 // What was planned and then not sent leaves no evidence to report on.
+            }
+            case RunEvent.PhaseStarted ignored -> {
+                // Tallied above, and written with everything else when the run ends.
+            }
+            case RunEvent.PhaseFinished ignored -> {
+                // The same.
             }
         }
     }
@@ -376,6 +386,7 @@ public final class JsonReport implements RunListener {
         report.put("limits", limits());
         report.put("settings", settings());
         report.put("engine", engineStatistics());
+        report.put("phases", phases());
         report.put("replies", replies());
         report.put("serverErrors", serverErrors());
         report.put("faultsByCategory", faultsByCategory());
@@ -562,6 +573,40 @@ public final class JsonReport implements RunListener {
         totals.put("faultsCountedOnly", JsonValue.of(faults - writeUps.size()));
         totals.put("elapsed", JsonValue.of(elapsed.toString()));
         return JsonValue.object(totals);
+    }
+
+    /**
+     * Each stretch of the run that had a purpose of its own, and what it achieved.
+     *
+     * <p>A run that begins by sending every operation once is spending the first seconds of its
+     * budget on that, and this is where a reader finds out what those seconds bought: how long the
+     * round took, how many requests it sent, and how many of the API's operations answered it with
+     * a success. Empty when the run had no such stretch.
+     */
+    private JsonValue phases() {
+        return JsonValue.array(phases.all().stream()
+                .map(phase -> {
+                    Map<String, JsonValue> row = new LinkedHashMap<>();
+                    row.put("name", JsonValue.of(phase.name()));
+                    row.put("startedAt", JsonValue.of(phase.startedAt().toString()));
+                    row.put("finishedAt", JsonValue.of(phase.finishedAt().toString()));
+                    row.put("elapsed", JsonValue.of(phase.elapsed().toString()));
+                    row.put("cutShort", JsonValue.of(phase.cutShort()));
+                    row.put("requests", JsonValue.of(phase.requests()));
+                    row.put("operations", JsonValue.of(phase.operations()));
+                    row.put("operationsAnswering2xx",
+                            JsonValue.of(phase.operationsAnsweredWithASuccess()));
+                    Map<String, JsonValue> byClass = new LinkedHashMap<>();
+                    phase.repliesByClass().forEach((family, count) ->
+                            byClass.put(family, JsonValue.of(count)));
+                    if (phase.noReply() > 0) {
+                        byClass.put("noReply", JsonValue.of(phase.noReply()));
+                    }
+                    row.put("replies", JsonValue.object(Map.of("byClass",
+                            JsonValue.object(byClass))));
+                    return (JsonValue) JsonValue.object(row);
+                })
+                .toList());
     }
 
     private JsonValue engineStatistics() {

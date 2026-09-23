@@ -261,6 +261,170 @@ class EventStreamTest {
                 Instant.EPOCH, Duration.ofSeconds(-1), EngineStatistics.none()));
     }
 
+    @Test
+    @DisplayName("waiting for the listeners returns once every one of them has heard everything")
+    void waiting_returns_once_everything_has_been_heard() {
+        List<String> heard = new CopyOnWriteArrayList<>();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                sleep(Duration.ofMillis(30));
+                heard.add(name(event));
+            });
+            events.publish(started());
+            events.publish(planned());
+            events.publish(completed());
+
+            assertThat(events.awaitDelivery(Duration.ofSeconds(10))).isTrue();
+            // Read before the stream is closed, which would otherwise have waited for all three
+            // by itself and proved nothing.
+            assertThat(heard).containsExactly("RunStarted", "TestCasePlanned",
+                    "InteractionCompleted");
+        }
+    }
+
+    @Test
+    @DisplayName("waiting for the listeners includes what one of them said in reply")
+    void waiting_includes_what_a_listener_announced_in_reply() {
+        List<String> heard = new CopyOnWriteArrayList<>();
+
+        try (EventStream events = new EventStream()) {
+            // The case a count of what is still waiting gets wrong: while the reply is being
+            // delivered, the rule announces a fault, and for a moment the numbers can come out
+            // even with the fault not yet heard by anybody.
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.InteractionCompleted) {
+                    sleep(Duration.ofMillis(30));
+                    events.publish(new RunEvent.FaultFound(Instant.EPOCH, finding()));
+                }
+            });
+            events.subscribe(event -> heard.add(name(event)));
+            events.publish(completed());
+
+            assertThat(events.awaitDelivery(Duration.ofSeconds(10))).isTrue();
+            assertThat(heard).containsExactly("InteractionCompleted", "FaultFound");
+        }
+    }
+
+    @Test
+    @DisplayName("waiting for a listener that never finishes gives up when the time is up")
+    void waiting_gives_up_on_a_listener_that_never_finishes() {
+        CountDownLatch release = new CountDownLatch(1);
+        EventStream events = new EventStream();
+        events.subscribe(event -> {
+            try {
+                release.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        events.publish(planned());
+
+        long before = System.nanoTime();
+        boolean caughtUp = events.awaitDelivery(Duration.ofMillis(100));
+        Duration waited = Duration.ofNanos(System.nanoTime() - before);
+
+        assertThat(caughtUp).isFalse();
+        assertThat(waited).isGreaterThanOrEqualTo(Duration.ofMillis(100))
+                .isLessThan(Duration.ofSeconds(5));
+        release.countDown();
+        events.close();
+        assertThat(events.undelivered()).isZero();
+    }
+
+    @Test
+    @DisplayName("waiting no time at all does not wait")
+    void waiting_no_time_does_not_wait() {
+        CountDownLatch release = new CountDownLatch(1);
+        EventStream events = new EventStream();
+        events.subscribe(event -> {
+            try {
+                release.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        events.publish(planned());
+
+        long before = System.nanoTime();
+        boolean caughtUp = events.awaitDelivery(Duration.ZERO);
+
+        assertThat(caughtUp).isFalse();
+        assertThat(Duration.ofNanos(System.nanoTime() - before)).isLessThan(Duration.ofSeconds(1));
+        assertThat(events.awaitDelivery(Duration.ofSeconds(-1))).isFalse();
+        release.countDown();
+        events.close();
+    }
+
+    @Test
+    @DisplayName("a length of time too long to count in nanoseconds is waited for as long as any")
+    void a_wait_too_long_to_count_is_still_a_wait() {
+        try (EventStream events = new EventStream()) {
+            events.publish(planned());
+
+            assertThat(events.awaitDelivery(Duration.ofDays(365L * 1_000))).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("a listener cannot wait for the listeners, which would be waiting for itself")
+    void a_listener_cannot_wait_for_itself() {
+        List<Throwable> refused = new CopyOnWriteArrayList<>();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                try {
+                    events.awaitDelivery(Duration.ofSeconds(10));
+                } catch (IllegalStateException expected) {
+                    refused.add(expected);
+                }
+            });
+            events.publish(planned());
+        }
+
+        assertThat(refused).singleElement()
+                .satisfies(why -> assertThat(why).hasMessageContaining("cannot wait"));
+    }
+
+    @Test
+    @DisplayName("once the run has ended, waiting for the listeners answers at once")
+    void waiting_after_the_end_answers_at_once() {
+        EventStream events = new EventStream();
+        events.publish(planned());
+        events.close();
+
+        long before = System.nanoTime();
+        assertThat(events.awaitDelivery(Duration.ofSeconds(10))).isTrue();
+        assertThat(Duration.ofNanos(System.nanoTime() - before)).isLessThan(Duration.ofSeconds(1));
+    }
+
+    @Test
+    @DisplayName("a stretch of the run is heard in order, and has a name")
+    void a_stretch_of_the_run_is_heard_in_order() {
+        List<String> heard = new CopyOnWriteArrayList<>();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> heard.add(name(event)));
+            events.publish(new RunEvent.PhaseStarted(Instant.EPOCH, "opening lap"));
+            events.publish(planned());
+            events.publish(new RunEvent.PhaseFinished(Instant.EPOCH, "opening lap", false));
+        }
+
+        assertThat(heard).containsExactly("PhaseStarted", "TestCasePlanned", "PhaseFinished");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new RunEvent.PhaseStarted(Instant.EPOCH, " "));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new RunEvent.PhaseFinished(Instant.EPOCH, "", true));
+    }
+
+    private static void sleep(Duration length) {
+        try {
+            Thread.sleep(length);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     private static String name(RunEvent event) {
         return event.getClass().getSimpleName();
     }
