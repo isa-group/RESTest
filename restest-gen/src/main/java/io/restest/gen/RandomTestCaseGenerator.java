@@ -73,9 +73,10 @@ import java.util.stream.Stream;
  *
  * <p>Not every operation can be attempted even so, and the ones that cannot are named rather than
  * quietly skipped: one whose parameters are written in a way requests cannot yet be assembled for,
- * one that requires a value nothing can invent, and one whose body is only offered in a form this
- * cannot write - a file upload, say - are each reported with the reason. A run that tests eleven of
- * an API's twenty operations should say so.
+ * one that requires a value nothing can invent, one whose body is only offered in a form this
+ * cannot write - a file upload, say - and one that insists on a body although it is a {@code GET}
+ * or a {@code HEAD}, which have no room for one, are each reported with the reason. A run that
+ * tests eleven of an API's twenty operations should say so.
  *
  * <p>Every generator is given a number to start from, and the same number produces the same
  * decisions, on any machine and on any Java runtime. That is what makes a surprising result worth
@@ -557,25 +558,33 @@ public final class RandomTestCaseGenerator {
     /**
      * Why this operation cannot be attempted, if it cannot.
      *
-     * <p>Three things stand in the way today, and each is a limit of what has been built rather than
-     * a fault in the specification: a body that must be sent and cannot be written or filled in; a
-     * parameter written down in a way requests cannot be assembled for; and a required parameter no
+     * <p>Four things stand in the way today. Three are limits of what has been built rather than
+     * faults in the specification: a parameter written down in a way requests cannot be assembled
+     * for; a body that must be sent and cannot be written or filled in; and a required parameter no
      * value can be found for - because its description allows none, because the parser could not
-     * read it, or because nothing available knows how to satisfy it.
+     * read it, or because nothing available knows how to satisfy it. The fourth is the document
+     * asking for something no request can do: a body on a {@code GET} or a {@code HEAD}, which have
+     * no room for one.
      *
-     * <p>That last one is decided by trying, once, rather than by reasoning about the shape. Shapes
-     * that defeat the sources of values are not a list anybody can write down in advance, and an
-     * operation quietly failing to produce a test case on every attempt - while being reported as
-     * testable - is the outcome this check exists to prevent.
+     * <p>Whether a request can be assembled at all is asked first, because the document answers it
+     * on its own. An operation that could never be sent has no value drawn for it, so every later
+     * decision comes from the numbers it would have come from anyway, and it is given the reason
+     * that stays true whatever is built later.
+     *
+     * <p>Whether a value can be found for a required parameter is decided by trying, once, rather
+     * than by reasoning about the shape. Shapes that defeat the sources of values are not a list
+     * anybody can write down in advance, and an operation quietly failing to produce a test case on
+     * every attempt - while being reported as testable - is the outcome this check exists to
+     * prevent.
      */
     private Optional<String> whatStandsInTheWay(Operation operation) {
-        Optional<String> body = whatStandsInTheWayOfTheBody(operation);
-        if (body.isPresent()) {
-            return body;
-        }
         Optional<String> unassemblable = RequestBuilder.whatCannotBeAssembled(operation);
         if (unassemblable.isPresent()) {
             return unassemblable;
+        }
+        Optional<String> body = whatStandsInTheWayOfTheBody(operation);
+        if (body.isPresent()) {
+            return body;
         }
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required()) {

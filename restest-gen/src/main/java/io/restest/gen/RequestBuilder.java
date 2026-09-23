@@ -23,6 +23,7 @@ import io.restest.core.execution.Payload;
 import io.restest.core.execution.TestCase;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
@@ -51,6 +52,11 @@ import java.util.StringJoiner;
  * ways this understands are the two that OpenAPI uses unless a document says otherwise, which is the
  * overwhelming majority of real parameters; a document asking for one of the unusual ways is refused
  * by name rather than served a guess that the API would reject for reasons nobody could see.
+ *
+ * <p>So is a document asking for a body where a request has no room for one. A {@code GET} or a
+ * {@code HEAD} carrying a body is something HTTP gives no meaning to and the client that sends
+ * requests refuses to build, so an operation that insists on one there is named as one no request
+ * can be assembled for, rather than tried for a whole run without a single request leaving.
  *
  * <p>Everything that goes into a URL is percent-encoded - the {@code %20} treatment - so a value
  * containing a space, a slash or a word in a non-Latin alphabet produces a request that means what it
@@ -95,13 +101,26 @@ public final class RequestBuilder {
     }
 
     /**
-     * Whether every parameter of this operation is written down in a way that can be assembled.
+     * Whether a request for this operation can be assembled at all.
+     *
+     * <p>Two things stop it, and the document alone says whether either is there. A parameter may
+     * be written down in a way this does not assemble yet. Or the operation may insist on a body
+     * although it is a {@code GET} or a {@code HEAD}, which have no room for one: the client that
+     * sends requests refuses to build such a request, so every attempt would be thrown away before
+     * it left the machine. A body such an operation merely accepts stops nothing, because the
+     * request can go without it.
      *
      * @param operation the operation
      * @return empty if the request can be built, or what stands in the way
      */
     public static Optional<String> whatCannotBeAssembled(Operation operation) {
         Objects.requireNonNull(operation, "operation");
+        // Asked before the parameters. Their way of being written may be assembled one day; a GET
+        // will still have no room for a body, so this is the reason that stays true.
+        if (operation.requiresBody() && carriesNoBody(operation.method())) {
+            return Optional.of("it requires a request body, and a " + operation.method()
+                    + " request cannot carry one");
+        }
         for (Parameter parameter : operation.parameters()) {
             if (parameter.isContentSerialised()) {
                 return Optional.of("the parameter '" + parameter.name() + "' is written as "
@@ -118,6 +137,17 @@ public final class RequestBuilder {
 
     private static boolean isUnderstood(ParameterStyle style) {
         return style == ParameterStyle.SIMPLE || style == ParameterStyle.FORM;
+    }
+
+    /**
+     * Whether a request with this method has no room for a body.
+     *
+     * <p>The rule is the one the engine applies: a {@code GET} or a {@code HEAD} carrying a body is
+     * something HTTP gives no meaning to, and the client that sends requests refuses to build one.
+     * Every other method may carry a body, even the ones few APIs expect one on.
+     */
+    static boolean carriesNoBody(HttpMethod method) {
+        return method == HttpMethod.GET || method == HttpMethod.HEAD;
     }
 
     private static String fillIn(Operation operation, TestCase testCase) {

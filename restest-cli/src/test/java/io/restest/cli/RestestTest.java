@@ -281,6 +281,26 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("a GET that insists on a body is named as what cannot be tested, not blamed on the "
+            + "address")
+    void a_get_insisting_on_a_body_is_named_rather_than_blamed_on_the_address(
+            @TempDir Path directory) {
+        int answer = run("run", "pet-search-with-a-body.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("the API at this address is running; what stands in the way is the "
+                        + "document asking for something no request can carry")
+                .contains("none of the 1 operations in the document can be tested; the first "
+                        + "says: it requires a request body, and a GET request cannot carry one")
+                .doesNotContain("Check the address");
+        assertThat(directory.resolve("report.json"))
+                .describedAs("nothing was attempted, so there is no run to report")
+                .doesNotExist();
+    }
+
+    @Test
     @DisplayName("a directory nothing can be written to answers 3, not 4, and says which directory")
     void an_unwritable_output_directory_answers_three(@TempDir Path parent) throws Exception {
         Path directory = Files.createDirectory(parent.resolve("read-only"));

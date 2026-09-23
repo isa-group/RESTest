@@ -208,6 +208,45 @@ class RequestBuilderTest {
                 .isEmpty();
     }
 
+    @Test
+    @DisplayName("a GET or a HEAD that insists on a body cannot be assembled, and says so plainly")
+    void a_body_insisted_on_by_a_get_or_a_head_is_named() {
+        RequestBodyModel required = RequestBodyModel.json(
+                ObjectSchema.of(Map.of("name", StringSchema.of())), true);
+
+        assertThat(RequestBuilder.whatCannotBeAssembled(
+                Operation.of(HttpMethod.GET, "/pets/search").withRequestBody(required)))
+                .hasValue("it requires a request body, and a GET request cannot carry one");
+        assertThat(RequestBuilder.whatCannotBeAssembled(
+                Operation.of(HttpMethod.HEAD, "/pets/search").withRequestBody(required)))
+                .hasValue("it requires a request body, and a HEAD request cannot carry one");
+    }
+
+    @Test
+    @DisplayName("a body a GET merely accepts stops nothing, because the request can go without it")
+    void a_body_a_get_merely_accepts_stops_nothing() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets/search").withRequestBody(
+                RequestBodyModel.json(ObjectSchema.of(Map.of("name", StringSchema.of())), false));
+
+        assertThat(RequestBuilder.whatCannotBeAssembled(search)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("every other method has room for the body it insists on")
+    void every_other_method_may_insist_on_a_body() {
+        RequestBodyModel required = RequestBodyModel.json(StringSchema.of(), true);
+
+        for (HttpMethod method : HttpMethod.values()) {
+            if (method == HttpMethod.GET || method == HttpMethod.HEAD) {
+                continue;
+            }
+            assertThat(RequestBuilder.whatCannotBeAssembled(
+                    Operation.of(method, "/pets").withRequestBody(required)))
+                    .describedAs("a %s request with the body its document requires", method)
+                    .isEmpty();
+        }
+    }
+
     // --- what review found this builder getting wrong ------------------------------------------
 
     @Test
