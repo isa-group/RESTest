@@ -584,23 +584,24 @@ public final class RandomTestCaseGenerator {
     /**
      * The body to send with this request, if one is to be sent at all.
      *
-     * <p>A body the API insists on is always sent, and so is one the API merely accepts when the
-     * request is the one most likely to be accepted. Otherwise one it merely accepts is left out
-     * some of the time, on its own chance rather than the one deciding how many optional
-     * parameters go in,
+     * <p>A body the API insists on is always sent. One it merely accepts is never sent with a
+     * {@code GET} or a {@code HEAD}, which the client that sends requests refuses to build with a
+     * body: the request goes without it, which the document allows. With any other method it is
+     * always sent in the request most likely to be accepted, and otherwise left out some of the
+     * time, on its own chance rather than the one deciding how many optional parameters go in,
      * because an operation behaves differently depending on whether a body arrived, and a tool that
      * always sent one would only ever see one of those behaviours.
      */
     private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
             Strategy strategy, Filling filling) {
         if (!declared.required()) {
-            // Decided by chance for an ordinary request, and drawn exactly as it always was. For the
-            // likeliest request it is not drawn at all: the body goes, unless the method is one the
-            // client that sends requests refuses a body on, where it would stop the request being
-            // sent.
-            boolean leftOut = filling == Filling.DRAWN
-                    ? random.nextDouble() >= settings.generation().optionalBodyChance()
-                    : RequestBuilder.cannotBeSentWithABody(operation.method());
+            // Never where the client refuses a body, and then nothing is drawn: the answer is
+            // already known, and a draw would move the numbers every later decision comes from.
+            // Otherwise decided by chance for an ordinary request, drawn exactly as it always was,
+            // and always sent in the likeliest request.
+            boolean leftOut = RequestBuilder.cannotBeSentWithABody(operation.method())
+                    || (filling == Filling.DRAWN
+                            && random.nextDouble() >= settings.generation().optionalBodyChance());
             if (leftOut) {
                 return Optional.empty();
             }

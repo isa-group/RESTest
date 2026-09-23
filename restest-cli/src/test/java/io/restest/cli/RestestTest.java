@@ -302,6 +302,27 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("a GET that merely accepts a body is tested without it, and no request of it is "
+            + "thrown away unsent")
+    void a_get_merely_accepting_a_body_is_sent_without_it(@TempDir Path directory) {
+        api.stubFor(get(urlMatching("/pets/search")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("[]")));
+
+        int answer = run("run", "pet-search-with-an-optional-body.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--seed", "20260923", "--out", directory.toString());
+
+        assertThat(answer).isZero();
+        assertThat(screen.toString())
+                .contains("1 of 1 operations can be tested")
+                .describedAs("a request carrying a body the client refuses is recorded as one "
+                        + "that got no reply; there should be none")
+                .doesNotContain("no reply");
+        api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/pets/search")));
+    }
+
+    @Test
     @DisplayName("a directory nothing can be written to answers 3, not 4, and says which directory")
     void an_unwritable_output_directory_answers_three(@TempDir Path parent) throws Exception {
         Path directory = Files.createDirectory(parent.resolve("read-only"));

@@ -50,7 +50,8 @@ import java.util.Objects;
  * @param optionalPropertyChance how often a property the description does not require is included
  *     anyway, between 0 and 1
  * @param optionalBodyChance how often a request that merely accepts a body, rather than insisting
- *     on one, sends it anyway, between 0 and 1
+ *     on one, sends it anyway, between 0 and 1. A {@code GET} or a {@code HEAD} never does, since
+ *     the client that sends requests refuses to build either with a body
  * @param optionalParameterContinueChance how often the count of optional parameters a request will
  *     include grows by one more, asked again for each one until it stops growing or none are left
  *     to add. Between 0 and 1

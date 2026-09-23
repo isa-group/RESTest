@@ -215,7 +215,7 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how often an optional property is included anyway, between 0 and 1"),
             key("generation", "optionalBodyChance", SettingKind.NUMBER,
                     "how often a request that merely accepts a body sends it anyway, between 0 "
-                            + "and 1"),
+                            + "and 1; a GET or a HEAD never does"),
             key("generation", "optionalParameterContinueChance", SettingKind.NUMBER,
                     "how often one more optional parameter is added on top of the ones already "
                             + "chosen, between 0 and 1"),

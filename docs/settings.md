@@ -124,7 +124,7 @@ generation:
   mostItems: 100              # default
   # how often an optional property is included anyway, between 0 and 1
   optionalPropertyChance: 0.5 # default
-  # how often a request that merely accepts a body sends it anyway, between 0 and 1
+  # how often a request that merely accepts a body sends it anyway, between 0 and 1; a GET or a HEAD never does
   optionalBodyChance: 0.5     # default
   # how often one more optional parameter is added on top of the ones already chosen, between 0 and 1
   optionalParameterContinueChance: 0.5 # default
@@ -274,7 +274,7 @@ spelling `--budget` takes.
 | `usualMostItems` | `4` | the most items put in a list when the description does not demand more |
 | `mostItems` | `100` | beyond this, a demanded number of items is declined rather than built |
 | `optionalPropertyChance` | `0.5` | how often an optional property is included anyway, between 0 and 1 |
-| `optionalBodyChance` | `0.5` | how often a request that merely accepts a body sends it anyway, between 0 and 1 |
+| `optionalBodyChance` | `0.5` | how often a request that merely accepts a body sends it anyway, between 0 and 1; a GET or a HEAD never does |
 | `optionalParameterContinueChance` | `0.5` | how often one more optional parameter is added on top of the ones already chosen, between 0 and 1 |
 | `nullInOneIn` | `8` | one time in this many, a value allowed to be absent is sent as nothing |
 | `uniqueAttempts` | `8` | how many times a fresh element is attempted for a list of distinct items |
