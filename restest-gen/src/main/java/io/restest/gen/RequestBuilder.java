@@ -142,10 +142,11 @@ public final class RequestBuilder {
     /**
      * Whether the client that sends requests refuses to build a request with this method and a body.
      *
-     * <p>It refuses two: {@code GET} and {@code HEAD}, the methods on which HTTP gives a body no
-     * agreed meaning. HTTP itself does not forbid a body there, and another client might send one,
-     * so this is a limit of the client rather than of the protocol. Every other method is sent with
-     * whatever body it is given - {@code TRACE} included, although HTTP forbids a body on that one.
+     * <p>It refuses two: {@code GET} and {@code HEAD}, two of the methods on which HTTP gives a body
+     * no agreed meaning - {@code DELETE} is another, and that one it sends. HTTP itself does not
+     * forbid a body on any of them, and another client might send one, so this is a limit of the
+     * client rather than of the protocol. Every other method is sent with whatever body it is given -
+     * {@code TRACE} included, although HTTP forbids a body on that one.
      */
     static boolean cannotBeSentWithABody(HttpMethod method) {
         return method == HttpMethod.GET || method == HttpMethod.HEAD;

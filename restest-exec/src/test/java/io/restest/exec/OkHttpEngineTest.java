@@ -338,18 +338,26 @@ class OkHttpEngineTest {
     }
 
     @Test
-    @DisplayName("a DELETE carrying a body is sent with it, which is where that rule stops")
-    void a_body_on_a_delete_is_sent() {
-        api.stubFor(delete(urlEqualTo("/widgets/7")).willReturn(aResponse().withStatus(204)));
+    @DisplayName("every other method is sent with its body - TRACE included, although HTTP forbids "
+            + "one there - which is where that rule stops")
+    void a_body_on_every_other_method_is_sent() {
+        api.stubFor(com.github.tomakehurst.wiremock.client.WireMock.any(urlEqualTo("/widgets/7"))
+                .willReturn(aResponse().withStatus(204)));
 
-        Interaction interaction = engine.send(Requests.testCase(HttpMethod.DELETE, "/widgets/7"),
-                Requests.json(HttpMethod.DELETE, url("/widgets/7"), "{\"reason\":\"sold\"}"));
+        for (HttpMethod method : HttpMethod.values()) {
+            if (method == HttpMethod.GET || method == HttpMethod.HEAD) {
+                continue;
+            }
+            Interaction interaction = engine.send(Requests.testCase(method, "/widgets/7"),
+                    Requests.json(method, url("/widgets/7"), "{\"reason\":\"sold\"}"));
 
-        assertThat(interaction.response().orElseThrow().statusCode()).isEqualTo(204);
-        api.verify(com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor(
-                        urlEqualTo("/widgets/7"))
-                .withRequestBody(com.github.tomakehurst.wiremock.client.WireMock
-                        .equalToJson("{\"reason\":\"sold\"}")));
+            assertThat(interaction.isAnswered()).describedAs("%s with a body", method).isTrue();
+            api.verify(new com.github.tomakehurst.wiremock.matching.RequestPatternBuilder(
+                            com.github.tomakehurst.wiremock.http.RequestMethod.fromString(
+                                    method.name()), urlEqualTo("/widgets/7"))
+                    .withRequestBody(com.github.tomakehurst.wiremock.client.WireMock
+                            .equalToJson("{\"reason\":\"sold\"}")));
+        }
     }
 
     @Test
