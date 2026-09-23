@@ -264,7 +264,7 @@ restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operatio
          that operation (postcode in addOwner, firstName in addOwner, body.nonsense in addVisit)
 ```
 
-Five things earn a mention:
+Seven things earn a mention:
 
 | What | Usually means |
 |---|---|
@@ -274,6 +274,7 @@ Five things earn a mention:
 | a property the document says the API only ever sends back | `readOnly`, which is never ours to send |
 | a piece of a body that is supplied whole | some list gives that operation a whole body, and that is what gets sent |
 | a piece of a body the document itself writes out in full | the document offers a whole sample body, which is sent as the author wrote it |
+| a body, or a piece of one, on a GET or a HEAD, which RESTest never sends | the document offers a body on a `GET` or `HEAD`; RESTest cannot send one, so the operation is tested without it — or, if it insists on one, not at all |
 
 A line of its own appears when one file writes one operation under both of the names it answers to.
 The entries under the `operationId` are the ones kept.

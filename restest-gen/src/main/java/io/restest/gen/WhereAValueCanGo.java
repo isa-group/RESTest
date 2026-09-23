@@ -49,7 +49,9 @@ import java.util.Set;
  *
  * <p>It also knows the two ways a place can exist and still never take a value from a list: where
  * the document gives the closed list of values it accepts, whose word is final, and a property the
- * document says the API only ever sends back, which is never ours to send.
+ * document says the API only ever sends back, which is never ours to send. And a body on a
+ * {@code GET} or a {@code HEAD}, with everything inside it, never takes one either, since the
+ * client that sends requests refuses to build such a request with a body.
  *
  * <p>Saying nothing is always safe here and saying the wrong thing is not, so two things are left
  * unjudged. Where the document runs out - a shape written in a way the parser could not read, or
@@ -74,15 +76,21 @@ final class WhereAValueCanGo {
     static final String A_BODY_SHOWN_IN_FULL =
             "a piece of a body the document itself writes out in full, which is sent as written";
 
+    /** Why nothing in a body is asked for when the method is one no body is sent with. */
+    static final String A_BODY_NEVER_SENT =
+            "a body, or a piece of one, on a GET or a HEAD, which RESTest never sends";
+
     private final Set<String> places;
     private final Set<String> whereAnyNameIsPossible;
     private final Map<String, String> thatNothingWouldUse;
+    private final boolean noBodyIsSent;
 
     private WhereAValueCanGo(Set<String> places, Set<String> whereAnyNameIsPossible,
-            Map<String, String> thatNothingWouldUse) {
+            Map<String, String> thatNothingWouldUse, boolean noBodyIsSent) {
         this.places = places;
         this.whereAnyNameIsPossible = whereAnyNameIsPossible;
         this.thatNothingWouldUse = thatNothingWouldUse;
+        this.noBodyIsSent = noBodyIsSent;
     }
 
     /**
@@ -124,7 +132,8 @@ final class WhereAValueCanGo {
             places.stream().filter(WhereAValueCanGo::isInsideTheBody)
                     .forEach(place -> unused.putIfAbsent(place, A_BODY_SHOWN_IN_FULL));
         }
-        return new WhereAValueCanGo(places, open, unused);
+        return new WhereAValueCanGo(places, open, unused,
+                RequestBuilder.cannotBeSentWithABody(operation.method()));
     }
 
     /**
@@ -158,7 +167,17 @@ final class WhereAValueCanGo {
      * @return the reason, in the words a person should read, or nothing when values here are used
      */
     Optional<String> whyNothingWouldUseIt(String place) {
+        // Asked of the name rather than looked up, so that it covers the places under a shape the
+        // document could not spell out as well as the ones it could: none of them is ever sent.
+        if (noBodyIsSent && (place.equals(ValueRequest.THE_BODY) || isInsideTheBody(place))) {
+            return Optional.of(A_BODY_NEVER_SENT);
+        }
         return Optional.ofNullable(thatNothingWouldUse.get(place));
+    }
+
+    /** Whether this operation's method is one the client that sends requests sends no body with. */
+    boolean noBodyIsSent() {
+        return noBodyIsSent;
     }
 
     /**

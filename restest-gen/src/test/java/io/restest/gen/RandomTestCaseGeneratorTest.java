@@ -473,20 +473,64 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("a GET that merely accepts a body is still counted among the operations that can be "
-            + "tested")
-    void a_get_merely_accepting_a_body_is_still_counted_testable() {
+    @DisplayName("a GET or a HEAD that merely accepts a body is tested without it, even when every "
+            + "body that may be left out is asked for")
+    void a_body_a_get_or_a_head_merely_accepts_is_never_sent() {
         Operation search = Operation.of(HttpMethod.GET, "/pets/search")
                 .withRequestBody(RequestBodyModel.json(
                         ObjectSchema.of(Map.of("name", StringSchema.of())), false));
-        RandomTestCaseGenerator generator = generatorFor(search);
+        Operation probe = Operation.of(HttpMethod.HEAD, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(StringSchema.of(), false));
+        Operation create = Operation.of(HttpMethod.POST, "/pets")
+                .withRequestBody(RequestBodyModel.json(StringSchema.of(), false));
+        Settings everyBodyThatMayBeLeftOut = Settings.from(Map.of(
+                "generation.optionalBodyChance", "1"));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                model(search, probe, create), 20260923L, List.of(),
+                planOf(step(Campaign.Builtin.RANDOM)), everyBodyThatMayBeLeftOut);
 
-        // Counted, and rightly: a request without that body is one the document allows. What this
-        // does not say is that every request for it goes without the body. An ordinary request
-        // still draws it, on the same chance as any body an operation merely accepts, and the
-        // client refuses each request that carries it - a known gap, left for a change of its own.
-        assertThat(generator.testableOperations()).containsExactly(search);
-        assertThat(generator.untestableOperations()).isEmpty();
+        assertThat(generator.testableOperations())
+                .describedAs("a request without that body is one the document allows")
+                .containsExactly(search, probe, create);
+        for (int draw = 0; draw < 50; draw++) {
+            assertThat(generator.generate(search).orElseThrow().body())
+                    .describedAs("the client that sends requests refuses to build a GET with a "
+                            + "body, so a request carrying one would never leave the machine")
+                    .isEmpty();
+            assertThat(generator.generate(probe).orElseThrow().body()).isEmpty();
+            assertThat(generator.generate(create).orElseThrow().body())
+                    .describedAs("every other method still gets the body it merely accepts, "
+                            + "when the setting asks for it")
+                    .isPresent();
+        }
+    }
+
+    @Test
+    @DisplayName("a body that could never be sent takes no draw: a GET offering one gets exactly the "
+            + "requests it would get without it")
+    void a_body_that_cannot_be_sent_draws_nothing() {
+        List<Parameter> parameters = List.of(
+                Parameter.of("status", ParameterLocation.QUERY, true, StringSchema.of()),
+                Parameter.of("limit", ParameterLocation.QUERY, false, StringSchema.of()));
+        Operation plain = Operation.of(HttpMethod.GET, "/pets/search", parameters);
+        Operation offering = Operation.of(HttpMethod.GET, "/pets/search", parameters)
+                .withRequestBody(RequestBodyModel.json(
+                        ObjectSchema.of(Map.of("name", StringSchema.of())), false));
+        RandomTestCaseGenerator withoutIt = generatorFor(plain);
+        RandomTestCaseGenerator withIt = generatorFor(offering);
+
+        List<String> fromWithoutIt = IntStream.range(0, 20)
+                .mapToObj(draw -> describe(withoutIt.generate().orElseThrow()))
+                .toList();
+        List<String> fromWithIt = IntStream.range(0, 20)
+                .mapToObj(draw -> describe(withIt.generate().orElseThrow()))
+                .toList();
+
+        assertThat(fromWithIt)
+                .describedAs("whether the body goes is already known, so no number is drawn to "
+                        + "decide it, and every later decision comes from the numbers it would "
+                        + "have come from anyway")
+                .isEqualTo(fromWithoutIt);
     }
 
     @Test
