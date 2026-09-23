@@ -175,6 +175,30 @@ about, so it answers wherever anything could, and a source written below it is a
 nothing. A run says so when it sees one rather than refusing the plan, because a shape nothing
 satisfies leaves invention with no answer either.
 
+## The first round of a run
+
+Before anything is chosen, a run sends every operation it can test once, each with the request it
+is most likely to accept, and only then starts drawing. That first round uses your plan too: the
+first strategy that does not push at the API, with two differences. A plan whose every strategy
+pushes has no request anybody believes in, and so no first round.
+
+- **Every group is asked in turn instead of chosen among**, best first: a closed list of accepted
+  values, then what the API has already returned, then your own lists, then the document's sample,
+  then its default, and last a value invented to fit. One request with one chance should carry the
+  best value there is; choosing among sources is what a long run needs, not what one request needs.
+  A source you write on its own keeps its place, and a source your plan does not name is not used.
+- **Only what the API requires goes in** - no optional parameters - plus a body wherever the
+  document describes one, required or not, because most documents never say a body is required even
+  when the operation cannot work without it. A body a `GET` or `HEAD` merely accepts is the
+  exception: HTTP gives it no meaning, and it is left out.
+
+The round goes lists first (`GET /owners`), then what creates (`POST`), then what reads one thing
+(`GET /owners/{ownerId}`), then what changes (`PUT`, `PATCH`), and deletes last, each step waiting
+for the answers to the one before, so that an identifier the API has just handed back can be sent by
+the next step. Switch it off with `--set schedule.openingLap=false`; how long a step waits is
+`schedule.openingLapPatience`. Both are settings rather than lines here, because they are about how
+the tool behaves rather than about where values come from - see [the settings](settings.md).
+
 ## Which operations a run may touch
 
 ```yaml

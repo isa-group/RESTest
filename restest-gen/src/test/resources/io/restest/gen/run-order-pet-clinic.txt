@@ -1,0 +1,70 @@
+failingRequest
+listOwners
+addOwner | body application/json={"firstName":"George","lastName":"Franklin","address":"110 W. Liberty St.","city":"Madison","telephone":"6085551023"} from Generated[source=random]
+getOwner | PATH ownerId=909 from Generated[source=random]
+updateOwner | PATH ownerId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"firstName":"George","lastName":"Franklin","address":"110 W. Liberty St.","city":"Madison","telephone":"6085551023"} from Generated[source=random]
+deleteOwner | PATH ownerId=744 from Generated[source=random]
+addPetToOwner | PATH ownerId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"name":"Leo","birthDate":"2010-09-07","type":{"name":"cat","id":1}} from Generated[source=random]
+getOwnersPet | PATH ownerId=659 from Generated[source=random] | PATH petId=664 from Generated[source=random]
+updateOwnersPet | PATH ownerId=537 from Generated[source=random] | PATH petId=573 from Generated[source=random] | body application/json={"name":"Leo","birthDate":"2010-09-07","type":{"name":"cat","id":1}} from Generated[source=random]
+addVisitToOwner | PATH ownerId=1 from Declared[statement=Optional[EXAMPLE]] | PATH petId=872 from Generated[source=random] | body application/json={"description":"rabies shot","date":"2013-01-01"} from Generated[source=random]
+listPetTypes
+addPetType | body application/json={"name":"cat"} from Generated[source=random]
+getPetType | PATH petTypeId=315 from Generated[source=random]
+updatePetType | PATH petTypeId=2147483647 from Generated[source=fuzzing] | body application/json=null from Generated[source=fuzzing]
+deletePetType | PATH petTypeId=161 from Generated[source=random]
+listPets
+getPet | PATH petId=2147483648 from Generated[source=fuzzing]
+updatePet | PATH petId=661 from Generated[source=random] | body application/json={"name":"Leo","birthDate":"2010-09-07","type":{"name":"cat","id":1}} from Generated[source=random]
+deletePet | PATH petId=1 from Declared[statement=Optional[EXAMPLE]]
+listVisits
+addVisit | body application/json={"description":"rabies shot","petId":1} from Generated[source=random]
+getVisit | PATH visitId=1 from Declared[statement=Optional[EXAMPLE]]
+updateVisit | PATH visitId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"description":"rabies shot"} from Generated[source=random]
+deleteVisit | PATH visitId=-2147483649 from Generated[source=fuzzing]
+listSpecialties
+addSpecialty | body application/json={"name":"radiology"} from Generated[source=random]
+getSpecialty | PATH specialtyId=1 from Declared[statement=Optional[EXAMPLE]]
+updateSpecialty | PATH specialtyId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"name":"radiology"} from Generated[source=random]
+deleteSpecialty | PATH specialtyId=451 from Generated[source=random]
+listVets
+addVet | body application/json={"firstName":"James","lastName":"Carter","specialties":[{"name":"radiology"},{"name":"radiology"}]} from Generated[source=random]
+getVet | PATH vetId=967 from Generated[source=random]
+updateVet | PATH vetId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"firstName":"James","lastName":"Carter","specialties":[{"name":"radiology"},{"name":"radiology"},{"name":"radiology"},{"name":"radiology"}]} from Generated[source=random]
+deleteVet | PATH vetId=1 from Declared[statement=Optional[EXAMPLE]]
+addUser | body application/json={} from Generated[source=fuzzing]
+failingRequest
+listOwners
+addOwner | body application/json={"firstName":"George","lastName":"Franklin","address":"110 W. Liberty St.","city":"Madison","telephone":"6085551023"} from Generated[source=random]
+getOwner | PATH ownerId=945 from Generated[source=random]
+updateOwner | PATH ownerId=847 from Generated[source=random] | body application/json={"firstName":"George","lastName":"Franklin","address":"110 W. Liberty St.","city":"Madison","telephone":"6085551023"} from Generated[source=random]
+deleteOwner | PATH ownerId=152 from Generated[source=random]
+addPetToOwner | PATH ownerId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"name":"Leo","birthDate":"2010-09-07","type":{"name":"cat","id":1}} from Generated[source=random]
+getOwnersPet | PATH ownerId=-1 from Generated[source=fuzzing] | PATH petId=-2147483649 from Generated[source=fuzzing]
+updateOwnersPet | PATH ownerId=871 from Generated[source=random] | PATH petId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"name":"Leo","birthDate":"2010-09-07","type":{"name":"cat","id":1}} from Generated[source=random]
+addVisitToOwner | PATH ownerId=1 from Declared[statement=Optional[EXAMPLE]] | PATH petId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"description":"rabies shot","date":"2013-01-01"} from Generated[source=random]
+listPetTypes
+addPetType | body application/json=null from Generated[source=fuzzing]
+getPetType | PATH petTypeId=952 from Generated[source=random]
+updatePetType | PATH petTypeId=2147483647 from Generated[source=fuzzing] | body application/json=null from Generated[source=fuzzing]
+deletePetType | PATH petTypeId=582 from Generated[source=random]
+listPets
+getPet | PATH petId=0 from Generated[source=fuzzing]
+updatePet | PATH petId=2147483648 from Generated[source=fuzzing] | body application/json={} from Generated[source=fuzzing]
+deletePet | PATH petId=1 from Declared[statement=Optional[EXAMPLE]]
+listVisits
+addVisit | body application/json={"description":"rabies shot","petId":1} from Generated[source=random]
+getVisit | PATH visitId=1 from Declared[statement=Optional[EXAMPLE]]
+updateVisit | PATH visitId=-2147483649 from Generated[source=fuzzing] | body application/json=null from Generated[source=fuzzing]
+deleteVisit | PATH visitId=554 from Generated[source=random]
+listSpecialties
+addSpecialty | body application/json={"name":"radiology"} from Generated[source=random]
+getSpecialty | PATH specialtyId=-9223372036854775808 from Generated[source=fuzzing]
+updateSpecialty | PATH specialtyId=1 from Declared[statement=Optional[EXAMPLE]] | body application/json={"name":"radiology"} from Generated[source=random]
+deleteSpecialty | PATH specialtyId=99999999999999999999999999999999 from Generated[source=fuzzing]
+listVets
+addVet | body application/json={"firstName":"James","lastName":"Carter","specialties":[{"name":"radiology"}]} from Generated[source=random]
+getVet | PATH vetId=120 from Generated[source=random]
+updateVet | PATH vetId=46 from Generated[source=random] | body application/json={"firstName":"James","lastName":"Carter","specialties":[{"name":"radiology"},{"name":"radiology"}]} from Generated[source=random]
+deleteVet | PATH vetId=780 from Generated[source=random]
+addUser | body application/json={"username":"john.doe"} from Generated[source=random]

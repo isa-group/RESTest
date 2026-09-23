@@ -23,11 +23,10 @@ import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
 import io.restest.core.json.JsonException;
 import io.restest.core.model.Operation;
-import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.RequestBuilder;
+import io.restest.gen.Scheduler;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
@@ -49,13 +48,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * asking anything else would spend the run waiting on that one operation while every other request
  * had long since come back. It would also look efficient while doing it, because "nothing in
  * flight" is how wasted time is measured and there would always be that one request in flight. So
- * each answer is dealt with the moment it arrives, whichever it is, and the loop waits only when
- * every slot it is allowed is genuinely occupied.
+ * each answer is dealt with the moment it arrives, whichever it is, and outside the first round of
+ * a run the loop waits only when every slot it is allowed is genuinely occupied.
  *
- * <p>Two things it deliberately is not. It is not a scheduler: it has no notion of which operations
- * deserve more of the time, or of dividing the time into phases. And it is not clever about what to
- * send - deciding that belongs to the part of the tool that invents values, which is asked for the
- * next test case and never told what time it is.
+ * <p>What to send next, and when the time is up, it does not decide. It asks the {@link Scheduler},
+ * which holds the deadline and the order the operations go in, and does what it is told: send a
+ * request for this operation, wait for the answers still owed, or stop. What it does decide for
+ * itself is to stop early on its own evidence - a round in which nothing could be sent, or an
+ * address where nothing answers. The one waiting it does on the scheduler's behalf is at the start
+ * of a run, where the first round goes in steps and each step waits for the answers to the one
+ * before - and even that wait has a limit, so one request the API never answers costs the run that
+ * limit once rather than the whole budget.
  */
 final class RunLoop {
 
@@ -72,7 +75,8 @@ final class RunLoop {
      * @param answered how many of them came back with a reply, rather than failing on the way
      * @param notGenerated how many times no test case could be invented for an operation
      * @param notAssembled how many test cases could not be turned into a request that could be sent
-     * @param passes how many times the loop went round the whole list of operations
+     * @param passes how many times the loop went round the whole list of operations, not counting
+     *     the first round a run may begin with
      * @param stillOwed how many answers had still not arrived when the run stopped waiting for them.
      *     Normally zero, because the engine gives up on a request of its own accord long before this
      *     does
@@ -92,13 +96,12 @@ final class RunLoop {
     }
 
     /**
-     * Tests the given operations until the deadline, then waits for the answers still owed.
+     * Sends what the scheduler decides until it says the time is up, then waits for the answers
+     * still owed.
      *
-     * @param operations the operations to go round, in order. Never empty
-     * @param generator asked for each test case. Used from this thread only, because one generator
-     *     is one sequence of decisions
+     * @param scheduler what decides what to send next, and when to stop. Asked from this thread
+     *     only, because one scheduler, like the generator behind it, is one sequence of decisions
      * @param baseUrl where the API is
-     * @param deadline when to stop inventing new requests
      * @param workAhead how many requests may be waiting for an answer at once
      * @param announcementsAllowedToPileUp how many announcements may be waiting to reach the
      *     reports before the loop pauses to let them catch up. Judging a reply, writing it to the
@@ -112,18 +115,15 @@ final class RunLoop {
      * @param events where everything that happens is announced
      * @return what the loop did with the time
      */
-    static Outcome run(List<Operation> operations, RandomTestCaseGenerator generator,
-            String baseUrl, Instant deadline, int workAhead, int announcementsAllowedToPileUp,
-            Duration howLongToWaitForStragglers, HttpEngine engine, EventStream events) {
-        Objects.requireNonNull(generator, "generator");
+    static Outcome run(Scheduler scheduler, String baseUrl, int workAhead,
+            int announcementsAllowedToPileUp, Duration howLongToWaitForStragglers,
+            HttpEngine engine, EventStream events) {
+        Objects.requireNonNull(scheduler, "scheduler");
         Objects.requireNonNull(baseUrl, "baseUrl");
-        Objects.requireNonNull(deadline, "deadline");
         Objects.requireNonNull(howLongToWaitForStragglers, "howLongToWaitForStragglers");
         Objects.requireNonNull(engine, "engine");
         Objects.requireNonNull(events, "events");
-        if (operations.isEmpty()) {
-            throw new IllegalArgumentException("a run with no operations to test has nothing to do");
-        }
+        Instant deadline = scheduler.deadline();
 
         // One permit per request that may be outstanding. Taken before a request is invented and
         // given back by whichever answer arrives, so a slow operation costs one slot rather than
@@ -131,52 +131,85 @@ final class RunLoop {
         Semaphore slots = new Semaphore(workAhead);
         Answers answers = new Answers();
         long sent = 0;
+        long sentInTheOrdinaryRounds = 0;
         long notGenerated = 0;
         long notAssembled = 0;
         long passes = 0;
-        int next = 0;
+        // One permit per answer to a request of the current step of the first round. A fresh one
+        // for every step, so an answer that arrives too late for its own step is not mistaken for
+        // an answer to the next.
+        Semaphore stepAnswered = new Semaphore(0);
+        int sentInThisStep = 0;
 
-        while (Instant.now().isBefore(deadline)) {
-            if (!waitForASlot(slots, deadline)) {
-                break;
-            }
-            pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp);
+        try {
+            deciding:
+            while (true) {
+                Scheduler.Step step = scheduler.next();
+                switch (step) {
+                    case Scheduler.Step.TimeIsUp ignored -> {
+                        break deciding;
+                    }
+                    case Scheduler.Step.WaitForTheAnswers waiting -> {
+                        waitForTheStep(stepAnswered, sentInThisStep, waiting.atMost(), events);
+                        stepAnswered = new Semaphore(0);
+                        sentInThisStep = 0;
+                    }
+                    case Scheduler.Step.EndOfAPass end -> {
+                        if (!end.ofTheOpeningLap()) {
+                            passes++;
+                            // Nothing in this document could be sent even once in an ordinary
+                            // round. Going round again would produce the same nothing until the
+                            // deadline, so stop and let the run say why.
+                            if (sentInTheOrdinaryRounds == 0) {
+                                break deciding;
+                            }
+                        }
+                        // Enough requests have come back to know that nothing is listening at this
+                        // address. Carrying on would spend the whole budget collecting the same
+                        // refusal - tens of thousands of times, because an address with nothing
+                        // behind it refuses instantly - and bury the one useful sentence, which is
+                        // that the address is wrong.
+                        if (answers.nothingIsThere(workAhead)) {
+                            break deciding;
+                        }
+                    }
+                    case Scheduler.Step.Send send -> {
+                        if (!waitForASlot(slots, deadline)) {
+                            break deciding;
+                        }
+                        pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp);
 
-            Operation operation = operations.get(next);
-            Optional<TestCase> testCase = generator.generate(operation);
-            HttpRequestRecord request = testCase
-                    .map(planned -> assemble(operation, planned, baseUrl))
-                    .orElse(null);
-            if (request == null) {
-                slots.release();
-                if (testCase.isEmpty()) {
-                    notGenerated++;
-                } else {
-                    notAssembled++;
-                }
-            } else {
-                events.publish(new RunEvent.TestCasePlanned(Instant.now(), testCase.get()));
-                send(engine, testCase.get(), request, slots, answers, events);
-                sent++;
-            }
-
-            next++;
-            if (next == operations.size()) {
-                next = 0;
-                passes++;
-                // Nothing in this document could be sent even once. Going round again would produce
-                // the same nothing until the deadline, so stop and let the run say why.
-                if (sent == 0) {
-                    break;
-                }
-                // Enough requests have come back to know that nothing is listening at this address.
-                // Carrying on would spend the whole budget collecting the same refusal - tens of
-                // thousands of times, because an address with nothing behind it refuses instantly -
-                // and bury the one useful sentence, which is that the address is wrong.
-                if (answers.nothingIsThere(workAhead)) {
-                    break;
+                        Operation operation = send.operation();
+                        Optional<TestCase> testCase = scheduler.testCaseFor(send);
+                        HttpRequestRecord request = testCase
+                                .map(planned -> assemble(operation, planned, baseUrl))
+                                .orElse(null);
+                        if (request == null) {
+                            slots.release();
+                            if (testCase.isEmpty()) {
+                                notGenerated++;
+                            } else {
+                                notAssembled++;
+                            }
+                        } else {
+                            events.publish(new RunEvent.TestCasePlanned(Instant.now(),
+                                    testCase.get()));
+                            send(engine, testCase.get(), request, slots,
+                                    send.inTheOpeningLap() ? stepAnswered : null, answers, events);
+                            sent++;
+                            if (send.inTheOpeningLap()) {
+                                sentInThisStep++;
+                            } else {
+                                sentInTheOrdinaryRounds++;
+                            }
+                        }
+                    }
                 }
             }
+        } finally {
+            // However the deciding ended, a first round still going is announced as cut short, so
+            // the reports never hear of one that began and did not end.
+            scheduler.stop();
         }
 
         // The deadline stops us asking new questions, not listening to the answers we are owed.
@@ -193,17 +226,25 @@ final class RunLoop {
      * out, is what stops one slow operation from holding up every other request in the run.
      */
     private static void send(HttpEngine engine, TestCase testCase, HttpRequestRecord request,
-            Semaphore slots, Answers answers, EventStream events) {
+            Semaphore slots, Semaphore alsoTell, Answers answers, EventStream events) {
         try {
             engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
                 try {
                     announce(interaction, answers, events);
                 } finally {
                     slots.release();
+                    // After the announcement, never before: whoever is waiting on this is waiting
+                    // to know that what came back is on its way to everybody listening.
+                    if (alsoTell != null) {
+                        alsoTell.release();
+                    }
                 }
             });
         } catch (RuntimeException couldNotEvenBeStarted) {
             slots.release();
+            if (alsoTell != null) {
+                alsoTell.release();
+            }
             throw couldNotEvenBeStarted;
         }
     }
@@ -249,6 +290,37 @@ final class RunLoop {
             return RequestBuilder.build(operation, testCase, baseUrl);
         } catch (IllegalArgumentException | JsonException cannotBeSent) {
             return null;
+        }
+    }
+
+    /**
+     * Waits until every request of one step of the first round has been answered, and until what
+     * came back has been heard by everybody listening, but no longer than the scheduler allows.
+     *
+     * <p>Both halves matter. An answer that has arrived but not yet been heard by whoever keeps
+     * what the API returns is, for the next request, no answer at all: the identifier in it cannot
+     * be sent until it has been taken in. Waiting for the announcements is waiting on the tool's own
+     * work rather than on the API, and it is counted as time the tool wasted, like every other
+     * pause.
+     *
+     * @param answered one permit per answer to a request of this step
+     * @param sent how many requests this step sent
+     * @param atMost the longest the two waits may take together
+     */
+    private static void waitForTheStep(Semaphore answered, int sent, Duration atMost,
+            EventStream events) {
+        long giveUpAt = System.nanoTime() + atMost.toNanos();
+        try {
+            if (!answered.tryAcquire(sent, atMost.toNanos(), TimeUnit.NANOSECONDS)) {
+                return;
+            }
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        long left = giveUpAt - System.nanoTime();
+        if (left > 0) {
+            events.awaitDelivery(Duration.ofNanos(left));
         }
     }
 

@@ -31,6 +31,7 @@ import io.restest.gen.Campaigns;
 import java.util.Optional;
 import io.restest.gen.Dictionaries;
 import io.restest.gen.RandomTestCaseGenerator;
+import io.restest.gen.Scheduler;
 import io.restest.oracles.OracleListener;
 import io.restest.report.ConsoleReport;
 import io.restest.report.JsonReport;
@@ -42,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -415,7 +417,12 @@ final class RunCommand implements Callable<Integer> {
                 describe(out, model, generator, configuration, testable.size());
 
                 try {
-                    outcome = RunLoop.run(testable, generator, address, startedAt.plus(budget),
+                    // The deadline is the moment the command started plus the budget, not the
+                    // moment testing starts: reading the document was paid for out of the same
+                    // budget, and so is the first round the scheduler may open with.
+                    Scheduler scheduler = new Scheduler(generator, settings.schedule(),
+                            startedAt.plus(budget), InstantSource.system(), drained::publish);
+                    outcome = RunLoop.run(scheduler, address,
                             settings.schedule().workAheadFactor() * settings.engine()
                                     .maxConcurrency(),
                             settings.schedule().announcementsAllowedToPileUp(),

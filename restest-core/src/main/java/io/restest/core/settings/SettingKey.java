@@ -188,6 +188,10 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many announcements may await the reports before the run pauses"),
             key("schedule", "stragglerGrace", SettingKind.LENGTH_OF_TIME,
                     "how long past the deadline to wait for answers already asked for"),
+            key("schedule", "openingLap", SettingKind.YES_OR_NO,
+                    "whether a run starts by sending every operation once, the request likeliest to work"),
+            key("schedule", "openingLapPatience", SettingKind.LENGTH_OF_TIME,
+                    "how long each step of that opening lap waits for the answers to the one before"),
 
             key("generation", "optionalNestingDepth", SettingKind.WHOLE_NUMBER,
                     "below this depth, only what the description insists on is built"),

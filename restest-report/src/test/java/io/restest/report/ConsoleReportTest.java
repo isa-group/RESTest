@@ -196,6 +196,46 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("how a run began is said straight after how long it lasted")
+    void the_opening_lap_is_said_in_the_summary() {
+        io.restest.core.execution.TestCase first = io.restest.core.execution.TestCase.of(
+                io.restest.core.model.OperationId.of("POST /pets"), java.util.List.of());
+        io.restest.core.execution.TestCase second = io.restest.core.execution.TestCase.of(
+                io.restest.core.model.OperationId.of("GET /pets/{petId}"), java.util.List.of());
+        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(new RunEvent.PhaseStarted(Instant.EPOCH, "opening lap"));
+        report.on(new RunEvent.TestCasePlanned(Instant.EPOCH, first));
+        report.on(new RunEvent.TestCasePlanned(Instant.EPOCH, second));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(first, 201)));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(second, 404)));
+        report.on(new RunEvent.PhaseFinished(Instant.EPOCH.plusMillis(850), "opening lap", false));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        // Compared line by line: the report ends a line the way the machine it runs on does, which
+        // on Windows is not the same character as everywhere else.
+        java.util.List<String> lines = screen.toString().lines().toList();
+        int summary = lines.indexOf("2 requests to 2 operations in 10.0s, 30% of it idle");
+        assertThat(summary).describedAs("the first line of the summary is there").isNotNegative();
+        assertThat(lines.get(summary + 1))
+                .isEqualTo("  opening lap: 2 requests in 850ms, 1 of 2 operations answered 2xx");
+    }
+
+    @Test
+    @DisplayName("a first round that ended before it was done says so")
+    void an_opening_lap_cut_short_says_so() {
+        io.restest.core.execution.TestCase only = io.restest.core.execution.TestCase.of(
+                io.restest.core.model.OperationId.of("GET /pets"), java.util.List.of());
+        report.on(new RunEvent.PhaseStarted(Instant.EPOCH, "opening lap"));
+        report.on(new RunEvent.TestCasePlanned(Instant.EPOCH, only));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(only, 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH.plusSeconds(2), Duration.ofSeconds(2),
+                Runs.engine()));
+
+        assertThat(screen.toString()).contains(
+                "  opening lap, cut short: 1 request in 2.0s, 1 of 1 operations answered 2xx");
+    }
+
+    @Test
     @DisplayName("a run that found nothing says so plainly")
     void a_clean_run_says_so() {
         report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,

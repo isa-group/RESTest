@@ -464,3 +464,23 @@ either a third copy of those two traps or a shared reader living somewhere — a
 this module, which is where the change ends up either way. Exporting the reader from `restest-gen`
 instead would have had the command line read its settings using a class from the module that invents
 request values, which is a dependency nobody could explain from the names.
+
+## Amendment (M9.1)
+
+**Date:** 2026-09-23
+
+**The phase event exists.** The decision above lists *phase finished* among the events a run
+publishes, and nothing published one until the first round of a run gave a stretch of it a purpose
+of its own. `RunEvent` gains `PhaseStarted` and `PhaseFinished`, the second saying whether the
+stretch was cut short, and the two listeners that handle every kind of event - the console and the
+JSON report - handle both. The run announces a stretch; the reports work out what it achieved,
+matching each request to the stretch it was sent in, so an answer that arrives late still counts
+where it belongs.
+
+**Waiting for the listeners is a mark on the queue, not a count.** `EventStream.awaitDelivery`
+waits until everything announced so far has been heard, by queueing a mark that is let go when the
+delivering thread reaches it. The first round needs it - a step must not be built before the answers
+to the step before have been taken in by whoever keeps what the API returns - and counting what is
+still waiting cannot answer that safely, because a listener that announces something while it is
+being told something can make the count come out even with the last reply still queued. The record
+is [ADR-0026](0026-what-a-run-sends-first.md).
