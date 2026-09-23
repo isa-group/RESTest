@@ -25,8 +25,9 @@ import java.util.Objects;
  * will reject a request written in the other. RESTest needs to be told which style applies, so it is
  * recorded here rather than guessed.
  *
- * <p>The names are OpenAPI's. Where a document says nothing, {@link #defaultFor} gives the default
- * the format defines.
+ * <p>The names are OpenAPI's, spelled the way constants are; {@link #written} spells each one the way
+ * a document does. Where a document says nothing, {@link #defaultFor} gives the default the format
+ * defines.
  */
 public enum ParameterStyle {
     /** {@code ;name=value}, path only. */
@@ -54,6 +55,23 @@ public enum ParameterStyle {
             // that is RequestBodyModel's business.
             case BODY -> throw new IllegalArgumentException(
                     "a request body has a media type rather than a parameter style");
+        };
+    }
+
+    /**
+     * The style as a description of an API writes it: {@code deepObject} rather than
+     * {@code DEEP_OBJECT}. Anything a person reads names it this way, because it is the word they
+     * will look for in their own document.
+     */
+    public String written() {
+        return switch (this) {
+            case MATRIX -> "matrix";
+            case LABEL -> "label";
+            case FORM -> "form";
+            case SIMPLE -> "simple";
+            case SPACE_DELIMITED -> "spaceDelimited";
+            case PIPE_DELIMITED -> "pipeDelimited";
+            case DEEP_OBJECT -> "deepObject";
         };
     }
 

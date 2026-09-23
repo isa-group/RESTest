@@ -61,5 +61,14 @@ public enum ParameterLocation {
     /** Inside the {@code Cookie} header. */
     COOKIE,
     /** The body of the request, which is not a parameter and holds any value at all. */
-    BODY
+    BODY;
+
+    /**
+     * The location as a description of an API writes it: {@code query} rather than {@code QUERY}.
+     * Anything a person reads names it this way, because it is the word they will look for in their
+     * own document.
+     */
+    public String written() {
+        return name().toLowerCase(java.util.Locale.ROOT);
+    }
 }

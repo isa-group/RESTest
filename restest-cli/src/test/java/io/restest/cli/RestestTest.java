@@ -337,7 +337,7 @@ class RestestTest {
                         + "multipart/form-data, which cannot be written yet",
                 "  searchPets: it requires a request body, and RESTest cannot send one with a GET "
                         + "request",
-                "  filterPets: the parameter 'filter' is written in the 'DEEP_OBJECT' style, which "
+                "  filterPets: the parameter 'filter' is written in the 'deepObject' style, which "
                         + "is not assembled yet");
 
         int answer = run("run", "pet-shop-with-operations-it-cannot-try.yaml",

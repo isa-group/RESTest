@@ -124,7 +124,7 @@ public final class RequestBuilder {
             }
             if (!isUnderstood(parameter.style())) {
                 return Optional.of("the parameter '" + parameter.name() + "' is written in the '"
-                        + parameter.style() + "' style, which is not assembled yet");
+                        + parameter.style().written() + "' style, which is not assembled yet");
             }
         }
         // After the parameters, so that an operation one of them already stops is told about that
