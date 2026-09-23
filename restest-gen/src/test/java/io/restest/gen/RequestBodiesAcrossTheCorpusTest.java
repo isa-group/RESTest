@@ -18,6 +18,7 @@ package io.restest.gen;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.RequestBodyModel;
@@ -52,6 +53,12 @@ import org.junit.jupiter.api.Test;
  * want of a body, which is what this increment exists to end. Not one is, the two unwritable bodies
  * included: both of those documents say the body may be left out, so those operations are tested
  * without one.
+ *
+ * <p>One more count is pinned because it is zero. The client that sends requests refuses to build a
+ * {@code GET} or a {@code HEAD} carrying a body, so an operation that insists on one there is named
+ * as untestable rather than tried for the whole run. No operation in the corpus even offers a body
+ * on either method, so that rule has never had a case here to act on - and a document that adds one
+ * will say so by changing the number.
  */
 class RequestBodiesAcrossTheCorpusTest {
 
@@ -135,6 +142,55 @@ class RequestBodiesAcrossTheCorpusTest {
                         + "bodies that cannot be written cost nothing, because both documents say "
                         + "that body may be left out - so those operations are tested without one, "
                         + "which is a request their own authors called legitimate")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("no operation in the corpus insists on a body on a GET or a HEAD")
+    void no_operation_asks_for_a_body_on_a_get_or_a_head() {
+        int looked = 0;
+        List<String> offering = new ArrayList<>();
+        List<String> insisting = new ArrayList<>();
+        List<String> turnedAway = new ArrayList<>();
+        for (Path document : corpus()) {
+            ApiModel model = parse(document);
+            RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260918L);
+            for (Operation operation : model.operations()) {
+                String named = document.getParent().getFileName() + " " + operation.id().value();
+                boolean noRoom = operation.method() == HttpMethod.GET
+                        || operation.method() == HttpMethod.HEAD;
+                if (noRoom) {
+                    looked++;
+                }
+                if (noRoom && operation.requestBody().isPresent()) {
+                    offering.add(named);
+                    if (operation.requiresBody()) {
+                        insisting.add(named);
+                    }
+                }
+                if (generator.untestableOperations().getOrDefault(operation.id(), "")
+                        .contains("RESTest cannot send one with a")) {
+                    turnedAway.add(named);
+                }
+            }
+        }
+
+        assertThat(looked)
+                .describedAs("the GET and HEAD operations of the corpus, every one of them looked "
+                        + "at - without this, the counts below would read the same if nothing had "
+                        + "been read at all")
+                .isEqualTo(792);
+        assertThat(turnedAway)
+                .describedAs("the operations turned away because RESTest cannot send a body with "
+                        + "their method are exactly the ones that insist on one there")
+                .containsExactlyElementsOf(insisting);
+        assertThat(insisting)
+                .describedAs("a GET or a HEAD that insists on a body - none in the corpus, measured "
+                        + "when the rule that names one was written")
+                .isEmpty();
+        assertThat(offering)
+                .describedAs("and none that merely accepts one either, so the corpus cannot show "
+                        + "what happens to a body such a request may leave out")
                 .isEmpty();
     }
 

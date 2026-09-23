@@ -425,6 +425,71 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("a GET or a HEAD that insists on a body is named as untestable, rather than sent "
+            + "for the whole run and never answered")
+    void a_get_or_a_head_insisting_on_a_body_is_reported() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(
+                        ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")), true));
+        Operation probe = Operation.of(HttpMethod.HEAD, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(StringSchema.of(), true));
+        RandomTestCaseGenerator generator = generatorFor(LIST_PETS, search, probe);
+
+        assertThat(generator.testableOperations()).containsExactly(LIST_PETS);
+        assertThat(generator.untestableOperations())
+                .containsOnlyKeys(search.id(), probe.id())
+                .containsEntry(search.id(),
+                        "it requires a request body, and RESTest cannot send one with a GET request")
+                .containsEntry(probe.id(),
+                        "it requires a request body, and RESTest cannot send one with a HEAD request");
+        assertThat(generator.generate(search))
+                .describedAs("the client that sends requests refuses to build a GET with a body, "
+                        + "so a test case for one would be thrown away before it left the machine")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("an operation RESTest cannot send costs the others nothing: they are tested exactly "
+            + "as they would be without it")
+    void an_operation_that_cannot_be_sent_draws_nothing() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(
+                        ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")), true));
+        RandomTestCaseGenerator alone = generatorFor(LIST_PETS);
+        RandomTestCaseGenerator beside = generatorFor(search, LIST_PETS);
+
+        List<String> fromAlone = IntStream.range(0, 20)
+                .mapToObj(draw -> describe(alone.generate().orElseThrow()))
+                .toList();
+        List<String> fromBeside = IntStream.range(0, 20)
+                .mapToObj(draw -> describe(beside.generate().orElseThrow()))
+                .toList();
+
+        assertThat(fromBeside)
+                .describedAs("whether it can be sent is read off the document, so no value is "
+                        + "drawn for it first, and every later decision comes from the numbers it "
+                        + "would have come from anyway")
+                .isEqualTo(fromAlone);
+    }
+
+    @Test
+    @DisplayName("a GET that merely accepts a body is still counted among the operations that can be "
+            + "tested")
+    void a_get_merely_accepting_a_body_is_still_counted_testable() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(
+                        ObjectSchema.of(Map.of("name", StringSchema.of())), false));
+        RandomTestCaseGenerator generator = generatorFor(search);
+
+        // Counted, and rightly: a request without that body is one the document allows. What this
+        // does not say is that every request for it goes without the body. An ordinary request
+        // still draws it, on the same chance as any body an operation merely accepts, and the
+        // client refuses each request that carries it - a known gap, left for a change of its own.
+        assertThat(generator.testableOperations()).containsExactly(search);
+        assertThat(generator.untestableOperations()).isEmpty();
+    }
+
+    @Test
     @DisplayName("a property the API only ever returns is never sent in a body")
     void a_read_only_property_is_never_sent() {
         Operation createPet = Operation.of(HttpMethod.POST, "/pets")

@@ -23,6 +23,7 @@ import io.restest.core.execution.Payload;
 import io.restest.core.execution.TestCase;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
@@ -51,6 +52,11 @@ import java.util.StringJoiner;
  * ways this understands are the two that OpenAPI uses unless a document says otherwise, which is the
  * overwhelming majority of real parameters; a document asking for one of the unusual ways is refused
  * by name rather than served a guess that the API would reject for reasons nobody could see.
+ *
+ * <p>So is a document asking for a body this cannot send. HTTP gives a body on a {@code GET} or a
+ * {@code HEAD} no agreed meaning, and the client that sends requests refuses to build such a request
+ * at all, so an operation that insists on one is named as one no request can be assembled for,
+ * rather than tried for a whole run without a single request leaving.
  *
  * <p>Everything that goes into a URL is percent-encoded - the {@code %20} treatment - so a value
  * containing a space, a slash or a word in a non-Latin alphabet produces a request that means what it
@@ -96,7 +102,14 @@ public final class RequestBuilder {
     }
 
     /**
-     * Whether every parameter of this operation is written down in a way that can be assembled.
+     * Whether a request for this operation can be assembled at all.
+     *
+     * <p>Two things stop it, and the document alone says whether either is there. A parameter may
+     * be written down in a way this does not assemble yet. Or the operation may insist on a body
+     * although it is a {@code GET} or a {@code HEAD}, a request the client that sends requests
+     * refuses to build, so every attempt would be thrown away before it left the machine. A body
+     * such an operation merely accepts does not make it one that cannot be tested, since the
+     * document allows a request without it.
      *
      * @param operation the operation
      * @return empty if the request can be built, or what stands in the way
@@ -114,11 +127,30 @@ public final class RequestBuilder {
                         + parameter.style() + "' style, which is not assembled yet");
             }
         }
+        // After the parameters, so that an operation one of them already stops is told about that
+        // parameter, whatever its body.
+        if (operation.requiresBody() && cannotBeSentWithABody(operation.method())) {
+            return Optional.of("it requires a request body, and RESTest cannot send one with a "
+                    + operation.method() + " request");
+        }
         return Optional.empty();
     }
 
     private static boolean isUnderstood(ParameterStyle style) {
         return style == ParameterStyle.SIMPLE || style == ParameterStyle.FORM;
+    }
+
+    /**
+     * Whether the client that sends requests refuses to build a request with this method and a body.
+     *
+     * <p>It refuses two: {@code GET} and {@code HEAD}, two of the methods on which HTTP gives a body
+     * no agreed meaning - {@code DELETE} is another, and that one it sends. HTTP itself does not
+     * forbid a body on any of them, and another client might send one, so this is a limit of the
+     * client rather than of the protocol. Every other method is sent with whatever body it is given -
+     * {@code TRACE} included, although HTTP forbids a body on that one.
+     */
+    static boolean cannotBeSentWithABody(HttpMethod method) {
+        return method == HttpMethod.GET || method == HttpMethod.HEAD;
     }
 
     private static String fillIn(Operation operation, TestCase testCase) {

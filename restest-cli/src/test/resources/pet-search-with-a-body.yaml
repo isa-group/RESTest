@@ -1,0 +1,38 @@
+openapi: 3.1.0
+info:
+  title: Pet Search
+  version: 1.0.0
+  description: >
+    One operation, and one RESTest cannot send: a search that insists on a body although it is a
+    GET. OpenAPI 3.1 permits a body there, and HTTP gives it no agreed meaning; the client RESTest
+    sends requests with refuses to build such a request at all. So RESTest names it as an operation
+    it cannot test, instead of trying it for the whole run and blaming the address when nothing ever
+    answers.
+paths:
+  /pets/search:
+    get:
+      operationId: searchPets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: the pets whose name matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string

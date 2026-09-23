@@ -106,9 +106,10 @@ So does 9.3's rule that deletes follow the reads and updates of the same round.
 - **every parameter the API requires and none it does not**, with no draw for how many optional
   parameters to send;
 - **a body wherever the document describes one**, required or not, for the reason in the context;
-- **but no body a `GET` or a `HEAD` merely accepts**: HTTP gives such a body no meaning, and the
-  engine refuses to send one, so forcing it in would spend the operation's one request on a request
-  that cannot go out;
+- **but no body a `GET` or a `HEAD` merely accepts**: HTTP gives such a body no agreed meaning, and
+  the engine refuses to send one, so forcing it in would spend the operation's one request on a
+  request that cannot go out. A `GET` or a `HEAD` that *insists* on a body is not in the round at
+  all: RESTest cannot send it, and reports it among the operations that cannot be tested;
 - **values from the plan's first strategy that does not push at the API, its sources asked in turn
   rather than chosen among**, in this order: a closed list of accepted values, because nothing
   outside it may be sent; what the API has already handed back; the lists somebody handed over; the

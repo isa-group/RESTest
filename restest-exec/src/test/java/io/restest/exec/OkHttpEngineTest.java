@@ -320,6 +320,47 @@ class OkHttpEngineTest {
     }
 
     @Test
+    @DisplayName("a GET or a HEAD carrying a body never leaves the machine: the client refuses to "
+            + "build it")
+    void a_body_on_a_get_or_a_head_is_never_sent() {
+        for (HttpMethod method : List.of(HttpMethod.GET, HttpMethod.HEAD)) {
+            Interaction interaction = engine.send(Requests.testCase(method, "/widgets/search"),
+                    Requests.json(method, url("/widgets/search"), "{\"name\":\"a widget\"}"));
+
+            assertThat(interaction.isAnswered()).describedAs("%s with a body", method).isFalse();
+            assertThat(interaction.outcome().toString()).contains("could not be assembled");
+        }
+        assertThat(api.getAllServeEvents())
+                .describedAs("refused before the API heard anything. This is the rule the part "
+                        + "that decides which operations can be tested copies, and the test that "
+                        + "fails first if the client ever changes it")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("every other method is sent with its body - TRACE included, although HTTP forbids "
+            + "one there - which is where that rule stops")
+    void a_body_on_every_other_method_is_sent() {
+        api.stubFor(com.github.tomakehurst.wiremock.client.WireMock.any(urlEqualTo("/widgets/7"))
+                .willReturn(aResponse().withStatus(204)));
+
+        for (HttpMethod method : HttpMethod.values()) {
+            if (method == HttpMethod.GET || method == HttpMethod.HEAD) {
+                continue;
+            }
+            Interaction interaction = engine.send(Requests.testCase(method, "/widgets/7"),
+                    Requests.json(method, url("/widgets/7"), "{\"reason\":\"sold\"}"));
+
+            assertThat(interaction.isAnswered()).describedAs("%s with a body", method).isTrue();
+            api.verify(new com.github.tomakehurst.wiremock.matching.RequestPatternBuilder(
+                            com.github.tomakehurst.wiremock.http.RequestMethod.fromString(
+                                    method.name()), urlEqualTo("/widgets/7"))
+                    .withRequestBody(com.github.tomakehurst.wiremock.client.WireMock
+                            .equalToJson("{\"reason\":\"sold\"}")));
+        }
+    }
+
+    @Test
     @DisplayName("a body the API promised and then did not send is not the same as no body")
     void an_empty_body_with_a_declared_type_is_kept() {
         api.stubFor(get(urlEqualTo("/promised")).willReturn(aResponse()

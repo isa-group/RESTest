@@ -85,9 +85,10 @@ import java.util.stream.Stream;
  *
  * <p>Not every operation can be attempted even so, and the ones that cannot are named rather than
  * quietly skipped: one whose parameters are written in a way requests cannot yet be assembled for,
- * one that requires a value nothing can invent, and one whose body is only offered in a form this
- * cannot write - a file upload, say - are each reported with the reason. A run that tests eleven of
- * an API's twenty operations should say so.
+ * one that requires a value nothing can invent, one whose body is only offered in a form this
+ * cannot write - a file upload, say - and a {@code GET} or a {@code HEAD} that insists on a body,
+ * which the client that sends requests refuses to build, are each reported with the reason. A run
+ * that tests eleven of an API's twenty operations should say so.
  *
  * <p>Every generator is given a number to start from, and the same number produces the same
  * decisions, on any machine and on any Java runtime. That is what makes a surprising result worth
@@ -455,12 +456,12 @@ public final class RandomTestCaseGenerator {
      *
      * <p>Everything the API requires and nothing it does not, except a body wherever the document
      * describes one, since an operation that takes a body rarely works without it whatever the
-     * document says - though not one a {@code GET} or a {@code HEAD} merely accepts, which HTTP
-     * gives no meaning to and which would stop the request going out at all. Each value is taken
-     * from the first of the plan's ordinary sources that has one, in the order most likely to be
-     * accepted: the closed list of values the document accepts, what the API has already handed
-     * back, a list somebody wrote, the document's own sample, its default, and last a value
-     * invented to fit.
+     * document says - though not one a {@code GET} or a {@code HEAD} merely accepts, which the
+     * client that sends requests refuses to build, so the request would not go out at all. Each
+     * value is taken from the first of the plan's ordinary sources that has one, in the order most
+     * likely to be accepted: the closed list of values the document accepts, what the API has
+     * already handed back, a list somebody wrote, the document's own sample, its default, and last
+     * a value invented to fit.
      *
      * <p>Drawn from numbers of its own, so the ordinary requests that follow are the same whether
      * this was asked for or not.
@@ -594,11 +595,12 @@ public final class RandomTestCaseGenerator {
             Strategy strategy, Filling filling) {
         if (!declared.required()) {
             // Decided by chance for an ordinary request, and drawn exactly as it always was. For the
-            // likeliest request it is not drawn at all: the body goes, unless the method is one
-            // HTTP gives a body no meaning on, where it would stop the request being sent.
+            // likeliest request it is not drawn at all: the body goes, unless the method is one the
+            // client that sends requests refuses a body on, where it would stop the request being
+            // sent.
             boolean leftOut = filling == Filling.DRAWN
                     ? random.nextDouble() >= settings.generation().optionalBodyChance()
-                    : carriesNoBody(operation.method());
+                    : RequestBuilder.cannotBeSentWithABody(operation.method());
             if (leftOut) {
                 return Optional.empty();
             }
@@ -609,18 +611,6 @@ public final class RandomTestCaseGenerator {
         }
         return writableBody(operation, declared, mediaType.get(), strategy.values())
                 .map(value -> new BodyValue(mediaType.get(), value.value(), value.origin()));
-    }
-
-    /**
-     * Whether a request with this method has nowhere to put a body.
-     *
-     * <p>A {@code GET} or a {@code HEAD} with a body is one HTTP gives no meaning to and the client
-     * that sends requests refuses to build, so a body such a request merely accepts is left out of
-     * the request most likely to be accepted rather than being the reason it is never sent.
-     */
-    private static boolean carriesNoBody(io.restest.core.model.HttpMethod method) {
-        return method == io.restest.core.model.HttpMethod.GET
-                || method == io.restest.core.model.HttpMethod.HEAD;
     }
 
     /**
@@ -663,25 +653,31 @@ public final class RandomTestCaseGenerator {
     /**
      * Why this operation cannot be attempted, if it cannot.
      *
-     * <p>Three things stand in the way today, and each is a limit of what has been built rather than
-     * a fault in the specification: a body that must be sent and cannot be written or filled in; a
-     * parameter written down in a way requests cannot be assembled for; and a required parameter no
-     * value can be found for - because its description allows none, because the parser could not
-     * read it, or because nothing available knows how to satisfy it.
+     * <p>Four things stand in the way today, and each is a limit of what has been built rather than
+     * a fault in the specification: a parameter written down in a way requests cannot be assembled
+     * for; a body a {@code GET} or a {@code HEAD} insists on, which the client that sends requests
+     * refuses to build; a body that must be sent and cannot be written or filled in; and a required
+     * parameter no value can be found for - because its description allows none, because the parser
+     * could not read it, or because nothing available knows how to satisfy it.
      *
-     * <p>That last one is decided by trying, once, rather than by reasoning about the shape. Shapes
-     * that defeat the sources of values are not a list anybody can write down in advance, and an
-     * operation quietly failing to produce a test case on every attempt - while being reported as
-     * testable - is the outcome this check exists to prevent.
+     * <p>The first two are asked first, because the document answers them on its own. An operation
+     * that could not be sent has no value drawn for it, so every later decision comes from the
+     * numbers it would have come from anyway.
+     *
+     * <p>Whether a value can be found for a required parameter is decided by trying, once, rather
+     * than by reasoning about the shape. Shapes that defeat the sources of values are not a list
+     * anybody can write down in advance, and an operation quietly failing to produce a test case on
+     * every attempt - while being reported as testable - is the outcome this check exists to
+     * prevent.
      */
     private Optional<String> whatStandsInTheWay(Operation operation) {
-        Optional<String> body = whatStandsInTheWayOfTheBody(operation);
-        if (body.isPresent()) {
-            return body;
-        }
         Optional<String> unassemblable = RequestBuilder.whatCannotBeAssembled(operation);
         if (unassemblable.isPresent()) {
             return unassemblable;
+        }
+        Optional<String> body = whatStandsInTheWayOfTheBody(operation);
+        if (body.isPresent()) {
+            return body;
         }
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required()) {

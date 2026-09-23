@@ -101,8 +101,9 @@ class LikeliestRequestTest {
     }
 
     @Test
-    @DisplayName("but a body a GET merely accepts is left out, and one it insists on is not")
-    void a_get_carries_a_body_only_when_it_insists() {
+    @DisplayName("but a body a GET merely accepts is left out, and a GET that insists on one is not "
+            + "in the round at all")
+    void a_get_carries_no_body_and_one_that_insists_is_not_sent() {
         Operation searchWithABody = Operation.of(HttpMethod.GET, "/pets/search")
                 .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), false));
         Operation searchThatInsists = Operation.of(HttpMethod.GET, "/pets/query")
@@ -111,9 +112,13 @@ class LikeliestRequestTest {
 
         for (int draw = 0; draw < 20; draw++) {
             assertThat(generator.likeliestRequest(searchWithABody).orElseThrow().body()).isEmpty();
-            assertThat(generator.likeliestRequest(searchThatInsists).orElseThrow().body())
-                    .isPresent();
         }
+        assertThat(generator.likeliestRequest(searchThatInsists))
+                .describedAs("RESTest cannot send a body with a GET, so the operation is named "
+                        + "among those that cannot be tested rather than given a request that "
+                        + "could not go out")
+                .isEmpty();
+        assertThat(generator.untestableOperations()).containsKey(searchThatInsists.id());
     }
 
     @Test

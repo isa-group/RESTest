@@ -208,6 +208,63 @@ class RequestBuilderTest {
                 .isEmpty();
     }
 
+    @Test
+    @DisplayName("a GET or a HEAD that insists on a body cannot be assembled, and says so plainly")
+    void a_body_insisted_on_by_a_get_or_a_head_is_named() {
+        RequestBodyModel required = RequestBodyModel.json(
+                ObjectSchema.of(Map.of("name", StringSchema.of())), true);
+
+        assertThat(RequestBuilder.whatCannotBeAssembled(
+                Operation.of(HttpMethod.GET, "/pets/search").withRequestBody(required)))
+                .hasValue("it requires a request body, and RESTest cannot send one with a GET "
+                        + "request");
+        assertThat(RequestBuilder.whatCannotBeAssembled(
+                Operation.of(HttpMethod.HEAD, "/pets/search").withRequestBody(required)))
+                .hasValue("it requires a request body, and RESTest cannot send one with a HEAD "
+                        + "request");
+    }
+
+    @Test
+    @DisplayName("a body a GET merely accepts does not stop its requests being assembled, since the "
+            + "document allows them without it")
+    void a_body_a_get_merely_accepts_does_not_stop_it() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets/search").withRequestBody(
+                RequestBodyModel.json(ObjectSchema.of(Map.of("name", StringSchema.of())), false));
+
+        assertThat(RequestBuilder.whatCannotBeAssembled(search)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("on every other method the body an operation insists on can be sent, since the "
+            + "client sends a body with all of them")
+    void every_other_method_may_insist_on_a_body() {
+        RequestBodyModel required = RequestBodyModel.json(StringSchema.of(), true);
+
+        for (HttpMethod method : HttpMethod.values()) {
+            if (method == HttpMethod.GET || method == HttpMethod.HEAD) {
+                continue;
+            }
+            assertThat(RequestBuilder.whatCannotBeAssembled(
+                    Operation.of(method, "/pets").withRequestBody(required)))
+                    .describedAs("a %s request with the body its document requires", method)
+                    .isEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("an operation a parameter already stops is told about the parameter, whatever its "
+            + "body")
+    void a_parameter_that_cannot_be_written_is_named_before_the_body() {
+        Parameter deepObject = new Parameter("filter", ParameterLocation.QUERY, false,
+                ObjectSchema.of(Map.of()), ParameterStyle.DEEP_OBJECT, true, Optional.empty(),
+                Optional.empty(), List.of());
+        Operation search = Operation.of(HttpMethod.GET, "/pets/search", List.of(deepObject))
+                .withRequestBody(RequestBodyModel.json(StringSchema.of(), true));
+
+        assertThat(RequestBuilder.whatCannotBeAssembled(search))
+                .hasValueSatisfying(reason -> assertThat(reason).contains("DEEP_OBJECT"));
+    }
+
     // --- what review found this builder getting wrong ------------------------------------------
 
     @Test
