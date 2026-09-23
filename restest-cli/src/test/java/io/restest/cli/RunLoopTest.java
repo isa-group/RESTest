@@ -342,6 +342,19 @@ class RunLoopTest {
                     PATIENT, engine, events);
         }
 
+        // The step straight after the list: the creation's body fills its name from the name
+        // the list brought back, which is kafka's shape - the list in one step, the creations in
+        // the next - and holds the wait after the very first step to account.
+        JsonValue createdWith = planned.stream()
+                .filter(testCase -> testCase.operation().value().equals("addPet"))
+                .findFirst()
+                .orElseThrow()
+                .body()
+                .orElseThrow()
+                .value();
+        assertThat(((JsonValue.JsonObject) createdWith).member("name"))
+                .describedAs("the first round's creation names the pet the list named")
+                .contains(JsonValue.of("Rex"));
         ParameterValue petId = planned.stream()
                 .filter(testCase -> testCase.operation().value().equals("getPet"))
                 .findFirst()

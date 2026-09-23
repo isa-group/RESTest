@@ -44,7 +44,7 @@ import java.util.Map;
  * <p>Within a step, operations keep the order the document declares them in. Whether an address
  * "names one thing" is decided by whether it has a gap in it to fill - a {@code {…}} - and nothing
  * cleverer: a gap usually picks one thing out of the collection named before it, and where it does
- * not, the only cost is that the operation goes one step later in the same first second.
+ * not, the only cost is that the operation goes one step later in the same first round.
  *
  * <p>This decides only the order. The {@link Scheduler} uses it to decide what a run sends first and
  * asks for a wait between the steps; what goes into each request is filled in by {@link

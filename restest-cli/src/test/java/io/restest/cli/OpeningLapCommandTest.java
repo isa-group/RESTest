@@ -79,7 +79,9 @@ class OpeningLapCommandTest {
     void a_run_begins_with_every_operation_once(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+        // Five seconds, not two: the budget starts with the command, before the document is read,
+        // and a cold machine must still see the whole round through before the time is up.
+        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "5s",
                 "--seed", "20260923", "--out", directory.toString(), "--store");
 
         // In the order they went out. Within a step the requests are sent together, so the two

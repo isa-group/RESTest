@@ -254,7 +254,7 @@ owns it, because no row in `ROADMAP.md` builds the scheduler ADR-0013 §6 descri
 **Open question 3 has a scheduler to land in, and the part of it taken is the ordinary part.** The
 question ends by saying no row built the scheduler ADR-0013 §6 describes; roadmap row 9.1 built it.
 Its first round sends every operation once before anything is chosen by chance, charged to the
-budget and counted in the idle time, which is the half of a warm-up this record called ordinary
-scheduling. It reads no error text and steers nothing by status code: what one step learns reaches
+budget, with the part of its waits that has nothing in flight counted in the idle time; that is the
+half of a warm-up this record called ordinary scheduling. It reads no error text and steers nothing by status code: what one step learns reaches
 the next only through the memory of values the API returned, which ADR-0021 already licensed. The
 refusal of a preparation phase outside the budget stands. [ADR-0026](0026-what-a-run-sends-first.md).

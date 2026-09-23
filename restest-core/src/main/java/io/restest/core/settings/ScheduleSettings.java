@@ -36,7 +36,7 @@ import java.util.Objects;
  * the lists of what is there, then creates, then asks for single things, then changes them, and
  * deletes last. Each of those steps waits for the answers to the one before, so that an identifier
  * one step has just been handed is there for the next. That first round is what gets an API's
- * operations answered in the first second of a run rather than whenever chance gets round to them.
+ * operations answered in the first seconds of a run rather than whenever chance gets round to them.
  * It can be switched off, and how long a step waits is bounded, so one request the API never
  * answers cannot hold the start of a run up.
  *

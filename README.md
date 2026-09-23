@@ -86,7 +86,8 @@ the run itself was not kept; pass --store to keep every request and reply
 The line under the first one says how the run began. Before anything is chosen by chance, every
 operation it can test is sent once, with the request it is most likely to accept — only what the API
 requires, a body wherever the document describes one, and for each value the best any source has,
-a value the API has already handed back first — in steps: the lists of what is there, then what
+the document's closed list of accepted values where it states one and then a value the API has
+already handed back — in steps: the lists of what is there, then what
 creates, then what reads one thing, then what changes, and deletions last, each step waiting for the
 answers to the one before so that an identifier just handed back can be sent by the next. It is paid
 for out of the budget like everything else. Measured against two containerised APIs restarted before

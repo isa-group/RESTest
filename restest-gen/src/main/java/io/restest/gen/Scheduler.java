@@ -41,7 +41,7 @@ import java.util.function.Consumer;
  * then the creations, then the reads of one thing in particular, then the changes, and the deletions
  * last - and between one step and the next it waits for the answers to come back, so that an
  * identifier one step has just been handed is there for the next to use. That round is what gets an
- * API's operations answered in the first second of a run rather than whenever chance gets round to
+ * API's operations answered in the first seconds of a run rather than whenever chance gets round to
  * them. It is paid for out of the same budget as everything else, and announced as a stretch of the
  * run of its own, so the reports can say how long it took and what it achieved. A wait is bounded,
  * so an API that never answers one request cannot hold the start of a run up.
