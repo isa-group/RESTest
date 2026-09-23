@@ -414,17 +414,18 @@ final class RunCommand implements Callable<Integer> {
                 drained.subscribe(JsonReport.to(reportFile, configuration));
 
                 drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address));
-                // Every operation this run will never try, and why, announced before anything is
-                // sent and in the order the document declares them, which is the order the
-                // generator keeps them in - so every report names them, and names them the same
-                // way each time the same command is run. The count below includes them; the names
-                // reach a person only through the reports, like everything else a run finds out.
-                Instant decided = Instant.now();
-                generator.untestableOperations().forEach((operation, reason) ->
-                        drained.publish(new RunEvent.OperationSkipped(decided, operation, reason)));
                 describe(out, model, generator, configuration, testable.size());
 
                 try {
+                    // Every operation this run will never try, and why, announced before anything
+                    // is sent and in the order the generator keeps them - path by path as the
+                    // document declares them - so that the reports name them, and name them the
+                    // same way each time the same command is run. The count printed above includes
+                    // them; their names reach the screen with the summary. Inside this block so
+                    // that an announcement going wrong still leaves the summary and the report.
+                    Instant said = Instant.now();
+                    generator.untestableOperations().forEach((operation, reason) ->
+                            drained.publish(new RunEvent.OperationSkipped(said, operation, reason)));
                     // The deadline is the moment the command started plus the budget, not the
                     // moment testing starts: reading the document was paid for out of the same
                     // budget, and so is the first round the scheduler may open with.

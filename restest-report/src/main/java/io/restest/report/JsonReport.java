@@ -81,8 +81,8 @@ import java.util.Set;
  * <p>Every limit is written into the file beside what it applies to, and the file says when a limit
  * stopped it writing, so nothing is quietly missing.
  *
- * <p>It also names every operation the run could not try, each with the reason, so that a run which
- * found nothing wrong is never mistaken for one that looked everywhere.
+ * <p>It also names every operation the run said it would not try, each with the reason, so that a
+ * run which found nothing wrong says what it did not look at.
  *
  * <p>Fault kinds are named by number from a catalogue several testing tools share, and the report
  * says which version of that catalogue it used, because a fault code only means something next to
@@ -178,8 +178,7 @@ public final class JsonReport implements RunListener {
     private final Set<OperationId> operations = new LinkedHashSet<>();
 
     /**
-     * Every operation the run said it would not try, and why, in the order it said so - which is
-     * the order the description of the API lists them in.
+     * Every operation the run said it would not try, and why, in the order it said so.
      *
      * <p>Not bounded by a constant, for the same reason the tallies are not: it is as long as the
      * description has operations, never as long as the run.
@@ -452,13 +451,13 @@ public final class JsonReport implements RunListener {
     }
 
     /**
-     * Every operation of the API this run did not try, each with the reason.
+     * Every operation the run said it would not try, each with the reason.
      *
      * <p>All of them, however many there are, where the screen names only the first few. Without
      * this, a run that tested eleven of twenty operations and found nothing wrong reads the same as
      * one that tested all twenty: the totals count what was tried, and only this says what was
-     * not. Empty when every operation could be tried - and when the plan left some alone on
-     * purpose, which is not the same thing as their being skipped.
+     * not. Empty when nothing was said to be skipped - which includes a plan leaving some
+     * operations alone on purpose, since that is not the same thing as their being skipped.
      */
     private JsonValue skippedOperations() {
         return JsonValue.array(skipped.stream()

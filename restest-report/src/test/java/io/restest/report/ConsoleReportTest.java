@@ -288,6 +288,25 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("when the verdict is a list of faults, what could not be tested comes after all of it")
+    void after_a_list_of_faults_the_operations_that_could_not_be_tested_come_last() {
+        report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 500)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("1 fault:");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict, lines.size())).containsExactly(
+                "1 fault:",
+                "  1 x F100  HTTP Status 500",
+                "1 operation could not be tested:",
+                "  uploadPhoto: its body can only be sent as multipart/form-data");
+    }
+
+    @Test
     @DisplayName("how many of them are named is a setting: past it, the rest are counted, the report "
             + "is pointed at, and it is said even of a run that sent nothing")
     void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {

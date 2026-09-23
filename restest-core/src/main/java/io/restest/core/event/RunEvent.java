@@ -58,16 +58,14 @@ public sealed interface RunEvent {
     /**
      * One of the API's operations will not be tried in this run, and this is why.
      *
-     * <p>Said once for each such operation, before anything is sent, in the order the description
-     * of the API lists them - so that a report names what the run never tried beside what it
-     * found, and "nothing wrong" is never read as covering an operation nobody asked about. The
-     * reason is usually something the tool cannot do yet, such as a file upload, rather than a
-     * mistake in the description.
+     * <p>A report names it beside what the run found, so that "nothing wrong" is not read as
+     * covering an operation nobody asked about. The reason is usually something the tool cannot do
+     * yet, such as a file upload, rather than a mistake in the description.
      *
-     * <p>Not said for an operation the plan asked the run to leave alone. That one was not
-     * skipped; it was never wanted.
+     * <p>Not said of an operation the plan asked the run to leave alone. That one was not skipped;
+     * it was never wanted.
      *
-     * @param at        when it was decided
+     * @param at        when it was said
      * @param operation the operation that will not be tried
      * @param reason    why not, in the words a report prints
      */

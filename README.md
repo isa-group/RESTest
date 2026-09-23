@@ -103,19 +103,19 @@ The last line before the faults counts operations rather than replies, and that 
 quoting. A run spends its whole budget, so one broken operation asked six hundred times produces six
 hundred broken replies; how much of the API is broken is the other number.
 
-This run could try all nineteen operations. When a document has some RESTest cannot test yet — a
-file upload, say, or a parameter written in a style requests are not assembled in — the count says
-so (`17 of 19 operations can be tested`), and the summary names them after its verdict, each with
-the reason, because "no faults found" says nothing about an operation that was never tried. The
-screen names the first five; `report.json` names every one.
+This run could try all nineteen operations. When a document has some that RESTest reads but cannot
+test yet — a file upload, say, or a parameter written in a style requests are not assembled in —
+the count says so (`17 of 19 operations can be tested`), and the summary names them after its
+verdict, because "no faults found" says nothing about an operation that was never tried. The screen
+names the first five, each with the reason; `report.json` names every one.
 
 One file is left behind: `report.json`, for anything that reads a run rather than looks at it. It
-counts every fault exactly, lists every operation and kind of fault that went wrong, names every
-operation the run could not try and why, says how the API answered across every attempt, and writes
-the first few faults of each kind out whole — the request, the reply and a `curl` command that does
-it again. Faults are counted twice over: by their catalogue number, which is what makes a run
-comparable with another tool's, and by the class of status code that carried them, which is what a
-developer looks for first.
+counts every fault exactly, lists every operation and kind of fault that went wrong, says how the
+API answered across every attempt, names every operation it read but could not try and why, and
+writes the first few faults of each kind out whole — the request, the reply and a `curl` command
+that does it again. Faults are counted twice over: by their catalogue number, which is what makes
+a run comparable with another tool's, and by the class of status code that carried them, which is
+what a developer looks for first.
 
 Add `--store` and a second file, `run.sqlite`, keeps every request and reply, so the run can be
 examined again later without asking the API anything. It is off by default because a minute against

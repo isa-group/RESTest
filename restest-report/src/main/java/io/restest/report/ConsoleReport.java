@@ -52,7 +52,8 @@ import java.util.Set;
  * spends its time idle is a run doing less testing than it looks like it is. The line of status
  * codes is worth a glance even when nothing was found wrong: a run where almost everything came back
  * refused is a run whose requests were the problem, not the API. Last come the operations the run
- * could not try at all, each with the reason, because finding nothing wrong says nothing about them.
+ * said it would not try - the first few by name, with the reason - because finding nothing wrong
+ * says nothing about them.
  *
  * <p>It writes wherever it is told to write, rather than to the screen directly, so a test can read
  * back exactly what a person would have seen.
