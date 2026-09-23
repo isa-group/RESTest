@@ -216,7 +216,7 @@ class ConsoleReportTest {
     }
 
     @Test
-    @DisplayName("a first round the budget ran out on says so")
+    @DisplayName("a first round that ended before it was done says so")
     void an_opening_lap_cut_short_says_so() {
         io.restest.core.execution.TestCase only = io.restest.core.execution.TestCase.of(
                 io.restest.core.model.OperationId.of("GET /pets"), java.util.List.of());
@@ -227,8 +227,7 @@ class ConsoleReportTest {
                 Runs.engine()));
 
         assertThat(screen.toString()).contains(
-                "  opening lap, cut short by the budget: 1 requests in 2.0s, 1 of 1 operations "
-                        + "answered 2xx");
+                "  opening lap, cut short: 1 request in 2.0s, 1 of 1 operations answered 2xx");
     }
 
     @Test

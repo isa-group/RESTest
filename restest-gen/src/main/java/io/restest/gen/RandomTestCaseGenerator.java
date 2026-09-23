@@ -77,8 +77,9 @@ import java.util.stream.Stream;
  * and nothing it does not, except a body wherever the document describes one, because an operation
  * that takes a body rarely works without it whatever the document says. Its values come from the
  * same sources as an ordinary request, asked one after another instead of chosen among, in the order
- * most likely to be accepted: a value the API has already handed back, then a list somebody wrote,
- * then the document's own sample, then its default, and only then one invented to fit. Building it
+ * most likely to be accepted: the closed list of values the document accepts, where it states one;
+ * then a value the API has already handed back, then a list somebody wrote, then the document's own
+ * sample, then its default, and only then one invented to fit. Building it
  * draws on numbers of its own, so asking for it changes nothing about the ordinary requests that
  * follow.
  *
@@ -454,9 +455,12 @@ public final class RandomTestCaseGenerator {
      *
      * <p>Everything the API requires and nothing it does not, except a body wherever the document
      * describes one, since an operation that takes a body rarely works without it whatever the
-     * document says. Each value is taken from the first of the plan's ordinary sources that has
-     * one, in the order most likely to be accepted: what the API has already handed back, a list
-     * somebody wrote, the document's own sample, its default, and last a value invented to fit.
+     * document says - though not one a {@code GET} or a {@code HEAD} merely accepts, which HTTP
+     * gives no meaning to and which would stop the request going out at all. Each value is taken
+     * from the first of the plan's ordinary sources that has one, in the order most likely to be
+     * accepted: the closed list of values the document accepts, what the API has already handed
+     * back, a list somebody wrote, the document's own sample, its default, and last a value
+     * invented to fit.
      *
      * <p>Drawn from numbers of its own, so the ordinary requests that follow are the same whether
      * this was asked for or not.
@@ -494,7 +498,10 @@ public final class RandomTestCaseGenerator {
         /** Some of it, decided by chance, as every ordinary request is. */
         DRAWN,
 
-        /** None of the optional parameters, and a body wherever one is described. */
+        /**
+         * None of the optional parameters, and a body wherever one is described, except one a
+         * {@code GET} or a {@code HEAD} merely accepts.
+         */
         LIKELIEST
     }
 
@@ -585,9 +592,16 @@ public final class RandomTestCaseGenerator {
      */
     private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
             Strategy strategy, Filling filling) {
-        if (!declared.required() && filling == Filling.DRAWN
-                && random.nextDouble() >= settings.generation().optionalBodyChance()) {
-            return Optional.empty();
+        if (!declared.required()) {
+            // Decided by chance for an ordinary request, and drawn exactly as it always was. For the
+            // likeliest request it is not drawn at all: the body goes, unless the method is one
+            // HTTP gives a body no meaning on, where it would stop the request being sent.
+            boolean leftOut = filling == Filling.DRAWN
+                    ? random.nextDouble() >= settings.generation().optionalBodyChance()
+                    : carriesNoBody(operation.method());
+            if (leftOut) {
+                return Optional.empty();
+            }
         }
         Optional<String> mediaType = RequestBuilder.mediaTypeToSend(declared);
         if (mediaType.isEmpty()) {
@@ -595,6 +609,18 @@ public final class RandomTestCaseGenerator {
         }
         return writableBody(operation, declared, mediaType.get(), strategy.values())
                 .map(value -> new BodyValue(mediaType.get(), value.value(), value.origin()));
+    }
+
+    /**
+     * Whether a request with this method has nowhere to put a body.
+     *
+     * <p>A {@code GET} or a {@code HEAD} with a body is one HTTP gives no meaning to and the client
+     * that sends requests refuses to build, so a body such a request merely accepts is left out of
+     * the request most likely to be accepted rather than being the reason it is never sent.
+     */
+    private static boolean carriesNoBody(io.restest.core.model.HttpMethod method) {
+        return method == io.restest.core.model.HttpMethod.GET
+                || method == io.restest.core.model.HttpMethod.HEAD;
     }
 
     /**

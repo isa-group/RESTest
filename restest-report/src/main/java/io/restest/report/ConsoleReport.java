@@ -247,10 +247,10 @@ public final class ConsoleReport implements RunListener {
         // How the run began, straight after how long it lasted: a reader who wants to know what
         // the first round bought is looking at the time, and this is the line that answers it.
         phases.all().forEach(phase -> write("  " + phase.name()
-                + (phase.cutShort() ? ", cut short by the budget" : "") + ": "
-                + phase.requests() + " requests in " + readable(phase.elapsed()) + ", "
-                + phase.operationsAnsweredWithASuccess() + " of " + phase.operations()
-                + " operations answered 2xx"));
+                + (phase.cutShort() ? ", cut short" : "") + ": "
+                + phase.requests() + (phase.requests() == 1 ? " request" : " requests") + " in "
+                + readable(phase.elapsed()) + ", " + phase.operationsAnsweredWithASuccess() + " of "
+                + phase.operations() + " operations answered 2xx"));
         write("  " + repliesByClass.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getValue() + " " + entry.getKey())

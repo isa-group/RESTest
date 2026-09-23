@@ -577,3 +577,18 @@ operation, so adding it later breaks no file anybody has written.
 **§7's promise is untouched and still ahead of us.** Every strategy this increment can build is
 reproduced from the seed, because none of them has a memory yet. M2.5b is where the table in §7
 starts to matter.
+
+## Amendment (M9.1)
+
+**Date:** 2026-09-23
+
+**§6's scheduler is built, and generation still does not know what time it is.** `Scheduler` holds
+the deadline and the order requests go out in, opens a run with a first round that sends every
+operation once, and asks generation for each request. What §6 calls a phase - a stretch of the
+budget, in the scheduler's vocabulary - is now announced on the event stream, and the first round
+is the first of them.
+
+**The share between strategies is still drawn per request**, inside generation, as M2.7a left it.
+Honouring a share as a stretch of the clock was row 2.10b, absorbed into 9.1 and then set aside for
+2.1: it moves none of the competition's measurements, and a strategy chosen by the clock would break
+§7's promise for every plan with no memory. [ADR-0026](0026-what-a-run-sends-first.md) §7.

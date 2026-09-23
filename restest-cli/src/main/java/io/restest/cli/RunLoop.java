@@ -48,15 +48,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * asking anything else would spend the run waiting on that one operation while every other request
  * had long since come back. It would also look efficient while doing it, because "nothing in
  * flight" is how wasted time is measured and there would always be that one request in flight. So
- * each answer is dealt with the moment it arrives, whichever it is, and the loop waits only when
- * every slot it is allowed is genuinely occupied.
+ * each answer is dealt with the moment it arrives, whichever it is, and outside the first round of
+ * a run the loop waits only when every slot it is allowed is genuinely occupied.
  *
- * <p>What to send, and when to stop, it does not decide. It asks the {@link Scheduler}, which holds
- * the deadline and the order the operations go in, and does what it is told: send a request for
- * this operation, wait for the answers still owed, or stop. The one waiting it does on the
- * scheduler's behalf is at the start of a run, where the first round goes in steps and each step
- * waits for the answers to the one before - and even that wait has a limit, so one request the API
- * never answers costs the run that limit once rather than the whole budget.
+ * <p>What to send next, and when the time is up, it does not decide. It asks the {@link Scheduler},
+ * which holds the deadline and the order the operations go in, and does what it is told: send a
+ * request for this operation, wait for the answers still owed, or stop. What it does decide for
+ * itself is to stop early on its own evidence - a round in which nothing could be sent, or an
+ * address where nothing answers. The one waiting it does on the scheduler's behalf is at the start
+ * of a run, where the first round goes in steps and each step waits for the answers to the one
+ * before - and even that wait has a limit, so one request the API never answers costs the run that
+ * limit once rather than the whole budget.
  */
 final class RunLoop {
 

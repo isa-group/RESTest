@@ -101,6 +101,22 @@ class LikeliestRequestTest {
     }
 
     @Test
+    @DisplayName("but a body a GET merely accepts is left out, and one it insists on is not")
+    void a_get_carries_a_body_only_when_it_insists() {
+        Operation searchWithABody = Operation.of(HttpMethod.GET, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), false));
+        Operation searchThatInsists = Operation.of(HttpMethod.GET, "/pets/query")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
+        RandomTestCaseGenerator generator = generatorFor(searchWithABody, searchThatInsists);
+
+        for (int draw = 0; draw < 20; draw++) {
+            assertThat(generator.likeliestRequest(searchWithABody).orElseThrow().body()).isEmpty();
+            assertThat(generator.likeliestRequest(searchThatInsists).orElseThrow().body())
+                    .isPresent();
+        }
+    }
+
+    @Test
     @DisplayName("a sample the document writes inside a body is what the body carries")
     void a_sample_inside_a_body_is_sent() {
         RandomTestCaseGenerator generator = generatorFor(ADD_PET);

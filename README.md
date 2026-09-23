@@ -65,28 +65,42 @@ RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/a
   values from the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
 F100  HTTP Status 500
-      deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/207  ->  500
+      deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/617  ->  500
       the API answered 500, so it fell over while handling this request
-      curl -i -X DELETE 'https://petstore3.swagger.io/api/v3/store/order/207' -H 'User-Agent: RESTest/2.0'
+      curl -i -X DELETE 'https://petstore3.swagger.io/api/v3/store/order/617' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0'
 
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-816 requests to 19 operations in 10.3s, 12% of it idle
-  196 2xx, 332 4xx, 288 5xx
-  4 operation(s) answered 500, 5 answered some 5xx
-384 faults:
-  288 x F100  HTTP Status 500
-  96 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (217.9 KiB)
+655 requests to 19 operations in 10.5s, 14% of it idle
+  opening lap: 19 requests in 2.5s, 6 of 19 operations answered 2xx
+  160 2xx, 206 4xx, 289 5xx
+  111 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 206 refusals above
+  15 operation(s) answered 500, 15 answered some 5xx
+345 faults:
+  289 x F100  HTTP Status 500
+  56 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (311.1 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
-The line under the totals — `196 2xx, 332 4xx, 288 5xx` — is worth a glance even when nothing is
-wrong. If almost everything comes back refused, the requests were the problem rather than the API.
+The line under the first one says how the run began. Before anything is chosen by chance, every
+operation it can test is sent once, with the request it is most likely to accept — only what the API
+requires, a body wherever the document describes one, and for each value the best any source has,
+a value the API has already handed back first — in steps: the lists of what is there, then what
+creates, then what reads one thing, then what changes, and deletions last, each step waiting for the
+answers to the one before so that an identifier just handed back can be sent by the next. It is paid
+for out of the budget like everything else. Measured against two containerised APIs restarted before
+every run, five seeds, a minute each: kafka-rest-proxy had 28.6 of its operations answered 2XX two
+seconds in with that round against 14.2 without it, pet-clinic 30.8 against 19.6 five seconds in,
+and the area under that curve — which is what the competitions RESTest is measured in reward — rose
+17% and 15%. `--set schedule.openingLap=false` switches it off.
 
-The line after it counts operations rather than replies, and that is the number worth quoting. A run
-spends its whole budget, so one broken operation asked six hundred times produces six hundred broken
-replies; how much of the API is broken is the other number.
+The line after it — `160 2xx, 206 4xx, 289 5xx` — is worth a glance even when nothing is wrong. If
+almost everything comes back refused, the requests were the problem rather than the API.
+
+The last line before the faults counts operations rather than replies, and that is the number worth
+quoting. A run spends its whole budget, so one broken operation asked six hundred times produces six
+hundred broken replies; how much of the API is broken is the other number.
 
 One file is left behind: `report.json`, for anything that reads a run rather than looks at it. It
 counts every fault exactly, lists every operation and kind of fault that went wrong, says how the API

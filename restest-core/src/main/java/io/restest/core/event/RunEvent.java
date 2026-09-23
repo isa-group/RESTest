@@ -112,8 +112,9 @@ public sealed interface RunEvent {
      *
      * @param at       when it ended
      * @param phase    what it is called, the same name it began with
-     * @param cutShort whether it ended because the time ran out, rather than because it had done
-     *                 everything it set out to do
+     * @param cutShort whether it ended before it had done everything it set out to do - usually
+     *                 because the time ran out, though a run stopped any other way ends it the same
+     *                 way
      */
     record PhaseFinished(Instant at, String phase, boolean cutShort) implements RunEvent {
         public PhaseFinished {

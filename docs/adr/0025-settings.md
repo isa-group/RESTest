@@ -311,3 +311,14 @@ which is the one place that can tell a value nobody gave from a value somebody g
 all three of them, since a rule naming only the first two would let the third hand back the whole map
 and be the way round both. No production code read any of them before this increment, so the rule
 starts out as a fence rather than a repair.
+
+## Amendment (M9.1)
+
+**Date:** 2026-09-23
+
+**The first lever, and its switch.** `schedule.openingLap` turns the first round of a run off and
+`schedule.openingLapPatience` bounds how long one step of it waits; forty-two settings in all. The
+`schedule` group stays in `restest-core`, read by the scheduler in `restest-gen` and by the loop in
+`restest-cli`: "9.1 carries it to the scheduler" in §1 meant the numbers, which the scheduler is
+handed by constructor like every other part. The page of switches §4 promises is 11.2's; until it
+exists, this switch is documented in the settings page beside every other setting.

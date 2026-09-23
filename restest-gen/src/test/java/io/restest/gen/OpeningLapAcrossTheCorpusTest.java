@@ -38,8 +38,9 @@ import org.junit.jupiter.api.Test;
  *
  * <p>A first round that skipped an operation, or sent one twice, would say it had sent every
  * operation once when it had not. And a request that is supposed to be the one an API is most likely
- * to accept is no use if it cannot even be put together into something that could be sent. Fifty
- * documents written by other people are where both of those would show.
+ * to accept is no use if it cannot even be put together into something that could be sent. The
+ * forty-six documents of the corpus that can be read, written by other people, are where both of
+ * those would show.
  */
 class OpeningLapAcrossTheCorpusTest {
 

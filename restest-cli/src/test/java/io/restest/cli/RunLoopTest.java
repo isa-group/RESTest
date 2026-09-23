@@ -26,10 +26,14 @@ import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
+import io.restest.core.execution.ValueOrigin;
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.ParameterLocation;
 import io.restest.core.settings.ScheduleSettings;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.Scheduler;
@@ -299,6 +303,58 @@ class RunLoopTest {
     }
 
     @Test
+    @DisplayName("a step of the first round is built only once what the step before brought back "
+            + "has been heard by the memory of what the API returned")
+    void each_step_is_built_from_what_the_step_before_brought_back() {
+        // The list of pets names pet seven, and reading one pet is two steps later. A listener that
+        // is slow to hear the first list is subscribed ahead of the memory, so that answer is in
+        // long before the memory has heard it: waiting for the answers alone would build the read
+        // of one pet from nothing, and only waiting for them to be heard gets pet seven into it.
+        engine.repliesWith(testCase -> testCase.operation().value().equals("listPets")
+                ? "[{\"id\": 7, \"name\": \"Rex\", \"petId\": 7}]" : "[]");
+        RandomTestCaseGenerator generator = generator();
+        List<TestCase> planned = new CopyOnWriteArrayList<>();
+        java.util.concurrent.atomic.AtomicBoolean heldUpOnce =
+                new java.util.concurrent.atomic.AtomicBoolean();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.InteractionCompleted completed
+                        && completed.interaction().testCase().operation().value()
+                                .equals("listPets")
+                        && heldUpOnce.compareAndSet(false, true)) {
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException stopped) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            });
+            events.subscribe(generator.whatListensToTheRun().orElseThrow());
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.TestCasePlanned sent) {
+                    planned.add(sent.testCase());
+                }
+            });
+            Scheduler scheduler = new Scheduler(generator, WITH_A_FIRST_ROUND,
+                    Instant.now().plusSeconds(2), InstantSource.system(), events::publish);
+            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                    PATIENT, engine, events);
+        }
+
+        ParameterValue petId = planned.stream()
+                .filter(testCase -> testCase.operation().value().equals("getPet"))
+                .findFirst()
+                .orElseThrow()
+                .parameterValue("petId", ParameterLocation.PATH)
+                .orElseThrow();
+        assertThat(petId.value())
+                .describedAs("the first round's read of one pet names the pet the list named")
+                .isEqualTo(JsonValue.of(7));
+        assertThat(petId.origin()).isInstanceOf(ValueOrigin.Derived.class);
+    }
+
+    @Test
     @DisplayName("a request the API never answers holds the first round up for one wait, no longer")
     void a_request_never_answered_holds_the_first_round_up_for_one_wait_at_most() {
         // The first request of the round - the list of pets - never comes back within the run.
@@ -426,10 +482,16 @@ class RunLoopTest {
 
         private volatile Function<HttpRequestRecord, Duration> howLong =
                 request -> Duration.ofMillis(1);
+        private volatile Function<TestCase, String> replyBody = testCase -> "[]";
         private volatile boolean answers = true;
 
         void takes(Function<HttpRequestRecord, Duration> perRequest) {
             this.howLong = perRequest;
+        }
+
+        /** What the body of each reply says, by what was asked. Every reply is JSON. */
+        void repliesWith(Function<TestCase, String> perTestCase) {
+            this.replyBody = perTestCase;
         }
 
         /** How many requests have been asked for so far. */
@@ -461,8 +523,8 @@ class RunLoopTest {
             return Interaction.answered(testCase, request,
                     new HttpResponseRecord(StatusLine.of(200),
                             List.of(Header.of("Content-Type", "application/json")),
-                            Optional.of(Payload.of("[]".getBytes(StandardCharsets.UTF_8),
-                                    "application/json"))),
+                            Optional.of(Payload.of(replyBody.apply(testCase)
+                                    .getBytes(StandardCharsets.UTF_8), "application/json"))),
                     Instant.EPOCH, Duration.ofMillis(1));
         }
 

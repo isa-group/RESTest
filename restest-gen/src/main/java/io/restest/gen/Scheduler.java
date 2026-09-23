@@ -52,8 +52,8 @@ import java.util.function.Consumer;
  * nobody is answering.
  *
  * <p>Nothing here is decided by chance: which operation comes next depends only on the document, the
- * settings and the clock. A run with the first round switched off therefore sends exactly what it
- * sent before there was a first round, request for request, from the same starting number.
+ * settings and the clock. A run with the first round switched off therefore builds exactly the test
+ * cases it built before there was a first round, in the same order, from the same starting number.
  *
  * <p>One scheduler belongs to one run, and is asked from one thread.
  */
@@ -137,8 +137,8 @@ public final class Scheduler {
             List<Operation> current = lap.get(step);
             if (inStep < current.size()) {
                 if (!lapBegun) {
-                    // Announced with the first request rather than beforehand, so a run whose time
-                    // is up before it could send anything has no first round to report.
+                    // Announced with the round's first step rather than beforehand, so a run whose
+                    // time is up before the round began has no first round to report.
                     lapBegun = true;
                     announce.accept(new RunEvent.PhaseStarted(clock.instant(), OPENING_LAP));
                 }

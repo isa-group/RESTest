@@ -170,7 +170,7 @@ final class Phases {
             return Duration.between(startedAt, finishedAt());
         }
 
-        /** Whether it ended because the time ran out, rather than because it was done. */
+        /** Whether it ended before it was done, which is usually the time running out. */
         boolean cutShort() {
             return cutShort;
         }
