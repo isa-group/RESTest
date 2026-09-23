@@ -190,7 +190,9 @@ pushes has no request anybody believes in, and so no first round.
 - **Only what the API requires goes in** - no optional parameters - plus a body wherever the
   document describes one, required or not, because most documents never say a body is required even
   when the operation cannot work without it. A body a `GET` or `HEAD` merely accepts is the
-  exception: HTTP gives it no meaning, and it is left out.
+  exception, because RESTest cannot send a body with either: it is left out. A `GET` or `HEAD` that
+  insists on one is not in the round at all, and the run counts it among the operations it cannot
+  test.
 
 The round goes lists first (`GET /owners`), then what creates (`POST`), then what reads one thing
 (`GET /owners/{ownerId}`), then what changes (`PUT`, `PATCH`), and deletes last, each step waiting
