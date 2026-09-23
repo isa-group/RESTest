@@ -1,7 +1,7 @@
 # ADR-0007: The parser sits behind our own interface; OAS scope is 2.0, 3.0.x and 3.1.x
 
-**Status:** Accepted, amended at M0.2 and in #303, reversed at M1.2
-**Date:** 2026-09-11 (amended 2026-09-11, reversed 2026-09-12, amended 2026-09-16)
+**Status:** Accepted, amended at M0.2, in #303 and in #328, reversed at M1.2
+**Date:** 2026-09-11 (amended 2026-09-11, reversed 2026-09-12, amended 2026-09-16 and 2026-09-23)
 
 > The Context and Decision below are as originally accepted, with the superseded scope marked. The
 > M0.2 amendment put OAS 3.2 in scope; the M1.2 amendment reverses that and is the current state:
