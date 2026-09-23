@@ -390,6 +390,105 @@ class RestestTest {
                 .containsExactlyElementsOf(named);
     }
 
+    @Test
+    @DisplayName("an operation the document could not be read for is counted and named like one "
+            + "that could not be built, with what reading it said")
+    void an_operation_that_could_not_be_read_is_counted_and_named(@TempDir Path directory)
+            throws Exception {
+        String named = "  searchPets: the operation could not be represented: minProperties (5) is "
+                + "greater than maxProperties (2), so no value can satisfy both";
+
+        int answer = run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
+                "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
+                "--out", directory.toString());
+
+        assertThat(answer).isZero();
+        assertThat(screen.toString())
+                .describedAs("the document describes two operations, whether or not both could be read")
+                .contains("1 of 2 operations can be tested, seed 20260923, budget 1s");
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("no faults found");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size()))
+                .startsWith("1 operation could not be tested:", named);
+
+        JsonValue.JsonObject report = (JsonValue.JsonObject) JsonText.read(
+                Files.readString(directory.resolve("report.json")));
+        assertThat(((JsonValue.JsonArray) report.member("skippedOperations").orElseThrow())
+                .elements().stream().map(JsonValue.JsonObject.class::cast)
+                .map(each -> "  " + text(each, "operation") + ": " + text(each, "reason")))
+                .containsExactly(named);
+    }
+
+    @Test
+    @DisplayName("a document whose every operation could not be read says why, rather than that it "
+            + "describes none")
+    void a_document_nothing_of_which_could_be_read_says_why(@TempDir Path directory)
+            throws Exception {
+        Path document = Files.writeString(directory.resolve("unreadable.yaml"), """
+                openapi: 3.0.3
+                info: {title: Pet Shop, version: '1'}
+                paths:
+                  /pets:
+                    get:
+                      operationId: searchPets
+                      parameters:
+                        - {name: filter, in: query, schema: {minProperties: 5, maxProperties: 2}}
+                      responses: {'200': {description: the pets that match}}
+                """);
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.resolve("out").toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("it describes one, which could not be read; not none")
+                .contains("none of the 1 operations in the document can be tested; the first says: "
+                        + "the operation could not be represented: minProperties (5) is greater "
+                        + "than maxProperties (2), so no value can satisfy both")
+                .doesNotContain("describes no operation");
+    }
+
+    @Test
+    @DisplayName("an operation that could not be read never stops another that shares its name from "
+            + "being tested")
+    void an_unreadable_operation_never_shadows_a_readable_one_of_the_same_name(
+            @TempDir Path directory) throws Exception {
+        // An operation copied under a deeper path with its name left as it was: the copy's path has
+        // a gap nothing fills, so it cannot be read, and it is called what the original is called.
+        Path document = Files.writeString(directory.resolve("copied.yaml"), """
+                openapi: 3.0.3
+                info: {title: Vets, version: '1'}
+                paths:
+                  /vets/{vetId}:
+                    get:
+                      operationId: getVet
+                      parameters:
+                        - {name: vetId, in: path, required: true, schema: {type: integer, minimum: 1, maximum: 9}}
+                      responses: {'200': {description: one vet}}
+                  /clinics/{clinicId}/vets/{vetId}:
+                    get:
+                      operationId: getVet
+                      parameters:
+                        - {name: vetId, in: path, required: true, schema: {type: integer}}
+                      responses: {'200': {description: one vet}}
+                """);
+        api.stubFor(get(urlMatching("/vets/[0-9]+")).willReturn(aResponse().withStatus(200)));
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260924", "--out", directory.resolve("out").toString());
+
+        assertThat(answer).isZero();
+        assertThat(screen.toString()).contains("1 of 2 operations can be tested");
+        List<String> lines = screen.toString().lines().toList();
+        assertThat(lines.subList(lines.indexOf("no faults found") + 1, lines.size())).startsWith(
+                "1 operation could not be tested:",
+                "  getVet: the operation could not be represented: the path template "
+                        + "'/clinics/{clinicId}/vets/{vetId}' has no parameter to fill 'clinicId', "
+                        + "so no request could be assembled");
+        api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/vets/[0-9]+")));
+    }
+
     private static String text(JsonValue.JsonObject parent, String name) {
         return ((JsonValue.JsonString) parent.member(name).orElseThrow()).value();
     }

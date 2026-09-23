@@ -425,12 +425,16 @@ final class RunCommand implements Callable<Integer> {
 
                 try {
                     // Every operation this run will never try, and why, announced before anything
-                    // is sent and in the order the generator keeps them - path by path as the
-                    // document declares them - so that the reports name them, and name them the
-                    // same way each time the same command is run. The count printed above includes
-                    // them; their names reach the screen with the summary. Inside this block so
-                    // that an announcement going wrong still leaves the summary and the report.
+                    // is sent: first the ones the document could not be read for, in the order it
+                    // was read, then the ones the generator keeps - so that the reports name them,
+                    // and name them the same way each time the same command is run. The count
+                    // printed above includes them; their names reach the screen with the summary.
+                    // Inside this block so that an announcement going wrong still leaves the
+                    // summary and the report.
                     Instant said = Instant.now();
+                    unreadable(model).forEach(issue -> drained.publish(
+                            new RunEvent.OperationSkipped(said, issue.operation().orElseThrow(),
+                                    issue.message())));
                     generator.untestableOperations().forEach((operation, reason) ->
                             drained.publish(new RunEvent.OperationSkipped(said, operation, reason)));
                     // The deadline is the moment the command started plus the budget, not the
@@ -570,19 +574,26 @@ final class RunCommand implements Callable<Integer> {
      */
     private int nothingToTest(PrintWriter err, ApiModel model, RandomTestCaseGenerator generator) {
         var refused = generator.untestableOperations();
+        List<SpecificationIssue> unreadable = unreadable(model);
         int setAside = generator.operationsThePlanSetAside().size();
-        // The plan is asked about first. An operation the plan set aside is one somebody asked to
-        // leave alone, and blaming the document for it would report a plan working exactly as
-        // intended as a problem with the API.
+        // The plan is asked about first, and only about what could be read: an operation the plan
+        // set aside is one somebody asked to leave alone, and blaming the document for it would
+        // report a plan working exactly as intended as a problem with the API. One that could not
+        // be read is said as well, because the plan had nothing to judge there.
         if (refused.isEmpty() && setAside > 0) {
             err.println("restest: the plan keeps this run to no operation at all - the document "
                     + "describes " + setAside + " that could have been tested, and its "
-                    + "'operations' filter matches none of them");
-        } else if (refused.isEmpty()) {
+                    + "'operations' filter matches none of them"
+                    + (unreadable.isEmpty() ? ""
+                            : "; " + unreadable.size() + " more could not be read at all"));
+        } else if (refused.isEmpty() && unreadable.isEmpty()) {
             err.println("restest: the document describes no operation that could be tested");
         } else {
-            err.println("restest: none of the " + refused.size() + " operations in the document "
-                    + "can be tested; the first says: " + refused.values().iterator().next());
+            // What could not be read comes first, as it does everywhere else a run names them.
+            String first = unreadable.isEmpty()
+                    ? refused.values().iterator().next() : unreadable.get(0).message();
+            err.println("restest: none of the " + (refused.size() + unreadable.size())
+                    + " operations in the document can be tested; the first says: " + first);
         }
         report(err, model.issues());
         return ExitCode.NOTHING_TO_TEST;
@@ -591,8 +602,10 @@ final class RunCommand implements Callable<Integer> {
     private void describe(PrintWriter out, ApiModel model, RandomTestCaseGenerator generator,
             SettingsInEffect configuration, int testable) {
         int setAside = generator.operationsThePlanSetAside().size();
+        // Every operation the document describes, including the ones it could not be read for.
         out.println(testable + " of "
-                + (testable + generator.untestableOperations().size() + setAside)
+                + (testable + generator.untestableOperations().size() + unreadable(model).size()
+                        + setAside)
                 + " operations can be tested, seed " + generator.seed()
                 + ", budget " + human(budget));
         // Said as its own line rather than folded into the count, because the two are different
@@ -619,6 +632,21 @@ final class RunCommand implements Callable<Integer> {
         }
         report(out, model.issues());
         out.println();
+    }
+
+    /**
+     * The operations the document could not be read for at all, each with what reading it said, in
+     * the order it was read.
+     *
+     * <p>They never became operations, so the generator never judged them and they are nowhere in
+     * what it will or will not build. They are counted and named beside the ones it refused, but
+     * kept apart from them: an operation the generator can build may share a name with one of these,
+     * because a document can give two operations one name, and it must not be taken for it.
+     */
+    private static List<SpecificationIssue> unreadable(ApiModel model) {
+        return model.issues().stream()
+                .filter(issue -> issue.skipsAnOperation() && issue.operation().isPresent())
+                .toList();
     }
 
     /** Names what could not be read, because skipping something silently is the same as losing it. */

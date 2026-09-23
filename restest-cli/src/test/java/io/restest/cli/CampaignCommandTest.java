@@ -283,6 +283,29 @@ class CampaignCommandTest {
         assertThat(screen.toString()).contains("were pushing at the API");
     }
 
+    @Test
+    @DisplayName("a plan that matches no operation still says it was the plan when the document also "
+            + "has one that could not be read, and says that too")
+    void a_plan_that_matches_nothing_says_so_beside_what_could_not_be_read(@TempDir Path directory)
+            throws Exception {
+        Path plan = planIn(directory, """
+                operations:
+                  only: [thereIsNoSuchOperation]
+                """);
+
+        assertThat(run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
+                "--url", api.baseUrl(), "--budget", "1s", "--campaign", plan.toString(),
+                "--out", directory.resolve("out").toString()))
+                .isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("the plan left alone the one operation that could be read, so it is "
+                        + "the plan that kept this run to nothing, not the document")
+                .contains("the plan keeps this run to no operation at all - the document describes "
+                        + "1 that could have been tested, and its 'operations' filter matches none "
+                        + "of them; 1 more could not be read at all")
+                .doesNotContain("operations in the document can be tested");
+    }
+
     /** A plan that does the ordinary thing, plus whatever else is written here. */
     private static Path planIn(Path directory, String extra) throws Exception {
         Path plan = directory.resolve("plan.yaml");

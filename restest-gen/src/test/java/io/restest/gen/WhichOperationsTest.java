@@ -114,4 +114,20 @@ class WhichOperationsTest {
         assertThat(WhichOperations.of(Set.of(), List.of("GET /pets")).namesNothingMatches(pets))
                 .isEmpty();
     }
+
+    @Test
+    @DisplayName("an operation the document could not be read for is still one the API has")
+    void an_operation_that_could_not_be_read_is_one_the_api_has() {
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(LIST_PETS)).withIssues(List.of(
+                io.restest.core.model.SpecificationIssue.skipped("paths./owners/{ownerId}.get",
+                        io.restest.core.model.OperationId.of("getOwner"),
+                        "the operation could not be represented: it has no parameter to fill "
+                                + "'ownerId'")));
+
+        assertThat(WhichOperations.of(Set.of(), List.of("getOwner", "deleteOwner"))
+                .namesNothingMatches(pets))
+                .describedAs("the run names getOwner as one it could not test, so the plan's "
+                        + "author must not also be told the API has no such operation")
+                .containsExactly("deleteOwner");
+    }
 }

@@ -122,6 +122,12 @@ public final class WhichOperations {
             answersTo.add(operation.id().value());
             answersTo.add(methodAndPath(operation));
         }
+        // One the document could not be read for is still one of the API's operations. Telling the
+        // plan's author the API does not have it, while the run names it as one it could not test,
+        // would be two answers to one question.
+        model.issues().stream()
+                .filter(issue -> issue.skipsAnOperation())
+                .forEach(issue -> issue.operation().ifPresent(id -> answersTo.add(id.value())));
         List<String> stale = new ArrayList<>();
         only.stream().filter(name -> !answersTo.contains(name)).forEach(stale::add);
         return List.copyOf(stale);
