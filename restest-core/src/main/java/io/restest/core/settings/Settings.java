@@ -117,7 +117,10 @@ public record Settings(
                 typed.wholeNumber("schedule.announcementsAllowedToPileUp",
                         DEFAULTS.schedule.announcementsAllowedToPileUp()),
                 typed.lengthOfTime("schedule.stragglerGrace",
-                        DEFAULTS.schedule.stragglerGrace())));
+                        DEFAULTS.schedule.stragglerGrace()),
+                typed.yesOrNo("schedule.openingLap", DEFAULTS.schedule.openingLap()),
+                typed.lengthOfTime("schedule.openingLapPatience",
+                        DEFAULTS.schedule.openingLapPatience())));
         GenerationSettings generation = group("generation", () -> new GenerationSettings(
                 typed.wholeNumber("generation.optionalNestingDepth",
                         DEFAULTS.generation.optionalNestingDepth()),
@@ -212,6 +215,9 @@ public record Settings(
             case "schedule.announcementsAllowedToPileUp" ->
                     String.valueOf(schedule.announcementsAllowedToPileUp());
             case "schedule.stragglerGrace" -> LengthOfTime.written(schedule.stragglerGrace());
+            case "schedule.openingLap" -> String.valueOf(schedule.openingLap());
+            case "schedule.openingLapPatience" ->
+                    LengthOfTime.written(schedule.openingLapPatience());
 
             case "generation.optionalNestingDepth" ->
                     String.valueOf(generation.optionalNestingDepth());

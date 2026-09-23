@@ -397,7 +397,8 @@ class SettingsTest {
 
             assertThat(from.withEngine(from.engine().withoutConcurrency()).engine()
                     .maxConcurrency()).isEqualTo(1);
-            assertThat(from.withSchedule(new ScheduleSettings(3, 10, Duration.ofSeconds(1)))
+            assertThat(from.withSchedule(new ScheduleSettings(3, 10, Duration.ofSeconds(1), true,
+                    Duration.ofSeconds(2)))
                     .schedule().workAheadFactor()).isEqualTo(3);
             assertThat(from.withGeneration(GenerationSettings.defaults()).generation())
                     .isEqualTo(GenerationSettings.defaults());
