@@ -61,7 +61,8 @@ import java.util.StringJoiner;
  * ways nearly every API in the world accepts one; which of the two, and which exact media type to
  * declare, is read off the document. And every request carries an {@code Accept} header naming the
  * media types the operation's own successful responses declare, so that an API serving more than one
- * - a versioned one, say - is not left guessing what this client can read.
+ * - a versioned one, say - is not left guessing what this client can read; where they declare none,
+ * the header says the client will take anything.
  */
 public final class RequestBuilder {
 
@@ -193,7 +194,7 @@ public final class RequestBuilder {
         body.ifPresent(payload -> addUnlessDeclared(headers, "Content-Type", payload.mediaType()));
         // A document that declares an Accept header of its own has said what it wants sent there,
         // and a value has already been chosen for it above.
-        willAccept(operation).ifPresent(types -> addUnlessDeclared(headers, "Accept", types));
+        addUnlessDeclared(headers, "Accept", willAccept(operation));
 
         Map<String, String> cookies = new LinkedHashMap<>();
         for (Parameter parameter : operation.parameters(ParameterLocation.COOKIE)) {
@@ -243,9 +244,13 @@ public final class RequestBuilder {
      * lower quality still asks for them, so an API that serves nothing else is not refused a
      * reply.
      *
-     * @return the header's value, or nothing when the operation declares no successful media type
+     * <p>An operation that declares no successful media type at all - no success, or a success with
+     * nothing in it - is asked for anything, which is what leaving the header out means anyway. It
+     * is said out loud because not every server treats a missing header the way the standard does.
+     *
+     * @return the header's value
      */
-    private static Optional<String> willAccept(Operation operation) {
+    private static String willAccept(Operation operation) {
         Set<String> offered = new LinkedHashSet<>();
         for (ResponseModel response : operation.responses()) {
             if (response.status().startsWith("2")) {
@@ -255,17 +260,17 @@ public final class RequestBuilder {
             }
         }
         if (offered.isEmpty()) {
-            return Optional.empty();
+            return "*/*";
         }
         List<String> readable = offered.stream().filter(RequestBuilder::isJson).toList();
         if (readable.isEmpty()) {
-            return Optional.of(String.join(", ", offered));
+            return String.join(", ", offered);
         }
         StringJoiner written = new StringJoiner(", ");
         readable.forEach(written::add);
         offered.stream().filter(mediaType -> !isJson(mediaType))
                 .forEach(mediaType -> written.add(mediaType + ";q=0.5"));
-        return Optional.of(written.toString());
+        return written.toString();
     }
 
     /**

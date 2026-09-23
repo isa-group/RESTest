@@ -391,9 +391,21 @@ class RequestBuilderTest {
     }
 
     @Test
-    @DisplayName("an operation that declares nothing it returns asks for nothing in particular")
-    void a_request_may_say_nothing_about_what_it_accepts() {
-        assertThat(build(Operation.of(HttpMethod.GET, "/pets")).headerValues("Accept")).isEmpty();
+    @DisplayName("an operation that declares nothing it returns says it will take anything")
+    void a_request_that_declares_nothing_says_it_takes_anything() {
+        assertThat(build(Operation.of(HttpMethod.GET, "/pets")).headerValues("Accept"))
+                .describedAs("what leaving the header out means anyway, said out loud for the "
+                        + "servers that treat a missing header as something else")
+                .containsExactly("*/*");
+    }
+
+    @Test
+    @DisplayName("and so does one whose only success carries nothing")
+    void a_success_with_nothing_in_it_says_it_takes_anything() {
+        Operation deletePet = Operation.of(HttpMethod.DELETE, "/pets")
+                .withResponses(List.of(ResponseModel.empty("204")));
+
+        assertThat(build(deletePet).headerValues("Accept")).containsExactly("*/*");
     }
 
     @Test
