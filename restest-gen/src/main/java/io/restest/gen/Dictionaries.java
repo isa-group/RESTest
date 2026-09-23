@@ -390,7 +390,10 @@ public final class Dictionaries {
                 continue;
             }
             WhereAValueCanGo places = WhereAValueCanGo.in(operation, model);
-            boolean theWholeBodyIsGiven = givenAWholeBody.contains(named.getKey());
+            // A whole body given for a GET or a HEAD is not sent either, so it is no reason for a
+            // piece of that body to go unused: the method is, and that is what gets said.
+            boolean theWholeBodyIsGiven = givenAWholeBody.contains(named.getKey())
+                    && !places.noBodyIsSent();
             for (String place : named.getValue().keySet()) {
                 whyNothingWouldUseIt(place, places, theWholeBodyIsGiven).ifPresent(why ->
                         byReason.computeIfAbsent(why, ignored -> new ArrayList<>())

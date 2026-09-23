@@ -610,6 +610,43 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("entries for the body of a GET or a HEAD, whole or in pieces, are named as ones "
+            + "nothing will use, since RESTest never sends such a body")
+    void a_body_on_a_get_or_a_head_is_reported(@TempDir Path directory) throws IOException {
+        ApiModel search = ApiModel.of("Search", "1.0", List.of(
+                Operation.of(HttpMethod.GET, "/pets/search")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                ObjectSchema.of(Map.of("name", StringSchema.of())), false)),
+                Operation.of(HttpMethod.HEAD, "/pets/search")
+                        .withRequestBody(io.restest.core.model.RequestBodyModel.json(
+                                ObjectSchema.of(Map.of("name", StringSchema.of())), true))));
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  GET /pets/search:
+                    body: [{"name": "Rex"}]
+                    body.name: [Rex]
+                  HEAD /pets/search:
+                    body.name: [Rex]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), search).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("the client that sends requests refuses a GET or a HEAD with a body, "
+                        + "so the one merely accepted is left out and the one insisted on makes "
+                        + "the operation one that cannot be tested - and a whole body given for "
+                        + "it is not sent instead either")
+                .contains("3 of its 3 entries will never be used")
+                .contains("on a GET or a HEAD, which RESTest never sends")
+                .contains("body in GET /pets/search")
+                .contains("body.name in GET /pets/search")
+                .contains("body.name in HEAD /pets/search")
+                .doesNotContain("supplied whole");
+    }
+
+    @Test
     @DisplayName("a body the document writes out in full is sent as written, so the entries for "
             + "its pieces are named as ones nothing will use")
     void pieces_of_a_body_the_document_shows_in_full_are_reported(@TempDir Path directory)

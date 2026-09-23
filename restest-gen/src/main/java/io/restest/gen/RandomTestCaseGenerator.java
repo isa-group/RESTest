@@ -493,16 +493,16 @@ public final class RandomTestCaseGenerator {
         return fill(operation, nextStrategy(), Filling.DRAWN);
     }
 
-    /** How much of what an operation merely accepts goes into a request. */
+    /**
+     * How much of what an operation merely accepts goes into a request - under either, never a body
+     * on a {@code GET} or a {@code HEAD}, which the client that sends requests refuses to build.
+     */
     private enum Filling {
 
         /** Some of it, decided by chance, as every ordinary request is. */
         DRAWN,
 
-        /**
-         * None of the optional parameters, and a body wherever one is described, except one a
-         * {@code GET} or a {@code HEAD} merely accepts.
-         */
+        /** None of the optional parameters, and a body wherever one is described. */
         LIKELIEST
     }
 
