@@ -63,7 +63,9 @@ public sealed interface RunEvent {
      * yet, such as a file upload, rather than a mistake in the description.
      *
      * <p>Not said of an operation the plan asked the run to leave alone. That one was not skipped;
-     * it was never wanted.
+     * it was never wanted. An operation the description could not be read for at all is the
+     * exception: there was no operation for the plan to judge, so it is said whatever the plan
+     * asks.
      *
      * @param at        when it was said
      * @param operation the operation that will not be tried

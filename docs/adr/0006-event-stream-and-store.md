@@ -493,7 +493,9 @@ is [ADR-0026](0026-what-a-run-sends-first.md).
 `OperationSkipped`: an operation the run will not try, with the reason. The command announces one
 for each operation the generator could not build a request for, before anything is sent, in the
 order the generator keeps them - path by path as the document declares them, and within a path in
-the fixed order of methods the parser reads them in. [ADR-0007](0007-specification-parser-boundary.md)
+the fixed order of methods the parser reads them in. **Since
+[the operations the parser drops](0007-specification-parser-boundary.md#amendment-the-operations-the-parser-drops),
+those are announced too, and first.** [ADR-0007](0007-specification-parser-boundary.md)
 promised from the start that "the run summary states how many operations were skipped and why", and
 [ADR-0015](0015-command-line-contract.md) that a run "reports what it skipped" - but the reasons
 lived in the generator and reached a person only when nothing at all could be tested, and then only
@@ -523,7 +525,8 @@ asked for it to be left alone, and the count at the top already says how many. A
 could not read at all never becomes an operation for the generator to judge: it is in neither the
 count nor `report.json`, and the screen mentions it only as one of the parts of the document that
 could not be read, of which it names the first five. That is a gap of the same kind, left for a
-change of its own.
+change of its own. **Closed since, by the amendment to ADR-0007 on
+[the operations the parser drops](0007-specification-parser-boundary.md#amendment-the-operations-the-parser-drops).**
 
 ## Amendment (one writer for the screen)
 

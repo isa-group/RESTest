@@ -267,6 +267,35 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("an entry for an operation the document could not be read for is said to be that, "
+            + "not one for an operation the API does not have")
+    void entries_for_an_operation_that_could_not_be_read_say_so(@TempDir Path directory)
+            throws IOException {
+        Files.writeString(directory.resolve("owners.yaml"), """
+                version: 1
+                name: owners
+                keyedBy: operationAndParameter
+                values:
+                  getOwner:
+                    ownerId: [7]
+                  getVet:
+                    vetId: [3]
+                """);
+        ApiModel withOneUnreadable = PET_CLINIC.withIssues(List.of(
+                io.restest.core.model.SpecificationIssue.skipped("paths./owners/{ownerId}.get",
+                        io.restest.core.model.OperationId.of("getOwner"),
+                        "the operation could not be represented: a gap nothing fills")));
+
+        assertThat(Dictionaries.gather(List.of(directory), withOneUnreadable).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .describedAs("the run names getOwner as one it could not test, so it must not "
+                        + "also be called one the API does not have")
+                .contains("1 for an operation the document could not be read for (ownerId in "
+                        + "getOwner)")
+                .contains("1 for no such operation in this API (vetId in getVet)");
+    }
+
+    @Test
     @DisplayName("an entry for a place whose whole list of values the document declares is named "
             + "as one nothing will ever draw on")
     void entries_for_a_closed_list_are_reported(@TempDir Path directory) throws IOException {

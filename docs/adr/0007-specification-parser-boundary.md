@@ -1,7 +1,7 @@
 # ADR-0007: The parser sits behind our own interface; OAS scope is 2.0, 3.0.x and 3.1.x
 
-**Status:** Accepted, amended at M0.2 and in #303, reversed at M1.2
-**Date:** 2026-09-11 (amended 2026-09-11, reversed 2026-09-12, amended 2026-09-16)
+**Status:** Accepted, amended at M0.2, in #303 and in #328, reversed at M1.2
+**Date:** 2026-09-11 (amended 2026-09-11, reversed 2026-09-12, amended 2026-09-16 and 2026-09-23)
 
 > The Context and Decision below are as originally accepted, with the superseded scope marked. The
 > M0.2 amendment put OAS 3.2 in scope; the M1.2 amendment reverses that and is the current state:
@@ -238,3 +238,53 @@ silently.
 - The remaining untidiness is the library's, not ours: `swagger-parser-core` and `swagger-parser-v3`
   still have module names derived from their filenames, which the build warns about, and which
   remains a ceiling on ever publishing `restest-spec` as a strict JPMS artifact.
+
+## Amendment (the operations the parser drops)
+
+**Date:** 2026-09-23
+
+**An operation the parser found but could not read is counted among the operations a run cannot
+test, and named with them.** The decision above says a malformed operation is skipped and reported,
+and that "the run summary states how many operations were skipped and why". What was built kept
+the first half: the parser drops the operation and records why, and the screen names it among the
+parts of the document that could not be read - if it is among the first five of them. The second
+half was not true of it. The count a run begins with, `N of M operations can be tested`, counted
+only the operations the parser produced, so a dropped one was not among the M; and the list of
+operations a run could not test, which
+[ADR-0006's amendment naming what a run skips](0006-event-stream-and-store.md#amendment-naming-what-a-run-skips)
+puts in the summary and in `report.json`, held only the ones whose request could not be built.
+
+Now the command counts them and names them, first, with what reading said and where in the
+document, from the issues that say an operation was skipped: in the count, after the summary's
+verdict, in `report.json`, and in the reason it quotes when nothing at all can be tested - which
+used to say that the document described no operation, of a document describing one it could not
+read. `ApiModel.unreadableOperations()` is the one place that picks those issues out.
+
+**Kept apart from the generator's list, not added to it.** The generator's list of operations it
+cannot test is also what it checks before building a request, and an operation it can build may
+share its name with one that could not be read: a document can give two operations one name - an
+operation copied under a deeper path, say, whose copy has a gap nothing fills - and the parser
+renames duplicates only among the operations it built. Added to that list, the unreadable one
+stopped the readable one from ever being sent while it was counted as testable. So the command
+reads the parser's issues itself, and the generator's list is what it was. The place in the
+document goes with the reason for the same cause: it is what tells the unreadable copy from the
+readable original that shares its name.
+
+**The plan is not asked about them, and says so where it matters.** What a plan's filter matches
+is an operation, and these never became one, so they are named whatever the plan says. When the
+plan leaves nothing to test, it is still the plan that is blamed - the choice is made on what could
+be read - with how many more could not be read said beside it; when the operations that were read
+were all refused, one of their reasons is the one quoted, with the unreadable ones counted beside
+it. A plan naming an operation that could not be read by its identifier is not told the API has no
+such operation, and neither is a list of values written for one - it is told the operation could not
+be read. By method and path it still is: only the identifier of an operation the parser dropped is
+known.
+
+**What is still not counted.** Operations under a path item written as a reference to another part
+of the document are not found at all - the parser records one issue for the whole path item - so
+they are in neither the count nor `report.json`. And the screen may name an operation that was found
+twice: once among the parts of the document that could not be read, which is what it is, and once
+among the operations that could not be tested, which is what it cost.
+
+No document of the corpus has such an operation: none of its forty-six, nor of the four
+hand-written fixtures.

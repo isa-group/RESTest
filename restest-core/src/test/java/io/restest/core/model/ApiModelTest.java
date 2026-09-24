@@ -249,6 +249,10 @@ class ApiModelTest {
         assertThat(degraded.effect()).isEqualTo(SpecificationIssue.Effect.DEGRADED);
         assertThat(document.operation()).isEmpty();
         assertThat(document.skipsAnOperation()).isFalse();
+        assertThat(ApiModel.of("Pets", "1.0", List.of())
+                .withIssues(List.of(degraded, skipped, document)).unreadableOperations())
+                .describedAs("only what cost a whole operation, in the order it was found")
+                .containsExactly(skipped);
     }
 
     @Test

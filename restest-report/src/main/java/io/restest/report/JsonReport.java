@@ -457,7 +457,9 @@ public final class JsonReport implements RunListener {
      * this, a run that tested eleven of twenty operations and found nothing wrong reads the same as
      * one that tested all twenty: the totals count what was tried, and only this says what was
      * not. Empty when nothing was said to be skipped - which includes a plan leaving some
-     * operations alone on purpose, since that is not the same thing as their being skipped.
+     * operations alone on purpose, since that is not the same thing as their being skipped. An
+     * operation the description could not be read for at all is listed whatever the plan says,
+     * because there was no operation for the plan to judge.
      */
     private JsonValue skippedOperations() {
         return JsonValue.array(skipped.stream()

@@ -107,6 +107,21 @@ public record ApiModel(
         return operations.stream().filter(operation -> operation.id().equals(id)).findFirst();
     }
 
+    /**
+     * The operations the document describes but could not be read for, each with what reading it
+     * said, in the order the document was read.
+     *
+     * <p>They are not among {@link #operations()}, because there was nothing a request could be
+     * built from. They are still the API's: a run counts them and names them, a plan naming one
+     * names something that exists, and a list of values written for one is written for something
+     * real.
+     */
+    public List<SpecificationIssue> unreadableOperations() {
+        return issues.stream()
+                .filter(issue -> issue.skipsAnOperation() && issue.operation().isPresent())
+                .toList();
+    }
+
     /** Every operation using the given method, in document order. */
     public List<Operation> operations(HttpMethod method) {
         Objects.requireNonNull(method, "method");
