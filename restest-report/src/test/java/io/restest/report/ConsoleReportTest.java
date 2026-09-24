@@ -55,6 +55,52 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("what the command says before the run begins comes straight under the line naming "
+            + "the API, exactly as it was given")
+    void what_the_command_says_first_comes_under_the_first_line() {
+        StringBuilder screen = new StringBuilder();
+        String introduction = "4 of 4 operations can be tested, seed 1, budget 1s"
+                + System.lineSeparator() + System.lineSeparator();
+        ConsoleReport report = ConsoleReport.to(screen, Set.of(), ReportSettings.defaults(),
+                introduction);
+
+        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+
+        assertThat(screen.toString()).isEqualTo("RESTest testing Pets at " + Runs.BASE
+                + System.lineSeparator() + System.lineSeparator() + introduction);
+    }
+
+    @Test
+    @DisplayName("what the command says first reaches the screen the moment the run begins")
+    void what_the_command_says_first_is_sent_on_its_way_at_once() {
+        BufferedScreen terminal = new BufferedScreen();
+        ConsoleReport live = ConsoleReport.to(terminal, Set.of(), ReportSettings.defaults(),
+                "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
+
+        live.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+
+        assertThat(terminal.shown())
+                .describedAs("this report prints the count now, so sending it on its way is this "
+                        + "report's job too: a count left in a buffer is one nobody watching can see")
+                .contains("4 of 4 operations can be tested");
+    }
+
+    @Test
+    @DisplayName("an introduction whose last line is left open does not carry the next line on")
+    void an_introduction_left_open_is_closed() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen, Set.of(), ReportSettings.defaults(),
+                "4 of 4 operations can be tested");
+
+        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+
+        assertThat(screen.toString().lines().toList())
+                .contains("4 of 4 operations can be tested")
+                .anySatisfy(line -> assertThat(line).startsWith("F100"));
+    }
+
+    @Test
     @DisplayName("a fault is printed with its kind, its operation, what is wrong, and a command")
     void a_fault_is_printed_with_everything_needed_to_check_it() {
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));

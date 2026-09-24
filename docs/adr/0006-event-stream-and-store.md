@@ -515,7 +515,8 @@ already reach the screen in either order, and a line of one can land inside a li
 Measured before this change: 90 of 200 runs of one command in one process, and 1 of 25 separate
 launches, printed the count first. A listener naming the operations there would join that race, and
 the command naming them itself would give the screen a second way of learning what the stream
-carries. The race is older than this and is fixed separately.
+carries. The race is older than this and is fixed separately. **Fixed since: see
+[one writer for the screen](#amendment-one-writer-for-the-screen), below.**
 
 **Two kinds of operation are not announced.** One the plan left alone was not skipped: somebody
 asked for it to be left alone, and the count at the top already says how many. And one the parser
@@ -523,3 +524,44 @@ could not read at all never becomes an operation for the generator to judge: it 
 count nor `report.json`, and the screen mentions it only as one of the parts of the document that
 could not be read, of which it names the first five. That is a gap of the same kind, left for a
 change of its own.
+
+## Amendment (one writer for the screen)
+
+**Date:** 2026-09-23
+
+**While a run lasts, only the console report writes to the screen.** The command used to print its
+own account of the run - how many operations can be tested, the seed, the budget, what could not be
+read - straight after announcing that the run had begun, while the console report printed the line
+naming the API when that announcement reached it. The two wrote at the same time with nothing to
+order them, and a line of one could land inside a line of the other,
+`...at http://localhost:11 of 4 operations can be tested...`. How often depends on the document
+and the machine. Measured on `v2` as it stood before this (`9612aabc`): one command run 200 times
+inside one program, against a document of two operations, printed the count above the address 90
+times; separate launches of that command did it once in 25; separate launches against the
+four-operation pet shelter with a budget of 50 milliseconds did it 17 times in 25.
+
+Now the command writes its account into a string before the run begins and hands it to the console
+report when it builds it, and the report prints it straight under its first line. Three other ways
+were weighed.
+
+- **Wait for the report before printing.** `EventStream.awaitDelivery` exists for ordering of this
+  kind, but it needs a bound, and the natural one, the deadline, has already passed in a run whose
+  budget is spent before testing starts - exactly where the order would go back to chance. A fixed
+  bound would be one more decided number for the settings, for a wait nobody would want to tune.
+- **Put the account on the stream** as an event, the way the operations a run skips are, and let
+  the report render it. What it would carry is the command's own words about itself: it names
+  command-line options, `--store` and `--print-settings`, that nothing outside the command-line
+  module knows about, and no other listener has a use for it. So it stays the command's text,
+  handed over whole - which is not a second way of learning something the stream carries, since the
+  stream does not carry it.
+- **Move the line naming the API into the command.** That would also leave one writer, but the
+  report would stop printing the start of a run for anybody else who uses it, and the start of a run
+  is something the stream does carry.
+
+**The rule, and its one exception.** From the moment a run starts until its summary is printed,
+the screen belongs to the report. The exception predates this and is left as it is: if the reports
+have still not caught up half a minute after the run ends, the command stops waiting for them and
+says so itself, and those lines can then land among the summary's.
+
+What the command prints before a run starts and after it ends - a list of values it could not read,
+where the report was written - is unchanged, because nothing else is writing then.

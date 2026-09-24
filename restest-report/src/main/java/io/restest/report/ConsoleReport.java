@@ -56,7 +56,10 @@ import java.util.Set;
  * says nothing about them.
  *
  * <p>It writes wherever it is told to write, rather than to the screen directly, so a test can read
- * back exactly what a person would have seen.
+ * back exactly what a person would have seen. While a run lasts it is the only thing writing there:
+ * what the command running it has to say before the run begins is handed to it, and printed under
+ * the line naming the API, because anything else writing to the same place at the same time would
+ * land among its lines in whichever order the two happened to arrive.
  */
 public final class ConsoleReport implements RunListener {
 
@@ -93,8 +96,13 @@ public final class ConsoleReport implements RunListener {
     /** How many of those to name before only counting the rest. */
     private final int skippedShown;
 
-    private ConsoleReport(Appendable out, Set<String> awkwardSources, ReportSettings settings) {
+    /** What the command running this says before the run begins, printed under the first line. */
+    private final String introduction;
+
+    private ConsoleReport(Appendable out, Set<String> awkwardSources, ReportSettings settings,
+            String introduction) {
         this.out = Objects.requireNonNull(out, "out");
+        this.introduction = Objects.requireNonNull(introduction, "introduction");
         this.awkwardSources = Set.copyOf(Objects.requireNonNull(awkwardSources, "awkwardSources"));
         this.faultsShown = settings.faultsShownOnTheConsole();
         this.skippedShown = settings.skippedOperationsShownOnTheConsole();
@@ -102,7 +110,7 @@ public final class ConsoleReport implements RunListener {
 
     /** A report that writes wherever you tell it to. */
     public static ConsoleReport to(Appendable out) {
-        return new ConsoleReport(out, Set.of(), ReportSettings.defaults());
+        return new ConsoleReport(out, Set.of(), ReportSettings.defaults(), "");
     }
 
     /**
@@ -126,8 +134,30 @@ public final class ConsoleReport implements RunListener {
      */
     public static ConsoleReport to(Appendable out, Set<String> awkwardSources,
             ReportSettings settings) {
+        return to(out, awkwardSources, settings, "");
+    }
+
+    /**
+     * The same, handed what the command running it has to say before the run begins.
+     *
+     * <p>That text - how many operations can be tested, the seed, the budget, what could not be
+     * read - is printed straight under the line naming the API and the address, exactly as given.
+     * It is handed over rather than printed by the command itself because this report writes that
+     * line when it is told the run has begun, which happens alongside the command rather than
+     * before it: two writers on one screen put their lines there in either order, and sometimes
+     * one inside the other.
+     *
+     * @param out where to write
+     * @param awkwardSources the names of the lists a run pushes at the API with
+     * @param settings how much of what was found belongs on a screen
+     * @param introduction the lines to print under the first one, each ending in a line break;
+     *     empty for none
+     * @return the report
+     */
+    public static ConsoleReport to(Appendable out, Set<String> awkwardSources,
+            ReportSettings settings, String introduction) {
         return new ConsoleReport(out, awkwardSources,
-                Objects.requireNonNull(settings, "settings"));
+                Objects.requireNonNull(settings, "settings"), introduction);
     }
 
     /**
@@ -148,9 +178,8 @@ public final class ConsoleReport implements RunListener {
                 sendOnItsWay();
             }
             case RunEvent.OperationSkipped skip -> {
-                // Said with the summary rather than as heard. The lines a run begins with are the
-                // command's own, not a report's, and a line written from here would fall among them
-                // in whichever order the two happened to reach the screen.
+                // Said with the summary rather than as heard: the list qualifies the verdict, so it
+                // is printed beside it.
                 skipped.add(skip);
             }
             case RunEvent.InteractionCompleted completed -> {
@@ -186,6 +215,15 @@ public final class ConsoleReport implements RunListener {
     private void began(RunEvent.RunStarted started) {
         write("RESTest testing " + started.api() + " at " + started.baseUrl());
         write("");
+        try {
+            out.append(introduction);
+            // A last line left open would have the next thing printed carry straight on from it.
+            if (!introduction.isEmpty() && !introduction.endsWith("\n")) {
+                out.append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("the report could not be written", e);
+        }
     }
 
     private void print(Finding finding) {
