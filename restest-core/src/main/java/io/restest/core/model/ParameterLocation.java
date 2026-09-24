@@ -61,5 +61,15 @@ public enum ParameterLocation {
     /** Inside the {@code Cookie} header. */
     COOKIE,
     /** The body of the request, which is not a parameter and holds any value at all. */
-    BODY
+    BODY;
+
+    /**
+     * The location as OpenAPI 3 writes it after {@code in:} - {@code query} rather than
+     * {@code QUERY}. The messages that explain what RESTest made of a description name it this way,
+     * because it is the word a reader searches their document for. {@link #BODY}, which OpenAPI 3
+     * never writes there, gives {@code body}.
+     */
+    public String written() {
+        return name().toLowerCase(java.util.Locale.ROOT);
+    }
 }

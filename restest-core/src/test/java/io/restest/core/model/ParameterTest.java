@@ -139,4 +139,15 @@ class ParameterTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> ParameterStyle.defaultFor(ParameterLocation.BODY));
     }
+
+    @Test
+    @DisplayName("every style and every location is spelled the way OpenAPI 3 writes it")
+    void styles_and_locations_are_spelled_the_way_a_document_writes_them() {
+        assertThat(java.util.Arrays.stream(ParameterStyle.values()).map(ParameterStyle::written))
+                .containsExactly("matrix", "label", "form", "simple", "spaceDelimited",
+                        "pipeDelimited", "deepObject");
+        assertThat(java.util.Arrays.stream(ParameterLocation.values())
+                .map(ParameterLocation::written))
+                .containsExactly("path", "query", "header", "cookie", "body");
+    }
 }

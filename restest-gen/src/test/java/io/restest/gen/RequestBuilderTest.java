@@ -200,7 +200,10 @@ class RequestBuilderTest {
 
         assertThat(RequestBuilder.whatCannotBeAssembled(
                 Operation.of(HttpMethod.GET, "/pets", List.of(deepObject))))
-                .hasValueSatisfying(reason -> assertThat(reason).contains("DEEP_OBJECT"));
+                .hasValueSatisfying(reason -> assertThat(reason)
+                        .describedAs("named the way the document writes it, not as a constant")
+                        .contains("'deepObject' style")
+                        .doesNotContain("DEEP_OBJECT"));
         assertThat(RequestBuilder.whatCannotBeAssembled(
                 Operation.of(HttpMethod.GET, "/pets", List.of(asJson))))
                 .hasValueSatisfying(reason -> assertThat(reason).contains("application/json"));
@@ -262,7 +265,7 @@ class RequestBuilderTest {
                 .withRequestBody(RequestBodyModel.json(StringSchema.of(), true));
 
         assertThat(RequestBuilder.whatCannotBeAssembled(search))
-                .hasValueSatisfying(reason -> assertThat(reason).contains("DEEP_OBJECT"));
+                .hasValueSatisfying(reason -> assertThat(reason).contains("'deepObject' style"));
     }
 
     // --- what review found this builder getting wrong ------------------------------------------

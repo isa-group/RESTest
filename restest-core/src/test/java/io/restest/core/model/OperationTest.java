@@ -165,7 +165,8 @@ class OperationTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> Operation.of(HttpMethod.GET, "/pets", twice))
                 .withMessageContaining("limit")
-                .withMessageContaining("QUERY");
+                .describedAs("named the way the document names it, which is what a reader searches for")
+                .withMessageContaining("'query'");
     }
 
     @Test

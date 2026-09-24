@@ -193,6 +193,52 @@ class OperationConverterTest {
     }
 
     @Test
+    @DisplayName("every style a document can name is spelled back the way the document wrote it")
+    void every_style_is_spelled_back_the_way_the_document_wrote_it() {
+        for (StyleEnum declared : StyleEnum.values()) {
+            io.swagger.v3.oas.models.parameters.Parameter parameter =
+                    new io.swagger.v3.oas.models.parameters.Parameter()
+                            .name("tags").in("query").style(declared)
+                            .schema(new Schema<>().type("string"));
+            PathItem pathItem = new PathItem();
+            pathItem.setGet(new io.swagger.v3.oas.models.Operation()
+                    .operationId("list").parameters(List.of(parameter)));
+
+            Operation operation = onlyOperation(apiWithPath("/widgets", pathItem));
+
+            // What a message says has to be the word the reader will search their document for.
+            assertThat(operation.parameter("tags", ParameterLocation.QUERY).orElseThrow().style()
+                    .written())
+                    .describedAs("the style a document writes as '%s'", declared)
+                    .isEqualTo(declared.toString());
+        }
+    }
+
+    @Test
+    @DisplayName("every location a document can name is spelled back the way the document wrote it")
+    void every_location_is_spelled_back_the_way_the_document_wrote_it() {
+        for (String in : List.of("path", "query", "header", "cookie")) {
+            io.swagger.v3.oas.models.parameters.Parameter parameter =
+                    new io.swagger.v3.oas.models.parameters.Parameter()
+                            .name("tag").in(in).required(true)
+                            .schema(new Schema<>().type("string"));
+            PathItem pathItem = new PathItem();
+            pathItem.setGet(new io.swagger.v3.oas.models.Operation()
+                    .operationId("list").parameters(List.of(parameter)));
+
+            // A gap in the path is only filled from the path, so it is there only for that one.
+            Operation operation = onlyOperation(
+                    apiWithPath(in.equals("path") ? "/widgets/{tag}" : "/widgets", pathItem));
+
+            assertThat(operation.parameters())
+                    .describedAs("the parameter a document puts in '%s'", in)
+                    .filteredOn(declared -> declared.name().equals("tag"))
+                    .singleElement()
+                    .satisfies(declared -> assertThat(declared.location().written()).isEqualTo(in));
+        }
+    }
+
+    @Test
     @DisplayName("a parameter declaring no style at all falls back to the location's default")
     void no_declared_style_falls_back_to_the_locations_default() {
         io.swagger.v3.oas.models.parameters.Parameter parameter =

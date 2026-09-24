@@ -98,7 +98,7 @@ public record Operation(
         for (Parameter parameter : parameters) {
             if (!seen.add(parameter.location() + " " + parameter.name())) {
                 throw new IllegalArgumentException("the parameter '" + parameter.name()
-                        + "' is declared twice in " + parameter.location());
+                        + "' is declared twice in '" + parameter.location().written() + "'");
             }
         }
     }
