@@ -417,6 +417,18 @@ class EventStreamTest {
                 .isThrownBy(() -> new RunEvent.PhaseFinished(Instant.EPOCH, "", true));
     }
 
+    @Test
+    @DisplayName("an operation that will not be tried is always said to be skipped for a reason")
+    void a_skipped_operation_always_says_why() {
+        assertThat(new RunEvent.OperationSkipped(Instant.EPOCH, OperationId.of("uploadPhoto"),
+                "its body can only be sent as multipart/form-data").reason())
+                .isEqualTo("its body can only be sent as multipart/form-data");
+        assertThatIllegalArgumentException()
+                .describedAs("a report prints the reason, and a blank one explains nothing")
+                .isThrownBy(() -> new RunEvent.OperationSkipped(Instant.EPOCH,
+                        OperationId.of("uploadPhoto"), " "));
+    }
+
     private static void sleep(Duration length) {
         try {
             Thread.sleep(length);

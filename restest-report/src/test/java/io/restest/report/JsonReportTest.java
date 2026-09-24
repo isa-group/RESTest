@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.restest.core.event.RunEvent;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import io.restest.core.settings.ReportSettings;
 import java.io.IOException;
@@ -105,6 +106,58 @@ class JsonReportTest {
         assertThat(number(totals, "operations")).isEqualTo(2);
         assertThat(number(totals, "faults")).isEqualTo(2);
         assertThat(text(totals, "elapsed")).isEqualTo("PT10S");
+    }
+
+    @Test
+    @DisplayName("the report names every operation the run could not try, with the reason, in the "
+            + "order it was told of them")
+    void every_operation_that_could_not_be_tested_is_named_with_its_reason() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        // Not in alphabetical order, so that an order made up on the way would show.
+        report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("uploadPhoto"),
+                "its body can only be sent as multipart/form-data"));
+        report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("filterPets"),
+                "its parameter 'filter' is written in the deepObject style"));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+
+        List<JsonValue.JsonObject> skipped = array(
+                (JsonValue.JsonObject) report.document().orElseThrow(), "skippedOperations")
+                .elements().stream().map(JsonValue.JsonObject.class::cast).toList();
+
+        assertThat(skipped).extracting(each -> text(each, "operation"))
+                .containsExactly("uploadPhoto", "filterPets");
+        assertThat(skipped).extracting(each -> text(each, "reason")).containsExactly(
+                "its body can only be sent as multipart/form-data",
+                "its parameter 'filter' is written in the deepObject style");
+        assertThat(skipped.get(0).members().keySet())
+                .describedAs("in one fixed order, like every other object here")
+                .containsExactly("operation", "reason");
+    }
+
+    @Test
+    @DisplayName("the report names all of them, however few of them the screen was told to name")
+    void the_report_names_every_one_whatever_the_screen_names() {
+        io.restest.core.settings.Settings told = io.restest.core.settings.Settings.from(
+                java.util.Map.of("report.skippedOperationsShownOnTheConsole", "1"));
+        JsonReport report = JsonReport.inMemory(fixedClock(),
+                io.restest.core.settings.SettingsInEffect.of(told));
+        for (int operation = 0; operation < 12; operation++) {
+            report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("operation" + operation),
+                    "a reason"));
+        }
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(array((JsonValue.JsonObject) report.document().orElseThrow(),
+                "skippedOperations").elements()).hasSize(12);
+    }
+
+    @Test
+    @DisplayName("a run that could try every operation says so with an empty list, rather than by "
+            + "leaving the list out")
+    void a_run_that_skipped_nothing_writes_an_empty_list() {
+        assertThat(array(run(JsonReport.inMemory(fixedClock())), "skippedOperations").elements())
+                .isEmpty();
     }
 
     @Test

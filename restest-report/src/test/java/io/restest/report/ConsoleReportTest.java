@@ -18,9 +18,13 @@ package io.restest.report;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.model.OperationId;
+import io.restest.core.settings.ReportSettings;
 import java.io.Flushable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +39,7 @@ class ConsoleReportTest {
     void how_many_faults_reach_the_screen_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen, java.util.Set.of(),
-                new io.restest.core.settings.ReportSettings(5, 1_000, 24L * 1024, 2));
+                new io.restest.core.settings.ReportSettings(5, 1_000, 24L * 1024, 2, 5));
 
         for (int found = 0; found < 6; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
@@ -256,6 +260,102 @@ class ConsoleReportTest {
                         + "sent nothing has no evidence for")
                 .contains("nothing was tested")
                 .doesNotContain("no faults found");
+    }
+
+    @Test
+    @DisplayName("the end of a run names every operation it could not try, with the reason, in the "
+            + "order it was told of them, straight after the verdict it qualifies")
+    void the_summary_names_the_operations_that_could_not_be_tested() {
+        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        // Not in alphabetical order, so that an order made up on the way would show.
+        report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
+        report.on(skipped("filterPets", "its parameter 'filter' is written in the deepObject style"));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        // Compared line by line: the report ends a line the way the machine it runs on does.
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("no faults found");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size())).containsExactly(
+                "2 operations could not be tested:",
+                "  uploadPhoto: its body can only be sent as multipart/form-data",
+                "  filterPets: its parameter 'filter' is written in the deepObject style");
+        assertThat(lines).filteredOn(line -> line.contains("uploadPhoto"))
+                .describedAs("named once, with the summary, and not also at the moment it was heard")
+                .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("when the verdict is a list of faults, what could not be tested comes after all of it")
+    void after_a_list_of_faults_the_operations_that_could_not_be_tested_come_last() {
+        report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 500)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("1 fault:");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict, lines.size())).containsExactly(
+                "1 fault:",
+                "  1 x F100  HTTP Status 500",
+                "1 operation could not be tested:",
+                "  uploadPhoto: its body can only be sent as multipart/form-data");
+    }
+
+    @Test
+    @DisplayName("how many of them are named is a setting: past it, the rest are counted, the report "
+            + "is pointed at, and it is said even of a run that sent nothing")
+    void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen, Set.of(),
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 2));
+        for (String operation : List.of("addPet", "getPet", "updatePet", "deletePet", "listPets")) {
+            report.on(skipped(operation, "the reason " + operation + " could not be tested"));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("nothing was tested");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size())).containsExactly(
+                "5 operations could not be tested:",
+                "  addPet: the reason addPet could not be tested",
+                "  getPet: the reason getPet could not be tested",
+                "  ... and 3 more; the run's report names every one");
+    }
+
+    @Test
+    @DisplayName("told to name none of them, the screen still says how many there were and where to "
+            + "find them")
+    void told_to_name_none_the_count_and_the_report_are_still_given() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen, Set.of(),
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 0));
+        report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString().lines().toList())
+                .endsWith("1 operation could not be tested:",
+                        "  the run's report names every one")
+                .noneMatch(line -> line.contains("uploadPhoto"));
+    }
+
+    @Test
+    @DisplayName("a run that could try every operation says nothing about any it could not")
+    void a_run_that_skipped_nothing_says_nothing_about_skipping() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString()).doesNotContain("could not be tested");
+    }
+
+    private static RunEvent.OperationSkipped skipped(String operation, String reason) {
+        return new RunEvent.OperationSkipped(Instant.EPOCH, OperationId.of(operation), reason);
     }
 
     @Test

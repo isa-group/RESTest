@@ -18,6 +18,7 @@ package io.restest.core.event;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
+import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import java.time.Duration;
 import java.time.Instant;
@@ -51,6 +52,33 @@ public sealed interface RunEvent {
             Objects.requireNonNull(at, "at");
             Objects.requireNonNull(api, "api");
             Objects.requireNonNull(baseUrl, "baseUrl");
+        }
+    }
+
+    /**
+     * One of the API's operations will not be tried in this run, and this is why.
+     *
+     * <p>A report names it beside what the run found, so that "nothing wrong" is not read as
+     * covering an operation nobody asked about. The reason is usually something the tool cannot do
+     * yet, such as a file upload, rather than a mistake in the description.
+     *
+     * <p>Not said of an operation the plan asked the run to leave alone. That one was not skipped;
+     * it was never wanted.
+     *
+     * @param at        when it was said
+     * @param operation the operation that will not be tried
+     * @param reason    why not, in the words a report prints
+     */
+    record OperationSkipped(Instant at, OperationId operation, String reason)
+            implements RunEvent {
+        public OperationSkipped {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(operation, "operation");
+            Objects.requireNonNull(reason, "reason");
+            if (reason.isBlank()) {
+                throw new IllegalArgumentException("an operation that is skipped is skipped for a "
+                        + "reason, which a report prints");
+            }
         }
     }
 

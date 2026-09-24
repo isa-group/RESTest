@@ -59,7 +59,7 @@ this record generalises. Nothing reads it from anywhere; the command line does n
 | memory | `memory.*` | how many observed values are kept under one name, how many names, the longest value kept, the longest reply read, how deep a reply is read |
 | sequences | `sequences.*` | from M9 and M10, the switches of the producer-then-consumer sequence and of each sequence operator |
 | document | `document.*` | the largest document read, the fetch timeout, the nesting limits |
-| report | `report.*` | write-ups per operation and kind, in total, body bytes kept, faults shown on the console |
+| report | `report.*` | write-ups per operation and kind, in total, body bytes kept, faults shown on the console; since the fix naming what a run skips, the operations that could not be tested named on the console |
 | store | `store.*` | batch size and the longest an interaction waits before it is written |
 
 Defaults live in code, beside the thing they configure, with the comment that already explains

@@ -20,9 +20,10 @@ package io.restest.core.settings;
  *
  * <p>An API that is broken is broken every time it is asked, so a run of any length finds the same
  * fault over and over. Writing all of them out produces a file nobody can open and a screen nobody
- * can read, both made almost entirely of copies. These four numbers are where that stops. Every one
- * of them is a limit on what is *quoted*: nothing here changes what is counted, and a fault left
- * out of the quoting is still counted exactly and still named.
+ * can read, both made almost entirely of copies. These numbers are where that stops, and the last of
+ * them does the same for the list of operations a run could not test, which a large description can
+ * make long. Every one of them is a limit on what is *quoted*: nothing here changes what is counted,
+ * and a fault or an operation left out of the quoting is still counted exactly and still named.
  *
  * @param writeUpsPerOperationAndKind how many faults of one kind, on one operation, are written out
  *     whole. The first proves the fault is real and can be repeated; the next two show what else
@@ -36,19 +37,25 @@ package io.restest.core.settings;
  *     for the API having sent less than it did
  * @param faultsShownOnTheConsole how many faults are printed in full before the screen stops being
  *     the right place for them. The count at the end is of all of them, printed or not
+ * @param skippedOperationsShownOnTheConsole how many of the operations a run could not test are
+ *     named on the screen, each with its reason, before the rest are only counted. The report file
+ *     names every one of them, however many that is
  */
 public record ReportSettings(
         int writeUpsPerOperationAndKind,
         int writeUpsInTotal,
         long mostBodyBytesKept,
-        int faultsShownOnTheConsole) {
+        int faultsShownOnTheConsole,
+        int skippedOperationsShownOnTheConsole) {
 
-    private static final ReportSettings DEFAULTS = new ReportSettings(5, 1_000, 24L * 1024, 50);
+    private static final ReportSettings DEFAULTS =
+            new ReportSettings(5, 1_000, 24L * 1024, 50, 5);
 
     public ReportSettings {
         atLeastNone(writeUpsPerOperationAndKind, "writeUpsPerOperationAndKind");
         atLeastNone(writeUpsInTotal, "writeUpsInTotal");
         atLeastNone(faultsShownOnTheConsole, "faultsShownOnTheConsole");
+        atLeastNone(skippedOperationsShownOnTheConsole, "skippedOperationsShownOnTheConsole");
         if (mostBodyBytesKept < 0) {
             throw new IllegalArgumentException("mostBodyBytesKept cannot be negative; zero quotes "
                     + "no bodies at all, which is the least this can do: " + mostBodyBytesKept);

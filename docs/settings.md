@@ -164,6 +164,8 @@ report:
   mostBodyBytesKept: 24576    # default
   # how many faults are printed in full before the screen stops being the place
   faultsShownOnTheConsole: 50 # default
+  # how many operations that could not be tested are named on the screen
+  skippedOperationsShownOnTheConsole: 5 # default
 ```
 
 ## What a settings file looks like
@@ -306,6 +308,7 @@ spelling `--budget` takes.
 | `writeUpsInTotal` | `1000` | and how many in the whole file |
 | `mostBodyBytesKept` | `24576` | how much of any one body the report quotes |
 | `faultsShownOnTheConsole` | `50` | how many faults are printed in full before the screen stops being the place |
+| `skippedOperationsShownOnTheConsole` | `5` | how many operations that could not be tested are named on the screen |
 
 ## Two things worth knowing
 

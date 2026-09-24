@@ -93,6 +93,9 @@ final class Phases {
             case RunEvent.RunStarted ignored -> {
                 // Not about any stretch of the run.
             }
+            case RunEvent.OperationSkipped ignored -> {
+                // Nor is an operation no stretch of it will try.
+            }
             case RunEvent.FaultFound ignored -> {
                 // A fault is a judgement about a reply, and the reply has been counted already.
             }

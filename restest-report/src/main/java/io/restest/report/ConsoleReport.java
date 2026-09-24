@@ -27,6 +27,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -50,7 +51,9 @@ import java.util.Set;
  * found, and how much of the time was spent waiting for the API rather than working - a run that
  * spends its time idle is a run doing less testing than it looks like it is. The line of status
  * codes is worth a glance even when nothing was found wrong: a run where almost everything came back
- * refused is a run whose requests were the problem, not the API.
+ * refused is a run whose requests were the problem, not the API. Last come the operations the run
+ * said it would not try - the first few by name, with the reason - because finding nothing wrong
+ * says nothing about them.
  *
  * <p>It writes wherever it is told to write, rather than to the screen directly, so a test can read
  * back exactly what a person would have seen.
@@ -84,10 +87,17 @@ public final class ConsoleReport implements RunListener {
     /** How many faults to print in full before the screen stops being the right place for them. */
     private final int faultsShown;
 
+    /** The operations the run said it would not try, in the order it said so. */
+    private final List<RunEvent.OperationSkipped> skipped = new ArrayList<>();
+
+    /** How many of those to name before only counting the rest. */
+    private final int skippedShown;
+
     private ConsoleReport(Appendable out, Set<String> awkwardSources, ReportSettings settings) {
         this.out = Objects.requireNonNull(out, "out");
         this.awkwardSources = Set.copyOf(Objects.requireNonNull(awkwardSources, "awkwardSources"));
         this.faultsShown = settings.faultsShownOnTheConsole();
+        this.skippedShown = settings.skippedOperationsShownOnTheConsole();
     }
 
     /** A report that writes wherever you tell it to. */
@@ -136,6 +146,12 @@ public final class ConsoleReport implements RunListener {
             case RunEvent.RunStarted started -> {
                 began(started);
                 sendOnItsWay();
+            }
+            case RunEvent.OperationSkipped skip -> {
+                // Said with the summary rather than as heard. The lines a run begins with are the
+                // command's own, not a report's, and a line written from here would fall among them
+                // in whichever order the two happened to reach the screen.
+                skipped.add(skip);
             }
             case RunEvent.InteractionCompleted completed -> {
                 attempts++;
@@ -235,6 +251,35 @@ public final class ConsoleReport implements RunListener {
     }
 
     private void summarise(RunEvent.RunFinished finished) {
+        summariseWhatWasSent(finished);
+        // After the verdict, because it qualifies it: "no faults found" says nothing about an
+        // operation that was never tried. Said whether or not anything was sent at all.
+        nameWhatWasSkipped();
+    }
+
+    /**
+     * The operations this run never tried, each with the reason.
+     *
+     * <p>The first few by name and the rest counted. A description the tool can hardly test makes
+     * this list as long as the description, and the screen is not the place for all of it; the
+     * run's report names every one.
+     */
+    private void nameWhatWasSkipped() {
+        if (skipped.isEmpty()) {
+            return;
+        }
+        write(skipped.size() + (skipped.size() == 1 ? " operation" : " operations")
+                + " could not be tested:");
+        int named = Math.min(skipped.size(), skippedShown);
+        skipped.subList(0, named)
+                .forEach(skip -> write("  " + skip.operation() + ": " + skip.reason()));
+        if (named < skipped.size()) {
+            write("  " + (named == 0 ? "" : "... and " + (skipped.size() - named) + " more; ")
+                    + "the run's report names every one");
+        }
+    }
+
+    private void summariseWhatWasSent(RunEvent.RunFinished finished) {
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
                 + Math.round(finished.engine().idleFraction() * 100) + "% of it idle");

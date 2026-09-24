@@ -170,7 +170,9 @@ public record Settings(
                 typed.wholeNumber("report.writeUpsInTotal", DEFAULTS.report.writeUpsInTotal()),
                 typed.count("report.mostBodyBytesKept", DEFAULTS.report.mostBodyBytesKept()),
                 typed.wholeNumber("report.faultsShownOnTheConsole",
-                        DEFAULTS.report.faultsShownOnTheConsole())));
+                        DEFAULTS.report.faultsShownOnTheConsole()),
+                typed.wholeNumber("report.skippedOperationsShownOnTheConsole",
+                        DEFAULTS.report.skippedOperationsShownOnTheConsole())));
         return new Settings(engine, schedule, generation, memory, document, report);
     }
 
@@ -257,6 +259,8 @@ public record Settings(
             case "report.mostBodyBytesKept" -> String.valueOf(report.mostBodyBytesKept());
             case "report.faultsShownOnTheConsole" ->
                     String.valueOf(report.faultsShownOnTheConsole());
+            case "report.skippedOperationsShownOnTheConsole" ->
+                    String.valueOf(report.skippedOperationsShownOnTheConsole());
 
             // Unreachable while every key in the catalogue is answered above, which a test in this
             // module checks by asking for every one of them. It is here so that adding a key and

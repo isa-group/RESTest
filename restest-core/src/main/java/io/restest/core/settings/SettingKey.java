@@ -251,7 +251,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("report", "mostBodyBytesKept", SettingKind.WHOLE_NUMBER,
                     "how much of any one body the report quotes"),
             key("report", "faultsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
-                    "how many faults are printed in full before the screen stops being the place"));
+                    "how many faults are printed in full before the screen stops being the place"),
+            key("report", "skippedOperationsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
+                    "how many operations that could not be tested are named on the screen"));
 
     private static final Map<String, SettingKey> BY_NAME = byName();
 

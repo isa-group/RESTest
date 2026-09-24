@@ -81,6 +81,9 @@ import java.util.Set;
  * <p>Every limit is written into the file beside what it applies to, and the file says when a limit
  * stopped it writing, so nothing is quietly missing.
  *
+ * <p>It also names every operation the run said it would not try, each with the reason, so that a
+ * run which found nothing wrong says what it did not look at.
+ *
  * <p>Fault kinds are named by number from a catalogue several testing tools share, and the report
  * says which version of that catalogue it used, because a fault code only means something next to
  * the list it was taken from.
@@ -173,6 +176,14 @@ public final class JsonReport implements RunListener {
     private boolean somethingWrongWithIt;
 
     private final Set<OperationId> operations = new LinkedHashSet<>();
+
+    /**
+     * Every operation the run said it would not try, and why, in the order it said so.
+     *
+     * <p>Not bounded by a constant, for the same reason the tallies are not: it is as long as the
+     * description has operations, never as long as the run.
+     */
+    private final List<RunEvent.OperationSkipped> skipped = new ArrayList<>();
     private String api = "";
     private String baseUrl = "";
     private int attempts;
@@ -249,6 +260,7 @@ public final class JsonReport implements RunListener {
                 api = started.api();
                 baseUrl = started.baseUrl();
             }
+            case RunEvent.OperationSkipped skip -> skipped.add(skip);
             case RunEvent.InteractionCompleted completed -> attempted(completed.interaction());
             case RunEvent.FaultFound found -> took(found.finding());
             case RunEvent.RunFinished finished -> {
@@ -383,6 +395,7 @@ public final class JsonReport implements RunListener {
         report.put("createdAt", JsonValue.of(clock.instant().toString()));
         report.put("api", pair("title", JsonValue.of(api), "baseUrl", JsonValue.of(baseUrl)));
         report.put("totals", totals());
+        report.put("skippedOperations", skippedOperations());
         report.put("limits", limits());
         report.put("settings", settings());
         report.put("engine", engineStatistics());
@@ -434,6 +447,22 @@ public final class JsonReport implements RunListener {
                     row.put("lastSeenAt", JsonValue.of(tally.lastSeenAt.toString()));
                     return (JsonValue) JsonValue.object(row);
                 })
+                .toList());
+    }
+
+    /**
+     * Every operation the run said it would not try, each with the reason.
+     *
+     * <p>All of them, however many there are, where the screen names only the first few. Without
+     * this, a run that tested eleven of twenty operations and found nothing wrong reads the same as
+     * one that tested all twenty: the totals count what was tried, and only this says what was
+     * not. Empty when nothing was said to be skipped - which includes a plan leaving some
+     * operations alone on purpose, since that is not the same thing as their being skipped.
+     */
+    private JsonValue skippedOperations() {
+        return JsonValue.array(skipped.stream()
+                .map(skip -> pair("operation", JsonValue.of(skip.operation().value()),
+                        "reason", JsonValue.of(skip.reason())))
                 .toList());
     }
 

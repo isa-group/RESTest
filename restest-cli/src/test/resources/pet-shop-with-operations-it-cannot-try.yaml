@@ -1,0 +1,77 @@
+openapi: 3.1.0
+info:
+  title: Pet Shop
+  version: 1.0.0
+  description: >
+    Four operations, and RESTest can test only one of them: a photo upload whose body can only be
+    sent as a multipart form, a search that insists on a body although it is a GET, and a filter
+    written in a style requests are not assembled in yet. A run names those three and says why, on
+    the screen and in its report. They are declared out of alphabetical order on purpose, so that a
+    run naming them in any order but the document's would show.
+paths:
+  /pets/{petId}/photo:
+    post:
+      operationId: uploadPhoto
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        "204":
+          description: the photo was attached
+  /shelters:
+    get:
+      operationId: listShelters
+      responses:
+        "200":
+          description: how many shelters there are
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+  /pets/search:
+    get:
+      operationId: searchPets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: the pets whose name matches
+  /pets/filter:
+    get:
+      operationId: filterPets
+      parameters:
+        - name: filter
+          in: query
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            properties:
+              kind:
+                type: string
+      responses:
+        "200":
+          description: the pets of that kind
