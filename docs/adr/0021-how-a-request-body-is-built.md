@@ -610,7 +610,8 @@ and is not filed under this one. Only each thing's words and numbers are kept, s
 fill a gap, bounded by the same two settings as the rest of the memory, whose descriptions now say
 so. **Nothing is kept from a `DELETE`**: what it returns is the thing that has just stopped
 existing. An identifier kept earlier is not forgotten when its thing is deleted later; it ages out
-like any other value, and forgetting it is 9.3's.
+like any other value, and forgetting it is 9.3's. *9.3 built it and did not merge it (see the last
+list of this amendment).*
 
 A name is written like an identifier when it is `id` or `_id`, or ends in `Id`, `ID`, `_id`, `-id`,
 `_ID` or `-ID`. That list is a fact about spelling rather than a number anybody tunes, so it stays in
@@ -708,5 +709,7 @@ enough to call the question closed - which is what `memory.identifiersByResource
 - Addresses that end in the same word are one kind whatever comes before it, which is the kafka
   case above; telling `/brokers/{id}/configs` from `/topics/{name}/configs` is the same pairing.
 - An identifier is not forgotten when the thing is deleted by another request, which is 9.3's.
+  *9.3 built it and did not merge it: forgetting moved no measured number, and a 2XX to a `DELETE`
+  is not always a deletion ([ADR-0013](0013-input-generation.md), M9.3 amendment).*
 - No synonym table and no similarity score, as the row says: the kind of thing is the fixed part of
   the address, spelt one way, and nothing else.

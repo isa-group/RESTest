@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a, M2.4 and M2.10a
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1 and M9.3
 **Date:** 2026-09-13
 
 ## Context
@@ -592,3 +592,54 @@ is the first of them.
 Honouring a share as a stretch of the clock was row 2.10b, absorbed into 9.1 and then set aside for
 2.1: it moves none of the competition's measurements, and a strategy chosen by the clock would break
 §7's promise for every plan with no memory. [ADR-0026](0026-what-a-run-sends-first.md) §7.
+
+## Amendment (M9.3)
+
+**Date:** 2026-09-26
+
+**The two decisions "Left to M4, on purpose" were built, measured, and not merged, so they stay
+open.** Roadmap row 9.3 needed both, because M4 is now after v2.0. The code is kept on the branch
+`experiment/m9-3-sequence-pairs`; this records what it did, what it measured, and what whoever takes
+the decisions next - 10.3, or 4.4 after v2.0 - starts from.
+
+### What was built
+
+**The unit of work was a pair**: a creation and the request it was made for. The scheduler sent the
+creation in the other request's place in the round; the loop handed the creation's answer back the
+moment it arrived; and the other request went next, taking its identifier from **its own creation's
+reply**, never from the memory - this record's rule, *a sequence never borrows an identifier; it
+creates what it needs*, taken literally. Gaps the two addresses share in the same places were filled
+with what the creation was sent there, so a pet asked for belonged to the owner it was made under,
+and each value named the exchange it came from. A pair was made only in the ordinary rounds, only for
+a plan with a memory, and only when the memory had nothing for a gap that a `POST` at the same
+address - or, for a gap named like an identifier, about the same kind of thing - creates. One
+creation of each kind was awaited at a time, and one that made nothing usable was not sent as one
+again until the next round.
+
+**Interference was accepted rather than prevented**, with the engine's concurrency left on: a 404 on
+the second request is not by itself evidence of anything, which costs nothing the competition
+scores and is why 4.5's stateful oracles still wait.
+
+**The memory forgot what a 2XX `DELETE` removed**, so that "every identifier carried has since been
+deleted" was something a run could know.
+
+### What was measured
+
+Four priority APIs from the benchmark's own images, restarted before every run, five seeds, sixty
+seconds, in three arrangements: both on, pairs off, and both off. 7 pairs fired in 338,229 requests,
+and neither lever moved operations covered, the area under that curve, branch coverage or distinct
+server failures beyond one standard deviation. The table, and the three findings behind it, are in
+the roadmap's 9.3 notes. The one that matters here: every kind of thing these APIs create also has a
+list, the list refills the memory every round, so "the memory has nothing" is almost never true -
+and a static reading of the corpus and the 2026 edition found one API in 52 where it would be.
+
+### What this changes about the two decisions
+
+Nothing is decided. What the measurement adds is that **the trigger, not the unit, is the open
+part**: a sequence that waits for the memory to be empty waits for ever on APIs with lists. The
+shape built here - a pair, its second step reading its own first step's reply - worked where it
+fired, and is the natural unit for 10.3's operators, which create their own victim and so do not
+wait for anything to be missing. Forgetting is not part of that unit and needs its own case: a 2XX
+to a `DELETE` is not always a deletion, and where the memory is thin, forgetting leaves invention in
+the place of a stale value.
+
