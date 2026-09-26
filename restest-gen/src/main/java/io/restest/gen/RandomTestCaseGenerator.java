@@ -524,12 +524,17 @@ public final class RandomTestCaseGenerator {
         // which is what leaves every equally-sized subset equally likely.
         // Not drawn at all for the likeliest request, rather than drawn and ignored: drawing would
         // move the generator's own numbers on, and the ordinary requests after it would change.
-        int stillToInclude = filling == Filling.DRAWN
+        // Switched off, each one is decided on its own coin, drawn exactly as before the count was
+        // drawn first, so that an experiment can measure what drawing the count first is worth.
+        boolean bySize = settings.generation().optionalParametersBySize();
+        int stillToInclude = filling == Filling.DRAWN && bySize
                 ? howManyOptionalParametersToInclude(optionalRemaining) : 0;
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required()) {
-                boolean include = stillToInclude > 0 && (stillToInclude == optionalRemaining
-                        || random.nextDouble() < (double) stillToInclude / optionalRemaining);
+                boolean include = filling == Filling.DRAWN && !bySize
+                        ? random.nextDouble() < settings.generation().optionalBodyChance()
+                        : stillToInclude > 0 && (stillToInclude == optionalRemaining
+                                || random.nextDouble() < (double) stillToInclude / optionalRemaining);
                 optionalRemaining--;
                 if (include) {
                     stillToInclude--;

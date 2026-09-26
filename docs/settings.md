@@ -128,6 +128,8 @@ generation:
   optionalBodyChance: 0.5     # default
   # how often one more optional parameter is added on top of the ones already chosen, between 0 and 1
   optionalParameterContinueChance: 0.5 # default
+  # whether how many optional parameters go in is drawn first, favouring few; off, each is decided on its own at optionalBodyChance
+  optionalParametersBySize: true # default
   # one time in this many, a value allowed to be absent is sent as nothing
   nullInOneIn: 8              # default
   # how many times a fresh element is attempted for a list of distinct items
@@ -278,6 +280,7 @@ spelling `--budget` takes.
 | `optionalPropertyChance` | `0.5` | how often an optional property is included anyway, between 0 and 1 |
 | `optionalBodyChance` | `0.5` | how often a request that merely accepts a body sends it anyway, between 0 and 1; a GET or a HEAD never does |
 | `optionalParameterContinueChance` | `0.5` | how often one more optional parameter is added on top of the ones already chosen, between 0 and 1 |
+| `optionalParametersBySize` | `true` | whether how many optional parameters go in is drawn first, favouring few; off, each is decided on its own at optionalBodyChance |
 | `nullInOneIn` | `8` | one time in this many, a value allowed to be absent is sent as nothing |
 | `uniqueAttempts` | `8` | how many times a fresh element is attempted for a list of distinct items |
 | `sendableAttempts` | `8` | how many times a value is invented again after an unsendable one |

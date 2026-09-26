@@ -55,6 +55,10 @@ import java.util.Objects;
  * @param optionalParameterContinueChance how often the count of optional parameters a request will
  *     include grows by one more, asked again for each one until it stops growing or none are left
  *     to add. Between 0 and 1
+ * @param optionalParametersBySize whether that count is drawn first, favouring few, and then which
+ *     parameters make it up. Off, every optional parameter is decided on its own, on the chance
+ *     {@code optionalBodyChance} gives, which makes a request carrying none of them rarer the more
+ *     of them there are
  * @param nullInOneIn how often a value that is allowed to be absent is sent as nothing at all: one
  *     time in this many. Zero never sends nothing
  * @param uniqueAttempts how many times a fresh element is attempted for a list whose items must all
@@ -77,6 +81,7 @@ public record GenerationSettings(
         double optionalPropertyChance,
         double optionalBodyChance,
         double optionalParameterContinueChance,
+        boolean optionalParametersBySize,
         int nullInOneIn,
         int uniqueAttempts,
         int sendableAttempts,
@@ -84,7 +89,7 @@ public record GenerationSettings(
 
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
-            0.5, 0.5, 0.5, 8, 8, 8, 8);
+            0.5, 0.5, 0.5, true, 8, 8, 8, 8);
 
     public GenerationSettings {
         Objects.requireNonNull(lowestNumber, "lowestNumber");
