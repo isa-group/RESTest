@@ -35,6 +35,7 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.Scheduler;
 import io.restest.spec.SwaggerSpecificationParser;
@@ -240,7 +241,10 @@ class RunLoopTest {
         RunLoop.Outcome outcome = runAgainst("https://api.example?key=abc", WITHOUT_A_FIRST_ROUND);
 
         assertThat(outcome.sent()).isZero();
-        assertThat(outcome.notAssembled()).isEqualTo(model.operations().size());
+        assertThat(outcome.notAssembled())
+                .describedAs("every operation once, and the creation of a pet tried before the "
+                        + "read of one pet, since nobody has a pet")
+                .isEqualTo(model.operations().size() + 1L);
         assertThat(outcome.passes()).isEqualTo(1);
         assertThat(outcome.nothingCouldBeBuilt())
                 .describedAs("and the run can say which of the several ways of testing nothing "
@@ -255,8 +259,9 @@ class RunLoopTest {
 
         assertThat(outcome.sent()).isZero();
         assertThat(outcome.notAssembled())
-                .describedAs("every operation tried once in the first round and once more after it")
-                .isEqualTo(2L * model.operations().size());
+                .describedAs("every operation tried once in the first round and once more after "
+                        + "it, where the read of one pet has a creation tried before it")
+                .isEqualTo(2L * model.operations().size() + 1);
         assertThat(outcome.passes())
                 .describedAs("the first round is not one of the ordinary rounds a run counts")
                 .isEqualTo(1);
@@ -268,16 +273,24 @@ class RunLoopTest {
             + "what reads one thing")
     void the_first_round_sends_every_operation_once_in_steps() {
         List<String> heard = new CopyOnWriteArrayList<>();
-
-        run(BUDGET, events -> events.subscribe(event -> {
-            switch (event) {
-                case RunEvent.PhaseStarted started -> heard.add("[" + started.phase());
-                case RunEvent.PhaseFinished finished -> heard.add(finished.phase() + "]");
-                case RunEvent.TestCasePlanned planned ->
-                        heard.add(planned.testCase().operation().value());
-                default -> { }
-            }
-        }));
+        // Without pairs: every reply here is an empty list, so nobody ever has a pet and every
+        // ordinary read of one would follow a creation, which is checked on its own further down.
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                switch (event) {
+                    case RunEvent.PhaseStarted started -> heard.add("[" + started.phase());
+                    case RunEvent.PhaseFinished finished -> heard.add(finished.phase() + "]");
+                    case RunEvent.TestCasePlanned planned ->
+                            heard.add(planned.testCase().operation().value());
+                    default -> { }
+                }
+            });
+            Scheduler scheduler = new Scheduler(generator(), WITH_A_FIRST_ROUND,
+                    new SequenceSettings(false), Instant.now().plus(BUDGET),
+                    InstantSource.system(), events::publish);
+            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                    PATIENT, engine, events);
+        }
 
         assertThat(heard.subList(0, 6)).containsExactly("[opening lap", "listPets",
                 "listShelters", "addPet", "getPet", "opening lap]");
@@ -368,6 +381,40 @@ class RunLoopTest {
                 .describedAs("the first round's read of one pet names the pet the list named")
                 .isEqualTo(JsonValue.of(7));
         assertThat(petId.origin()).isInstanceOf(ValueOrigin.Derived.class);
+    }
+
+    @Test
+    @DisplayName("a read of one pet nobody has is sent straight after a creation, with the "
+            + "identifier the creation came back with")
+    void a_creation_answered_hands_its_identifier_to_the_read_after_it() {
+        // Nothing the API lists ever names a pet, so the memory never has one: every read of one
+        // pet in an ordinary round goes as a pair, the creation first.
+        engine.repliesWith(testCase -> testCase.operation().value().equals("addPet")
+                ? "{\"id\": 31, \"name\": \"Rex\"}" : "[]");
+        List<TestCase> planned = new CopyOnWriteArrayList<>();
+
+        run(Duration.ofMillis(500), WITHOUT_A_FIRST_ROUND, events -> events.subscribe(event -> {
+            if (event instanceof RunEvent.TestCasePlanned sent) {
+                planned.add(sent.testCase());
+            }
+        }));
+
+        // A read that comes round while the creation made for an earlier one is still awaited goes
+        // the ordinary way, so it is the reads made after a creation that are looked at.
+        List<ParameterValue> afterACreation = planned.stream()
+                .filter(testCase -> testCase.operation().value().equals("getPet"))
+                .map(read -> read.parameterValue("petId", ParameterLocation.PATH).orElseThrow())
+                .filter(petId -> petId.origin() instanceof ValueOrigin.Derived)
+                .toList();
+        assertThat(afterACreation).isNotEmpty().allSatisfy(petId -> {
+            assertThat(petId.value()).isEqualTo(JsonValue.of(31));
+            assertThat(((ValueOrigin.Derived) petId.origin()).description())
+                    .isEqualTo("the 'id' of what POST /pets created just before");
+        });
+        assertThat(planned.stream().filter(testCase -> testCase.operation().value()
+                .equals("addPet")).count())
+                .describedAs("a creation for every read made after one, besides the ordinary ones")
+                .isGreaterThan(afterACreation.size());
     }
 
     @Test

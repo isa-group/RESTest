@@ -17,8 +17,10 @@ package io.restest.gen;
 
 import io.restest.core.event.RunListener;
 import io.restest.core.execution.BodyValue;
+import io.restest.core.execution.Interaction;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
+import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
@@ -82,6 +84,13 @@ import java.util.stream.Stream;
  * sample, then its default, and only then one invented to fit. Building it
  * draws on numbers of its own, so asking for it changes nothing about the ordinary requests that
  * follow.
+ *
+ * <p>And it can say what an operation needs created before it has any hope: when a gap in the
+ * operation's address wants the identifier of a thing the memory of what the API returned holds
+ * none of, and another operation creates such things. The run then sends that creation first, and
+ * builds the operation's request from what the creation came back with - the identifier of what
+ * was made, and whatever the creation's own address was sent where the two addresses agree - so
+ * the request asks for the very thing made for it.
  *
  * <p>Not every operation can be attempted even so, and the ones that cannot are named rather than
  * quietly skipped: one whose parameters are written in a way requests cannot yet be assembled for,
@@ -155,6 +164,16 @@ public final class RandomTestCaseGenerator {
     private final List<Operation> testable;
     private final Map<OperationId, String> untestable;
     private final List<OperationId> setAsideByThePlan;
+
+    /** Which operation creates the thing another one needs. */
+    private final Producers producers;
+
+    /**
+     * The memory, asked whether it has anything for a gap and what a creation came back with, or
+     * {@code null} when the plan has no memory. It never chooses among values, so it draws on no
+     * numbers.
+     */
+    private final ObservedValueProvider memory;
 
     /**
      * A generator for this API, starting from a number of the system's choosing.
@@ -310,6 +329,11 @@ public final class RandomTestCaseGenerator {
         // same command would explain itself differently each time it was run. The map is built here
         // and never handed anywhere else, so wrapping it keeps document order without a second copy.
         this.untestable = Collections.unmodifiableMap(cannot);
+        this.producers = Producers.among(testable);
+        // A sequence of numbers of its own, never used: this one only answers questions that
+        // involve no choice. Split from nothing the ordinary requests draw on.
+        this.memory = observed == null ? null
+                : new ObservedValueProvider(model, observed, new SplittableRandom(seed), null);
     }
 
     /**
@@ -491,6 +515,123 @@ public final class RandomTestCaseGenerator {
 
     private Optional<TestCase> fill(Operation operation) {
         return fill(operation, nextStrategy(), Filling.DRAWN);
+    }
+
+    /**
+     * The first thing this operation needs created before it can be sent with any hope, if any.
+     *
+     * <p>Something is needed when a gap in the operation's address is one some operation can
+     * create the thing for, and the memory of what the API returned has nothing that could go in
+     * it - nothing of that kind was ever returned, or everything that was has since been deleted.
+     * The gaps are looked at in the order they appear, so that an owner is created before a pet
+     * is created under it.
+     *
+     * <p>Nothing is ever needed when the plan has no memory, since then nothing records what the
+     * API has, or when the plan has no way of building a request meant to work, which is what a
+     * creation is built with.
+     *
+     * @param consumer the operation about to be sent
+     * @return the gap and what creates the thing it names, or nothing
+     */
+    Optional<Producers.Need> whatIsMissing(Operation consumer) {
+        Objects.requireNonNull(consumer, "consumer");
+        if (memory == null || likeliest == null || untestable.containsKey(consumer.id())) {
+            return Optional.empty();
+        }
+        for (Producers.Need need : producers.of(consumer)) {
+            Optional<Parameter> gap = gapIn(consumer, need.gap());
+            if (gap.isPresent() && !memory.hasSomethingFor(ask(consumer, gap.get()))) {
+                return Optional.of(need);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * What a creation handed back for the operation it was sent for, ready to be put in that
+     * operation's address.
+     *
+     * <p>Two kinds of value. The identifier of what was created, read out of the reply, for the
+     * gap that needed it - present only when the API said yes and wrote one down. And every gap
+     * the creation's own address shares with the operation's, filled with what the creation was
+     * sent there. Each names the exchange it came from.
+     *
+     * @param consumer the operation the creation was sent for
+     * @param need the gap it was sent for, and the creation
+     * @param creation the request the creation sent, or {@code null} if it never went out
+     * @param answer what came back, or {@code null} if nothing did
+     * @return the values by the gap each goes in; without the needed gap when the creation made
+     *     nothing this could use
+     */
+    Map<String, GeneratedValue> whatTheCreationGave(Operation consumer, Producers.Need need,
+            TestCase creation, Interaction answer) {
+        Objects.requireNonNull(consumer, "consumer");
+        Objects.requireNonNull(need, "need");
+        Map<String, GeneratedValue> gave = new LinkedHashMap<>();
+        if (memory == null || creation == null || answer == null) {
+            return gave;
+        }
+        String createdBy = need.producer().method() + " " + need.producer().path();
+        need.sharedGaps().forEach((ours, theirs) -> creation
+                .parameterValue(theirs, ParameterLocation.PATH)
+                .ifPresent(sent -> gave.put(ours, new GeneratedValue(sent.value(),
+                        new ValueOrigin.Derived(answer.id(),
+                                "the '" + theirs + "' " + createdBy + " was sent with")))));
+        Optional<Parameter> gap = gapIn(consumer, need.gap());
+        answer.response()
+                .filter(response -> response.statusCode() >= 200 && response.statusCode() < 300)
+                .flatMap(observed::readable)
+                .flatMap(reply -> gap.flatMap(declared -> memory.identifierCreatedBy(
+                        ask(consumer, declared), reply, answer.id(), createdBy)))
+                .ifPresent(identifier -> gave.put(need.gap(), identifier));
+        return gave;
+    }
+
+    /**
+     * An ordinary request for this operation, with these gaps in its address filled with what a
+     * creation just before it handed back.
+     *
+     * <p>Built the way every ordinary request is - its way of building chosen by chance, its
+     * optional parameters drawn - except that the gaps given are filled with the values given,
+     * whatever that way would have chosen for them.
+     *
+     * @param consumer the operation to build it for
+     * @param pinned the values for the gaps, by the gap's name
+     * @return the request, or empty if a value the API requires could not be found, or if this
+     *     operation cannot be attempted at all
+     */
+    Optional<TestCase> followUp(Operation consumer, Map<String, GeneratedValue> pinned) {
+        Objects.requireNonNull(consumer, "consumer");
+        Objects.requireNonNull(pinned, "pinned");
+        if (untestable.containsKey(consumer.id())) {
+            return Optional.empty();
+        }
+        Strategy drawn = nextStrategy();
+        Map<String, GeneratedValue> fixed = Map.copyOf(pinned);
+        ValueProvider inFront = new ValueProvider() {
+            @Override
+            public Optional<GeneratedValue> offer(ValueRequest request) {
+                boolean aWholeGap = request.location() == ParameterLocation.PATH
+                        && request.path().equals(request.name());
+                return aWholeGap && fixed.containsKey(request.name())
+                        ? Optional.of(fixed.get(request.name()))
+                        : drawn.values().offer(request);
+            }
+
+            @Override
+            public String name() {
+                return drawn.values().name();
+            }
+        };
+        return fill(consumer, new Strategy(drawn.name(), drawn.share(), drawn.pushesAtTheApi(),
+                inFront), Filling.DRAWN);
+    }
+
+    private static Optional<Parameter> gapIn(Operation operation, String name) {
+        return operation.parameters().stream()
+                .filter(parameter -> parameter.location() == ParameterLocation.PATH
+                        && parameter.name().equals(name))
+                .findFirst();
     }
 
     /**

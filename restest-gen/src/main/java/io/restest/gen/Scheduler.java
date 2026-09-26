@@ -16,15 +16,24 @@
 package io.restest.gen;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
+import io.restest.core.gen.GeneratedValue;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 /**
@@ -51,11 +60,24 @@ import java.util.function.Consumer;
  * says so, so that whoever sends can stop a run that has shown it can send nothing at all, or that
  * nobody is answering.
  *
- * <p>Nothing here is decided by chance: which operation comes next depends only on the document, the
- * settings and the clock. A run with the first round switched off therefore builds exactly the test
- * cases it built before there was a first round, in the same order, from the same starting number.
+ * <p>In those rounds, an operation that needs the identifier of a thing the run knows of none of -
+ * {@code GET /pets/{petId}} when no pet the API has returned is still there - is sent as a pair: first
+ * the request that creates such a thing, {@code POST /pets}, and, as soon as its answer is back, the
+ * operation itself, with the identifier that answer carried. The two are one piece of work: the
+ * second takes its identifier from the first one's reply, not from whatever the run happens to
+ * remember, so it asks for the very thing that was made for it. {@link Producers} says which
+ * operation creates what. Only one creation of each kind is awaited at a time, and one that makes
+ * nothing usable is not sent as one again until the next round, so an API that refuses every
+ * creation costs at most one extra request per round for it. Pairs are only made when the plan remembers what the API returned - without that nobody knows
+ * what is missing - and can be switched off.
  *
- * <p>One scheduler belongs to one run, and is asked from one thread.
+ * <p>Nothing here is decided by chance: which operation comes next depends only on the document, the
+ * settings, the clock and, when the plan has a memory, what the API has answered. A run with the
+ * first round switched off and no memory therefore builds exactly the test cases it built before
+ * there was a first round, in the same order, from the same starting number.
+ *
+ * <p>One scheduler belongs to one run, and is asked from one thread - except {@link #heard}, which is
+ * told about an answer from whichever thread it arrived on.
  */
 public final class Scheduler {
 
@@ -69,6 +91,21 @@ public final class Scheduler {
     private final Instant deadline;
     private final InstantSource clock;
     private final Consumer<? super RunEvent> announce;
+    private final boolean pairs;
+
+    /** Answers to creations, waiting for the request each was made for to be sent. */
+    private final Queue<Heard> heard = new ConcurrentLinkedQueue<>();
+
+    /** The creations that made nothing usable in this round, not sent as one again until the next. */
+    private final Set<OperationId> madeNothingThisRound = new HashSet<>();
+
+    /**
+     * The creations sent for another request whose answer has not been dealt with yet. One at a
+     * time for each: a run sends a whole round before the first answer is back, and without this
+     * every request of the round needing the same thing would send its own creation - all of them
+     * refused, on an API that refuses that creation.
+     */
+    private final Set<OperationId> creationsAwaited = new HashSet<>();
 
     /** Which step of the first round is being sent, and how far through it. */
     private int step;
@@ -82,7 +119,7 @@ public final class Scheduler {
     private boolean stopped;
 
     /**
-     * A scheduler for one run.
+     * A scheduler for one run, sending requests in sequences as RESTest does unless told otherwise.
      *
      * @param generator what fills in each request, and knows which operations can be attempted
      * @param settings whether the run begins with a first round, and how long a step of it waits
@@ -94,6 +131,26 @@ public final class Scheduler {
      */
     public Scheduler(RandomTestCaseGenerator generator, ScheduleSettings settings, Instant deadline,
             InstantSource clock, Consumer<? super RunEvent> announce) {
+        this(generator, settings, SequenceSettings.defaults(), deadline, clock, announce);
+    }
+
+    /**
+     * A scheduler for one run, told whether to send requests in sequences.
+     *
+     * @param generator what fills in each request, and knows which operations can be attempted
+     * @param settings whether the run begins with a first round, and how long a step of it waits
+     * @param sequences whether a request that needs something nobody has is sent straight after a
+     *     request that creates it
+     * @param deadline when the run's time is up
+     * @param clock what tells the time; the system clock, except in a test
+     * @param announce where to say that the first round has begun and ended
+     * @throws IllegalArgumentException if there is no operation that can be attempted, since a run
+     *     with nothing to send has nothing to do
+     */
+    public Scheduler(RandomTestCaseGenerator generator, ScheduleSettings settings,
+            SequenceSettings sequences, Instant deadline, InstantSource clock,
+            Consumer<? super RunEvent> announce) {
+        Objects.requireNonNull(sequences, "sequences");
         this.generator = Objects.requireNonNull(generator, "generator");
         Objects.requireNonNull(settings, "settings");
         this.deadline = Objects.requireNonNull(deadline, "deadline");
@@ -109,6 +166,7 @@ public final class Scheduler {
         this.lap = settings.openingLap() && generator.canBuildTheLikeliestRequest()
                 ? OpeningLap.steps(operations) : List.of();
         this.patience = settings.openingLapPatience();
+        this.pairs = sequences.pairs();
     }
 
     /** When the run's time is up. */
@@ -127,11 +185,16 @@ public final class Scheduler {
             // Said before anything else, the time included, so that the round just finished is
             // counted and judged exactly as it always was, however close to the deadline it ended.
             endOfAPassDue = false;
+            madeNothingThisRound.clear();
             return new Step.EndOfAPass(false);
         }
         if (stopped || !clock.instant().isBefore(deadline)) {
             stop();
             return new Step.TimeIsUp();
+        }
+        Heard answered = heard.poll();
+        if (answered != null) {
+            return theRequestItWasMadeFor(answered);
         }
         while (step < lap.size()) {
             List<Operation> current = lap.get(step);
@@ -161,7 +224,56 @@ public final class Scheduler {
             next = 0;
             endOfAPassDue = true;
         }
+        if (pairs) {
+            Optional<Producers.Need> missing = generator.whatIsMissing(operation)
+                    .filter(need -> !madeNothingThisRound.contains(need.producer().id())
+                            && !creationsAwaited.contains(need.producer().id()));
+            if (missing.isPresent()) {
+                creationsAwaited.add(missing.get().producer().id());
+                return new Step.Send(missing.get().producer(), false,
+                        Optional.of(Pair.creation(operation, missing.get())));
+            }
+        }
         return new Step.Send(operation, false);
+    }
+
+    /** The second half of a pair, filled in with what its creation handed back. */
+    private Step.Send theRequestItWasMadeFor(Heard answered) {
+        Pair creation = answered.send().pair().orElseThrow();
+        creationsAwaited.remove(creation.need().producer().id());
+        Map<String, GeneratedValue> gave = generator.whatTheCreationGave(creation.consumer(),
+                creation.need(), answered.creation(), answered.answer());
+        if (!gave.containsKey(creation.need().gap())) {
+            madeNothingThisRound.add(creation.need().producer().id());
+        }
+        return new Step.Send(creation.consumer(), false,
+                Optional.of(Pair.followUp(creation.consumer(), creation.need(), gave)));
+    }
+
+    /**
+     * Tells the scheduler what came back for a request that creates something another request
+     * needs.
+     *
+     * <p>That other request is sent next, ahead of anything else, and takes its identifier from
+     * what came back here. Called from whichever thread the answer arrived on. Also called, with
+     * nothing, when the creation could not be built or sent at all, so that the request it was
+     * made for is still sent - the ordinary way.
+     *
+     * @param send the step that sent the creation; one whose {@link Step.Send#startsAPair()} is
+     *     true
+     * @param creation the request that went out, or {@code null} if none did
+     * @param answer what came back, or {@code null} if nothing did
+     */
+    public void heard(Step.Send send, TestCase creation, Interaction answer) {
+        Objects.requireNonNull(send, "send");
+        if (!send.startsAPair()) {
+            throw new IllegalArgumentException("only a creation sent for another request is "
+                    + "waited on: " + send);
+        }
+        heard.add(new Heard(send, creation, answer));
+    }
+
+    private record Heard(Step.Send send, TestCase creation, Interaction answer) {
     }
 
     /**
@@ -175,6 +287,14 @@ public final class Scheduler {
      */
     public Optional<TestCase> testCaseFor(Step.Send send) {
         Objects.requireNonNull(send, "send");
+        if (send.pair().isPresent()) {
+            Pair pair = send.pair().get();
+            // A creation is sent the way it is likeliest to be accepted, since making the thing
+            // is its whole job; the request it was made for is an ordinary one, to be tested.
+            return pair.isTheCreation()
+                    ? generator.likeliestRequest(send.operation())
+                    : generator.followUp(send.operation(), pair.gave());
+        }
         return send.inTheOpeningLap()
                 ? generator.likeliestRequest(send.operation())
                 : generator.generate(send.operation());
@@ -210,9 +330,29 @@ public final class Scheduler {
          * @param inTheOpeningLap whether it belongs to the first round, which waits for its answers
          *     before the round goes on
          */
-        record Send(Operation operation, boolean inTheOpeningLap) implements Step {
+        record Send(Operation operation, boolean inTheOpeningLap, Optional<Pair> pair)
+                implements Step {
             public Send {
                 Objects.requireNonNull(operation, "operation");
+                Objects.requireNonNull(pair, "pair");
+            }
+
+            /**
+             * A request on its own, not one of a pair.
+             *
+             * @param operation which operation
+             * @param inTheOpeningLap whether it belongs to the first round
+             */
+            public Send(Operation operation, boolean inTheOpeningLap) {
+                this(operation, inTheOpeningLap, Optional.empty());
+            }
+
+            /**
+             * Whether this request creates something the next request needs, so that what comes
+             * back has to be handed to {@link Scheduler#heard}.
+             */
+            public boolean startsAPair() {
+                return pair.filter(Pair::isTheCreation).isPresent();
             }
         }
 
@@ -239,6 +379,60 @@ public final class Scheduler {
 
         /** The time is up: send nothing more. */
         record TimeIsUp() implements Step {
+        }
+    }
+
+    /**
+     * One half of a pair of requests: a creation, or the request it was made for.
+     *
+     * <p>What is inside is for the scheduler and the generator; whoever sends only needs to know
+     * whether a request is a creation whose answer it must hand back.
+     */
+    public static final class Pair {
+
+        private final Operation consumer;
+        private final Producers.Need need;
+        private final Map<String, GeneratedValue> gave;
+
+        private Pair(Operation consumer, Producers.Need need, Map<String, GeneratedValue> gave) {
+            this.consumer = consumer;
+            this.need = need;
+            this.gave = gave;
+        }
+
+        static Pair creation(Operation consumer, Producers.Need need) {
+            return new Pair(consumer, need, null);
+        }
+
+        static Pair followUp(Operation consumer, Producers.Need need,
+                Map<String, GeneratedValue> gave) {
+            return new Pair(consumer, need, Map.copyOf(gave));
+        }
+
+        /** Whether this is the creation, rather than the request it was made for. */
+        public boolean isTheCreation() {
+            return gave == null;
+        }
+
+        /** The request the creation is made for. */
+        Operation consumer() {
+            return consumer;
+        }
+
+        Producers.Need need() {
+            return need;
+        }
+
+        /** What the creation handed back, by the gap each value goes in; empty for the creation. */
+        Map<String, GeneratedValue> gave() {
+            return gave == null ? Map.of() : gave;
+        }
+
+        @Override
+        public String toString() {
+            return isTheCreation()
+                    ? "creating for " + consumer.id() + " the " + need.gap() + " it needs"
+                    : "sent after its creation, with " + gave.keySet();
         }
     }
 }

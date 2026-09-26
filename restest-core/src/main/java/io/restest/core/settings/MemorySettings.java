@@ -46,6 +46,10 @@ package io.restest.core.settings;
  *     before any value carrying the gap's own name. Off, the name is asked first and the things
  *     of its kind only when the name finds nothing. Means nothing while
  *     {@code identifiersByResource} is off
+ * @param forgetWhatWasDeleted whether a thing the API has just deleted, when it said yes to the
+ *     deletion, is let go of at once: its identifier stops being sent in later requests, and a
+ *     request that needs one of its kind knows there is none left. Off, it is kept until newer
+ *     values push it out, as any other value is
  */
 public record MemorySettings(
         int mostValuesUnderOneName,
@@ -54,10 +58,11 @@ public record MemorySettings(
         int longestReplyRead,
         int asDeepAsAReplyIsRead,
         boolean identifiersByResource,
-        boolean identifiersByResourceFirst) {
+        boolean identifiersByResourceFirst,
+        boolean forgetWhatWasDeleted) {
 
     private static final MemorySettings DEFAULTS =
-            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true);
+            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true, true);
 
     public MemorySettings {
         atLeastNothing(mostValuesUnderOneName, "mostValuesUnderOneName");

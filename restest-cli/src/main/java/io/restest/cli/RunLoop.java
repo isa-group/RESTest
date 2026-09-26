@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 /**
  * Spends the time a run was given, asking the API one question after another until it runs out.
@@ -59,6 +60,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * of a run, where the first round goes in steps and each step waits for the answers to the one
  * before - and even that wait has a limit, so one request the API never answers costs the run that
  * limit once rather than the whole budget.
+ *
+ * <p>When the scheduler asks for a request that creates something another request needs, the loop
+ * hands what came back to the scheduler the moment it arrives, and the scheduler asks for that other
+ * request next.
  */
 final class RunLoop {
 
@@ -191,11 +196,20 @@ final class RunLoop {
                             } else {
                                 notAssembled++;
                             }
+                            // The request this creation was for is still sent, the ordinary way.
+                            if (send.startsAPair()) {
+                                scheduler.heard(send, null, null);
+                            }
                         } else {
                             events.publish(new RunEvent.TestCasePlanned(Instant.now(),
                                     testCase.get()));
+                            Consumer<Interaction> handBack = send.startsAPair()
+                                    ? interaction -> scheduler.heard(send, testCase.get(),
+                                            interaction)
+                                    : null;
                             send(engine, testCase.get(), request, slots,
-                                    send.inTheOpeningLap() ? stepAnswered : null, answers, events);
+                                    send.inTheOpeningLap() ? stepAnswered : null, handBack,
+                                    answers, events);
                             sent++;
                             if (send.inTheOpeningLap()) {
                                 sentInThisStep++;
@@ -226,11 +240,17 @@ final class RunLoop {
      * out, is what stops one slow operation from holding up every other request in the run.
      */
     private static void send(HttpEngine engine, TestCase testCase, HttpRequestRecord request,
-            Semaphore slots, Semaphore alsoTell, Answers answers, EventStream events) {
+            Semaphore slots, Semaphore alsoTell, Consumer<Interaction> handBack, Answers answers,
+            EventStream events) {
         try {
             engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
                 try {
                     announce(interaction, answers, events);
+                    // Before the slot is given back, so the request this answer is for is
+                    // waiting by the time the loop has room to send it.
+                    if (handBack != null) {
+                        handBack.accept(interaction);
+                    }
                 } finally {
                     slots.release();
                     // After the announcement, never before: whoever is waiting on this is waiting

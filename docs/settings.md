@@ -154,6 +154,12 @@ memory:
   identifiersByResource: true # default
   # whether those pets are asked before any value named petId; off, the name is asked first
   identifiersByResourceFirst: true # default
+  # whether a thing the API said it deleted is forgotten at once; off, it is kept until newer values push it out
+  forgetWhatWasDeleted: true  # default
+
+sequences:
+  # whether a request needing the id of a thing nobody has is sent straight after one that creates it, with the id that came back
+  pairs: true                 # default
 
 document:
   # how long to wait for a description fetched over the network
@@ -301,6 +307,13 @@ spelling `--budget` takes.
 | `asDeepAsAReplyIsRead` | `6` | how far into a reply that search goes |
 | `identifiersByResource` | `true` | whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it |
 | `identifiersByResourceFirst` | `true` | whether those pets are asked before any value named petId; off, the name is asked first |
+| `forgetWhatWasDeleted` | `true` | whether a thing the API said it deleted is forgotten at once; off, it is kept until newer values push it out |
+
+### `sequences.*`
+
+| Setting | Default | What it does |
+|---|---|---|
+| `pairs` | `true` | whether a request needing the id of a thing nobody has is sent straight after one that creates it, with the id that came back |
 
 ### `document.*`
 

@@ -27,7 +27,9 @@ import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
+import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.SchemaReference;
@@ -43,6 +45,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 
 /**
  * What the API has already shown us, kept as the run goes along.
@@ -83,7 +86,9 @@ import java.util.concurrent.ConcurrentMap;
  * <p>It hears about replies through the run's stream of announcements rather than by reading the
  * record of the run afterwards, and it does so on purpose: what it wants is <em>recent</em>, not
  * complete. An identifier seen forty minutes ago may have been deleted since, so only the last
- * handful of values under any one name are kept and older ones are let go.
+ * handful of values under any one name are kept and older ones are let go. A deletion the run
+ * itself asked for, and the API agreed to, is not left to age out: the thing it removed is let go
+ * of at once, unless {@link MemorySettings#forgetWhatWasDeleted()} is off.
  *
  * <p>One consequence is worth stating plainly, because it changes a promise the tool otherwise
  * makes. A run that draws on this cannot be repeated by giving it the same starting number again:
@@ -161,12 +166,16 @@ public final class ObservedValues implements RunListener {
         if (response == null || !theApiWasHappy(response.statusCode())) {
             return;
         }
+        // Before the reply is read, because the usual answer to a deletion has nothing in it.
+        if (settings.forgetWhatWasDeleted()) {
+            forgetWhatWasDeleted(interaction);
+        }
         readable(response).ifPresent(reply -> {
             OperationId operation = interaction.testCase().operation();
             remember(reply, shapeOfOneThingIn(operation, response), interaction.id(), 0);
             if (settings.identifiersByResource()) {
                 kindOfThingReturnedBy(operation).ifPresent(kind ->
-                        rememberTheThingsIn(reply, kind, interaction.id(), 0));
+                        rememberTheThingsIn(reply, kind, interaction.id()));
             }
         });
     }
@@ -175,9 +184,7 @@ public final class ObservedValues implements RunListener {
      * The kind of thing an operation's reply is about, when it can be told from its address.
      *
      * <p>Not for a deletion: what a {@code DELETE} sends back is the thing that has just stopped
-     * existing, and keeping it would add an identifier that no longer works. An identifier kept
-     * earlier, from a list or a read, is not forgotten when the thing is deleted afterwards - it
-     * ages out like any other value here.
+     * existing, and keeping it would add an identifier that no longer works.
      */
     private Optional<String> kindOfThingReturnedBy(OperationId operation) {
         return model.operation(operation)
@@ -195,41 +202,130 @@ public final class ObservedValues implements RunListener {
      * identifier is a thing, and what is inside it - a pet's owner, an owner's pets - is some other
      * kind of thing and is not filed under this one.
      */
-    private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from, int depth) {
-        if (depth > settings.asDeepAsAReplyIsRead()) {
+    private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from) {
+        for (JsonValue.JsonObject thing : thingsIn(reply, settings.asDeepAsAReplyIsRead())) {
+            Map<String, JsonValue> single = new LinkedHashMap<>();
+            thing.members().forEach((name, value) -> {
+                if ((value instanceof JsonValue.JsonString
+                        || value instanceof JsonValue.JsonNumber)
+                        && smallEnoughToSend(value)) {
+                    single.put(name, value);
+                }
+            });
+            if (!single.isEmpty()) {
+                underTheKindOfThingTheyAre.remember(kind, new JsonValue.JsonObject(single), from);
+            }
+        }
+    }
+
+    /**
+     * The things one reply is made of, found the way they are found for keeping them under their
+     * kind: a list's elements, an object, and what an object with nothing named like an identifier
+     * wraps. Each thing whole, in the order the reply has them.
+     *
+     * @param reply what the API sent back
+     * @param asDeepAsItIsRead how far into it to look
+     * @return the things, outermost first
+     */
+    static List<JsonValue.JsonObject> thingsIn(JsonValue reply, int asDeepAsItIsRead) {
+        List<JsonValue.JsonObject> found = new ArrayList<>();
+        thingsIn(reply, asDeepAsItIsRead, 0, found);
+        return found;
+    }
+
+    private static void thingsIn(JsonValue reply, int asDeep, int depth,
+            List<JsonValue.JsonObject> found) {
+        if (depth > asDeep) {
             return;
         }
         switch (reply) {
             case JsonValue.JsonArray list -> list.elements().forEach(element ->
-                    rememberTheThingsIn(element, kind, from, depth + 1));
+                    thingsIn(element, asDeep, depth + 1, found));
             case JsonValue.JsonObject thing -> {
-                Map<String, JsonValue> single = new LinkedHashMap<>();
-                thing.members().forEach((name, value) -> {
-                    if ((value instanceof JsonValue.JsonString
-                            || value instanceof JsonValue.JsonNumber)
-                            && smallEnoughToSend(value)) {
-                        single.put(name, value);
-                    }
-                });
-                if (!single.isEmpty()) {
-                    underTheKindOfThingTheyAre.remember(kind,
-                            new JsonValue.JsonObject(single), from);
-                }
-                // Judged by the names the thing came with rather than by what was kept of it: a
-                // thing whose identifier is empty or too long to keep is still a thing, not a
-                // wrapper, and what is inside it is still some other kind.
+                found.add(thing);
+                // Judged by the names the thing came with: a thing whose identifier is empty or
+                // too long to keep is still a thing, not a wrapper, and what is inside it is still
+                // some other kind.
                 if (thing.members().keySet().stream()
                         .noneMatch(ObservedValues::looksLikeAnIdentifier)) {
                     for (JsonValue inside : thing.members().values()) {
                         if (inside instanceof JsonValue.JsonObject
                                 || inside instanceof JsonValue.JsonArray) {
-                            rememberTheThingsIn(inside, kind, from, depth + 1);
+                            thingsIn(inside, asDeep, depth + 1, found);
                         }
                     }
                 }
             }
             default -> { }
         }
+    }
+
+    /**
+     * Lets go of the thing a deletion the API agreed to has just removed.
+     *
+     * <p>Only a {@code DELETE} whose address ends in a gap names one thing - {@code DELETE
+     * /pets/{petId}} - and it is that gap's value that stops being true. It goes from the things of
+     * the kind the address is about, where it is the thing's identifier, and from the values kept
+     * under the gap's own name. Values kept under a name every kind of thing uses, such as
+     * {@code id}, are left alone: an owner and a pet may share the number 7, and the pet's deletion
+     * says nothing about the owner.
+     */
+    private void forgetWhatWasDeleted(Interaction interaction) {
+        Operation known = model.operation(interaction.testCase().operation())
+                .filter(operation -> operation.method() == HttpMethod.DELETE)
+                .orElse(null);
+        if (known == null) {
+            return;
+        }
+        gapAtTheEndOf(known.path()).ifPresent(gap -> interaction.testCase()
+                .parameterValue(gap, ParameterLocation.PATH)
+                .ifPresent(sent -> forget(known.path(), gap, sent.value())));
+    }
+
+    private void forget(String path, String gap, JsonValue deleted) {
+        List<String> kinds = new ArrayList<>();
+        kindOfThingBefore(path, gap).ifPresent(kinds::add);
+        kindOfThingInTheName(gap).filter(kind -> !kinds.contains(kind)).ifPresent(kinds::add);
+        boolean namedLikeAnIdentifier = looksLikeAnIdentifier(gap);
+        for (String kind : kinds) {
+            underTheKindOfThingTheyAre.forget(kind, thing -> thing.members().entrySet().stream()
+                    .anyMatch(member -> (member.getKey().equals(gap)
+                            || namedLikeAnIdentifier && isTheIdentifierOf(member.getKey(), kind))
+                            && sameIdentifier(member.getValue(), deleted)));
+        }
+        if (!isABareIdentifier(gap)) {
+            underTheirOwnNames.forget(gap, kept -> sameIdentifier(kept, deleted));
+        }
+    }
+
+    /** The name of the gap an address ends in, such as {@code petId} in {@code /pets/{petId}}. */
+    static Optional<String> gapAtTheEndOf(String path) {
+        List<String> parts = partsOf(path);
+        if (parts.isEmpty()) {
+            return Optional.empty();
+        }
+        String last = parts.get(parts.size() - 1);
+        return last.startsWith("{") && last.endsWith("}") && last.length() > 2
+                ? Optional.of(last.substring(1, last.length() - 1)) : Optional.empty();
+    }
+
+    /**
+     * Whether two values name the same thing once written into a web address: {@code 7} and
+     * {@code 7.0} do, and so do the number {@code 7} and the word {@code "7"}, since an address
+     * cannot tell them apart.
+     */
+    static boolean sameIdentifier(JsonValue one, JsonValue other) {
+        return writtenInAnAddress(one).flatMap(written -> writtenInAnAddress(other)
+                .map(written::equals)).orElse(false);
+    }
+
+    private static Optional<String> writtenInAnAddress(JsonValue value) {
+        return switch (value) {
+            case JsonValue.JsonString text -> Optional.of(text.value());
+            case JsonValue.JsonNumber number ->
+                    Optional.of(number.value().stripTrailingZeros().toPlainString());
+            default -> Optional.empty();
+        };
     }
 
     /**
@@ -356,7 +452,7 @@ public final class ObservedValues implements RunListener {
                 || kindOfThingInTheName(property).filter(kind::equals).isPresent();
     }
 
-    private static boolean isABareIdentifier(String name) {
+    static boolean isABareIdentifier(String name) {
         return name.equalsIgnoreCase("id") || name.equalsIgnoreCase("_id");
     }
 
@@ -380,7 +476,7 @@ public final class ObservedValues implements RunListener {
      * JSON document is not a value, and the half that arrived cannot be told apart from a whole one
      * that happens to be invalid.
      */
-    private Optional<JsonValue> readable(HttpResponseRecord response) {
+    Optional<JsonValue> readable(HttpResponseRecord response) {
         Payload body = response.body().orElse(null);
         if (body == null || body.truncated() || body.size() == 0
                 || body.size() > settings.longestReplyRead() || !isJson(body.mediaType())) {
@@ -596,6 +692,15 @@ public final class ObservedValues implements RunListener {
             });
         }
 
+        /** Lets go of every value under this key that the test says is gone. */
+        void forget(String key, Predicate<JsonValue> gone) {
+            byKey.computeIfPresent(key, (ignored, kept) -> {
+                List<Observation> left = kept.stream()
+                        .filter(seen -> !gone.test(seen.value())).toList();
+                return left.isEmpty() ? null : left;
+            });
+        }
+
         /** What was seen for this value, most recently seen last. */
         List<Observation> observationsFor(ValueRequest request) {
             Objects.requireNonNull(request, "request");
@@ -674,6 +779,15 @@ public final class ObservedValues implements RunListener {
                     latest.remove(0);
                 }
                 return List.copyOf(latest);
+            });
+        }
+
+        /** Lets go of every thing of this kind that the test says is gone. */
+        void forget(String kind, Predicate<JsonValue.JsonObject> gone) {
+            byKind.computeIfPresent(kind, (ignored, kept) -> {
+                List<Observation> left = kept.stream()
+                        .filter(seen -> !gone.test((JsonValue.JsonObject) seen.value())).toList();
+                return left.isEmpty() ? null : left;
             });
         }
 

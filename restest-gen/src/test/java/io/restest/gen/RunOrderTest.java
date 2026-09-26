@@ -23,6 +23,7 @@ import io.restest.core.json.JsonText;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,7 +87,9 @@ class RunOrderTest {
         ScheduleSettings noFirstRound = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                 false, Duration.ofSeconds(2));
         Instant now = Instant.parse("2026-09-23T10:00:00Z");
-        Scheduler scheduler = new Scheduler(generator, noFirstRound, now.plusSeconds(60),
+        // Without pairs, for the reason given in the next test.
+        Scheduler scheduler = new Scheduler(generator, noFirstRound, new SequenceSettings(false),
+                now.plusSeconds(60),
                 InstantSource.fixed(now), announced -> { });
 
         List<String> lines = new ArrayList<>();
@@ -106,8 +109,11 @@ class RunOrderTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED);
         Instant now = Instant.parse("2026-09-23T10:00:00Z");
         Scheduler scheduler = new Scheduler(generator, ScheduleSettings.defaults(),
-                now.plusSeconds(60), InstantSource.fixed(now), announced -> { });
+                new SequenceSettings(false), now.plusSeconds(60), InstantSource.fixed(now), announced -> { });
 
+        // Pairs are off: the shipped plan remembers what the API returns, this test answers
+        // nothing, so with them on every read of one thing would follow a creation - which is
+        // what they are for, and what SchedulerTest checks.
         // The round draws on numbers of its own, so the ordinary requests after it are the ones a
         // run without it would have sent. Nothing here has any replies to remember, so the only
         // thing that could make them differ is the round moving the generator's own numbers on.

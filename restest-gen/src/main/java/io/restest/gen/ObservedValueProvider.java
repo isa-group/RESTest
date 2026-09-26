@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.IntUnaryOperator;
 import java.util.random.RandomGenerator;
 
 /**
@@ -127,26 +128,101 @@ public final class ObservedValueProvider implements ValueProvider {
         if (whole.isPresent()) {
             return whole;
         }
+        return oneValueFor(request, random::nextInt);
+    }
+
+    /**
+     * Whether this would offer anything for a gap in a web address, worked out without choosing
+     * among what it has.
+     *
+     * <p>What a run asks before it decides whether a request needs something created for it first:
+     * a gap the memory can fill needs nothing made. Asking changes nothing, not even which value
+     * the next offer picks.
+     *
+     * @param gap what is being asked about: a whole gap in an operation's address
+     * @return whether some value the API returned would be offered for it
+     */
+    boolean hasSomethingFor(ValueRequest gap) {
+        Objects.requireNonNull(gap, "gap");
+        return oneValueFor(gap, howMany -> 0).isPresent();
+    }
+
+    /**
+     * One value, rather than a whole thing, chosen among the candidates by the picker.
+     *
+     * @param pick given how many candidates a step found, which of them to take
+     */
+    private Optional<GeneratedValue> oneValueFor(ValueRequest request, IntUnaryOperator pick) {
         if (!isAGapInTheAddress(request) || !seen.settings().identifiersByResource()) {
-            return oneValueSeenUnderThisName(request);
+            return oneValueSeenUnderThisName(request, pick);
         }
         List<Kind> kinds = kindsOfThingFor(request);
         if (!seen.settings().identifiersByResourceFirst()) {
-            Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request);
-            return byName.isPresent() ? byName : anIdentifierOfTheThingsFor(request, kinds);
+            Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request, pick);
+            return byName.isPresent() ? byName : anIdentifierOfTheThingsFor(request, kinds, pick);
         }
         // The kind of thing the address is about is asked before the name, because for a gap in
         // an address the name is often the worse guide: {id} under /flights/{id} would otherwise
         // take the id of an airport as readily as the id of a flight.
         Optional<GeneratedValue> convincing =
-                anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING);
+                anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING, pick);
         if (convincing.isPresent()) {
             return convincing;
         }
-        Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request);
+        Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request, pick);
         return byName.isPresent()
                 ? byName
-                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE);
+                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE, pick);
+    }
+
+    /**
+     * The identifier of the thing one reply says was just created, for a gap in another
+     * operation's address.
+     *
+     * <p>Read by the same rules as a gap filled from what the memory keeps under the kind of
+     * thing: a property named exactly like the gap first; then, for a gap named like an
+     * identifier, one called {@code id} or the kind of thing followed by id; and last, for such a
+     * gap, anything written the way identifiers are. The value has to be one that could go in the
+     * gap. The outermost thing in the reply is looked at first, since a reply to a creation is
+     * the thing created, sometimes wrapped.
+     *
+     * @param gap the gap to fill
+     * @param reply what the creation came back with
+     * @param from the exchange the reply came from, which the value will name
+     * @param createdBy the creation as a person would name it, such as {@code POST /owners}
+     * @return the identifier, or nothing if the reply holds none that fits
+     */
+    Optional<GeneratedValue> identifierCreatedBy(ValueRequest gap, JsonValue reply,
+            InteractionId from, String createdBy) {
+        Objects.requireNonNull(gap, "gap");
+        Objects.requireNonNull(reply, "reply");
+        Objects.requireNonNull(from, "from");
+        Objects.requireNonNull(createdBy, "createdBy");
+        List<JsonValue.JsonObject> things =
+                ObservedValues.thingsIn(reply, seen.settings().asDeepAsAReplyIsRead());
+        boolean namedLikeAnIdentifier = ObservedValues.looksLikeAnIdentifier(gap.name());
+        List<PropertyMatch> steps = new ArrayList<>();
+        steps.add(name -> name.equals(gap.name()));
+        if (namedLikeAnIdentifier) {
+            List<Kind> kinds = kindsOfThingFor(gap);
+            steps.add(name -> ObservedValues.isABareIdentifier(name) || kinds.stream()
+                    .anyMatch(kind -> ObservedValues.isTheIdentifierOf(name, kind.kept())));
+            steps.add(ObservedValues::looksLikeAnIdentifier);
+        }
+        for (PropertyMatch step : steps) {
+            for (JsonValue.JsonObject thing : things) {
+                for (Map.Entry<String, JsonValue> member : thing.members().entrySet()) {
+                    if (step.matches(member.getKey())
+                            && seen.smallEnoughToSend(member.getValue())
+                            && fitsAnIdentifier(member.getValue(), gap)) {
+                        return Optional.of(new GeneratedValue(member.getValue(),
+                                new ValueOrigin.Derived(from, "the '" + member.getKey()
+                                        + "' of what " + createdBy + " created just before")));
+                    }
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /** A gap in the web address, as a whole rather than one piece of it. */
@@ -190,12 +266,12 @@ public final class ObservedValueProvider implements ValueProvider {
 
     /** Every step of asking the things of these kinds, the convincing ones first. */
     private Optional<GeneratedValue> anIdentifierOfTheThingsFor(ValueRequest request,
-            List<Kind> kinds) {
+            List<Kind> kinds, IntUnaryOperator pick) {
         Optional<GeneratedValue> convincing =
-                anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING);
+                anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING, pick);
         return convincing.isPresent()
                 ? convincing
-                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE);
+                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE, pick);
     }
 
     /**
@@ -212,7 +288,7 @@ public final class ObservedValueProvider implements ValueProvider {
      * put there would only push aside the document's own sample for it.
      */
     private Optional<GeneratedValue> anIdentifierOfTheThingsFor(ValueRequest request,
-            List<Kind> kinds, Likeness likeness) {
+            List<Kind> kinds, Likeness likeness, IntUnaryOperator pick) {
         boolean namedLikeAnIdentifier = ObservedValues.looksLikeAnIdentifier(request.name());
         if (likeness == Likeness.ONLY_LOOKS_LIKE_ONE && !namedLikeAnIdentifier) {
             return Optional.empty();
@@ -241,7 +317,7 @@ public final class ObservedValueProvider implements ValueProvider {
                     });
                 }
                 if (!usable.isEmpty()) {
-                    int chosen = random.nextInt(usable.size());
+                    int chosen = pick.applyAsInt(usable.size());
                     return Optional.of(new GeneratedValue(usable.get(chosen).value(),
                             new ValueOrigin.Derived(usable.get(chosen).from(), "the '"
                                     + from.get(chosen) + "' of one of the " + kind.written()
@@ -312,7 +388,8 @@ public final class ObservedValueProvider implements ValueProvider {
      * is never sent. Both ways of asking go through the same cutting down, so there is one set of
      * rules rather than one set and an exception.
      */
-    private Optional<GeneratedValue> oneValueSeenUnderThisName(ValueRequest request) {
+    private Optional<GeneratedValue> oneValueSeenUnderThisName(ValueRequest request,
+            IntUnaryOperator pick) {
         List<Sendable> usable = new ArrayList<>();
         for (ObservedValues.Observation what : seen.underTheirOwnNames().observationsFor(request)) {
             keptOf(what.value(), request.schema(), 0)
@@ -322,7 +399,7 @@ public final class ObservedValueProvider implements ValueProvider {
         if (usable.isEmpty()) {
             return Optional.empty();
         }
-        Sendable chosen = usable.get(random.nextInt(usable.size()));
+        Sendable chosen = usable.get(pick.applyAsInt(usable.size()));
         return Optional.of(new GeneratedValue(chosen.value(), new ValueOrigin.Derived(
                 chosen.from(), "the '" + request.name() + "' of an earlier reply")));
     }

@@ -88,7 +88,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
 
     /** The groups there are, in printing order. */
     public static List<String> groups() {
-        return List.of("engine", "schedule", "generation", "memory", "document", "report");
+        return List.of("engine", "schedule", "generation", "memory", "sequences", "document",
+                "report");
     }
 
     /**
@@ -248,6 +249,13 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("memory", "identifiersByResourceFirst", SettingKind.YES_OR_NO,
                     "whether those pets are asked before any value named petId; off, the name is "
                             + "asked first"),
+            key("memory", "forgetWhatWasDeleted", SettingKind.YES_OR_NO,
+                    "whether a thing the API said it deleted is forgotten at once; off, it is kept "
+                            + "until newer values push it out"),
+
+            key("sequences", "pairs", SettingKind.YES_OR_NO,
+                    "whether a request needing the id of a thing nobody has is sent straight after "
+                            + "one that creates it, with the id that came back"),
 
             key("document", "fetchTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait for a description fetched over the network"),

@@ -441,7 +441,8 @@ final class RunCommand implements Callable<Integer> {
                     // moment testing starts: reading the document was paid for out of the same
                     // budget, and so is the first round the scheduler may open with.
                     Scheduler scheduler = new Scheduler(generator, settings.schedule(),
-                            startedAt.plus(budget), InstantSource.system(), drained::publish);
+                            settings.sequences(), startedAt.plus(budget), InstantSource.system(),
+                            drained::publish);
                     outcome = RunLoop.run(scheduler, address,
                             settings.schedule().workAheadFactor() * settings.engine()
                                     .maxConcurrency(),

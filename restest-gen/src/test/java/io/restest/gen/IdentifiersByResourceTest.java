@@ -230,7 +230,7 @@ class IdentifiersByResourceTest {
             MemorySettings on = MemorySettings.defaults();
             Api api = new Api(new MemorySettings(on.mostValuesUnderOneName(), 1,
                     on.longestValueKept(), on.longestReplyRead(), on.asDeepAsAReplyIsRead(),
-                    true, true));
+                    true, true, true));
             api.replies("listPetTypes", 200, "[{\"id\": 1}]");
             api.replies("listFlights", 200, "[{\"id\": 2}]");
 
@@ -440,7 +440,7 @@ class IdentifiersByResourceTest {
         MemorySettings on = MemorySettings.defaults();
         return new MemorySettings(on.mostValuesUnderOneName(), on.mostNames(),
                 on.longestValueKept(), on.longestReplyRead(), on.asDeepAsAReplyIsRead(),
-                byResource, byResourceFirst);
+                byResource, byResourceFirst, true);
     }
 
     /** A small API of lists and reads of one thing, and a memory listening to it. */

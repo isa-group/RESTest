@@ -121,6 +121,14 @@ whose own name is not written like an identifier, such as `{username}`, only tak
 exactly its name. Two settings govern it: `memory.identifiersByResource` switches it off, and
 `memory.identifiersByResourceFirst` asks the name first instead ([the settings](settings.md)).
 
+The memory also lets go of what the run itself deleted: a `DELETE /pets/{petId}` the API answers
+with a 2XX removes that pet, so later requests stop naming it. And when a request needs the
+identifier of a thing the memory holds none of - nothing of the kind was ever returned, or all of it
+has been deleted - and some `POST` creates such things, the run sends that creation first and the
+request straight after, with the identifier the creation came back with rather than one from the
+memory. Only a plan that names `observed` gets this, since without a memory nobody knows what is
+missing. `memory.forgetWhatWasDeleted` and `sequences.pairs` switch the two off.
+
 Asked for a whole thing the document gives a name to — "send me an `Owner`" — it offers an owner the
 API returned, with the parts the API only ever *sends* taken out of it (that is what `readOnly`
 means) and one value inside it replaced by a different one. Sending an unchanged copy would usually

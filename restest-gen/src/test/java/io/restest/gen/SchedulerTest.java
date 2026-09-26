@@ -28,6 +28,7 @@ import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
@@ -209,9 +210,14 @@ class SchedulerTest {
                 .withMessageContaining("nothing to do");
     }
 
+    /**
+     * Without pairs: this memory never hears an answer, so with them every read of one pet would
+     * follow a creation, and the order of the rounds is what these tests are about. Pairs have
+     * tests of their own.
+     */
     private Scheduler scheduler(ApiModel model, ScheduleSettings settings, Duration budget) {
         return new Scheduler(new RandomTestCaseGenerator(model, 20260923L), settings,
-                START.plus(budget), clock, this::heard);
+                new SequenceSettings(false), START.plus(budget), clock, this::heard);
     }
 
     private void heard(RunEvent event) {
