@@ -146,6 +146,8 @@ public record Settings(
                 typed.number("generation.optionalParameterContinueChance",
                         BigDecimal.valueOf(DEFAULTS.generation.optionalParameterContinueChance()))
                         .doubleValue(),
+                typed.yesOrNo("generation.optionalParametersBySize",
+                        DEFAULTS.generation.optionalParametersBySize()),
                 typed.wholeNumber("generation.nullInOneIn", DEFAULTS.generation.nullInOneIn()),
                 typed.wholeNumber("generation.uniqueAttempts",
                         DEFAULTS.generation.uniqueAttempts()),
@@ -237,6 +239,8 @@ public record Settings(
             case "generation.optionalBodyChance" -> written(generation.optionalBodyChance());
             case "generation.optionalParameterContinueChance" ->
                     written(generation.optionalParameterContinueChance());
+            case "generation.optionalParametersBySize" ->
+                    String.valueOf(generation.optionalParametersBySize());
             case "generation.nullInOneIn" -> String.valueOf(generation.nullInOneIn());
             case "generation.uniqueAttempts" -> String.valueOf(generation.uniqueAttempts());
             case "generation.sendableAttempts" -> String.valueOf(generation.sendableAttempts());

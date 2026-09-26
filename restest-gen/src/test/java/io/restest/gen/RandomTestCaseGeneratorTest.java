@@ -211,6 +211,31 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("switched off, drawing the count first gives way to one coin per optional parameter")
+    void without_drawing_the_count_first_each_optional_parameter_has_its_own_coin() {
+        Map<String, String> sure = Map.of("generation.optionalBodyChance", "1",
+                "generation.optionalParameterContinueChance", "0");
+        Settings off = Settings.from(Map.of("generation.optionalBodyChance", "1",
+                "generation.optionalParameterContinueChance", "0",
+                "generation.optionalParametersBySize", "false"));
+        RandomTestCaseGenerator coins = new RandomTestCaseGenerator(model(FOUR_OPTIONAL_PARAMETERS),
+                20260926L, List.of(), planOf(step(Campaign.Builtin.RANDOM)), off);
+        RandomTestCaseGenerator bySize = new RandomTestCaseGenerator(model(FOUR_OPTIONAL_PARAMETERS),
+                20260926L, List.of(), planOf(step(Campaign.Builtin.RANDOM)), Settings.from(sure));
+
+        assertThat(IntStream.range(0, 50)
+                .mapToObj(i -> coins.generate(FOUR_OPTIONAL_PARAMETERS).orElseThrow()))
+                .describedAs("each coin comes up yes when its chance is 1")
+                .allSatisfy(testCase -> assertThat(FOUR_OPTIONAL_NAMES).allMatch(name -> testCase
+                        .parameterValue(name, ParameterLocation.QUERY).isPresent()));
+        assertThat(IntStream.range(0, 50)
+                .mapToObj(i -> bySize.generate(FOUR_OPTIONAL_PARAMETERS).orElseThrow()))
+                .describedAs("switched on, only the count's own chance decides, and it is 0")
+                .allSatisfy(testCase -> assertThat(FOUR_OPTIONAL_NAMES).noneMatch(name -> testCase
+                        .parameterValue(name, ParameterLocation.QUERY).isPresent()));
+    }
+
+    @Test
     @DisplayName("with every optional parameter a candidate, one nothing can fill a value for is "
             + "still left out silently rather than failing the request")
     void full_continue_chance_still_drops_what_cannot_be_filled() {

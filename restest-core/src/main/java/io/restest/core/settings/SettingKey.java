@@ -219,6 +219,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("generation", "optionalParameterContinueChance", SettingKind.NUMBER,
                     "how often one more optional parameter is added on top of the ones already "
                             + "chosen, between 0 and 1"),
+            key("generation", "optionalParametersBySize", SettingKind.YES_OR_NO,
+                    "whether how many optional parameters go in is drawn first, favouring few; "
+                            + "off, each is decided on its own at optionalBodyChance"),
             key("generation", "nullInOneIn", SettingKind.WHOLE_NUMBER,
                     "one time in this many, a value allowed to be absent is sent as nothing"),
             key("generation", "uniqueAttempts", SettingKind.WHOLE_NUMBER,

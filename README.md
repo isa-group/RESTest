@@ -159,7 +159,7 @@ the format.
 That plan is about the API. How the tool itself behaves — how many requests it keeps in flight, how
 long an invented word is, how much of a reply it keeps, how long it waits — is a separate thing,
 because those numbers would mean the same against a different API on the same machine. `restest run
---print-settings` writes out all forty-three of them, each with a line saying what it does and a note
+--print-settings` writes out all forty-four of them, each with a line saying what it does and a note
 saying where its value came from, and that output is a file you hand back with `--settings`. One of
 them without a file: `--set engine.maxConcurrency=1`, which is the answer to an API that falls over
 when asked two things at once. The same names work as environment variables,
