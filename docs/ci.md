@@ -263,9 +263,18 @@ same class, which is where to add one if you widen it again.
 
 ## Dependency updates
 
-`.github/dependabot.yml` opens weekly pull requests for Maven dependencies and for the workflow
-actions. Maven updates are grouped, because nine modules share one version property per dependency
-and ungrouped pull requests would all have to land together anyway.
+`.github/dependabot.yml` asks for weekly pull requests for Maven dependencies and for the workflow
+actions, but **it is not in effect yet**. GitHub reads that file only from the repository's default
+branch, which is `master`, and `master` stays untouched until v2.0 replaces it (roadmap row 12.5).
+Until then nothing watches v2's dependencies: no update pull requests and no security alerts. Check
+for updates by hand before a freeze instead:
+
+```bash
+./mvnw -q versions:display-dependency-updates versions:display-plugin-updates
+```
+
+When the file takes effect, the pairs that must move together need groups of their own:
+`jackson-core` with `jackson-annotations`, and `swagger-parser` with `swagger-core`.
 
 Actions are pinned to commit SHAs, not tags. A tag can be repointed at any commit by whoever owns
 the action; a SHA cannot. The version in the trailing comment is what lets Dependabot recognise the

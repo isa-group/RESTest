@@ -171,8 +171,9 @@ final class BaseAddress {
         try {
             URI one = new URI(declared);
             URI other = new URI(given);
-            return one.getHost() != null
-                    && one.getHost().equalsIgnoreCase(other.getHost())
+            Optional<String> host = hostOf(one);
+            return host.isPresent()
+                    && host.get().equalsIgnoreCase(hostOf(other).orElse(null))
                     && protocolOf(declared).equals(protocolOf(given))
                     && portOf(one) == portOf(other);
         } catch (URISyntaxException notAnAddress) {
@@ -185,7 +186,32 @@ final class BaseAddress {
         if (address.getPort() != -1) {
             return address.getPort();
         }
+        String authority = address.getRawAuthority();
+        if (address.getHost() == null && authority != null
+                && authority.matches("[^@:\\[\\]]+:\\d{1,5}")) {
+            return Integer.parseInt(authority.substring(authority.lastIndexOf(':') + 1));
+        }
         return "https".equalsIgnoreCase(address.getScheme()) ? 443 : 80;
+    }
+
+    /**
+     * The machine an address names.
+     *
+     * <p>{@link URI} names no host when the name has an underscore in it, which is how Docker
+     * Compose service names are often written, although requests are sent to such a name without
+     * any trouble. So when it names none, the host is read from the part between the protocol and
+     * the path, provided that part holds nothing but a name and perhaps a port.
+     */
+    private static Optional<String> hostOf(URI address) {
+        if (address.getHost() != null) {
+            return Optional.of(address.getHost());
+        }
+        String authority = address.getRawAuthority();
+        if (authority == null || !authority.matches("[^@:\\[\\]]+(:\\d{1,5})?")) {
+            return Optional.empty();
+        }
+        int port = authority.indexOf(':');
+        return Optional.of(port == -1 ? authority : authority.substring(0, port));
     }
 
     /**
@@ -311,7 +337,7 @@ final class BaseAddress {
         String protocol = parsed.getScheme() == null
                 ? "" : parsed.getScheme().toLowerCase(Locale.ROOT);
         return ("http".equals(protocol) || "https".equals(protocol))
-                && parsed.getHost() != null
+                && hostOf(parsed).isPresent()
                 && parsed.getRawQuery() == null
                 && parsed.getRawFragment() == null;
     }

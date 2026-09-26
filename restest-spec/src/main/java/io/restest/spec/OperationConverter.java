@@ -129,6 +129,21 @@ final class OperationConverter {
                         "this server entry names no address, so nothing can be sent to it"));
                 continue;
             }
+            Optional<String> withoutDefault = server.getVariables() == null ? Optional.empty()
+                    : server.getVariables().entrySet().stream()
+                            .filter(entry -> entry.getValue() == null
+                                    || entry.getValue().getDefault() == null)
+                            .map(Map.Entry::getKey)
+                            .findFirst();
+            if (withoutDefault.isPresent()) {
+                // Checked here rather than left to the variable's own constructor, which refuses a
+                // missing default with a different exception from the one caught below; escaping,
+                // it cost the whole document rather than this one entry.
+                issues.add(SpecificationIssue.document(where, "this server could not be used: its "
+                        + "variable '" + withoutDefault.get() + "' has no default value, so the "
+                        + "address cannot be written out"));
+                continue;
+            }
             try {
                 Map<String, ServerVariable> variables = new LinkedHashMap<>();
                 if (server.getVariables() != null) {

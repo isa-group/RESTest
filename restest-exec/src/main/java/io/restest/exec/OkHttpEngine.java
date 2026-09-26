@@ -38,8 +38,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.LongSupplier;
+import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -124,6 +126,12 @@ public final class OkHttpEngine implements HttpEngine {
                 // an attempt that is not the one reported. A failure is more useful than a retry
                 // here, because the failure is the finding.
                 .retryOnConnectionFailure(false)
+                // As many idle connections kept as there can be requests in flight. The client's
+                // own default keeps five, so every connection above that is closed as soon as its
+                // answer arrives and a new one opened for the next request; against a fast API that
+                // churn uses up the machine's local ports within seconds, and the requests that
+                // follow fail as if the API had not answered.
+                .connectionPool(new ConnectionPool(settings.maxConcurrency(), 5, TimeUnit.MINUTES))
                 .addNetworkInterceptor(new WireCapture())
                 .build();
     }
@@ -189,6 +197,11 @@ public final class OkHttpEngine implements HttpEngine {
     @Override
     public EngineStatistics statistics() {
         return activity.snapshot(limiter.limit());
+    }
+
+    /** How many connections the engine is holding open for the requests still to come. */
+    int connectionsKept() {
+        return client.connectionPool().connectionCount();
     }
 
     @Override

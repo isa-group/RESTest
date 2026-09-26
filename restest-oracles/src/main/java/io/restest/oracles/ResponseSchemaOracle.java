@@ -215,20 +215,29 @@ public final class ResponseSchemaOracle implements Oracle {
         }
         List<Error> errors;
         try {
-            errors = checker.validate(body, InputFormat.JSON);
+            // A reply is judged as a reply: a property the document marks write-only is one the API
+            // is sent, never one it hands back, so its being required does not make a reply without
+            // it wrong.
+            errors = checker.validate(body, InputFormat.JSON,
+                    context -> context.executionConfig(config -> config.writeOnly(true)));
         } catch (RuntimeException cannotBeJudged) {
             // The body is JSON and the checker still could not finish. Whatever the reason, it is
             // something about the declared shape rather than about the reply, so nothing is claimed.
             // A reply RESTest was unable to check is not evidence that the API did anything wrong.
             return List.of();
         }
-        if (errors.isEmpty()) {
-            return List.of();
-        }
         List<String> details = new ArrayList<>();
         for (Error error : errors) {
+            if ("writeOnly".equals(error.getKeyword())) {
+                // The same switch also objects to a write-only property that is there. The
+                // specification only says it should not be, so that is no fault to report.
+                continue;
+            }
             String where = String.valueOf(error.getInstanceLocation());
             details.add((where.isEmpty() ? "the body" : where) + ": " + error.getMessage());
+        }
+        if (details.isEmpty()) {
+            return List.of();
         }
         return List.of(mismatch(interaction, statusCode, contentType,
                 "the body does not match the shape the specification declares for it", details));
@@ -287,6 +296,10 @@ public final class ResponseSchemaOracle implements Oracle {
                                 .schemaLoader(loader -> loader.fetchRemoteResources(false))
                                 .schemaRegistryConfig(SchemaRegistryConfig.builder()
                                         .formatAssertionsEnabled(false)
+                                        // Its explanations come in the machine's own language
+                                        // otherwise, which puts Spanish or German inside an
+                                        // English report, and differently on every machine.
+                                        .locale(Locale.ROOT)
                                         .build()));
                 return new Reader(document, registry, new ConcurrentHashMap<>());
             });
