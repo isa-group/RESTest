@@ -139,6 +139,18 @@ class MediaTypeLookupTest {
     }
 
     @Test
+    @DisplayName("one shape declared under two spellings of one media type is kept, not refused")
+    void the_same_shape_twice_is_not_a_contradiction() {
+        Map<String, CanonicalSchema> content = new LinkedHashMap<>();
+        content.put("application/json", PET);
+        content.put("application/json;charset=UTF-8", PET);
+
+        ResponseModel response = new ResponseModel("200", content, Map.of(), Optional.empty());
+
+        assertThat(response.schemaFor("application/json")).contains(PET);
+    }
+
+    @Test
     @DisplayName("an operation can be asked whether it must be sent with a body")
     void a_required_body_is_visible_on_the_operation() {
         Operation withBody = Operation.of(HttpMethod.POST, "/pets")

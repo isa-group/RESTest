@@ -87,8 +87,11 @@ final class MediaTypes {
      * Keys normalised on the way in, so that a document writing {@code application/json;
      * charset=utf-8} and a caller asking for {@code application/json} meet.
      *
-     * <p>Two keys that normalise to the same media type are a contradiction in the document - two
-     * different shapes claimed for one payload - and are rejected rather than one silently winning.
+     * <p>Two keys that normalise to the same media type and claim two different shapes for one
+     * payload are a contradiction in the document, and are rejected rather than one silently
+     * winning. Two that claim the same shape - {@code application/json} beside {@code
+     * application/json;charset=UTF-8}, both pointing at one schema, as generated documents often
+     * write it - say the same thing twice, and are kept as one.
      */
     static <T> Map<String, T> normaliseKeys(Map<String, T> content, String what) {
         Objects.requireNonNull(content, what);
@@ -96,7 +99,7 @@ final class MediaTypes {
         content.forEach((mediaType, value) -> {
             String key = normalise(mediaType);
             T previous = normalised.put(key, value);
-            if (previous != null) {
+            if (previous != null && !previous.equals(value)) {
                 throw new IllegalArgumentException(
                         "two different shapes are declared for media type " + key);
             }

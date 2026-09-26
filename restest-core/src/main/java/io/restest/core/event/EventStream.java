@@ -108,7 +108,13 @@ public final class EventStream implements AutoCloseable {
     private final Thread deliverer;
 
     public EventStream() {
-        this.deliverer = Thread.ofVirtual().name("restest-events").start(this::deliverUntilEnd);
+        // A thread of its own rather than a virtual one. Judging replies, reading them and writing
+        // them to the run's file is work that holds the processor, and a virtual thread doing it
+        // holds one of the few that the requests' own threads share: on a machine with one
+        // processor, the requests would wait for the reports. A platform thread is given its turn
+        // by the operating system instead, and never takes one away from them.
+        this.deliverer = Thread.ofPlatform().daemon().name("restest-events")
+                .start(this::deliverUntilEnd);
     }
 
     /**

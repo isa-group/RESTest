@@ -22,6 +22,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
 import java.util.List;
+import java.util.Locale;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -432,5 +433,56 @@ class ResponseSchemaOracleTest {
                 200, JSON, "7"), pets)).isEmpty();
         assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /charsetkey"), "/charsetkey",
                 200, JSON, "\"seven\""), pets)).hasSize(1);
+    }
+
+    @Nested
+    @DisplayName("a reply is judged as a reply, whatever the machine")
+    class AsAReply {
+
+        private final OperationId oneUser = OperationId.of("GET /users/me");
+
+        @Test
+        @DisplayName("a required property the document marks write-only may be missing from a reply, "
+                + "in 3.0 and in 3.1")
+        void a_required_write_only_property_is_not_expected_back() {
+            for (String version : List.of("3.0", "3.1")) {
+                assertThat(oracle.judge(Attempts.answered(oneUser, "/users/me", 200, JSON,
+                        "{\"id\": 1, \"name\": \"Ada\"}"), Specifications.users(version)))
+                        .describedAs("OpenAPI %s", version)
+                        .isEmpty();
+            }
+        }
+
+        @Test
+        @DisplayName("nor is one that comes back anyway a fault, while one that is simply missing is")
+        void only_what_is_really_missing_is_reported() {
+            ApiModel users = Specifications.users("3.0");
+
+            assertThat(oracle.judge(Attempts.answered(oneUser, "/users/me", 200, JSON,
+                    "{\"id\": 1, \"name\": \"Ada\", \"password\": \"x\"}"), users)).isEmpty();
+            List<Finding> found = oracle.judge(Attempts.answered(oneUser, "/users/me", 200, JSON,
+                    "{\"id\": 1}"), users);
+            assertThat(found).hasSize(1);
+            assertThat(found.get(0).details()).singleElement().asString().contains("name")
+                    .doesNotContain("password");
+        }
+
+        @Test
+        @DisplayName("what is wrong is explained in English on a machine set to another language")
+        void the_explanation_does_not_follow_the_machine_language() {
+            Locale before = Locale.getDefault();
+            Locale.setDefault(Locale.of("es", "ES"));
+            try {
+                List<Finding> found = new ResponseSchemaOracle().judge(Attempts.answered(ONE_PET,
+                        "/pets/7", 200, JSON, "{\"id\": \"seven\", \"name\": \"Rex\"}"),
+                        Specifications.pets());
+
+                assertThat(found).hasSize(1);
+                assertThat(found.get(0).details()).anySatisfy(detail ->
+                        assertThat(detail).contains("expected"));
+            } finally {
+                Locale.setDefault(before);
+            }
+        }
     }
 }

@@ -122,6 +122,17 @@ final class Specifications {
                 .withDocument(read("/kinds-3.1.json"));
     }
 
+    /**
+     * An API of users whose password is required and write-only: sent to the API, never handed
+     * back. Written as OpenAPI 3.0 or 3.1, which the version given picks.
+     */
+    static ApiModel users(String version) {
+        Operation oneUser = Operation.of(HttpMethod.GET, "/users/me")
+                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+        return ApiModel.of("Users", "1.0.0", List.of(oneUser))
+                .withDocument(read("/users-" + version + ".json"));
+    }
+
     /** The same API of pets, with no document kept - so nothing can be checked against it. */
     static ApiModel petsWithoutItsDocument() {
         ApiModel withDocument = pets();

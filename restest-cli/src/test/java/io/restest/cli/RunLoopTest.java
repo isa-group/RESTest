@@ -163,6 +163,7 @@ class RunLoopTest {
         run(BUDGET, events -> {
             events.subscribe(slowListener());
             watched.stream = events;
+            events.subscribe(watched);
         });
 
         assertThat(watched.highestSeen)
@@ -204,12 +205,13 @@ class RunLoopTest {
         run(BUDGET, WORK_AHEAD, 4, events -> {
             events.subscribe(slowListener());
             watched.stream = events;
+            events.subscribe(watched);
         });
 
         assertThat(watched.highestSeen)
                 .describedAs("held near the four it was given rather than near the thousand it "
                         + "would otherwise have been")
-                .isLessThan(ANNOUNCEMENTS_ALLOWED);
+                .isLessThan(4 + 2L * WORK_AHEAD);
     }
 
     @Test

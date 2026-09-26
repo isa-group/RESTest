@@ -441,6 +441,41 @@ class MalformedDocumentTest {
     }
 
     @Test
+    @DisplayName("a server variable with no default costs only that server, wherever it is declared")
+    void a_server_variable_without_a_default_costs_only_that_server(@TempDir Path dir)
+            throws Exception {
+        String server = """
+                    - url: https://{region}.example.com
+                      variables:
+                        region:
+                          enum: [eu, us]
+                """;
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                servers:
+                %s
+                paths:
+                  /widgets:
+                    servers:
+                %s
+                    get:
+                      servers:
+                %s
+                      responses: {'200': {description: ok}}
+                  /gadgets:
+                    get:
+                      responses: {'200': {description: ok}}
+                """.formatted(server.indent(-2), server, server.indent(2)));
+
+        assertThat(api.operations()).hasSize(2);
+        assertThat(api.servers()).isEmpty();
+        assertThat(api.issues())
+                .filteredOn(issue -> issue.message().contains("'region' has no default value"))
+                .hasSize(3);
+    }
+
+    @Test
     @DisplayName("declared defaults survive being read, in the spellings the document used")
     void declared_defaults_are_read_back_as_the_document_wrote_them(@TempDir Path dir)
             throws Exception {

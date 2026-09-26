@@ -116,6 +116,24 @@ class BaseAddressTest {
     }
 
     @Test
+    @DisplayName("a host with an underscore in its name, as Docker Compose services often have, is "
+            + "somewhere requests can be sent")
+    void an_underscore_in_the_host_is_accepted() {
+        assertThat(BaseAddress.resolve("http://pet_store:8080", NO_SERVERS))
+                .isEqualTo("http://pet_store:8080");
+    }
+
+    @Test
+    @DisplayName("and it is recognised as the machine the document declares, directory and all")
+    void an_underscore_host_still_names_the_declared_machine() {
+        ApiModel model = declaring(Server.at("https://production.example/v2"),
+                Server.at("http://pet_store:8080/api/v3"));
+
+        assertThat(BaseAddress.resolve("http://pet_store:8080", model))
+                .isEqualTo("http://pet_store:8080/api/v3");
+    }
+
+    @Test
     @DisplayName("surrounding spaces in a pasted address are not a mistake")
     void spaces_are_forgiven() {
         assertThat(BaseAddress.resolve("  http://localhost:8080  ", NO_SERVERS))
