@@ -26,6 +26,7 @@ import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.HttpMethod;
 import io.restest.core.model.OperationId;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
@@ -33,6 +34,8 @@ import io.restest.core.schema.SchemaReference;
 import io.restest.core.settings.MemorySettings;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,7 +53,7 @@ import java.util.concurrent.ConcurrentMap;
  * as the API writes one down. The next request that needs a pet's identifier can then send one that
  * exists, instead of inventing a number and being told there is no such pet.
  *
- * <p>It is kept two ways, because two different questions get asked of it.
+ * <p>It is kept three ways, because three different questions get asked of it. The first two:
  *
  * <ul>
  *   <li><b>Under the name of the thing.</b> Every named piece of every reply, however deep inside
@@ -67,6 +70,15 @@ import java.util.concurrent.ConcurrentMap;
  * <p>Both of those are ordinary {@link Dictionary lists of values}, of the same kind somebody can
  * write in a file - the only difference is who fills them in. Nothing that asks them a question has
  * to know that these two were filled in by watching the API rather than by being read off a disk.
+ *
+ * <p>The third is for the gaps in a web address, such as {@code {petTypeId}} in
+ * {@code /pettypes/{petTypeId}}, because the name is often no help there: the API calls a pet
+ * type's identifier {@code id}, not {@code petTypeId}. So what the API returned at an address is
+ * also kept under <b>the kind of thing that address is about</b> - everything {@code GET /pettypes}
+ * lists goes under "pet type" - and the {@link ObservedValueProvider} fills {@code {petTypeId}}
+ * with the {@code id} of one of them. This one is not a list of values anybody could write in a
+ * file, because what it is keyed by is worked out from the document's addresses rather than
+ * written down, and it is kept only when {@link MemorySettings#identifiersByResource()} is on.
  *
  * <p>It hears about replies through the run's stream of announcements rather than by reading the
  * record of the run afterwards, and it does so on purpose: what it wants is <em>recent</em>, not
@@ -88,6 +100,7 @@ public final class ObservedValues implements RunListener {
     private final MemorySettings settings;
     private final Remembered underTheirOwnNames;
     private final Remembered underTheNameOfTheirShape;
+    private final Resources underTheKindOfThingTheyAre;
 
     /**
      * A memory for this API, of the size RESTest uses when nobody has said otherwise.
@@ -102,14 +115,16 @@ public final class ObservedValues implements RunListener {
      * A memory for this API, of the size asked for.
      *
      * @param model the API being tested, which is what says what shape a reply has
-     * @param settings how much is remembered: how many values under one name, how many names, how
-     *     large a value and a reply, and how far into a reply the search goes
+     * @param settings how much is remembered: how many values under one name or things of one
+     *     kind, how many names or kinds, how large a value and a reply, how far into a reply the
+     *     search goes, and whether things are kept by their kind at all
      */
     public ObservedValues(ApiModel model, MemorySettings settings) {
         this.model = Objects.requireNonNull(model, "model");
         this.settings = Objects.requireNonNull(settings, "settings");
         this.underTheirOwnNames = new Remembered(ValueDictionary.Keying.NAME, settings);
         this.underTheNameOfTheirShape = new Remembered(ValueDictionary.Keying.SCHEMA, settings);
+        this.underTheKindOfThingTheyAre = new Resources(settings);
     }
 
     /** How much this memory keeps, which is also what decides how large a value may be. */
@@ -127,6 +142,14 @@ public final class ObservedValues implements RunListener {
         return underTheNameOfTheirShape;
     }
 
+    /**
+     * The things each kind of address returned, for filling the gaps in addresses of that kind.
+     * Empty for the whole run when {@link MemorySettings#identifiersByResource()} is off.
+     */
+    Resources underTheKindOfThingTheyAre() {
+        return underTheKindOfThingTheyAre;
+    }
+
     @Override
     public void on(RunEvent event) {
         Objects.requireNonNull(event, "event");
@@ -138,9 +161,215 @@ public final class ObservedValues implements RunListener {
         if (response == null || !theApiWasHappy(response.statusCode())) {
             return;
         }
-        readable(response).ifPresent(reply -> remember(reply,
-                shapeOfOneThingIn(interaction.testCase().operation(), response),
-                interaction.id(), 0));
+        readable(response).ifPresent(reply -> {
+            OperationId operation = interaction.testCase().operation();
+            remember(reply, shapeOfOneThingIn(operation, response), interaction.id(), 0);
+            if (settings.identifiersByResource()) {
+                kindOfThingReturnedBy(operation).ifPresent(kind ->
+                        rememberTheThingsIn(reply, kind, interaction.id(), 0));
+            }
+        });
+    }
+
+    /**
+     * The kind of thing an operation's reply is about, when it can be told from its address.
+     *
+     * <p>Not for a deletion: what a {@code DELETE} sends back is the thing that has just stopped
+     * existing, and keeping it would add an identifier that no longer works. An identifier kept
+     * earlier, from a list or a read, is not forgotten when the thing is deleted afterwards - it
+     * ages out like any other value here.
+     */
+    private Optional<String> kindOfThingReturnedBy(OperationId operation) {
+        return model.operation(operation)
+                .filter(known -> known.method() != HttpMethod.DELETE)
+                .flatMap(known -> kindOfThingAt(known.path()));
+    }
+
+    /**
+     * Keeps the things one reply is made of under the kind of thing they are.
+     *
+     * <p>A list is a list of things, each kept. An object is a thing. But an object with nothing
+     * in it named like an identifier is usually a wrapper around the things rather than one of
+     * them - {@code {"data": [...]}}, or {@code {"_embedded": {"pets": [...]}}} - so what is inside
+     * it is looked at as well, as far down as a reply is ever read. An object that does carry an
+     * identifier is a thing, and what is inside it - a pet's owner, an owner's pets - is some other
+     * kind of thing and is not filed under this one.
+     */
+    private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from, int depth) {
+        if (depth > settings.asDeepAsAReplyIsRead()) {
+            return;
+        }
+        switch (reply) {
+            case JsonValue.JsonArray list -> list.elements().forEach(element ->
+                    rememberTheThingsIn(element, kind, from, depth + 1));
+            case JsonValue.JsonObject thing -> {
+                Map<String, JsonValue> single = new LinkedHashMap<>();
+                thing.members().forEach((name, value) -> {
+                    if ((value instanceof JsonValue.JsonString
+                            || value instanceof JsonValue.JsonNumber)
+                            && smallEnoughToSend(value)) {
+                        single.put(name, value);
+                    }
+                });
+                if (!single.isEmpty()) {
+                    underTheKindOfThingTheyAre.remember(kind,
+                            new JsonValue.JsonObject(single), from);
+                }
+                // Judged by the names the thing came with rather than by what was kept of it: a
+                // thing whose identifier is empty or too long to keep is still a thing, not a
+                // wrapper, and what is inside it is still some other kind.
+                if (thing.members().keySet().stream()
+                        .noneMatch(ObservedValues::looksLikeAnIdentifier)) {
+                    for (JsonValue inside : thing.members().values()) {
+                        if (inside instanceof JsonValue.JsonObject
+                                || inside instanceof JsonValue.JsonArray) {
+                            rememberTheThingsIn(inside, kind, from, depth + 1);
+                        }
+                    }
+                }
+            }
+            default -> { }
+        }
+    }
+
+    /**
+     * The kind of thing an address is about: the last fixed part of it, once the gaps at its end
+     * are left off. {@code /owners/{ownerId}/pets/{petId}} and {@code /pets} are both about pets.
+     */
+    static Optional<String> kindOfThingAt(String path) {
+        List<String> parts = partsOf(path);
+        for (int at = parts.size() - 1; at >= 0; at--) {
+            if (!isAGap(parts.get(at))) {
+                return kindOfThingNamed(parts.get(at));
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * The fixed part of an address just before a gap, as the document writes it: {@code pettypes}
+     * before {@code {petTypeId}} in {@code /pettypes/{petTypeId}}. Nothing when the gap comes
+     * first or follows another gap.
+     */
+    static Optional<String> fixedPartBefore(String path, String gap) {
+        List<String> parts = partsOf(path);
+        int at = parts.indexOf("{" + gap + "}");
+        return at > 0 && !isAGap(parts.get(at - 1)) ? Optional.of(parts.get(at - 1))
+                : Optional.empty();
+    }
+
+    /**
+     * The kind of thing whose identifier goes in a gap of an address: what the fixed part just
+     * before the gap names. {@code {petTypeId}} in {@code /pettypes/{petTypeId}} is a pet type's.
+     */
+    static Optional<String> kindOfThingBefore(String path, String gap) {
+        return fixedPartBefore(path, gap).flatMap(ObservedValues::kindOfThingNamed);
+    }
+
+    /**
+     * A name with the ending identifiers are written with taken off: {@code pet} out of
+     * {@code petId}, {@code hospital} out of {@code hospital_id}. Nothing for a name that does not
+     * end that way, or that is nothing but the ending.
+     */
+    static Optional<String> nameWithoutTheIdentifierEnding(String name) {
+        for (String ending : IDENTIFIER_ENDINGS) {
+            if (name.endsWith(ending) && name.length() > ending.length()) {
+                return Optional.of(name.substring(0, name.length() - ending.length()));
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * The kind of thing a gap's own name says it is the identifier of: {@code petId} is a pet's.
+     * Nothing for a name that does not end in one of the ways identifiers are written.
+     */
+    static Optional<String> kindOfThingInTheName(String gap) {
+        return nameWithoutTheIdentifierEnding(gap).flatMap(ObservedValues::kindOfThingNamed);
+    }
+
+    /**
+     * One spelling for a kind of thing, whichever way it was written: capitals ignored, anything
+     * but letters and digits left out, and plural and singular brought to the same word -
+     * {@code pet-types}, {@code PetTypes} and {@code pettype} are all one kind, and so are
+     * {@code movies} and {@code movie}, {@code boxes} and {@code box}, {@code statuses} and
+     * {@code status}.
+     *
+     * <p>The word it comes to is not always an English word - {@code movies} becomes
+     * {@code movy} - and does not have to be: it is only ever compared with another word that went
+     * through the same rules. A word in another language may keep its plural, as {@code hospitais}
+     * does, and every address that says {@code hospitais} still becomes the same thing.
+     */
+    static Optional<String> kindOfThingNamed(String written) {
+        StringBuilder kept = new StringBuilder();
+        written.toLowerCase(Locale.ROOT).codePoints()
+                .filter(Character::isLetterOrDigit)
+                .forEach(kept::appendCodePoint);
+        String word = singular(kept.toString());
+        return word.isEmpty() ? Optional.empty() : Optional.of(word);
+    }
+
+    /**
+     * The plural and the singular of one word brought to the same spelling, by the few rules
+     * English plurals mostly follow. Both sides of any comparison go through this, so what
+     * matters is that {@code movies} and {@code movie} agree, not what either becomes.
+     */
+    private static String singular(String word) {
+        if (word.length() > 3 && word.endsWith("ies")) {
+            return word.substring(0, word.length() - 3) + "y";
+        }
+        for (String ending : PLURALS_ENDING_IN_ES) {
+            if (word.length() > ending.length() && word.endsWith(ending)) {
+                return word.substring(0, word.length() - 2);
+            }
+        }
+        String without = word;
+        if (word.length() > 1 && word.endsWith("s") && !word.endsWith("ss")
+                && !word.endsWith("us") && !word.endsWith("is")) {
+            without = word.substring(0, word.length() - 1);
+        }
+        if (without.length() > 2 && without.endsWith("ie")) {
+            return without.substring(0, without.length() - 2) + "y";
+        }
+        return without;
+    }
+
+    /** The endings after which a plural adds -es rather than -s: addresses, boxes, statuses. */
+    private static final List<String> PLURALS_ENDING_IN_ES =
+            List.of("sses", "xes", "zes", "ches", "shes", "uses");
+
+    /**
+     * Whether a name is written the way identifiers are: {@code id} or {@code _id}, or ending in
+     * {@code Id}, {@code ID}, {@code _id}, {@code -id}, {@code _ID} or {@code -ID}.
+     */
+    static boolean looksLikeAnIdentifier(String name) {
+        return isABareIdentifier(name) || nameWithoutTheIdentifierEnding(name).isPresent();
+    }
+
+    /**
+     * Whether a property is named the way the identifier of this kind of thing is: {@code id} or
+     * {@code _id}, or the kind followed by id - {@code petId}, {@code pet_id} or {@code petID} for
+     * a pet.
+     */
+    static boolean isTheIdentifierOf(String property, String kind) {
+        return isABareIdentifier(property)
+                || kindOfThingInTheName(property).filter(kind::equals).isPresent();
+    }
+
+    private static boolean isABareIdentifier(String name) {
+        return name.equalsIgnoreCase("id") || name.equalsIgnoreCase("_id");
+    }
+
+    /** How identifiers are written at the end of a name. A fact about spelling, not a choice. */
+    private static final List<String> IDENTIFIER_ENDINGS =
+            List.of("Id", "ID", "_id", "-id", "_ID", "-ID");
+
+    private static List<String> partsOf(String path) {
+        return Arrays.stream(path.split("/")).filter(part -> !part.isEmpty()).toList();
+    }
+
+    private static boolean isAGap(String part) {
+        return part.contains("{");
     }
 
     /**
@@ -414,6 +643,53 @@ public final class ObservedValues implements RunListener {
         public String toString() {
             return "what this run has seen, by "
                     + keying.name().toLowerCase(Locale.ROOT) + " (" + byKey.size() + " so far)";
+        }
+    }
+
+    /**
+     * The things the API returned, kept under the kind of thing each is: pets under "pet".
+     *
+     * <p>Only the words and numbers of each thing are kept, since only a word or a number can fill
+     * a gap in a web address. Bounded exactly as the lists under a name are, and read and written
+     * the same way: one thread writes, and a reader always gets one complete list.
+     */
+    static final class Resources {
+
+        private final MemorySettings settings;
+        private final ConcurrentMap<String, List<Observation>> byKind = new ConcurrentHashMap<>();
+
+        Resources(MemorySettings settings) {
+            this.settings = settings;
+        }
+
+        void remember(String kind, JsonValue.JsonObject thing, InteractionId from) {
+            if (!byKind.containsKey(kind) && byKind.size() >= settings.mostNames()) {
+                return;
+            }
+            byKind.compute(kind, (ignored, kept) -> {
+                List<Observation> latest = new ArrayList<>(kept == null ? List.of() : kept);
+                latest.removeIf(seen -> seen.value().equals(thing));
+                latest.add(new Observation(thing, from));
+                while (latest.size() > settings.mostValuesUnderOneName()) {
+                    latest.remove(0);
+                }
+                return List.copyOf(latest);
+            });
+        }
+
+        /** The things of this kind, most recently seen last, each a {@code JsonObject}. */
+        List<Observation> thingsOfKind(String kind) {
+            return byKind.getOrDefault(Objects.requireNonNull(kind, "kind"), List.of());
+        }
+
+        /** How many kinds of thing this holds anything for. */
+        int size() {
+            return byKind.size();
+        }
+
+        @Override
+        public String toString() {
+            return "what this run has seen, by the kind of thing (" + byKind.size() + " so far)";
         }
     }
 }

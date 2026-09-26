@@ -236,6 +236,21 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("the settings about filling a gap by the kind of thing reach the memory the run keeps")
+    void the_settings_about_kinds_of_thing_reach_the_memory() {
+        Settings off = Settings.from(Map.of("memory.identifiersByResource", "false",
+                "memory.identifiersByResourceFirst", "false"));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                model(FOUR_OPTIONAL_PARAMETERS), 20260926L, List.of(),
+                planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)), off);
+
+        ObservedValues memory = (ObservedValues) generator.whatListensToTheRun().orElseThrow();
+
+        assertThat(memory.settings().identifiersByResource()).isFalse();
+        assertThat(memory.settings().identifiersByResourceFirst()).isFalse();
+    }
+
+    @Test
     @DisplayName("with every optional parameter a candidate, one nothing can fill a value for is "
             + "still left out silently rather than failing the request")
     void full_continue_chance_still_drops_what_cannot_be_filled() {

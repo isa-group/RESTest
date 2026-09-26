@@ -38,16 +38,26 @@ package io.restest.core.settings;
  * @param longestReplyRead the largest reply that is read at all. A reply this size is a listing, a
  *     dump or a file
  * @param asDeepAsAReplyIsRead how far into a reply the search for named values goes
+ * @param identifiersByResource whether a gap in a web address, such as {@code {petId}} in
+ *     {@code /pets/{petId}}, is also filled from the things the API returned for that address's
+ *     kind of thing - the {@code id} of a pet listed at {@code /pets} - rather than only from
+ *     values carrying the gap's own name. Off, only the name is matched
+ * @param identifiersByResourceFirst whether, for such a gap, the things of its kind are asked
+ *     before any value carrying the gap's own name. Off, the name is asked first and the things
+ *     of its kind only when the name finds nothing. Means nothing while
+ *     {@code identifiersByResource} is off
  */
 public record MemorySettings(
         int mostValuesUnderOneName,
         int mostNames,
         int longestValueKept,
         int longestReplyRead,
-        int asDeepAsAReplyIsRead) {
+        int asDeepAsAReplyIsRead,
+        boolean identifiersByResource,
+        boolean identifiersByResourceFirst) {
 
     private static final MemorySettings DEFAULTS =
-            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6);
+            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true);
 
     public MemorySettings {
         atLeastNothing(mostValuesUnderOneName, "mostValuesUnderOneName");

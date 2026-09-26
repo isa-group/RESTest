@@ -232,15 +232,22 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many bodies are drawn while looking for one its media type can carry"),
 
             key("memory", "mostValuesUnderOneName", SettingKind.WHOLE_NUMBER,
-                    "how many values the run remembers under any one name. 0 remembers none"),
+                    "how many values the run remembers under any one name, and things of any "
+                            + "one kind. 0 remembers none"),
             key("memory", "mostNames", SettingKind.WHOLE_NUMBER,
-                    "how many different names are remembered at all"),
+                    "how many different names, and kinds of thing, are remembered at all"),
             key("memory", "longestValueKept", SettingKind.WHOLE_NUMBER,
                     "how long one remembered word or number may be, written out"),
             key("memory", "longestReplyRead", SettingKind.WHOLE_NUMBER,
                     "the largest reply the run reads looking for values to remember"),
             key("memory", "asDeepAsAReplyIsRead", SettingKind.WHOLE_NUMBER,
                     "how far into a reply that search goes"),
+            key("memory", "identifiersByResource", SettingKind.YES_OR_NO,
+                    "whether a gap such as {petId} in /pets/{petId} is filled from the ids of the "
+                            + "pets the API returned; off, only a value named petId fills it"),
+            key("memory", "identifiersByResourceFirst", SettingKind.YES_OR_NO,
+                    "whether those pets are asked before any value named petId; off, the name is "
+                            + "asked first"),
 
             key("document", "fetchTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait for a description fetched over the network"),

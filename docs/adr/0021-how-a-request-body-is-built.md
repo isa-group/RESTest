@@ -1,6 +1,6 @@
 # ADR-0021: A request body is one more value, and what the API returns is reused leaf by leaf
 
-**Status:** Accepted, amended at M2.5b
+**Status:** Accepted, amended at M2.5b and M9.2
 **Date:** 2026-09-18
 
 ## Context
@@ -556,3 +556,157 @@ document names is kept whole under that name, and so is every element of a list 
 *inside* one contributes its values but is not itself filed as a named shape. Naming it would mean
 walking the document's shapes alongside the reply, and the measurement says whole-resource reuse is
 the minority mechanism — the leaf is where the 89% is.
+
+## Amendment (M9.2)
+
+**Date:** 2026-09-26
+
+**A gap in an address is also filled from the things its kind of address returned, and that is
+asked before the gap's name.**
+
+### Why
+
+The memory of 2.5b files what the API returns under the name of each property, and a gap in an
+address is filled from it only when some reply carries a property with the gap's exact name. The
+commonest way an API writes an identifier defeats that: pet-clinic's `/pettypes/{petTypeId}` is
+answered by things whose identifier is `id`, and no reply anywhere says `petTypeId`. So those gaps
+were filled by invention - an integer that exists by luck - or by the document's sample, `1`, until
+the run deleted pet type 1.
+
+Counted over what the corpus declares its replies look like, with the kind of value checked (a word
+for a gap that wants a word, a number for one that wants a number), by
+`IdentifiersByResourceAcrossTheCorpusTest`:
+
+| | Whole corpus | Priority five |
+|---|---:|---:|
+| Gaps in addresses, each counted once per operation whose address has it | 1,838 | 168 |
+| …that some reply declares a property for under the gap's own name | 812 | 127 |
+| …that a reply at an address of the same kind declares an identifier for | 603 | 159 |
+| …that **only** the second reaches | **325 (18%)** | **35** |
+
+These are what a run can reach when the API sends back what its document says, which is the most it
+can get from either rule. The 35 are eight parameters: pet-clinic's `petTypeId`, `visitId`,
+`specialtyId` and `vetId`, notebook-manager's `notebookId`, and gestao-hospital's `hospital_id`,
+`patientId` and `produto_id` - the last three strings with no sample at all, which invention never
+guesses.
+
+### How
+
+**The kind of thing an address is about** is its last fixed part once the gaps at its end are left
+off, written one way whatever the spelling: capitals ignored, anything but letters and digits left
+out, and plural and singular brought to the same word by the few rules English plurals mostly follow
+(`ies` and `ie` to `y`; `-es` dropped after `ss`, `x`, `z`, `ch`, `sh` and `us`; otherwise one
+final `s` dropped, unless the word ends in `ss`, `us` or `is`). `/owners/{ownerId}/pets/{petId}` and
+`/pets` are both about `pet`; `movies` and `movieId`, `boxes` and `box`, `statuses` and `status`
+agree. The word it comes to need not be English - `movies` becomes `movy` - because it is only ever
+compared with another word that went through the same rules. A plural in another language may stay
+plural, as `hospitais` does, and still means the same kind every time it is written.
+
+**What is kept** is every thing a 2XX JSON reply is made of, under the kind of thing its address is
+about: a list's elements, an object, and - when an object has no member named like an identifier -
+the objects inside it, which is how `{"data": [...]}` and `{"_embedded": {...}}` are read. An object
+that does carry an identifier is a thing, and what is inside it - a pet's owner - is some other kind
+and is not filed under this one. Only each thing's words and numbers are kept, since only those can
+fill a gap, bounded by the same two settings as the rest of the memory, whose descriptions now say
+so. **Nothing is kept from a `DELETE`**: what it returns is the thing that has just stopped
+existing. An identifier kept earlier is not forgotten when its thing is deleted later; it ages out
+like any other value, and forgetting it is 9.3's.
+
+A name is written like an identifier when it is `id` or `_id`, or ends in `Id`, `ID`, `_id`, `-id`,
+`_ID` or `-ID`. That list is a fact about spelling rather than a number anybody tunes, so it stays in
+the code.
+
+**A gap is filled** from the kind of thing the fixed part before it names, and then from the kind
+its own name names (`petId` → `pet`), which covers an address with no fixed part before the gap.
+In order, the first step that finds a value wins:
+
+1. a property of those things named exactly like the gap;
+2. a property named `id` or `_id`, or the kind followed by id - `petId`, `pet_id`, `petID`;
+3. 2.5b's rule: a value under the gap's own name, from any reply;
+4. a property of those things that is merely written the way identifiers are.
+
+Steps 2 and 4 are taken only for a gap whose own name is written like an identifier. A gap called
+`{username}` or `{team_slug}` asks for something else, and a thing's `id` put there would push aside
+the document's own sample, which the opening lap asks after `observed`. Such a gap takes step 1 and
+step 3 and nothing more.
+
+Every candidate has to be of the kind the gap wants, one of its closed list of values when it has
+one, in its declared form when that form is `uuid`, `int32` or `int64`, and sendable in an address
+at all. Only whole gaps in the address are filled this way; a query or body parameter is still
+matched by its name alone.
+
+The record of where a value came from uses the document's own word: *the 'id' of one of the pettypes
+an earlier reply returned*.
+
+### Why the kind is asked before the name, and the switch that lets that be measured
+
+The roadmap row said the name first, which is 2.5b's rule, and the kind only where the name finds
+nothing. The maintainer chose the other order on 26 September 2026, before any code was written,
+because a generic name is the worse guide exactly where it is commonest: `{id}` under
+`/flights/{id}` takes the `id` of an airport as readily as a flight's, and pet-clinic's `{petId}`
+only the pets that have visits. For kafka-rest-proxy's `{name}` under `.../configs/{name}` the gain
+is smaller than it looks: every address ending in `configs` is one kind, so a topic's configuration
+gap can still be given a broker's configuration name - but no longer a topic's or a group's name.
+The name is still asked, third, so a gap whose kind of address has returned nothing yet is no worse
+off than before.
+
+The review of this increment pointed out that a departure from the approved row needs its own
+switch, or an experiment can only compare the whole feature against nothing. So there are two, both
+under `memory.*` because turning the first off means the memory never records a kind at all:
+
+- `memory.identifiersByResource`, on by default. Off, nothing is kept by kind and a gap is filled
+  exactly as 2.5b filled it.
+- `memory.identifiersByResourceFirst`, on by default. Off, the row's approved order: the name
+  first, then the kind's steps.
+
+### Measured
+
+Four of the five priority APIs, each restarted before every run, five seeds (3, 7, 23, 41, 99), a
+minute each, the three arrangements run in a rotating order, on commit `0157bbfb` of this branch.
+*Covered* is the operations that answered 2XX at least once; the area is under that curve over the
+minute, counted from the moment the tool was launched.
+
+| API | | kind first | name first | off |
+|---|---|---:|---:|---:|
+| gestao-hospital | covered | **18.0** | 18.0 | 9.0 |
+| | covered at 5 s | **16.8** | 15.6 | 2.8 |
+| | area | **1,023** | 1,007 | 385 |
+| pet-clinic | covered | **33.0** | 32.6 | 31.8 |
+| | area | **1,854** | 1,813 | 1,786 |
+| notebook-manager | covered | 5.0 | 5.0 | 5.0 |
+| | reads, changes and deletes by id answered 2XX | **29.4%** | 29.3% | 10.3% |
+| kafka-rest-proxy | covered | 34.6 | 35.0 | 34.4 |
+| | area | 1,998 | 2,008 | 1,978 |
+
+- **gestao-hospital doubles**, better on every seed, and nearly all of it in the first five seconds:
+  its identifiers are strings nothing can invent, so thirteen operations went from answered on some
+  seeds or none to answered on every one.
+- **pet-clinic gains 3.8%** on both numbers, better on four seeds of five - small, because the
+  document's sample `1` is real seed data and already reaches most of it. What moves is the
+  operations behind a visit's identifier.
+- **notebook-manager is at its ceiling** in every arrangement - every one of its five operations
+  answers something - so the difference shows as the share of requests reaching a notebook that
+  exists, which nearly triples.
+- **kafka-rest-proxy does not move**: its gaps are already named the way its replies are, and 2.5b
+  was filling them. The spread between seeds is larger than between arrangements.
+
+**Kind first against name first** is the weaker finding, and is recorded as such: ahead on area on
+gestao-hospital (five seeds of five, +1.6%, from reaching operations earlier) and pet-clinic (three
+of five, +2.3%), level on notebook-manager, and behind on kafka-rest-proxy's mean (-0.5%) through
+one seed while ahead on four. It is enough to keep the maintainer's order as the default, and not
+enough to call the question closed - which is what `memory.identifiersByResourceFirst` is for.
+
+### Left for 4.1 and 9.3
+
+- A kind of thing found **inside another reply** - an owner's `pets`, a vet's `specialties` - is not
+  kept under its kind. It is the same walk over replies with a second way of naming what was found,
+  and nothing on the priority corpus needs it: each of those kinds has a list operation of its own,
+  which the opening lap sends first.
+- A nested address is not kept coherent with its parent: `/owners/{ownerId}/pets/{petId}` may pair
+  an owner with somebody else's pet. That needs the pairing of values within one request, which is
+  4.1's graph rather than a rule about one gap.
+- Addresses that end in the same word are one kind whatever comes before it, which is the kafka
+  case above; telling `/brokers/{id}/configs` from `/topics/{name}/configs` is the same pairing.
+- An identifier is not forgotten when the thing is deleted by another request, which is 9.3's.
+- No synonym table and no similarity score, as the row says: the kind of thing is the fixed part of
+  the address, spelt one way, and nothing else.

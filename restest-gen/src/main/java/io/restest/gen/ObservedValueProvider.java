@@ -38,6 +38,7 @@ import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.random.RandomGenerator;
 
 /**
@@ -122,7 +124,176 @@ public final class ObservedValueProvider implements ValueProvider {
         // fields of a real resource make sense together, and assembling them one at a time loses
         // exactly that.
         Optional<GeneratedValue> whole = oneTheApiProduced(request);
-        return whole.isPresent() ? whole : oneValueSeenUnderThisName(request);
+        if (whole.isPresent()) {
+            return whole;
+        }
+        if (!isAGapInTheAddress(request) || !seen.settings().identifiersByResource()) {
+            return oneValueSeenUnderThisName(request);
+        }
+        List<Kind> kinds = kindsOfThingFor(request);
+        if (!seen.settings().identifiersByResourceFirst()) {
+            Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request);
+            return byName.isPresent() ? byName : anIdentifierOfTheThingsFor(request, kinds);
+        }
+        // The kind of thing the address is about is asked before the name, because for a gap in
+        // an address the name is often the worse guide: {id} under /flights/{id} would otherwise
+        // take the id of an airport as readily as the id of a flight.
+        Optional<GeneratedValue> convincing =
+                anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING);
+        if (convincing.isPresent()) {
+            return convincing;
+        }
+        Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request);
+        return byName.isPresent()
+                ? byName
+                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE);
+    }
+
+    /** A gap in the web address, as a whole rather than one piece of it. */
+    private static boolean isAGapInTheAddress(ValueRequest request) {
+        return request.location() == ParameterLocation.PATH
+                && request.path().equals(request.name());
+    }
+
+    /**
+     * One kind of thing a gap may be the identifier of: the word it is kept under, and the word
+     * the document wrote for it, which is the one a person reading where a value came from knows.
+     */
+    private record Kind(String kept, String written) {
+    }
+
+    /**
+     * The kinds of thing whose identifier this gap may be: the one the address names just before
+     * it, and then the one the gap's own name names, when the two differ.
+     */
+    private List<Kind> kindsOfThingFor(ValueRequest request) {
+        List<Kind> kinds = new ArrayList<>();
+        model.operation(request.operation())
+                .flatMap(operation -> ObservedValues.fixedPartBefore(operation.path(),
+                        request.name()))
+                .ifPresent(written -> ObservedValues.kindOfThingNamed(written)
+                        .ifPresent(kept -> kinds.add(new Kind(kept, written))));
+        ObservedValues.nameWithoutTheIdentifierEnding(request.name())
+                .ifPresent(written -> ObservedValues.kindOfThingNamed(written)
+                        .filter(kept -> kinds.stream().noneMatch(kind -> kind.kept().equals(kept)))
+                        .ifPresent(kept -> kinds.add(new Kind(kept, written))));
+        return kinds;
+    }
+
+    /** How sure a property of a thing is to be that thing's identifier. */
+    private enum Likeness {
+        /** Named like the gap itself, or {@code id}, or the kind of thing followed by id. */
+        CONVINCING,
+        /** Only written the way identifiers are, like {@code ownerId} inside a pet. */
+        ONLY_LOOKS_LIKE_ONE
+    }
+
+    /** Every step of asking the things of these kinds, the convincing ones first. */
+    private Optional<GeneratedValue> anIdentifierOfTheThingsFor(ValueRequest request,
+            List<Kind> kinds) {
+        Optional<GeneratedValue> convincing =
+                anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING);
+        return convincing.isPresent()
+                ? convincing
+                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE);
+    }
+
+    /**
+     * An identifier of one of the things of these kinds the API has returned, when one of them has
+     * a property alike enough and a value that fits.
+     *
+     * <p>Within {@link Likeness#CONVINCING}, a property named exactly like the gap is preferred to
+     * one called {@code id}: a thing that carries both, such as a cluster with an {@code id} and a
+     * {@code cluster_id}, is telling us which one the address wants.
+     *
+     * <p>Only a gap whose own name is written like an identifier - {@code {petId}},
+     * {@code {id}} - takes a property that is not named exactly like it. A gap called
+     * {@code {username}} or {@code {slug}} is asking for something else, and a thing's {@code id}
+     * put there would only push aside the document's own sample for it.
+     */
+    private Optional<GeneratedValue> anIdentifierOfTheThingsFor(ValueRequest request,
+            List<Kind> kinds, Likeness likeness) {
+        boolean namedLikeAnIdentifier = ObservedValues.looksLikeAnIdentifier(request.name());
+        if (likeness == Likeness.ONLY_LOOKS_LIKE_ONE && !namedLikeAnIdentifier) {
+            return Optional.empty();
+        }
+        for (Kind kind : kinds) {
+            List<ObservedValues.Observation> things =
+                    seen.underTheKindOfThingTheyAre().thingsOfKind(kind.kept());
+            List<PropertyMatch> steps = new ArrayList<>();
+            if (likeness == Likeness.CONVINCING) {
+                steps.add(name -> name.equals(request.name()));
+                if (namedLikeAnIdentifier) {
+                    steps.add(name -> ObservedValues.isTheIdentifierOf(name, kind.kept()));
+                }
+            } else {
+                steps.add(ObservedValues::looksLikeAnIdentifier);
+            }
+            for (PropertyMatch step : steps) {
+                List<Sendable> usable = new ArrayList<>();
+                List<String> from = new ArrayList<>();
+                for (ObservedValues.Observation thing : things) {
+                    ((JsonValue.JsonObject) thing.value()).members().forEach((name, value) -> {
+                        if (step.matches(name) && fitsAnIdentifier(value, request)) {
+                            usable.add(new Sendable(value, thing.from()));
+                            from.add(name);
+                        }
+                    });
+                }
+                if (!usable.isEmpty()) {
+                    int chosen = random.nextInt(usable.size());
+                    return Optional.of(new GeneratedValue(usable.get(chosen).value(),
+                            new ValueOrigin.Derived(usable.get(chosen).from(), "the '"
+                                    + from.get(chosen) + "' of one of the " + kind.written()
+                                    + " an earlier reply returned")));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** One way of recognising which property of a thing is its identifier. */
+    @FunctionalInterface
+    private interface PropertyMatch {
+        boolean matches(String property);
+    }
+
+    /**
+     * Whether a word or number the API returned could go in this gap: of the kind the gap wants,
+     * one of its closed list of values if it has one, in its declared form where that form is one
+     * identifiers come in, and sendable in an address at all.
+     */
+    private boolean fitsAnIdentifier(JsonValue value, ValueRequest request) {
+        return couldSatisfy(value, request.schema())
+                && inTheDeclaredForm(value, resolved(request.schema()))
+                && canGoThere(value, request);
+    }
+
+    /**
+     * The forms identifiers are declared in, checked: a {@code uuid} has to read as one, and an
+     * {@code int32} or {@code int64} has to fit. Any other form is not judged here.
+     */
+    private static boolean inTheDeclaredForm(JsonValue value, CanonicalSchema wanted) {
+        if (wanted instanceof StringSchema text && value instanceof JsonValue.JsonString word
+                && text.format().filter("uuid"::equals).isPresent()) {
+            try {
+                return UUID.fromString(word.value()).toString()
+                        .equalsIgnoreCase(word.value());
+            } catch (IllegalArgumentException notOne) {
+                return false;
+            }
+        }
+        if (wanted instanceof NumberSchema number && value instanceof JsonValue.JsonNumber written) {
+            BigDecimal amount = written.value();
+            return switch (number.format().orElse("")) {
+                case "int32" -> amount.compareTo(BigDecimal.valueOf(Integer.MIN_VALUE)) >= 0
+                        && amount.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) <= 0;
+                case "int64" -> amount.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0
+                        && amount.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) <= 0;
+                default -> true;
+            };
+        }
+        return true;
     }
 
     @Override

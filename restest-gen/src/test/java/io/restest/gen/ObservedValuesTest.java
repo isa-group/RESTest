@@ -348,7 +348,7 @@ class ObservedValuesTest {
                     new MemorySettings(2, MemorySettings.defaults().mostNames(),
                             MemorySettings.defaults().longestValueKept(),
                             MemorySettings.defaults().longestReplyRead(),
-                            MemorySettings.defaults().asDeepAsAReplyIsRead()));
+                            MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true));
 
             for (int identifier = 1; identifier <= 5; identifier++) {
                 small.on(reply(200, "application/json", "{\"id\": " + identifier + "}"));
@@ -366,7 +366,7 @@ class ObservedValuesTest {
                 + "switches it off")
         void a_memory_of_nothing() {
             ObservedValues none = new ObservedValues(anApiReturning(PET),
-                    new MemorySettings(0, 0, 0, 0, 0));
+                    new MemorySettings(0, 0, 0, 0, 0, false, false));
 
             none.on(reply(200, "application/json", "{\"id\": 1}"));
 
