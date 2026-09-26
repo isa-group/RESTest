@@ -111,6 +111,16 @@ produced — an identifier that exists, a reference that resolves, a name spelle
 spells it. Of the values inside the request bodies of our fifty-document corpus, 89% carry a name
 some reply of the same API also carries.
 
+A gap in a web address gets a second chance. The API usually calls a thing's identifier `id`, and the
+address that reads one calls it something else — `/pettypes/{petTypeId}` — so no reply ever carries
+a value named `petTypeId`. What the API returns at an address is therefore also kept under the kind
+of thing the address is about: everything `GET /pettypes` lists is a pet type, and `{petTypeId}` is
+filled with the `id` of one of them. The kind is asked before the name, because a generic name is a
+poor guide — under `/flights/{id}`, an airport's `id` answers to `id` as readily as a flight's. A gap
+whose own name is not written like an identifier, such as `{username}`, only takes a property with
+exactly its name. Two settings govern it: `memory.identifiersByResource` switches it off, and
+`memory.identifiersByResourceFirst` asks the name first instead ([the settings](settings.md)).
+
 Asked for a whole thing the document gives a name to — "send me an `Owner`" — it offers an owner the
 API returned, with the parts the API only ever *sends* taken out of it (that is what `readOnly`
 means) and one value inside it replaced by a different one. Sending an unchanged copy would usually

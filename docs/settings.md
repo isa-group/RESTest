@@ -140,9 +140,9 @@ generation:
   writableBodyAttempts: 8     # default
 
 memory:
-  # how many values the run remembers under any one name. 0 remembers none
+  # how many values the run remembers under any one name, and things of any one kind. 0 remembers none
   mostValuesUnderOneName: 20  # default
-  # how many different names are remembered at all
+  # how many different names, and kinds of thing, are remembered at all
   mostNames: 2000             # default
   # how long one remembered word or number may be, written out
   longestValueKept: 10000     # default
@@ -150,6 +150,10 @@ memory:
   longestReplyRead: 524288    # default
   # how far into a reply that search goes
   asDeepAsAReplyIsRead: 6     # default
+  # whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it
+  identifiersByResource: true # default
+  # whether those pets are asked before any value named petId; off, the name is asked first
+  identifiersByResourceFirst: true # default
 
 document:
   # how long to wait for a description fetched over the network
@@ -290,11 +294,13 @@ spelling `--budget` takes.
 
 | Setting | Default | What it does |
 |---|---|---|
-| `mostValuesUnderOneName` | `20` | how many values the run remembers under any one name. 0 remembers none |
-| `mostNames` | `2000` | how many different names are remembered at all |
+| `mostValuesUnderOneName` | `20` | how many values the run remembers under any one name, and things of any one kind. 0 remembers none |
+| `mostNames` | `2000` | how many different names, and kinds of thing, are remembered at all |
 | `longestValueKept` | `10000` | how long one remembered word or number may be, written out |
 | `longestReplyRead` | `524288` | the largest reply the run reads looking for values to remember |
 | `asDeepAsAReplyIsRead` | `6` | how far into a reply that search goes |
+| `identifiersByResource` | `true` | whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it |
+| `identifiersByResourceFirst` | `true` | whether those pets are asked before any value named petId; off, the name is asked first |
 
 ### `document.*`
 

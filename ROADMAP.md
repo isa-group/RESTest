@@ -9,7 +9,7 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
 still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 28 delivered, 17 more in v2.0, 28 after it.
+13 milestones: 29 delivered, 16 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -38,7 +38,7 @@ nothing in them is an increment of its own.
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
 | M2 | Specification fidelity and input generation | 2.10b came back from 9.1 for 2.1; four rows wait | 10 / 14 |
-| M9 | Reach — every operation the API will answer, answered early | all | 1 / 4 |
+| M9 | Reach — every operation the API will answer, answered early | all | 2 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 0 / 6 |

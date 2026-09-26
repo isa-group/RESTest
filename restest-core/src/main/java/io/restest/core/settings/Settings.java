@@ -162,7 +162,11 @@ public record Settings(
                 typed.wholeNumber("memory.longestValueKept", DEFAULTS.memory.longestValueKept()),
                 typed.wholeNumber("memory.longestReplyRead", DEFAULTS.memory.longestReplyRead()),
                 typed.wholeNumber("memory.asDeepAsAReplyIsRead",
-                        DEFAULTS.memory.asDeepAsAReplyIsRead())));
+                        DEFAULTS.memory.asDeepAsAReplyIsRead()),
+                typed.yesOrNo("memory.identifiersByResource",
+                        DEFAULTS.memory.identifiersByResource()),
+                typed.yesOrNo("memory.identifiersByResourceFirst",
+                        DEFAULTS.memory.identifiersByResourceFirst())));
         DocumentSettings document = group("document", () -> new DocumentSettings(
                 typed.lengthOfTime("document.fetchTimeout", DEFAULTS.document.fetchTimeout()),
                 typed.wholeNumber("document.mostBytesRead", DEFAULTS.document.mostBytesRead())));
@@ -253,6 +257,9 @@ public record Settings(
             case "memory.longestValueKept" -> String.valueOf(memory.longestValueKept());
             case "memory.longestReplyRead" -> String.valueOf(memory.longestReplyRead());
             case "memory.asDeepAsAReplyIsRead" -> String.valueOf(memory.asDeepAsAReplyIsRead());
+            case "memory.identifiersByResource" -> String.valueOf(memory.identifiersByResource());
+            case "memory.identifiersByResourceFirst" ->
+                    String.valueOf(memory.identifiersByResourceFirst());
 
             case "document.fetchTimeout" -> LengthOfTime.written(document.fetchTimeout());
             case "document.mostBytesRead" -> String.valueOf(document.mostBytesRead());

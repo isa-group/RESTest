@@ -1,6 +1,6 @@
 # ADR-0021: A request body is one more value, and what the API returns is reused leaf by leaf
 
-**Status:** Accepted, amended at M2.5b
+**Status:** Accepted, amended at M2.5b and M9.2
 **Date:** 2026-09-18
 
 ## Context
@@ -556,3 +556,95 @@ document names is kept whole under that name, and so is every element of a list 
 *inside* one contributes its values but is not itself filed as a named shape. Naming it would mean
 walking the document's shapes alongside the reply, and the measurement says whole-resource reuse is
 the minority mechanism — the leaf is where the 89% is.
+
+## Amendment (M9.2)
+
+**Date:** 2026-09-26
+
+**A gap in an address is also filled from the things its kind of address returned, and that is
+asked before the gap's name.**
+
+### Why
+
+The memory of 2.5b files what the API returns under the name of each property, and a gap in an
+address is filled from it only when some reply carries a property with the gap's exact name. The
+commonest way an API writes an identifier defeats that: pet-clinic's `/pettypes/{petTypeId}` is
+answered by things whose identifier is `id`, and no reply anywhere says `petTypeId`. So those gaps
+were filled by invention - an integer that exists by luck - or by the document's sample, `1`, until
+the run deleted pet type 1.
+
+Counted over the declared replies of the corpus, by `IdentifiersByResourceAcrossTheCorpusTest`:
+
+| | Whole corpus | Priority five |
+|---|---:|---:|
+| Gaps in addresses, one per operation | 1,838 | 168 |
+| …that some reply carries a property for under the gap's own name | 1,143 | 127 |
+| …that a reply at an address of the same kind carries an identifier for | 1,336 | 159 |
+| …that **only** the second reaches | **527 (29%)** | **35** |
+
+The 35 are eight parameters: pet-clinic's `petTypeId`, `visitId`, `specialtyId` and `vetId`,
+notebook-manager's `notebookId`, and gestao-hospital's `hospital_id`, `patientId` and `produto_id` -
+the last three strings with no sample at all, which invention never guesses.
+
+### How
+
+**The kind of thing an address is about** is its last fixed part once the gaps at its end are left
+off, written one way whatever the spelling: capitals ignored, anything but letters and digits left
+out, and a plural made singular by two rules (`ies` → `y`; one final `s` dropped unless it is
+`ss`). `/owners/{ownerId}/pets/{petId}` and `/pets` are both about `pet`. The singular only has to
+agree with itself, because both sides go through it: `hospitais` becomes `hospitai`, which is no
+Portuguese word, and every address that says `hospitais` becomes the same one.
+
+**What is kept** is every thing a 2XX JSON reply is made of, under the kind of thing its address is
+about: a list's elements, an object, and - when an object has nothing in it that looks like an
+identifier - the objects inside it, which is how `{"data": [...]}` and `{"_embedded": {...}}`
+are read. Only each thing's words and numbers are kept, since only those can fill a gap, bounded
+by the same two settings as the rest of the memory. **Nothing is kept from a `DELETE`**: what it
+returns is the thing that has just stopped existing.
+
+**A gap is filled** from the kind of thing the fixed part before it names, and then from the kind
+its own name names (`petId` → `pet`), which covers an address with no fixed part before the gap.
+In order, the first step that finds a value wins:
+
+1. a property of those things named exactly like the gap;
+2. a property named `id`, or the kind followed by id - `petId`, `pet_id`, `petID`;
+3. 2.5b's rule: a value under the gap's own name, from any reply;
+4. a property of those things that is merely written the way identifiers are - ending in `Id`,
+   `ID`, `_id` or `-id`.
+
+Every candidate has to be of the kind the gap wants, one of its closed list of values when it has
+one, in its declared form when that form is `uuid`, `int32` or `int64`, and sendable in an address
+at all. Only whole gaps in the address are filled this way; a query or body parameter is still
+matched by its name alone, as before.
+
+### Why the kind is asked before the name
+
+The roadmap row said the name first, which is 2.5b's rule, and the kind only where the name finds
+nothing. The maintainer chose the other order on 26 September 2026, before any code was written,
+because a generic name is the worse guide exactly where it is commonest: `{id}` under
+`/flights/{id}` takes the `id` of an airport as readily as a flight's, kafka-rest-proxy's `{name}`
+under `/configs/{name}` any `name` in the API, and pet-clinic's `{petId}` only the pets that have
+visits. The name is still asked, third, so a gap whose kind of address has returned nothing yet is
+no worse off than before.
+
+### The switch
+
+`memory.identifiersByResource`, on by default. Off, the kind of thing is never even recorded and a
+gap is filled exactly as 2.5b filled it.
+
+### Measured
+
+MEASUREMENT
+
+### Left for 4.1 and 9.3
+
+- A kind of thing found **inside another reply** - an owner's `pets`, a vet's `specialties` - is not
+  kept under its kind. It is the same walk over replies with a second way of naming what was found,
+  and nothing on the priority corpus needs it: each of those kinds has a list operation of its own,
+  which the opening lap sends first.
+- A nested address is not kept coherent with its parent: `/owners/{ownerId}/pets/{petId}` may pair
+  an owner with somebody else's pet. That needs the pairing of values within one request, which is
+  4.1's graph rather than a rule about one gap.
+- An identifier is not forgotten when the thing is deleted by another request, which is 9.3's.
+- No synonym table and no similarity score, as the row says: the kind of thing is the fixed part of
+  the address, spelt one way, and nothing else.
