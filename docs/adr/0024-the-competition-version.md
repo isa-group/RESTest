@@ -148,7 +148,8 @@ repository is made public as the replication package.
   implementation.
 - **Two decisions ADR-0013 left to M4 are taken at 9.3**, because M4 is now after v2.0: the unit of
   work of a sequence, and what to do about interference between concurrent sequences. 9.3 amends
-  ADR-0013 with both.
+  ADR-0013 with both. *9.3 built both and was not merged, because it moved no measured number; the
+  decisions stay open, and ADR-0013's M9.3 amendment records what was built as the starting point.*
 - **This record stands on ADR-0017, which is still *Proposed*.** Five of its ideas are adopted here
   and four of its refusals are relied on. Accepting it is the maintainer's; until then the plan is
   built on a proposed record, knowingly.

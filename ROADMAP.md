@@ -9,7 +9,7 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
 still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 29 delivered, 16 more in v2.0, 28 after it.
+13 milestones: 29 delivered, 1 measured and not merged, 15 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -22,6 +22,7 @@ Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](d
 | ⏭ | After v2.0. The row stays, numbered as it was, and is not started before the competition version ships |
 | 🛑 | Supervision point. Stop there and wait for review instead of starting the next increment |
 | → | The row moved. It names where the work now lives, and is no longer an increment of its own |
+| ✗ | Measured and not merged. The row was built and measured by its milestone's own rule, and left out because no number it is judged by improved. It names the pull request that recorded why, and its notes say where the code is kept |
 
 A letter after the number — `1.1a`, `1.7b`, `2.7a`, `3.1b` — marks a row that was split after it was
 written. The letters keep the original number, so earlier pull requests and the ADRs that cite them
@@ -38,14 +39,14 @@ nothing in them is an increment of its own.
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
 | M2 | Specification fidelity and input generation | 2.10b came back from 9.1 for 2.1; four rows wait | 10 / 14 |
-| M9 | Reach — every operation the API will answer, answered early | all | 2 / 4 |
+| M9 | Reach — every operation the API will answer, answered early | all but 9.3, which was measured and not merged | 2 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 0 / 6 |
 | M12 | Closing v2.0 | all | 0 / 5 |
 | M7 | Packaging and distribution | 7.2a only | 0 / 4 |
 | M3 | Oracles, faults and reporting | none; 3.1b's generator half moved to 10.1, 3.7 to 12.1 | 0 / 6 |
-| M4 | Stateful testing | none; the narrow versions of 4.1, 4.2 and 4.4 moved to 9.2 and 9.3 | 0 / 6 |
+| M4 | Stateful testing | none; the narrow version of 4.1 moved to 9.2 and 4.4's sequence operators to 10.3; the narrow versions of 4.2 and 4.4 were tried at 9.3, measured and not merged | 0 / 6 |
 | M5 | IDL and constraint-based generation | none | 0 / 5 |
 | M6 | Live updates and performance | none | 0 / 2 |
 
@@ -59,9 +60,9 @@ getting there *early*; the **Fault detection** ranking is the first alone.
 | Measured | How | What moves it here |
 |---|---|---|
 | Unique server failures | Distinct 5XX replies, told apart by their error message | Requests that break things in *different* ways: mutations of accepted requests (10.1), bodies of the wrong shape (10.2), sequences over real resources — delete then read, create twice (10.3). The tool's own oracles play no part: the benchmark counts the 5XX itself |
-| Operations covered | Operations that answered 2XX at least once | Identifiers that exist (2.5b ✅, 9.2 ✅), a producer sent before its consumer (9.3), the required-only request drawn often (2.9), no budget spent on operations that can never answer (9.4) |
+| Operations covered | Operations that answered 2XX at least once | Identifiers that exist (2.5b ✅, 9.2 ✅), the required-only request drawn often (2.9), no budget spent on operations that can never answer (9.4) |
 | Code coverage | Methods, statements and branches the API executed | Everything above, plus variety: values, optional parameters and body properties that change from request to request (2.5a ✅, 2.7c ✅, 10.2) |
-| Area under each curve | The same three, integrated over the hour | An opening lap that sends every operation its best request in the first seconds (9.1), 0% idle time (✅, measured by the benchmark's own clock at 1.9), and the identifiers a lap needs before the lap needs them (9.3). The `Accept` header ADR-0017 asked for ships since 2.5a |
+| Area under each curve | The same three, integrated over the hour | An opening lap that sends every operation its best request in the first seconds (9.1), and 0% idle time (✅, measured by the benchmark's own clock at 1.9). The `Accept` header ADR-0017 asked for ships since 2.5a |
 
 One thing the call for participation says twice, differently: the Efficiency ranking is defined as
 the three areas under the curve, and the badge for winning it is described as coverage "with the
@@ -84,9 +85,9 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 |---|---|---|
 | Tue 22 Sep | Replan accepted | This file, ADR-0024 and ADR-0025 reviewed. 8.3 launched the same night, its three plans and the five dictionaries written first |
 | Wed 23 Sep | Registered | The competition's submission system holds the tool's name and authors; the entry is updated freely until the deadline, so registering costs nothing and removes one thing that can go wrong on 8 October |
-| Sun 27 Sep | M9 measured | 2.9 and 9.1–9.4 merged; 8.4 running overnight |
+| Sun 27 Sep | M9 measured | 2.9, 9.1, 9.2 and 9.4 merged, 9.3 measured and not merged; 8.4 running overnight |
 | Fri 2 Oct | M10 measured | 10.1–10.3 and 11.2 merged; 8.5 running overnight; which output of the manual to publish decided (12.3) |
-| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9, M10, M11, 12.1, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
+| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9 but 9.3, M10, M11, 12.1, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
 | Thu 8 Oct | **Submission** | 8.6 read; v2.0.0 tagged from the frozen commit (12.4); tool submitted, one day before the deadline |
 | Fri 9 Oct | Deadline | Anywhere on Earth. Nothing is submitted on this day by plan |
 | Mon 12 Oct | `master` replaced | 12.5, once the tag stands |
@@ -106,9 +107,9 @@ row of M8 names the rows written *while* it runs.
 
 1. **11.1** the settings, first, so that every lever after it lands with its switch. **8.3** runs
    overnight in the meantime.
-2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** — reach. Each row is measured on a
-   restarted containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measures
-   the milestone as a whole, overnight, on the five.
+2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** — reach; 9.3 was measured and not merged. Each row
+   is measured on a restarted containerised pet-clinic before it is merged (the way 2.5b was), and
+   **8.4** measures the milestone as a whole, overnight, on the five.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
 4. **12.1**, **7.2a**, **12.2** — the command line frozen, the image, the documentation. Fixes from
    8.4 and 8.5 land here, behind a switch when they change behaviour.
@@ -360,7 +361,7 @@ number goes in the pull request. A row whose number is not better is not merged.
 |---|---|---|
 | 9.1 ✅ [#322](https://github.com/isa-group/RESTest/pull/322) | **A scheduler of its own, and an opening lap.** The choice of *what to send next* left `RunLoop`: a `Scheduler` holds the deadline and the order, and the loop does what it says ([ADR-0026](docs/adr/0026-what-a-run-sends-first.md)). Its first job is an **opening lap**, before anything is drawn: every operation once, with the request it is most likely to accept - the parameters it requires and no others, a body wherever one is described, the plan's own sources asked in turn, a closed list of accepted values first and then what the API has already returned - in five steps, lists, creations, reads of one thing, changes, deletions, each waiting at most `schedule.openingLapPatience` for the answers to the one before to be heard. Charged to the budget, announced as a phase of its own and reported in the summary and in `report.json`; `schedule.openingLap` switches it off. An operation that declares no 2XX media type gets `Accept: */*`. **Three things differ from the row as approved, on the corpus's evidence**: the order goes by step rather than by method and then path depth, a value the API returned ranks above the document's sample, and a body goes wherever one is described rather than only where it is marked required - see the notes. **Not taken**: shares as stretches of time, back in 2.10b for 2.1 | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards. Measured against two containerised APIs restarted before every run, five seeds, a minute each, the lap switched on against off: kafka-rest-proxy had 28.6 operations answered 2XX two seconds in against 14.2, and the area under that curve rose 17%, better on every seed; pet-clinic had 30.8 five seconds in against 19.6, the area up 15%, better on four seeds of five. Both ended the minute higher too: 34.2 operations against 29.6, and 32.2 against 30.8 |
 | 9.2 ✅ [#331](https://github.com/isa-group/RESTest/pull/331) | **Identifiers by resource** (the narrow version of 4.1). A path parameter is filled from the identifier of the things its kind of address returned: `{petTypeId}` under `/pettypes/{petTypeId}` from the `id` of what `GET /pettypes` lists. The kind is the fixed part before the gap, or the one the gap's own name names, plural and singular spelt alike; a reply's things are a list's elements, an object, or what a wrapper with no identifier holds; nothing is kept from a `DELETE`. Four steps, first answer wins: the gap's exact name within those things, then `id` or the kind followed by id, then 2.5b's name anywhere, then anything written like an identifier - the second and fourth only for a gap itself named like one. Every candidate gated on kind, closed list, `uuid`/`int32`/`int64` and sendability. **One thing differs from the row as approved**: the kind is asked before the exact name, chosen by the maintainer on 26 September, with its own switch so the order can be measured - see the notes. `memory.identifiersByResource` and `memory.identifiersByResourceFirst`. No synonym table and no similarity score, which stay in 4.1 | The operations behind a gap the replies call something else get identifiers that exist. Four priority APIs restarted before every run, five seeds, a minute each: gestao-hospital covered 18.0 operations against 9.0 with it off, 16.8 of them within five seconds against 2.8, better on every seed; pet-clinic 33.0 against 31.8, the area up 3.8%, better on four seeds of five; notebook-manager's reads, changes and deletes by id answered 2XX 29.4% of the time against 10.3%; kafka-rest-proxy, whose gaps its replies already name, within noise. Over the corpus's declared replies, 325 of 1,838 gaps are reachable only this way |
-| 9.3 ▶ | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, recorded as one, the second test case naming the exchange its value came from (which 2.5b's provenance already does). This is ADR-0013's rule that a sequence *creates* what it needs, built rather than restated | An API whose identifiers cannot be guessed — kafka-rest-proxy's generated cluster and notebook-manager's posted notebooks — is covered instead of answering 404 for an hour; and the identifier a lap needs is there before the lap needs it |
+| 9.3 ✗ [#PRNUM](https://github.com/isa-group/RESTest/pull/PRNUM) | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, the second test case naming the exchange its value came from. **Built, measured and not merged**: the pairs, the memory forgetting what a 2XX `DELETE` removed, and a switch for each. On four priority APIs, restarted before every run, five seeds, a minute each, 7 pairs fired in 338,229 requests, and neither lever moved operations covered, branch coverage or distinct server failures - see the notes. The code is kept on the branch `experiment/m9-3-sequence-pairs` | Nothing a person can see, which is why it is not merged. What it taught is recorded instead: on APIs whose every kind of thing has a list, the memory is never empty, and repeating good requests adds little covered code after the first ten seconds |
 | 9.4 ▶ | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler keeps, per operation, a count of what it answered. An operation whose last *N* answers were all of the kinds that say *this will never work as asked* — the shipped list is 401, 403, 404, 405 and 501, and the list is a setting — has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, three settings — *N*, the floor and the list — no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
 
 ### Notes
@@ -396,11 +397,11 @@ would cost a run with no memory its seed, so it went back to 2.10b, for 2.1, and
 drawn per request.
 
 **9.1 — what 9.3 still owes.** The lap links requests only indirectly, through the memory of values
-kept by name, and only once, at the start. 9.3's producer-then-consumer sequence carries one reply to
-one consumer whenever a consumer needs an identifier nobody has - after a deletion, or where only a
-creation makes one - and 10.3's operators are built on that unit; the lap does neither. The part of
-9.3's text the lap already does, deletes after the reads and updates of the same round, came out of
-9.3's row.
+kept by name, and only once, at the start. 9.3's producer-then-consumer sequence was to carry one
+reply to one consumer whenever a consumer needs an identifier nobody has - after a deletion, or
+where only a creation makes one - with 10.3's operators built on that unit; the lap does neither.
+*9.3 was measured and not merged; see its notes.* The part of 9.3's text the lap already does,
+deletes after the reads and updates of the same round, came out of 9.3's row.
 
 **9.2 — what it is not.** 4.1 is a graph over every parameter, body property and response property
 of every operation, with a similarity score, a synonym table carried as data, and a measurement
@@ -419,22 +420,76 @@ notebook-manager, and trails on kafka-rest-proxy's mean through one seed. Kept a
 left for 8.4 to confirm. [ADR-0021](docs/adr/0021-how-a-request-body-is-built.md)'s M9.2 amendment
 has the numbers.
 
-**9.3 — one sequence shape, not a lifecycle model.** 4.4 is create-read-update-delete as a model
-with its own oracles in 4.5. 9.3 is *producer, then consumer*, chosen because it is the shape every
-missing identifier has, and because 10.3 can build its operators on it — delete then read is
-producer, consumer, consumer. The lifecycle model, and the oracles that need it, wait.
+**9.3 — what was measured, and why it is not merged.** The row was built as it says, with the unit
+of work ADR-0013's M9.3 amendment describes rather than the one-worker sequence planned in the notes
+below, with two switches, `sequences.pairs` and `memory.forgetWhatWasDeleted`, and one rule the
+measurement forced: one creation of each kind awaited at a time, because a round goes out before its
+first answer is back and gestao-hospital's refused stock creations otherwise made up a fifth of a
+minute's requests. It was then measured the way M9 asks - gestao-hospital, kafka-rest-proxy,
+notebook-manager and pet-clinic from the benchmark's own images, restarted before every run, seeds
+3, 7, 23, 41 and 99, sixty seconds, three arrangements in rotating order - and, for the first time,
+by the benchmark's own measure of code: the JaCoCo report those images write every five seconds.
 
-**9.3 — the two decisions ADR-0013 left to M4, taken here and recorded there.** ADR-0013 deferred
-the *unit of work* of a sequence and *interference* between concurrent sequences to M4, and M4 is
-now after v2.0, so 9.3 takes both and amends ADR-0013 in its pull request. The unit of work is the
-sequence: one worker sends the producer, reads its reply, and sends the consumer with what came
-back, and the consumer's value comes from *its own* producer's reply rather than from the memory of
+| API | | both on | pairs off | both off |
+|---|---|---:|---:|---:|
+| gestao-hospital | operations covered | 17.8 | 17.4 | 18.0 |
+| | branches, of 248 | 54.4 | 55.2 | 54.6 |
+| kafka-rest-proxy | operations covered | 35.2 | 35.0 | 35.4 |
+| | branches, of 4,849 | 832.2 | 838.8 | 841.0 |
+| notebook-manager | operations covered | 5.0 | 5.0 | 5.0 |
+| | branches, of 32 | 16.0 | 16.0 | 16.0 |
+| pet-clinic | operations covered | 33.0 | 33.0 | 33.0 |
+| | branches, of 898 | 150.4 | 150.4 | 150.4 |
+
+Every difference sits inside one standard deviation, and distinct server failures did not move
+either. Three findings explain it, and they are the reason the row is recorded rather than dropped:
+
+- **Pairs almost never fire**, because every kind of thing these four APIs create also has a list,
+  and the list refills the memory every round. A static reading of all 52 distinct APIs in the
+  corpus and the 2026 edition found one, 2026's blog, with a gap a `POST` creates for and no list
+  of its kind - seven operations behind `{username}`, on an API that needs signing in.
+- **Forgetting only moves what is not scored.** It raised the share of by-id requests answered 2XX
+  (31.6% against 29.4% on notebook-manager, 19.3% against 18.6% on pet-clinic), and its area was
+  about 3% lower on gestao-hospital and kafka-rest-proxy on four seeds of five each - not
+  significant, but not a gain. Two ways it can cost: a 2XX to a `DELETE` is not always a deletion
+  (kafka's `DELETE .../configs/{name}` resets a setting that still exists), and where the memory is
+  thin, forgetting leaves invention, which never works for an identifier, in place of a stale value,
+  which fails no more often.
+- **Code coverage saturates in the first ten seconds**: by then pet-clinic has 146 of its final 150
+  branches, kafka-rest-proxy 805 of 832, notebook-manager all 16 and gestao-hospital 47 of 55. The
+  rest of the minute adds nothing to 4% on the first three and 17% on gestao-hospital, and between
+  half the branches (notebook-manager) and five sixths (kafka-rest-proxy, pet-clinic) are never
+  reached. More of the same requests, better filled, does not reach them. The same data argued
+  against an idea raised while reading it, and it was not built - always filling an identifier gap
+  from the memory when it has a candidate, rather than two times in three by invention: it would
+  turn failing requests into accepted ones, which is not what is scored, and the memory's values are
+  already sent thousands of times a run, so any branch they reach is already reached.
+
+What M10 does - bodies of the wrong shape, values that break one rule - and sequences of states
+rather than of identifiers, such as gestao-hospital's check-out after a check-in, are where the
+unreached code is more likely to be. The two decisions ADR-0013 left to M4 stay untaken, and
+ADR-0013's M9.3 amendment says why.
+
+**9.3 — one sequence shape, not a lifecycle model** (as planned; the row was measured and not
+merged). 4.4 is create-read-update-delete as a model with its own oracles in 4.5. 9.3 was *producer,
+then consumer*, chosen because it is the shape every missing identifier has, and because 10.3 can
+build its operators on it — delete then read is producer, consumer, consumer. The lifecycle model,
+and the oracles that need it, wait.
+
+**9.3 — the two decisions ADR-0013 left to M4, as they were built and not merged.** ADR-0013
+deferred the *unit of work* of a sequence and *interference* between concurrent sequences to M4, and
+M4 is now after v2.0, so 9.3 was to take both. This is what was planned; what was built differs in
+one respect, recorded in ADR-0013's M9.3 amendment, and since the row was not merged both decisions
+stay untaken. The unit of work was to be the sequence: one worker sends the producer, reads its
+reply, and sends the consumer with what came back. As built, the loop hands the producer's answer to
+the scheduler and the scheduler has the consumer sent next, so that generation stays on one thread.
+Either way the consumer's value comes from *its own* producer's reply rather than from the memory of
 observed values — which is ADR-0013's rule, *a sequence creates what it needs*, taken literally.
-Interference is accepted rather than prevented: with the engine's concurrency on, another unit may
-delete or recreate the same resource between the two steps, so a 404 on the consumer is not by
-itself attributable. That costs 9.3 nothing the competition scores — the benchmark counts 2XX and
+Interference was to be accepted rather than prevented: with the engine's concurrency on, another
+unit may delete or recreate the same resource between the two steps, so a 404 on the consumer is not
+by itself attributable. That costs nothing the competition scores — the benchmark counts 2XX and
 5XX, not our attribution — and it is exactly why 4.5's stateful oracles wait: they need the
-attribution, and the attribution needs a decision about concurrency that 9.3 does not take. 9.2 is
+attribution, and the attribution needs a decision about concurrency that 9.3 did not take. 9.2 is
 not a new borrowing: the plan's `observed` source has filled parameters from what other requests
 returned since 2.5b, under ADR-0021's amendment, and 9.2 widens its keying rather than its licence.
 
@@ -461,7 +516,7 @@ counting distinct 5XX messages and branch coverage rather than operations covere
 |---|---|---|
 | 10.1 ▶ | **Mutations of accepted requests** — the generator half of 3.1b, under ADR-0013 §4. A listener on the event stream keeps a bounded index of the test cases that actually returned 2XX (§5), and operators take one and change exactly one thing: drop a required parameter, send the wrong type, step outside a documented bound by exactly one (2.3 returns here, as promised), break an enumeration, break a pattern, send a required parameter in a location it was not declared in (ADR-0017 item 5), oversize a string or an array, send `null`, send the empty value. A third strategy in the shipped plan with a share of its own. The test case gains the **intent** of §3 — *I believe these values are acceptable*, *I expect this refused and here is what I broke*, *I do not know* — as data; the oracles that read it are 3.1's and wait | The tool stops only asking "does this work?" and starts asking "what happens when one thing is wrong?" — which is where the 500s that a correct request never reaches live, one code path per operator |
 | 10.2 ▶ | **Bodies of the wrong shape.** 2.7a's fuzzing changes *values*; this changes the *shape*: a leaf of the wrong kind, the root of the wrong kind — an array where an object was declared — an empty body, a body that is not JSON at all, the wrong `Content-Type` for a valid body, nesting far deeper than the schema, arrays far longer than any limit, the numeric extremes of every width. Each one a named operator, each one attributable | The parsing and binding layers of the API — the code that runs *before* the operation's own — are exercised, and those layers fail in their own distinct ways |
-| 10.3 ▶ | **Sequence operators over real resources**, built on 9.3's sequences and kept inside one unit of work each: create a resource, delete it, then read it, update it and delete it again; create the same thing twice; create two resources and update one with the other's identifier; create, delete, and send the deleted identifier to every consumer that takes one. Each is a named sequence with an intent, every identifier it uses is one the same sequence created, and what a unit knows about what it deleted stays in that unit | The server failures that only appear across several requests — the dangling reference, the double delete, the duplicate key — which single requests never reach and which the stateful tools we are measured against do reach |
+| 10.3 ▶ | **Sequence operators over real resources**, built on a producer-then-consumer unit - the one 9.3 built and did not merge, on the branch `experiment/m9-3-sequence-pairs`, brought in here - and kept inside one unit of work each: create a resource, delete it, then read it, update it and delete it again; create the same thing twice; create two resources and update one with the other's identifier; create, delete, and send the deleted identifier to every consumer that takes one. Each is a named sequence with an intent, every identifier it uses is one the same sequence created, and what a unit knows about what it deleted stays in that unit | The server failures that only appear across several requests — the dangling reference, the double delete, the duplicate key — which single requests never reach and which the stateful tools we are measured against do reach |
 
 ### Notes
 
@@ -484,11 +539,19 @@ concern, and it is one operators do well: each says exactly which structural rul
 idempotency — would judge these sequences. The benchmark judges them for us, by counting the 5XX;
 4.5 waits, and 10.3 records enough on each sequence for 4.5 to judge it offline later.
 
-**10.3 — why every operator creates its own victim.** 9.3 accepts that concurrent units interfere.
-An operator that borrowed a deleted identifier from another unit's memory would then be sending
-something whose state it cannot know, and "delete then read" would mean nothing. Keeping each
-operator to resources its own sequence created is what lets its name stay true: the one thing the
-sequence did to that resource is the one thing the sequence knows about it.
+**10.3 — what 9.3's outcome adds to it.** 10.3 was to stand on a merged 9.3; it now has to bring in
+the unit itself, from the experiment branch or built again, and with it take the two decisions
+ADR-0013 left to M4 and amend ADR-0013. What ADR-0013's M9.3 amendment learned carries over: the
+unit worked where it fired, and 10.3's operators fire without waiting for anything to be missing,
+since each creates its own victim. If the unit and the operators together are more than one
+reviewable pull request, 10.3 is split, the unit first, as the calendar's rule for a grown row says.
+
+**10.3 — why every operator creates its own victim.** Concurrent units interfere, as 9.3's notes
+accepted, and 10.3 inherits that with the unit. An operator that borrowed a deleted identifier from
+another unit's memory would then be sending something whose state it cannot know, and "delete then
+read" would mean nothing. Keeping each operator to resources its own sequence created is what lets
+its name stay true: the one thing the sequence did to that resource is the one thing the sequence
+knows about it.
 
 ## M11 — Settings
 
@@ -686,9 +749,9 @@ comparison is the evaluation harness's job, not this report's.
 | # | Increment | What it enables |
 |---|---|---|
 | 4.1 → [9.2](#m9--reach), rest ⏭ | Operation Dependency Graph inferred from names, types and schemas. 9.2 took the rule for path parameters; the graph over every property, the similarity score, the synonym table as versioned data, and the measurement against word vectors that ends in an ADR (ADR-0017 item 3) are still here | The tool knows `POST /pets` must precede `GET /pets/{id}` for every kind of parameter, not only the ones in a path |
-| 4.2 → [9.3](#m9--reach), rest ⏭ | Runtime resource pool and value-source selection. The pool arrived at 2.5b, the producer-then-consumer choice at 9.3; what is left is choosing among 4.1's candidates, and whether that choice may learn from what the API answered is ADR-0017's second open question | Identifiers from real responses get reused for every parameter the graph can reach |
+| 4.2 ⏭ | Runtime resource pool and value-source selection. The pool arrived at 2.5b; the producer-then-consumer choice was built at 9.3 and not merged, and comes back here; what is left is choosing among 4.1's candidates, and whether that choice may learn from what the API answered is ADR-0017's second open question | Identifiers from real responses get reused for every parameter the graph can reach |
 | 4.3 ⏭ | Declared OpenAPI `links` consumed when present | Free accuracy on the few specifications that declare them |
-| 4.4 → [9.3](#m9--reach), rest ⏭ | CRUD lifecycle model and sequence generation. The two-step sequence went to 9.3 and the sequence operators to 10.3; the lifecycle as a model, with sequences longer than two, is still here | Create-read-update-delete flows are exercised end to end |
+| 4.4 → [10.3](#m10--break), rest ⏭ | CRUD lifecycle model and sequence generation. The two-step sequence was built at 9.3 and not merged, and the sequence operators went to 10.3; the lifecycle as a model, with sequences longer than two, is still here | Create-read-update-delete flows are exercised end to end |
 | 4.5 ⏭ | Stateful oracles: use-after-free, resource availability, failed update must not change, update idempotency. 10.3 records enough on each sequence for these to judge it offline | Bugs that only appear across several requests, *named* rather than only counted |
 | 4.6 ⏭ 🛑 | Arazzo import/export *(droppable — decide at the end of M4)* | Discovered flows become a standard, shareable document |
 
@@ -705,15 +768,16 @@ annotate the correct matches across the golden corpus by hand, compare this mech
 table of word vectors, and record the threshold and the outcome. *9.2 is the first two of those
 ideas — best few kept, gate on type and format — applied to paths alone.*
 
-**4.2 — the resource pool arrived at 2.5b, the sequence at 9.3, and what is left here is the
-choosing.** The row read "runtime resource pool and value-source selection", and ADR-0021 brought
+**4.2 — the resource pool arrived at 2.5b, the sequence was tried at 9.3, and what is left here is
+the choosing.** The row read "runtime resource pool and value-source selection", and ADR-0021 brought
 the pool forward: bodies cannot be built well without the memory of what the API returned, and that
 memory is one listener and two dictionary keyings. What stays here is the half that needs 4.1's
 graph: receiving several candidates and choosing among them. Whether that choice may be scored by
 what the API answered is one of [ADR-0017's open questions](#the-three-open-questions), because it
 is an online estimate of whether a request will be accepted. 4.2 also has to reconcile the
 candidates with ADR-0013's rule that a sequence creates what it needs rather than borrowing an
-identifier — 9.3 builds that rule, so the reconciliation has something to be reconciled with.
+identifier — 9.3 built that rule and measured it, and did not merge it because the pairs it makes
+almost never fire on APIs with lists; the reconciliation starts from that measurement.
 
 ## M5 — IDL and constraint-based generation
 

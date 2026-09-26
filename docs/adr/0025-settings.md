@@ -57,7 +57,7 @@ this record generalises. Nothing reads it from anywhere; the command line does n
 | schedule | `schedule.*` | the work-ahead factor, how many announcements may pile up, the straggler grace; from M9, the opening lap, the hygiene window, floor and code list, and the switches of every scheduling lever. Until 9.1 these numbers live in `RunLoop`, in the command-line module; 11.1 creates the group there and 9.1 carries it to the scheduler |
 | generation | `generation.*` | depths, string lengths, item counts, the null rate, attempt counts, the optional-parameter distribution; from M10, the switches of every mutation and shape operator |
 | memory | `memory.*` | how many observed values are kept under one name, how many names, the longest value kept, the longest reply read, how deep a reply is read; since M9.2, whether a gap in an address is filled from the things of its kind and whether those are asked before the name |
-| sequences | `sequences.*` | from M9 and M10, the switches of the producer-then-consumer sequence and of each sequence operator |
+| sequences | `sequences.*` | from M10, the switches of the producer-then-consumer sequence and of each sequence operator. 9.3 built the first, `sequences.pairs`, and was not merged, so the group is still not created |
 | document | `document.*` | the largest document read, the fetch timeout, the nesting limits |
 | report | `report.*` | write-ups per operation and kind, in total, body bytes kept, faults shown on the console; since the fix naming what a run skips, the operations that could not be tested named on the console |
 | store | `store.*` | batch size and the longest an interaction waits before it is written |
