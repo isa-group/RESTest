@@ -140,6 +140,86 @@ class DictionaryDocumentTest {
     }
 
     @Test
+    @DisplayName("an operation written down with nothing under it is read as nothing to fill in, "
+            + "rather than costing the file every value in it")
+    void an_operation_with_nothing_under_it_is_read_as_empty() {
+        // YAML reads a key followed by only a comment as null, not as an empty object. Refusing it
+        // cost the whole file its values, and every dictionary of one campaign held such a block.
+        ValueDictionary dictionary = read("""
+                version: 1
+                name: d
+                keyedBy: operationAndParameter
+                values:
+                  GET /oops:
+                    # nothing to fill: every place is settled by the document
+                  GET /owners:
+                    lastName: ["Franklin"]
+                """);
+
+        assertThat(values(dictionary, "GET /owners", "lastName"))
+                .containsExactly(JsonValue.of("Franklin"));
+        assertThat(values(dictionary, "GET /oops", "anything")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("values with nothing under them are a dictionary with no values, like values: {}")
+    void values_with_nothing_under_them_is_read_as_empty() {
+        for (String keyedBy : List.of("type", "operationAndParameter")) {
+            ValueDictionary dictionary = read("""
+                    version: 1
+                    name: d
+                    keyedBy: %s
+                    values:
+                      # to be filled in
+                    """.formatted(keyedBy));
+
+            assertThat(dictionary.keys()).describedAs(keyedBy).isEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("nothing where a list of values belongs is refused, and the refusal says how to "
+            + "write either thing it could have meant")
+    void nothing_where_a_list_belongs_is_refused() {
+        // Unlike an operation, here null is a value somebody might mean to send. Guessing between
+        // "none" and "send null" would be wrong half the time and nobody would be told.
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        keyedBy: operationAndParameter
+                        values:
+                          GET /owners:
+                            lastName:
+                        """))
+                .withMessageContaining("nothing under 'lastName' in 'GET /owners'")
+                .withMessageContaining("write [] for no values, or [null] to send null");
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        keyedBy: type
+                        values:
+                          string:
+                        """))
+                .withMessageContaining("nothing under 'string'");
+    }
+
+    @Test
+    @DisplayName("an operation with something under it that is not a set of places is still refused")
+    void an_operation_holding_something_else_is_still_refused() {
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        keyedBy: operationAndParameter
+                        values:
+                          GET /owners: [Franklin]
+                        """))
+                .withMessageContaining("what is written under 'GET /owners' is not an object");
+    }
+
+    @Test
     @DisplayName("a file written in YAML and the same file written in JSON are the same dictionary")
     void yaml_and_json_are_read_the_same_way() {
         ValueDictionary asYaml = read("""

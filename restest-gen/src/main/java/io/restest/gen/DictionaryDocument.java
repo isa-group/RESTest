@@ -46,6 +46,9 @@ import java.util.Objects;
  * silently lost half its values would be worse than one that was never loaded, because nobody would
  * know to go and look. The same goes for a key written twice, which YAML allows and which would
  * otherwise leave the first list quietly replaced by the second.
+ *
+ * <p>An operation written down with nothing under it is not one of those mistakes. It says there is
+ * nothing to fill in for that operation, and it is read that way rather than costing the file.
  */
 final class DictionaryDocument {
 
@@ -87,8 +90,8 @@ final class DictionaryDocument {
         ValueDictionary.Keying keying = keying(text(document, "keyedBy", describedAs), describedAs);
 
         JsonValue.JsonObject stated = asObject(
-                document.member("values").orElseThrow(() -> new JsonException(
-                        describedAs + " is a dictionary with no 'values' in it")),
+                orNothingWritten(document.member("values").orElseThrow(() -> new JsonException(
+                        describedAs + " is a dictionary with no 'values' in it"))),
                 "the values of a dictionary", describedAs);
 
         Map<String, List<JsonValue>> values = new LinkedHashMap<>();
@@ -96,19 +99,20 @@ final class DictionaryDocument {
         if (keying == ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
             stated.members().forEach((operation, parameters) -> {
                 if (ValueDictionary.ANY.equals(operation)) {
-                    values.put(operation, listOf(parameters, operation, describedAs));
+                    values.put(operation, listOf(parameters, "'" + operation + "'", describedAs));
                     return;
                 }
                 Map<String, List<JsonValue>> named = new LinkedHashMap<>();
-                asObject(parameters, "the parameters of '" + operation + "'", describedAs)
+                asObject(orNothingWritten(parameters),
+                        "what is written under '" + operation + "'", describedAs)
                         .members()
-                        .forEach((parameter, held) ->
-                                named.put(parameter, listOf(held, parameter, describedAs)));
+                        .forEach((parameter, held) -> named.put(parameter, listOf(held,
+                                "'" + parameter + "' in '" + operation + "'", describedAs)));
                 perOperation.put(operation, named);
             });
         } else {
             stated.members().forEach((key, held) ->
-                    values.put(key, listOf(held, key, describedAs)));
+                    values.put(key, listOf(held, "'" + key + "'", describedAs)));
         }
         return new ValueDictionary(name, keying, values, perOperation);
     }
@@ -136,12 +140,37 @@ final class DictionaryDocument {
         }
     }
 
-    private static List<JsonValue> listOf(JsonValue value, String key, String describedAs) {
+    /**
+     * A heading with nothing under it, read as the empty set of entries it plainly is.
+     *
+     * <p>YAML reads a key with nothing after it as null rather than as an empty object, so an
+     * operation written down with only a comment beneath it - the natural way to say "nothing to
+     * fill here" - would otherwise be something that is not an object, and would cost the whole file
+     * every value in it. Only where a set of entries belongs: a list of values is a different matter,
+     * below.
+     */
+    private static JsonValue orNothingWritten(JsonValue value) {
+        return value instanceof JsonValue.JsonNull ? JsonValue.object(Map.of()) : value;
+    }
+
+    /**
+     * The list of values written somewhere, or a refusal naming where.
+     *
+     * @param where the key it was written under, already quoted, with its operation when it has one
+     */
+    private static List<JsonValue> listOf(JsonValue value, String where, String describedAs) {
         if (value instanceof JsonValue.JsonArray array) {
             return array.elements();
         }
-        throw new JsonException(describedAs + " holds something other than a list of values under '"
-                + key + "'");
+        if (value instanceof JsonValue.JsonNull) {
+            // Not read as an empty list, unlike a heading with nothing under it. Here null is a
+            // value somebody might mean to send, and guessing between "no values" and "send null"
+            // would be wrong half the time without anybody being told.
+            throw new JsonException(describedAs + " has nothing under " + where + ", where a list "
+                    + "of values belongs: write [] for no values, or [null] to send null");
+        }
+        throw new JsonException(describedAs + " holds something other than a list of values under "
+                + where);
     }
 
     private static ValueDictionary.Keying keying(String stated, String describedAs) {

@@ -568,3 +568,28 @@ says so itself, and those lines can then land among the summary's.
 
 What the command prints before a run starts and after it ends - a list of values it could not read,
 where the report was written - is unchanged, because nothing else is writing then.
+
+## Amendment (naming the lists a run holds)
+
+**Date:** 2026-09-27
+
+**Which lists of values a run holds, and which it could not read, are announced, and both reports
+name them.** `RunEvent` gains `DictionaryRead` — a list's name and the file it came from — and
+`DictionaryRefused` — a file or directory that gave the run nothing, and why. The command announces
+them beside the operations it will skip, before anything is sent: every list held first, RESTest's
+own among them, then every refusal, each in the order the files were read.
+
+Until now a list that could not be read was one line on standard error as the run began, and
+nothing else. 8.3 lost every one of its dictionaries that way without anybody noticing, because a
+run made without a list finishes exactly like a run made with one that did not help —
+[ADR-0020's amendment](0020-what-a-dictionary-is.md#amendment-m83) has the story. So:
+
+- The **console** repeats every refusal at the very end of the summary, after the operations it
+  could not test, and says nothing about lists that were read.
+- **`report.json`** gains a member `dictionaries` after `skippedOperations`: `read`, one
+  `{name, from}` per list held, and `refused`, one `{from, reason}` per refusal — both lists, empty
+  when there is nothing to say.
+
+The same argument as for skipped operations puts the refusal after the verdict rather than at the
+top: it qualifies what the run found. *Held* is not *drawn on* — a plan decides which lists each kind
+of request asks — and `read` claims only the first.

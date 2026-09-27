@@ -262,6 +262,13 @@ class EventStreamTest {
     }
 
     @Test
+    @DisplayName("a list of values that could not be read is said to be so for a reason")
+    void a_refused_list_carries_a_reason() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new RunEvent.DictionaryRefused(
+                Instant.EPOCH, "ids.yaml", " "));
+    }
+
+    @Test
     @DisplayName("waiting for the listeners returns once every one of them has heard everything")
     void waiting_returns_once_everything_has_been_heard() {
         List<String> heard = new CopyOnWriteArrayList<>();
