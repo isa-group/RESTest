@@ -161,7 +161,8 @@ public final class InteractionDocument {
     /**
      * A test case read back. One stored before RESTest recorded what it expected, or what it
      * changed, has neither member, and reads back as expecting nothing in particular and changing
-     * nothing - which is what every request built then was.
+     * nothing. The second is true of every request built then; the first is the most that can be
+     * said of one whose expectation nobody wrote down, a request that pushed at the API included.
      */
     private static TestCase toTestCase(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the test case");

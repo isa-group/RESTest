@@ -46,8 +46,8 @@ package io.restest.core.settings;
  *     smallest number allowed, one character longer than the longest word
  * @param breakAnEnumeration send a value that is not on the closed list the documentation states
  * @param breakAPattern send a word the stated spelling rule refuses
- * @param sendNull send nothing at all, written as {@code null}, for a property of the body that is
- *     not allowed to be empty
+ * @param sendNull send nothing at all, written as {@code null}, for a property of the body that
+ *     may not be null
  * @param sendEmpty send an empty word, list or object where the documentation forbids one
  * @param oversize send a word of {@code oversizedLength} characters, or a list of
  *     {@code oversizedItems} items, where that is beyond the longest the documentation allows
@@ -94,7 +94,10 @@ public record MutationSettings(
         return DEFAULTS;
     }
 
-    /** Whether any change at all can be made: at least one of the two families is on. */
+    /**
+     * Whether either family is on. A family on with every kind of change in it off still changes
+     * nothing; which kinds belong to which family is decided where the changes are made.
+     */
     public boolean anyFamilyOn() {
         return violations || probes;
     }

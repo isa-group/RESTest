@@ -126,6 +126,22 @@ class MutatingStrategyTest {
     }
 
     @Test
+    @DisplayName("every kind of change switched off is the same as both families off")
+    void every_kind_off_is_the_same_as_both_families_off() {
+        Map<String, String> everyKindOff = new java.util.HashMap<>();
+        for (Mutations.Operator operator : Mutations.Operator.values()) {
+            everyKindOff.put("mutation." + operator.written(), "false");
+        }
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(API, SEED, List.of(),
+                ONLY_CHANGES, Settings.from(everyKindOff));
+
+        assertThat(generator.whatListensToTheRun())
+                .describedAs("nothing is listening, so nothing is drawn for a change that cannot "
+                        + "be made, and the seed repeats the run")
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("with its switches off, the shipped plan sends exactly what it sent before it had "
             + "a strategy that changes accepted requests")
     void switched_off_it_is_the_plan_it_was() throws IOException {
@@ -163,6 +179,24 @@ class MutatingStrategyTest {
 
         assertThat(intents).containsOnly(Intent.UNKNOWN, Intent.PUSHING)
                 .contains(Intent.UNKNOWN, Intent.PUSHING);
+    }
+
+    @Test
+    @DisplayName("a request of the pushing strategy with nothing awkward in it does not claim to "
+            + "be pushing")
+    void a_pushing_request_with_nothing_in_it_is_not_pushing() throws IOException {
+        Operation ping = Operation.of(HttpMethod.GET, "/ping").withId(OperationId.of("ping"));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                ApiModel.of("Ping", "1.0", List.of(ping)), SEED,
+                Dictionaries.fuzzing().map(List::of).orElse(List.of()), Campaigns.shipped(),
+                Settings.defaults());
+
+        for (int draw = 0; draw < 100; draw++) {
+            assertThat(generator.generate(ping).orElseThrow().intent())
+                    .describedAs("an operation with nothing to fill in gets the same request "
+                            + "whichever way it is built")
+                    .isEqualTo(Intent.UNKNOWN);
+        }
     }
 
     @Test

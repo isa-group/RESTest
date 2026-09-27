@@ -38,6 +38,7 @@ import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaMetadata;
+import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.settings.GenerationSettings;
 import io.restest.core.settings.MutationSettings;
@@ -528,7 +529,263 @@ class MutationsTest {
         }
     }
 
+    @Nested
+    @DisplayName("documents that are odd, or wrong")
+    class OddDocuments {
+
+        private final ObjectSchema cyclic = ObjectSchema.of(properties(
+                "loop", SchemaReference.to("A"),
+                "label", StringSchema.of()), Set.of("loop"));
+
+        private final ApiModel round = ApiModel.of("Round", "1.0", List.of(Operation.of(
+                HttpMethod.POST, "/things").withRequestBody(RequestBodyModel.json(cyclic, true))
+                .withId(OperationId.of("addThing"))))
+                .withSchemas(Map.of("A", SchemaReference.to("B"), "B", SchemaReference.to("A")));
+
+        @Test
+        @DisplayName("a property whose shape is a name going round in a circle is only ever left "
+                + "out, never judged, and nothing hangs")
+        void a_circle_of_names() {
+            Operation addThing = round.operations().get(0);
+            AcceptedRequests.Accepted accepted = new AcceptedRequests.Accepted(
+                    TestCase.of(addThing.id(), List.of(), new BodyValue("application/json",
+                            JsonValue.object(members("loop", JsonValue.of("x"), "label",
+                                    JsonValue.of("l"))), new ValueOrigin.Generated("random"))),
+                    InteractionId.generate());
+            List<TestCase> changed = new ArrayList<>();
+            for (long seed = 0; seed < DRAWS; seed++) {
+                new Mutations(round, MutationSettings.defaults(), GenerationSettings.defaults(),
+                        new SplittableRandom(seed)).changeOneThingIn(addThing, accepted)
+                        .ifPresent(changed::add);
+            }
+
+            assertThat(changed).filteredOn(each -> each.mutation().orElseThrow().path()
+                            .equals("body.loop"))
+                    .isNotEmpty()
+                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().operator())
+                            .isEqualTo("dropRequired"));
+        }
+
+        @Test
+        @DisplayName("a pattern this platform cannot read breaks nothing and forbids nothing")
+        void a_pattern_nobody_can_read() {
+            Operation search = Operation.of(HttpMethod.GET, "/search", List.of(Parameter.of("q",
+                    ParameterLocation.QUERY, true, new StringSchema(SchemaMetadata.none(),
+                            Optional.empty(), Optional.empty(), Optional.of("(unclosed"),
+                            Optional.empty())))).withId(OperationId.of("search"));
+            AcceptedRequests.Accepted accepted = accepted(search,
+                    value("q", ParameterLocation.QUERY, JsonValue.of("rex")));
+
+            assertThat(changesIn(search, accepted, "breakAPattern")).isEmpty();
+            assertThat(changesIn(search, accepted, "sendEmpty"))
+                    .describedAs("a rule nobody can read is not a rule against the empty word")
+                    .isEmpty();
+        }
+
+        @Test
+        @DisplayName("an exclusive bound is sent as the bound itself")
+        void exclusive_bounds() {
+            Operation page = Operation.of(HttpMethod.GET, "/page", List.of(Parameter.of("n",
+                    ParameterLocation.QUERY, true, new NumberSchema(SchemaMetadata.none(),
+                            NumberKind.NUMBER, Optional.empty(), Optional.of(BigDecimal.ZERO),
+                            Optional.empty(), Optional.of(BigDecimal.TEN), Optional.empty(),
+                            Optional.empty())))).withId(OperationId.of("page"));
+
+            assertThat(changesIn(page, accepted(page, value("n", ParameterLocation.QUERY,
+                    JsonValue.of(5))), "outsideABound"))
+                    .extracting(each -> each.parameterValue("n", ParameterLocation.QUERY)
+                            .orElseThrow().value())
+                    .containsOnly(JsonValue.of(BigDecimal.ZERO), JsonValue.of(BigDecimal.TEN))
+                    .contains(JsonValue.of(BigDecimal.ZERO), JsonValue.of(BigDecimal.TEN));
+        }
+
+        @Test
+        @DisplayName("a longest length beyond what the tool builds is not stepped past")
+        void a_huge_longest_length() {
+            Operation note = Operation.of(HttpMethod.GET, "/note", List.of(Parameter.of("text",
+                    ParameterLocation.QUERY, true, new StringSchema(SchemaMetadata.none(),
+                            Optional.empty(), Optional.of(Integer.MAX_VALUE), Optional.empty(),
+                            Optional.empty())))).withId(OperationId.of("note"));
+
+            assertThat(changesIn(note, accepted(note, value("text", ParameterLocation.QUERY,
+                    JsonValue.of("hi"))), "outsideABound")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a word is lengthened by whole characters, even ones written as two")
+        void whole_characters() {
+            Operation note = Operation.of(HttpMethod.GET, "/note", List.of(Parameter.of("text",
+                    ParameterLocation.QUERY, true, new StringSchema(SchemaMetadata.none(),
+                            Optional.empty(), Optional.of(3), Optional.empty(),
+                            Optional.empty())))).withId(OperationId.of("note"));
+
+            assertThat(changesIn(note, accepted(note, value("text", ParameterLocation.QUERY,
+                    JsonValue.of("a\uD83D\uDE42"))), "outsideABound"))
+                    .extracting(each -> ((JsonValue.JsonString) each.parameterValue("text",
+                            ParameterLocation.QUERY).orElseThrow().value()).value())
+                    .containsOnly("a\uD83D\uDE42\uD83D\uDE42\uD83D\uDE42");
+        }
+
+        @Test
+        @DisplayName("a closed list of numbers is stepped off above its largest; one of words and "
+                + "numbers mixed, or with null in it, is left alone")
+        void lists_of_every_kind() {
+            assertThat(offTheList(List.of(JsonValue.of(3), JsonValue.of(7))))
+                    .containsOnly(JsonValue.of(BigDecimal.valueOf(8)));
+            assertThat(offTheList(List.of(JsonValue.TRUE))).containsOnly(JsonValue.FALSE);
+            assertThat(offTheList(List.of(JsonValue.TRUE, JsonValue.FALSE))).isEmpty();
+            assertThat(offTheList(List.of(JsonValue.of("a"), JsonValue.of(1)))).isEmpty();
+            assertThat(offTheList(List.of(JsonValue.of("a"), JsonValue.NULL))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("null is not sent where a name points at a shape that allows it, or a choice "
+                + "offers one that does")
+        void null_allowed_somewhere_inside() {
+            ObjectSchema holder = ObjectSchema.of(properties(
+                    "byName", SchemaReference.to("MaybeWord"),
+                    "choice", new io.restest.core.schema.ChoiceSchema(SchemaMetadata.none(),
+                            List.of(NumberSchema.of(NumberKind.INTEGER), new StringSchema(
+                                    SchemaMetadata.none().withNullable(true), Optional.empty(),
+                                    Optional.empty(), Optional.empty(), Optional.empty()))),
+                    "plain", StringSchema.of()), Set.of());
+            Operation add = Operation.of(HttpMethod.POST, "/holders")
+                    .withRequestBody(RequestBodyModel.json(holder, true))
+                    .withId(OperationId.of("addHolder"));
+            ApiModel api = ApiModel.of("Holders", "1.0", List.of(add)).withSchemas(Map.of(
+                    "MaybeWord", new StringSchema(SchemaMetadata.none().withNullable(true),
+                            Optional.empty(), Optional.empty(), Optional.empty(),
+                            Optional.empty())));
+            AcceptedRequests.Accepted accepted = new AcceptedRequests.Accepted(TestCase.of(
+                    add.id(), List.of(), new BodyValue("application/json", JsonValue.object(
+                            members("byName", JsonValue.of("w"), "choice", JsonValue.of(1),
+                                    "plain", JsonValue.of("p"))),
+                            new ValueOrigin.Generated("random"))), InteractionId.generate());
+            List<TestCase> changed = new ArrayList<>();
+            for (long seed = 0; seed < DRAWS; seed++) {
+                new Mutations(api, Settings.from(onlyTheSwitch("sendNull")).mutation(),
+                        GenerationSettings.defaults(), new SplittableRandom(seed))
+                        .changeOneThingIn(add, accepted).ifPresent(changed::add);
+            }
+
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
+                    .containsOnly("body.plain");
+        }
+
+        @Test
+        @DisplayName("a list outside the body is never stepped down to nothing, which would drop "
+                + "it from the request rather than send it one item short")
+        void a_list_parameter_is_not_emptied() {
+            Operation byIds = Operation.of(HttpMethod.GET, "/pets", List.of(Parameter.of("ids",
+                    ParameterLocation.QUERY, true, new ArraySchema(SchemaMetadata.none(),
+                            StringSchema.of(), Optional.of(1), Optional.empty(), false))))
+                    .withId(OperationId.of("byIds"));
+            Operation byPairs = Operation.of(HttpMethod.GET, "/pairs", List.of(Parameter.of("ids",
+                    ParameterLocation.QUERY, true, new ArraySchema(SchemaMetadata.none(),
+                            StringSchema.of(), Optional.of(2), Optional.empty(), false))))
+                    .withId(OperationId.of("byPairs"));
+
+            assertThat(changesIn(byIds, accepted(byIds, value("ids", ParameterLocation.QUERY,
+                    JsonValue.array(JsonValue.of("1"), JsonValue.of("2")))), "outsideABound"))
+                    .isEmpty();
+            assertThat(changesIn(byPairs, accepted(byPairs, value("ids", ParameterLocation.QUERY,
+                    JsonValue.array(JsonValue.of("1"), JsonValue.of("2")))), "outsideABound"))
+                    .extracting(each -> each.parameterValue("ids", ParameterLocation.QUERY)
+                            .orElseThrow().value())
+                    .containsOnly(JsonValue.array(JsonValue.of("1")));
+        }
+
+        @Test
+        @DisplayName("items that must all differ are not repeated to make a list longer")
+        void unique_items_are_not_repeated() {
+            ObjectSchema tagged = ObjectSchema.of(properties("tags", new ArraySchema(
+                    SchemaMetadata.none(), StringSchema.of(), Optional.empty(), Optional.of(2),
+                    true)), Set.of());
+            Operation tag = Operation.of(HttpMethod.POST, "/tags")
+                    .withRequestBody(RequestBodyModel.json(tagged, true))
+                    .withId(OperationId.of("tag"));
+            ApiModel api = ApiModel.of("Tags", "1.0", List.of(tag));
+            AcceptedRequests.Accepted accepted = new AcceptedRequests.Accepted(TestCase.of(
+                    tag.id(), List.of(), new BodyValue("application/json", JsonValue.object(
+                            members("tags", JsonValue.array(JsonValue.of("a"), JsonValue.of("b")))),
+                            new ValueOrigin.Generated("random"))), InteractionId.generate());
+
+            for (String operator : List.of("outsideABound", "oversize", "oversizeWithNoLimit")) {
+                List<TestCase> changed = new ArrayList<>();
+                for (long seed = 0; seed < 20; seed++) {
+                    new Mutations(api, Settings.from(onlyTheSwitch(operator)).mutation(),
+                            GenerationSettings.defaults(), new SplittableRandom(seed))
+                            .changeOneThingIn(tag, accepted).ifPresent(changed::add);
+                }
+                assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
+                        .describedAs(operator)
+                        .doesNotContain("body.tags");
+            }
+        }
+
+        @Test
+        @DisplayName("nothing deeper inside a body than the tool ever builds is a place")
+        void as_deep_as_the_tool_builds() {
+            Map<String, String> shallow = onlyTheSwitch("wrongType");
+            Settings settings = Settings.from(shallow);
+            GenerationSettings oneDeep = Settings.from(Map.of("generation.optionalNestingDepth",
+                    "1", "generation.hardNestingDepth", "1")).generation();
+            List<TestCase> changed = new ArrayList<>();
+            for (long seed = 0; seed < DRAWS; seed++) {
+                new Mutations(API, settings.mutation(), oneDeep, new SplittableRandom(seed))
+                        .changeOneThingIn(ADD_PET, ADDED).ifPresent(changed::add);
+            }
+
+            assertThat(changed).isNotEmpty()
+                    .extracting(each -> each.mutation().orElseThrow().path())
+                    .noneMatch(path -> path.chars().filter(c -> c == '.').count() > 1
+                            || path.contains("[]"));
+        }
+
+        private List<JsonValue> offTheList(List<JsonValue> accepted) {
+            StringSchema listed = new StringSchema(SchemaMetadata.none().withEnumeration(accepted),
+                    Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+            ObjectSchema holder = ObjectSchema.of(properties("v", listed), Set.of());
+            Operation add = Operation.of(HttpMethod.POST, "/v")
+                    .withRequestBody(RequestBodyModel.json(holder, true))
+                    .withId(OperationId.of("addV"));
+            AcceptedRequests.Accepted base = new AcceptedRequests.Accepted(TestCase.of(add.id(),
+                    List.of(), new BodyValue("application/json", JsonValue.object(members("v",
+                            accepted.get(0))), new ValueOrigin.Generated("random"))),
+                    InteractionId.generate());
+            List<JsonValue> sent = new ArrayList<>();
+            for (long seed = 0; seed < 20; seed++) {
+                new Mutations(ApiModel.of("V", "1.0", List.of(add)),
+                        Settings.from(onlyTheSwitch("breakAnEnumeration")).mutation(),
+                        GenerationSettings.defaults(), new SplittableRandom(seed))
+                        .changeOneThingIn(add, base).ifPresent(changed -> sent.add(
+                                ((JsonValue.JsonObject) changed.body().orElseThrow().value())
+                                        .members().get("v")));
+            }
+            return sent;
+        }
+    }
+
     // --- helpers ---------------------------------------------------------------------------------
+
+    private static AcceptedRequests.Accepted accepted(Operation operation,
+            ParameterValue... values) {
+        return new AcceptedRequests.Accepted(TestCase.of(operation.id(), List.of(values)),
+                InteractionId.generate());
+    }
+
+    /** Every change of one kind for an operation of its own, with only that kind switched on. */
+    private static List<TestCase> changesIn(Operation operation,
+            AcceptedRequests.Accepted accepted, String operator) {
+        ApiModel api = ApiModel.of("One", "1.0", List.of(operation));
+        List<TestCase> changed = new ArrayList<>();
+        for (long seed = 0; seed < 40; seed++) {
+            new Mutations(api, Settings.from(onlyTheSwitch(operator)).mutation(),
+                    GenerationSettings.defaults(), new SplittableRandom(seed))
+                    .changeOneThingIn(operation, accepted).ifPresent(changed::add);
+        }
+        return changed;
+    }
 
     /** Every change that comes out of many starting numbers with only this kind switched on. */
     private static List<TestCase> changes(String operator, Operation operation,

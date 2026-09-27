@@ -27,12 +27,16 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
+import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
+import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import io.restest.core.settings.GenerationSettings;
@@ -40,7 +44,6 @@ import io.restest.core.settings.MutationSettings;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -102,10 +105,13 @@ final class Mutations {
 
     /**
      * Beyond this many characters, variations of a value are not held against its spelling rule;
-     * only short fixed words are. A rule is a program the document wrote, and a long input is where
-     * a badly written one takes for ever.
+     * only short fixed words are. A rule is a program the document wrote, and a badly written one -
+     * a repetition inside a repetition - can take longer than a run lasts on an input a few dozen
+     * characters long, on the very thread that builds requests. Sixteen keeps the worst case to a
+     * few tens of thousands of steps. A safeguard rather than a decision about the API, like the
+     * limits inside the part of the tool that builds a word to fit such a rule.
      */
-    private static final int LONGEST_HELD_AGAINST_A_PATTERN = 256;
+    private static final int LONGEST_HELD_AGAINST_A_PATTERN = 16;
 
     /** What is sent where a number or a yes-or-no is declared: plainly neither. */
     private static final String NEITHER_A_NUMBER_NOR_A_YES_OR_NO = "abc";
@@ -136,6 +142,23 @@ final class Mutations {
     }
 
     /**
+     * Whether these settings leave any kind of change to make: at least one switched on, with its
+     * family. With none, a strategy that changes accepted requests builds every request the ordinary
+     * way, and nothing needs to listen for accepted requests at all.
+     *
+     * @param settings the switches
+     * @return whether any kind of change is switched on
+     */
+    static boolean anythingSwitchedOn(MutationSettings settings) {
+        for (Operator operator : Operator.values()) {
+            if (operator.isOn(settings)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * A request made by changing one thing in one the API accepted.
      *
      * @param operation the operation both requests are for
@@ -146,7 +169,7 @@ final class Mutations {
     Optional<TestCase> changeOneThingIn(Operation operation, AcceptedRequests.Accepted accepted) {
         Objects.requireNonNull(operation, "operation");
         Objects.requireNonNull(accepted, "accepted");
-        if (!settings.anyFamilyOn()) {
+        if (!anythingSwitchedOn(settings)) {
             return Optional.empty();
         }
         List<Place> places = placesIn(operation, accepted.testCase());
@@ -503,12 +526,18 @@ final class Mutations {
             }
             case ArraySchema list when place.value() instanceof JsonValue.JsonArray elements -> {
                 int size = elements.elements().size();
-                list.minItems().filter(least -> least >= 1 && least - 1 < size)
+                // An empty list outside the body is not sent empty: it disappears from the request,
+                // which would be leaving it out rather than sending one item too few.
+                list.minItems().filter(least -> least >= 1 && least - 1 < size
+                                && (least > 1 || place.inTheBody()))
                         .ifPresent(least -> ways.add(here -> new Edit.Replace(
                                 JsonValue.array(elements.elements().subList(0, least - 1)),
                                 "sent " + items(least - 1) + " for " + here.described()
                                         + ", one fewer than the fewest allowed, " + least)));
-                list.maxItems().filter(most -> most < generation.mostItems() && size > 0)
+                // Repeating a list's own items is how one more is added, and where the items must
+                // all differ that would break a second rule besides the one being stepped past.
+                list.maxItems().filter(most -> most < generation.mostItems() && size > 0
+                                && !list.uniqueItems())
                         .ifPresent(most -> ways.add(here -> new Edit.Replace(
                                 repeated(elements, most + 1), "sent " + items(most + 1) + " for "
                                         + here.described() + ", one more than the most allowed, "
@@ -607,10 +636,31 @@ final class Mutations {
 
     // --- nothing ---------------------------------------------------------------------------------
 
-    /** Whether the document allows this place to be {@code null}, wherever it says so. */
+    /**
+     * Whether the document allows this place to be {@code null}, wherever it says so: on the shape
+     * where it is used, on the one a name there points at, or on any of the shapes a choice offers.
+     */
     private boolean mayBeNull(Place place) {
-        return place.declared().metadata().nullable() || place.shape().metadata().nullable()
-                || Shapes.couldSatisfy(model, JsonValue.NULL, place.declared(), hops());
+        return mayBeNull(place.declared(), 0);
+    }
+
+    private boolean mayBeNull(CanonicalSchema shape, int depth) {
+        if (depth > hops()) {
+            // A document pointing shapes at one another in a circle has not said null is refused.
+            return true;
+        }
+        if (shape.metadata().nullable()) {
+            return true;
+        }
+        return switch (shape) {
+            case NullSchema ignored -> true;
+            case AnySchema ignored -> true;
+            case ChoiceSchema choice -> choice.alternatives().stream()
+                    .anyMatch(alternative -> mayBeNull(alternative, depth + 1));
+            case SchemaReference reference -> model.resolve(reference)
+                    .map(named -> mayBeNull(named, depth + 1)).orElse(true);
+            default -> false;
+        };
     }
 
     /**
@@ -689,7 +739,7 @@ final class Mutations {
             case StringSchema text when place.value() instanceof JsonValue.JsonString ->
                     text.maxLength();
             case ArraySchema list when place.value() instanceof JsonValue.JsonArray elements
-                    && !elements.elements().isEmpty() -> list.maxItems();
+                    && !elements.elements().isEmpty() && !list.uniqueItems() -> list.maxItems();
             default -> Optional.empty();
         };
     }
@@ -771,9 +821,14 @@ final class Mutations {
                 ? written : written.substring(0, QUOTED_AT_MOST) + "...";
     }
 
-    /** Whether a shape says enough about a value for anything but leaving it out to be judged. */
+    /**
+     * Whether a shape says enough about a value for anything but leaving it out to be judged. A name
+     * that could not be followed to a shape - one pointing at nothing, or round in a circle - says
+     * nothing, and neither does a shape nobody could read.
+     */
     private static boolean understood(CanonicalSchema shape) {
-        return !(shape instanceof UnsupportedSchema) && !(shape instanceof NothingSchema);
+        return !(shape instanceof UnsupportedSchema) && !(shape instanceof NothingSchema)
+                && !(shape instanceof SchemaReference);
     }
 
     private CanonicalSchema resolved(CanonicalSchema schema) {
@@ -804,8 +859,8 @@ final class Mutations {
      * @param value what the accepted request sent there
      * @param required whether the document says it must be sent
      */
-    private record Place(ParameterLocation location, String path, List<Object> steps, CanonicalSchema declared, CanonicalSchema shape, JsonValue value,
-            boolean required) {
+    private record Place(ParameterLocation location, String path, List<Object> steps,
+            CanonicalSchema declared, CanonicalSchema shape, JsonValue value, boolean required) {
 
         boolean inTheBody() {
             return location == ParameterLocation.BODY;

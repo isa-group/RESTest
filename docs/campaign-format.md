@@ -23,7 +23,7 @@ version: 1
 
 strategies:
   - name: nominal
-    share: 75
+    share: 60
     sources:
       - source: enum
       - weighted:
@@ -35,6 +35,13 @@ strategies:
             weight: 50
           - source: default
             weight: 5
+
+  - name: mutation
+    share: 15
+    mutates: accepted
+    sources:
+      - source: enum
+      - source: random
 
   - name: fuzzing
     share: 25
@@ -63,8 +70,10 @@ values nobody sensible would send, and one [changing a request that worked](#cha
 The pushing one is not looking for a refusal — a refusal is a fair answer, and a great many APIs
 accept an empty word quite happily. It is looking for the API falling over.
 
-There is no key saying which is which. A strategy that draws on the list of values to push with is
-one that pushes, and that is how the run's summary knows how many of its requests were of that kind.
+No key says a strategy pushes. A strategy that draws on the list of values to push with is one that
+pushes, and each of its requests records that it was, which is how the run's summary knows how many
+were of that kind. A strategy that changes accepted requests does say so, with `mutates: accepted`,
+because nothing it draws on could tell.
 
 ## Sources
 

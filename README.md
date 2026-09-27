@@ -62,7 +62,7 @@ numbers in it are that run's and yours will be different:
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
 19 of 19 operations can be tested, seed 20260914, budget 10s
-  values from the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
+  what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
 F100  HTTP Status 500
       deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/617  ->  500
@@ -128,7 +128,17 @@ would send — an empty word, a number one past the end of a 32-bit integer, tex
 belongs — because an API that falls over on one of those is a fault whatever was sent, and ordinary
 requests never ask. The summary says how many requests were of that kind, so their refusals do not
 read as the API turning away ordinary traffic. `--fuzzing 40` changes the share and `--fuzzing 0`
-sends none of them. The other way round, the values *you* know are good — real identifiers, the
+sends none of them.
+
+Another fifth take a request the API has already accepted and send it again with exactly one thing
+changed: something it requires left out, a number one past the largest it allows, a word where it
+wants a number, ten thousand characters where it states no limit. An API checks what it is sent
+before acting on it, and a request with many things wrong is turned away by the first check; one
+with a single thing wrong gets past every check but that one, which is where the failures a correct
+request never reaches tend to be. The summary says how many requests were changed this way, and how
+many of them broke something the document states. Every kind of change can be switched off —
+`--set mutation.probes=false` keeps only the ones the document forbids, and
+[docs/settings.md](docs/settings.md#mutation) lists the rest. The other way round, the values *you* know are good — real identifiers, the
 surnames the API actually holds — go in a YAML file next to the specification and are handed over
 with `--dictionary`, which takes a file or a directory and may be repeated;
 [docs/dictionary-format.md](docs/dictionary-format.md) is the format.
@@ -142,11 +152,13 @@ as it came back and recorded as that). Measured against two containerised APIs,
 restarting each before every run: 27.8 of pet-clinic's operations answered 2XX without this and
 31.6 with it, better on every one of five seeds.
 
-It costs one promise, and this is the only place in the tool that costs it: what such a run sends
-depends on what the API answered, so `--seed` on its own no longer repeats it — it makes a similar
-run rather than the same one. `--store` keeps every request and reply of the run you actually had,
-which is the record to go back to; sending those requests again is a later milestone's job. Taking
-`source: observed` out of the plan below puts the old promise back exactly.
+It costs one promise, and so does changing accepted requests, since which requests were accepted is
+the API's answer too: what such a run sends depends on what the API answered, so `--seed` on its
+own no longer repeats it — it makes a similar run rather than the same one. `--store` keeps every
+request and reply of the run you actually had, which is the record to go back to; sending those
+requests again is a later milestone's job. Taking `source: observed` out of the plan below, and
+switching the changes off with `--set mutation.violations=false --set mutation.probes=false`, puts
+the old promise back exactly.
 
 Which of those a run prefers, and in what proportion, is itself a file. `restest run
 --print-campaign` writes out the plan RESTest follows when it is given none: which sources fill in

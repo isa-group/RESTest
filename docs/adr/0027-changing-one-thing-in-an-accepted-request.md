@@ -69,12 +69,15 @@ that switches the operators off is therefore measuring the operators and nothing
 | `ACCEPTABLE` | nothing yet - see below |
 | `REFUSAL_EXPECTED` | a change that breaks what the document states |
 | `UNKNOWN` | every request built from nothing, the opening lap's included, and a change the document does not rule on |
-| `PUSHING` | a request built from the list of awkward values |
+| `PUSHING` | a request of a pushing strategy that carries something awkward: a parameter from the list of awkward values, or a body |
 
 §3 said "about four", and the fourth is the one §4 describes for fuzzing: *its intent records that a
 refusal cannot be attributed to any one parameter*. It is also what lets the memory of accepted
 requests leave awkward requests out, which the value's origin could not do - a body invented from
-awkward leaves records one origin for the whole body, and that origin is invention.
+awkward leaves records one origin for the whole body, and that origin is invention. A request of the
+pushing strategy with nothing awkward in it - an operation with no parameters and no body - is the
+request any strategy would send, and says `UNKNOWN`; saying `PUSHING` of it would be the false claim
+the intent exists to avoid, and it would put requests nothing pushed into the console's count.
 
 `ACCEPTABLE` exists and nothing is given it. §3 says an invented value's *I do not know* becomes *I
 believe this is acceptable* "when the value comes from a source that knows the API", and that is
@@ -92,7 +95,10 @@ operator; a body keeps the origin it had, since the change is what the record de
 
 Both travel in the test case's JSON, which is where the store keeps it, so **the store's layout does
 not change**: ADR-0013's Consequences called this "a store layout change", and it is not one. A run
-stored before reads back as `UNKNOWN` with no change, which is what every request built then was.
+stored before reads back as `UNKNOWN` with no change. The second half is true of every request built
+then; the first is the most that can be said of one whose expectation nobody wrote down, a request
+that pushed at the API included. The same JSON is what `report.json` quotes beside every fault, so a
+server error found by a change now says, in the report, which change found it.
 
 ### 3. Two families, and the intent is always true
 
@@ -115,7 +121,28 @@ it must have, and outside a body wherever a number or a yes-or-no is declared; `
 goes everywhere else.
 
 That split is what keeps every recorded intent true, which is the one property an intent has to have
-for anything to rely on it later.
+for anything to rely on it later. Three things were done to keep it so after review:
+
+- **A list outside the body is never stepped down to nothing.** An empty list in a query string
+  disappears from the request, so "one item fewer than the fewest" at a fewest of one would be
+  leaving the parameter out and calling it something else; a request the document allows would
+  claim to expect a refusal.
+- **`null` is not sent where anything on the way to the shape allows it**: the property, the shape a
+  name there points at, or any alternative a choice offers. A name that cannot be followed to a
+  shape - one pointing nowhere, or round in a circle - is not judged at all, and only
+  `dropRequired`, which needs nothing from the shape, may go there.
+- **Items that must all differ are not repeated** to make a list one longer, or far longer, since
+  that would break a second rule besides the one stepped past.
+
+One exception is known and left: `allowEmptyValue: true` on a query parameter says an empty value
+is allowed, and the model does not carry it, so `sendEmpty` on such a parameter would claim a
+refusal the document does not promise. No document in the corpus of fifty uses it, and OpenAPI 3.x
+recommends against it; it is modelled the day a document needs it.
+
+Some changes can still break a second rule by accident. A word lengthened one past its longest is
+lengthened by repeating its own last character, which keeps a pattern or a named kind it satisfied
+satisfied as often as anything cheap could, but not always. The intent stays true - two rules broken
+is still a refusal expected - and only the attribution to one change is weakened.
 
 ### 4. Where an operator goes, and where it never goes
 
@@ -137,6 +164,13 @@ What never changes, because the change that reached the API would not be the one
 - **a request that deleted something**, which is never kept to be changed, since what it deleted is
   gone - and a request that was itself a change, or pushed at the API, neither.
 
+`breakAPattern` holds variations of the accepted word against its pattern only when the word is at
+most sixteen characters long, and otherwise tries two short fixed words. A pattern is a program the
+document wrote, a badly written one - a repetition inside a repetition - can take longer than a run
+lasts on an input a few dozen characters long, and the thread it would run on is the one that builds
+requests. The sixteen is a safeguard of the same kind as the limits inside the part of the tool that
+builds a word to fit a pattern, and stays in the code with them.
+
 `wrongLocation` moves a required query parameter, header or cookie to one of the other two, never
 to a place where the operation declares something of that name and never under a name a header or
 cookie cannot carry. The request builder learned to write a value the operation does not declare in
@@ -150,6 +184,16 @@ of those places. A kind first, so that one with somewhere to go in every value -
 does not crowd out one with a single place to go. The memory keeps the newest `mutation.acceptedKept`
 accepted requests per operation, for the reason the memory of observed values is small: an older one
 may name something deleted since.
+
+Nothing is drawn for a change that cannot be made. With every kind of change switched off - both
+families, or every operator in them - nothing listens for accepted requests, the mutating strategy
+builds every request from its sources, and the seed repeats the run exactly as it did before this
+record.
+
+What the API sends back to a changed request is **not learned from**. The memory of observed values
+skips those replies: an API that wrongly accepts a name ten thousand characters long and hands it
+back would otherwise have it sent again in ordinary requests, which could then be kept as accepted
+requests themselves and changed again.
 
 A systematic walk over every place and kind, without repetition, would reach each pair sooner. It
 was not built: at the request rates the local measurements see, drawing covers a few hundred pairs

@@ -572,7 +572,7 @@ counting distinct 5XX messages and branch coverage rather than operations covere
 | # | Increment | What it enables |
 |---|---|---|
 | 10.1 ▶ | **Mutations of accepted requests** — the generator half of 3.1b, under ADR-0013 §4. A listener on the event stream keeps a bounded index of the test cases that actually returned 2XX (§5), and operators take one and change exactly one thing: drop a required parameter, send the wrong type, step outside a documented bound by exactly one (2.3 returns here, as promised), break an enumeration, break a pattern, send a required parameter in a location it was not declared in (ADR-0017 item 5), oversize a string or an array, send `null`, send the empty value. A third strategy in the shipped plan with a share of its own. The test case gains the **intent** of §3 — *I believe these values are acceptable*, *I expect this refused and here is what I broke*, *I do not know* — as data; the oracles that read it are 3.1's and wait | The tool stops only asking "does this work?" and starts asking "what happens when one thing is wrong?" — which is where the 500s that a correct request never reaches live, one code path per operator |
-| 10.2 ▶ | **Bodies of the wrong shape.** 2.7a's fuzzing changes *values*; this changes the *shape*: a leaf of the wrong kind, the root of the wrong kind — an array where an object was declared — an empty body, a body that is not JSON at all, the wrong `Content-Type` for a valid body, nesting far deeper than the schema, arrays far longer than any limit, the numeric extremes of every width. Each one a named operator, each one attributable | The parsing and binding layers of the API — the code that runs *before* the operation's own — are exercised, and those layers fail in their own distinct ways |
+| 10.2 ▶ | **Bodies of the wrong shape.** 2.7a's fuzzing changes *values*; this changes the *shape*: the root of the wrong kind — an array where an object was declared — an empty body, a body that is not JSON at all, the wrong `Content-Type` for a valid body, nesting far deeper than the schema, the numeric extremes of every width. Each one a named operator, each one attributable, joining 10.1's under `mutation.*`. *A leaf of the wrong kind and arrays far longer than any limit were built at 10.1, as its operators at a place inside a body - see the notes* | The parsing and binding layers of the API — the code that runs *before* the operation's own — are exercised, and those layers fail in their own distinct ways |
 | 10.3 ▶ | **Sequence operators over real resources**, built on a producer-then-consumer unit - the one 9.3 built and did not merge, on the branch `experiment/m9-3-sequence-pairs`, brought in here - and kept inside one unit of work each: create a resource, delete it, then read it, update it and delete it again; create the same thing twice; create two resources and update one with the other's identifier; create, delete, and send the deleted identifier to every consumer that takes one. Each is a named sequence with an intent, every identifier it uses is one the same sequence created, and what a unit knows about what it deleted stays in that unit | The server failures that only appear across several requests — the dangling reference, the double delete, the duplicate key — which single requests never reach and which the stateful tools we are measured against do reach |
 
 ### Notes
@@ -586,6 +586,13 @@ a 4XX that nothing reads and no finding anybody could act on". For the competiti
 point; the 5XX that a broken request sometimes earns instead is, and `ServerErrorOracle` reads that
 already. The intent is recorded anyway, because it is a fact about the request and recording it
 costs nothing, and because 3.1 then has a consumer waiting when it arrives.
+
+**10.2 — what 10.1 took from it.** Two of the operators this row listed, a leaf of the wrong kind
+and arrays far longer than any limit, turned out at 10.1 to be the same operators as 10.1's wrong
+type and oversize, at a place inside a body rather than in a parameter; the maintainer chose on 27
+September to let 10.1's operators reach inside bodies, because that is where the priority APIs take
+their input. What is left here is what changes the structure of a body as a whole rather than one
+value in it.
 
 **10.2 — why shape and value are two rows.** The fuzzing dictionary is a list of *values*, and 2.7c
 made it reach every leaf of a body. What it cannot express is a body whose structure is wrong, because

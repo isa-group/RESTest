@@ -20,6 +20,7 @@ import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
+import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
@@ -276,11 +277,11 @@ public final class RandomTestCaseGenerator {
                 settings.generation());
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
         // Only when the plan has a way of building requests that changes accepted ones, and the
-        // settings leave at least one family of changes switched on. Otherwise nothing listens for
-        // accepted requests, and such a strategy builds its requests exactly as an ordinary one
-        // with the same sources would, drawing the same numbers.
+        // settings leave at least one kind of change switched on, with its family. Otherwise
+        // nothing listens for accepted requests, and such a strategy builds its requests exactly as
+        // an ordinary one with the same sources would, drawing the same numbers.
         this.accepted = this.strategies.stream().anyMatch(Strategy::mutatesAccepted)
-                && settings.mutation().anyFamilyOn()
+                && Mutations.anythingSwitchedOn(settings.mutation())
                 ? new AcceptedRequests(model, settings.mutation()) : null;
         this.mutations = this.accepted == null ? null
                 : new Mutations(model, settings.mutation(), settings.generation(), random);
@@ -601,21 +602,40 @@ public final class RandomTestCaseGenerator {
                 return Optional.empty();
             }
         }
-        // What the request expects is what the way of building it expects: awkward values
-        // throughout push at the API, and anything else expects nothing in particular - a value
-        // invented to fit may still be refused for a rule the document never wrote down.
-        Intent intent = strategy.pushesAtTheApi() ? Intent.PUSHING : Intent.UNKNOWN;
         Optional<RequestBodyModel> declared = operation.requestBody();
-        if (declared.isEmpty()) {
-            return Optional.of(TestCase.of(operation.id(), chosen, Optional.empty(), intent));
-        }
-        Optional<BodyValue> body = body(operation, declared.get(), strategy, filling);
-        if (body.isEmpty() && declared.get().required()) {
+        Optional<BodyValue> body = declared.isEmpty()
+                ? Optional.empty() : body(operation, declared.get(), strategy, filling);
+        if (declared.isPresent() && body.isEmpty() && declared.get().required()) {
             // An API that says it needs a body will refuse a request without one whatever else is
             // in it, so there is nothing to learn from sending it.
             return Optional.empty();
         }
-        return Optional.of(TestCase.of(operation.id(), chosen, body, intent));
+        return Optional.of(TestCase.of(operation.id(), chosen, body,
+                intentOf(strategy, chosen, body)));
+    }
+
+    /**
+     * What a request expects, which is what the way of building it expects - provided it carries
+     * something that way chose.
+     *
+     * <p>A request pushing at the API says so only when it carries something awkward: a parameter
+     * whose value came from a list of values to push with, or a body, whose values such a strategy
+     * fills from that list wherever it has one. A request of that strategy's with nothing in it - an
+     * operation with no parameters, say - is the same request an ordinary strategy would send, and
+     * calling it pushing would be claiming something about it that is not so. Everything else
+     * expects nothing in particular: a value invented to fit may still be refused for a rule the
+     * document never wrote down.
+     */
+    private static Intent intentOf(Strategy strategy, List<ParameterValue> chosen,
+            Optional<BodyValue> body) {
+        if (!strategy.pushesAtTheApi()) {
+            return Intent.UNKNOWN;
+        }
+        boolean carriesSomethingAwkward = body.isPresent() || chosen.stream()
+                .map(ParameterValue::origin)
+                .anyMatch(origin -> origin instanceof ValueOrigin.Generated made
+                        && PUSHES_AT_THE_API.equals(made.source()));
+        return carriesSomethingAwkward ? Intent.PUSHING : Intent.UNKNOWN;
     }
 
     /**

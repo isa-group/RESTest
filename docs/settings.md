@@ -400,5 +400,5 @@ format has a version, a length of a day is a length of a day. The rule for movin
 reasonable user or a reasonable experiment might want a different value.
 
 Some decisions have not moved yet, on purpose — the internals of the builder that satisfies a
-spelling rule, the limits on how deeply a description may nest, the size of the batches the run's
-own file is written in. They move when the code around them is next touched, rather than in a sweep.
+spelling rule, and the length beyond which a changed word is not held against one, the limits on
+how deeply a description may nest, the size of the batches the run's own file is written in. They move when the code around them is next touched, rather than in a sweep.
