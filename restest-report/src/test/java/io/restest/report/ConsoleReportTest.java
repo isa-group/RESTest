@@ -24,7 +24,6 @@ import java.io.Flushable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +37,7 @@ class ConsoleReportTest {
             + "says so, while still counting every one of them")
     void how_many_faults_reach_the_screen_is_a_setting() {
         StringBuilder screen = new StringBuilder();
-        ConsoleReport report = ConsoleReport.to(screen, java.util.Set.of(),
+        ConsoleReport report = ConsoleReport.to(screen,
                 new io.restest.core.settings.ReportSettings(5, 1_000, 24L * 1024, 2, 5));
 
         for (int found = 0; found < 6; found++) {
@@ -61,7 +60,7 @@ class ConsoleReportTest {
         StringBuilder screen = new StringBuilder();
         String introduction = "4 of 4 operations can be tested, seed 1, budget 1s"
                 + System.lineSeparator() + System.lineSeparator();
-        ConsoleReport report = ConsoleReport.to(screen, Set.of(), ReportSettings.defaults(),
+        ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
                 introduction);
 
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
@@ -74,7 +73,7 @@ class ConsoleReportTest {
     @DisplayName("what the command says first reaches the screen the moment the run begins")
     void what_the_command_says_first_is_sent_on_its_way_at_once() {
         BufferedScreen terminal = new BufferedScreen();
-        ConsoleReport live = ConsoleReport.to(terminal, Set.of(), ReportSettings.defaults(),
+        ConsoleReport live = ConsoleReport.to(terminal, ReportSettings.defaults(),
                 "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
 
         live.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
@@ -89,7 +88,7 @@ class ConsoleReportTest {
     @DisplayName("an introduction whose last line is left open does not carry the next line on")
     void an_introduction_left_open_is_closed() {
         StringBuilder screen = new StringBuilder();
-        ConsoleReport report = ConsoleReport.to(screen, Set.of(), ReportSettings.defaults(),
+        ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
                 "4 of 4 operations can be tested");
 
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
@@ -357,7 +356,7 @@ class ConsoleReportTest {
             + "is pointed at, and it is said even of a run that sent nothing")
     void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {
         StringBuilder screen = new StringBuilder();
-        ConsoleReport report = ConsoleReport.to(screen, Set.of(),
+        ConsoleReport report = ConsoleReport.to(screen,
                 new ReportSettings(5, 1_000, 24L * 1024, 50, 2));
         for (String operation : List.of("addPet", "getPet", "updatePet", "deletePet", "listPets")) {
             report.on(skipped(operation, "the reason " + operation + " could not be tested"));
@@ -379,7 +378,7 @@ class ConsoleReportTest {
             + "find them")
     void told_to_name_none_the_count_and_the_report_are_still_given() {
         StringBuilder screen = new StringBuilder();
-        ConsoleReport report = ConsoleReport.to(screen, Set.of(),
+        ConsoleReport report = ConsoleReport.to(screen,
                 new ReportSettings(5, 1_000, 24L * 1024, 50, 0));
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
@@ -388,6 +387,36 @@ class ConsoleReportTest {
                 .endsWith("1 operation could not be tested:",
                         "  the run's report names every one")
                 .noneMatch(line -> line.contains("uploadPhoto"));
+    }
+
+    @Test
+    @DisplayName("requests that pushed, and requests that changed one thing in an accepted one, are "
+            + "counted apart by what each says it was")
+    void pushing_and_changed_requests_are_counted_by_what_they_say() {
+        io.restest.core.execution.Mutation change = new io.restest.core.execution.Mutation(
+                io.restest.core.execution.InteractionId.generate(), "dropRequired",
+                io.restest.core.model.ParameterLocation.QUERY, "limit", "left out 'limit'");
+        List<io.restest.core.execution.TestCase> sent = List.of(
+                io.restest.core.execution.TestCase.of(OperationId.of("listPets"), List.of()),
+                io.restest.core.execution.TestCase.of(OperationId.of("listPets"), List.of(),
+                        java.util.Optional.empty(), io.restest.core.execution.Intent.PUSHING),
+                io.restest.core.execution.TestCase.changed(OperationId.of("listPets"), List.of(),
+                        java.util.Optional.empty(),
+                        io.restest.core.execution.Intent.REFUSAL_EXPECTED, change),
+                io.restest.core.execution.TestCase.changed(OperationId.of("listPets"), List.of(),
+                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
+                        change));
+        for (io.restest.core.execution.TestCase each : sent) {
+            report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                    Runs.answering(each, 400)));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("  1 of them were pushing at the API with values nobody sensible would "
+                        + "send, which accounts for some of the 4 refusals above")
+                .contains("  2 of them changed one thing in a request the API had accepted, 1 of "
+                        + "them breaking what the description states");
     }
 
     @Test

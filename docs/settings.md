@@ -139,6 +139,40 @@ generation:
   # how many bodies are drawn while looking for one its media type can carry
   writableBodyAttempts: 8     # default
 
+mutation:
+  # whether accepted requests are changed in ways the description forbids
+  violations: true            # default
+  # whether accepted requests are changed in ways the description does not rule on
+  probes: true                # default
+  # leave out a parameter or body property the description says is required
+  dropRequired: true          # default
+  # send a required parameter in the query, a header or a cookie other than its own
+  wrongLocation: true         # default
+  # send a value of another kind, such as a word where a number is declared
+  wrongType: true             # default
+  # send a value one step past a limit the description states
+  outsideABound: true         # default
+  # send a value that is not on the closed list the description states
+  breakAnEnumeration: true    # default
+  # send a word the stated pattern refuses
+  breakAPattern: true         # default
+  # send null for a body property that may not be null
+  sendNull: true              # default
+  # send an empty word, list or object where the description forbids one
+  sendEmpty: true             # default
+  # send a word or list far longer than the longest the description allows
+  oversize: true              # default
+  # the same where the description states no longest length; a probe
+  oversizeWithNoLimit: true   # default
+  # send an empty word, list or object where nothing forbids one; a probe
+  emptyWithNoRule: true       # default
+  # how many of each operation's accepted requests are kept to be changed, newest first
+  acceptedKept: 16            # default
+  # how many characters an oversized word has
+  oversizedLength: 10000      # default
+  # how many items an oversized list has
+  oversizedItems: 1000        # default
+
 memory:
   # how many values the run remembers under any one name, and things of any one kind. 0 remembers none
   mostValuesUnderOneName: 20  # default
@@ -289,6 +323,34 @@ spelling `--budget` takes.
 | `uniqueAttempts` | `8` | how many times a fresh element is attempted for a list of distinct items |
 | `sendableAttempts` | `8` | how many times a value is invented again after an unsendable one |
 | `writableBodyAttempts` | `8` | how many bodies are drawn while looking for one its media type can carry |
+
+### `mutation.*`
+
+What a strategy whose plan says `mutates: accepted` may change in a request the API accepted — see
+[the campaign file](campaign-format.md#changing-one-thing-in-a-request-that-worked). A kind of
+change is made only when its own switch and its family's are both on. The first family,
+`violations`, breaks something the description states, so a refusal is the right answer; the second,
+`probes`, goes where the description says nothing, and either answer may be right. With both off,
+such a strategy builds its requests the ordinary way.
+
+| Setting | Default | What it does |
+|---|---|---|
+| `violations` | `true` | whether accepted requests are changed in ways the description forbids |
+| `probes` | `true` | whether accepted requests are changed in ways the description does not rule on |
+| `dropRequired` | `true` | leave out a parameter or body property the description says is required |
+| `wrongLocation` | `true` | send a required parameter in the query, a header or a cookie other than its own |
+| `wrongType` | `true` | send a value of another kind, such as a word where a number is declared |
+| `outsideABound` | `true` | send a value one step past a limit the description states |
+| `breakAnEnumeration` | `true` | send a value that is not on the closed list the description states |
+| `breakAPattern` | `true` | send a word the stated pattern refuses |
+| `sendNull` | `true` | send null for a body property that may not be null |
+| `sendEmpty` | `true` | send an empty word, list or object where the description forbids one |
+| `oversize` | `true` | send a word or list far longer than the longest the description allows |
+| `oversizeWithNoLimit` | `true` | the same where the description states no longest length; a probe |
+| `emptyWithNoRule` | `true` | send an empty word, list or object where nothing forbids one; a probe |
+| `acceptedKept` | `16` | how many of each operation's accepted requests are kept to be changed, newest first |
+| `oversizedLength` | `10000` | how many characters an oversized word has |
+| `oversizedItems` | `1000` | how many items an oversized list has |
 
 ### `memory.*`
 

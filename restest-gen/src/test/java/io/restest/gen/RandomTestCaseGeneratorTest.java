@@ -244,7 +244,7 @@ class RandomTestCaseGeneratorTest {
                 model(FOUR_OPTIONAL_PARAMETERS), 20260926L, List.of(),
                 planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)), off);
 
-        ObservedValues memory = (ObservedValues) generator.whatListensToTheRun().orElseThrow();
+        ObservedValues memory = (ObservedValues) generator.whatListensToTheRun().get(0);
 
         assertThat(memory.settings().identifiersByResource()).isFalse();
         assertThat(memory.settings().identifiersByResourceFirst()).isFalse();
@@ -1545,7 +1545,7 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator doesNot = new RandomTestCaseGenerator(model(LIST_PETS), 20260922L,
                 List.of(), planOf(step(Campaign.Builtin.RANDOM)));
 
-        assertThat(asksForIt.whatListensToTheRun()).isPresent();
+        assertThat(asksForIt.whatListensToTheRun()).isNotEmpty();
         assertThat(doesNot.whatListensToTheRun())
                 .describedAs("a run that does not watch its own replies is one the same starting "
                         + "number repeats exactly, and most runs should stay that way")
@@ -1563,7 +1563,7 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(getPet), 20260922L,
                 List.of(), planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)));
 
-        generator.whatListensToTheRun().orElseThrow().on(
+        generator.whatListensToTheRun().get(0).on(
                 new io.restest.core.event.RunEvent.InteractionCompleted(java.time.Instant.EPOCH,
                         io.restest.core.execution.Interaction.answered(
                                 TestCase.of(OperationId.of("getPet"), List.of()),
@@ -1613,7 +1613,7 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(api, 20260922L, List.of(),
                 planOf(step(Campaign.Builtin.ENUM), step(Campaign.Builtin.OBSERVED),
                         step(Campaign.Builtin.RANDOM)));
-        generator.whatListensToTheRun().orElseThrow().on(
+        generator.whatListensToTheRun().get(0).on(
                 new io.restest.core.event.RunEvent.InteractionCompleted(java.time.Instant.EPOCH,
                         io.restest.core.execution.Interaction.answered(
                                 TestCase.of(OperationId.of("updatePet"), List.of()),
@@ -1663,7 +1663,7 @@ class RandomTestCaseGeneratorTest {
                 .withSchemas(Map.of("A", SchemaReference.to("B"), "B", SchemaReference.to("A")));
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(roundAndRound, 20260922L,
                 List.of(), planOf(step(Campaign.Builtin.OBSERVED), step(Campaign.Builtin.RANDOM)));
-        generator.whatListensToTheRun().orElseThrow().on(
+        generator.whatListensToTheRun().get(0).on(
                 new io.restest.core.event.RunEvent.InteractionCompleted(java.time.Instant.EPOCH,
                         io.restest.core.execution.Interaction.answered(
                                 TestCase.of(OperationId.of("addThing"), List.of()),

@@ -257,3 +257,20 @@ a stretch of the clock was set aside for 2.1 ([ADR-0026](0026-what-a-run-sends-f
 plan file does not change. The first round of a run draws on the plan's first strategy that does not
 push at the API, with its groups asked in turn rather than chosen among, and `docs/campaign-format.md`
 says so.
+
+## Amendment (M10.1)
+
+**Date:** 2026-09-27
+
+**A strategy may say `mutates: accepted`, and §5's word for pushing is now an intent.** A strategy
+saying it builds its requests by changing one thing in a request the API accepted, and falls back on
+its `sources:`, which stay required, when there is nothing to change. The format stays at version 1:
+the key is new and optional, and v2.0 has not been released, so no file written against an earlier
+version reads differently. The plan RESTest ships has three strategies,
+nominal 55, mutation 20, fuzzing 25. [ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)
+§1 is the record.
+
+§5 declined to publish a key for "pushes at the API" because the honest name for it was the intent
+of ADR-0013 §3, still to come. It has come: a request built by a pushing strategy records the intent
+*pushing*, and the console counts those requests by it rather than by the names of the lists their
+values came from. Pushing itself is still worked out from what a strategy draws on, as §5 decided.

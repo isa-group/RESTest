@@ -24,7 +24,9 @@ import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.Intent;
 import io.restest.core.execution.InteractionOutcome;
+import io.restest.core.execution.Mutation;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
@@ -154,6 +156,70 @@ class InteractionDocumentTest {
         assertThat(older.testCase().parameterValues()).extracting(ParameterValue::origin)
                 .describedAs("an older run says the document stated the value, and no more")
                 .containsExactly(ValueOrigin.DECLARED);
+    }
+
+    @Test
+    @DisplayName("what a test case expected, and the one thing changed to make it, survive")
+    void the_intent_and_the_change_survive() {
+        Mutation change = new Mutation(InteractionId.generate(), "dropRequired",
+                ParameterLocation.QUERY, "limit", "left out the required query parameter 'limit'");
+        TestCase changed = TestCase.changed(OperationId.of("GET /pets"), List.of(),
+                Optional.empty(), Intent.REFUSAL_EXPECTED, change);
+        Interaction original = Interaction.answered(changed, request(),
+                HttpResponseRecord.of(400), Instant.EPOCH, Duration.ofMillis(5));
+
+        Interaction read = InteractionDocument.toInteraction(InteractionDocument.of(original));
+
+        assertThat(read).isEqualTo(original);
+        assertThat(read.testCase().intent()).isEqualTo(Intent.REFUSAL_EXPECTED);
+        assertThat(read.testCase().mutation()).contains(change);
+    }
+
+    @Test
+    @DisplayName("every intent is written in a word of its own and read back as itself")
+    void every_intent_survives() {
+        for (Intent intent : List.of(Intent.ACCEPTABLE, Intent.UNKNOWN, Intent.PUSHING)) {
+            TestCase testCase = TestCase.of(OperationId.of("GET /pets"), List.of(),
+                    Optional.empty(), intent);
+            Interaction original = Interaction.answered(testCase, request(),
+                    HttpResponseRecord.of(200), Instant.EPOCH, Duration.ofMillis(5));
+
+            assertThat(InteractionDocument.toInteraction(InteractionDocument.of(original))
+                    .testCase().intent()).isEqualTo(intent);
+        }
+        assertThat(JsonText.write(InteractionDocument.of(Interaction.answered(
+                TestCase.of(OperationId.of("GET /pets"), List.of(), Optional.empty(),
+                        Intent.PUSHING), request(), HttpResponseRecord.of(200), Instant.EPOCH,
+                Duration.ofMillis(5)))))
+                .describedAs("the word is the file's own, not the name in the code")
+                .contains("\"intent\":\"pushing\"")
+                .doesNotContain("\"mutation\"");
+    }
+
+    @Test
+    @DisplayName("a run recorded before test cases said what they expected still reads")
+    void a_test_case_without_an_intent_still_reads() {
+        String written = JsonText.write(InteractionDocument.of(answered()))
+                .replace(",\"intent\":\"unknown\"", "");
+
+        assertThat(written).doesNotContain("intent");
+        Interaction older = InteractionDocument.toInteraction(JsonText.read(written));
+
+        assertThat(older.testCase().intent())
+                .describedAs("every request built then expected nothing in particular")
+                .isEqualTo(Intent.UNKNOWN);
+        assertThat(older.testCase().mutation()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an intent nobody recognises is refused, not guessed at")
+    void an_unrecognised_intent_is_refused() {
+        String written = JsonText.write(InteractionDocument.of(answered()))
+                .replace("\"intent\":\"unknown\"", "\"intent\":\"hopeful\"");
+
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> InteractionDocument.toInteraction(JsonText.read(written)))
+                .withMessageContaining("hopeful");
     }
 
     @Test

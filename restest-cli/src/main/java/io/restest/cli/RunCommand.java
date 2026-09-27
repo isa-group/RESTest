@@ -386,8 +386,8 @@ final class RunCommand implements Callable<Integer> {
         // either order, now and then one inside the other: one command explaining itself two ways.
         StringWriter introduction = new StringWriter();
         describe(new PrintWriter(introduction), model, generator, configuration, testable.size());
-        ConsoleReport console = ConsoleReport.to(out, generator.sourcesThatPushAtTheApi(),
-                settings.report(), introduction.toString());
+        ConsoleReport console = ConsoleReport.to(out, settings.report(),
+                introduction.toString());
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;
@@ -411,11 +411,12 @@ final class RunCommand implements Callable<Integer> {
                         }
                     });
                 }
-                // Before the rules and the reports, because this one is what the next request is
-                // built from: the sooner an identifier the API has just handed back is in hand,
-                // the sooner a request can carry it. Nothing here is subscribed at all unless the
-                // plan asked for a source that learns from the replies.
-                generator.whatListensToTheRun().ifPresent(drained::subscribe);
+                // Before the rules and the reports, because these are what the next request is
+                // built from: the sooner an identifier the API has just handed back, or a request
+                // it has just accepted, is in hand, the sooner a request can use it. Nothing here
+                // is subscribed at all unless the plan asked for something that learns from the
+                // replies.
+                generator.whatListensToTheRun().forEach(drained::subscribe);
                 rules = OracleListener.standard(model, drained);
                 drained.subscribe(rules);
                 drained.subscribe(console);
@@ -621,9 +622,9 @@ final class RunCommand implements Callable<Integer> {
         // The seed has just been printed, and for this plan it promises less than it usually does.
         // Saying so here rather than leaving somebody to find out by running the same command
         // twice and getting two different runs.
-        if (generator.whatListensToTheRun().isPresent()) {
-            out.println("  values from the API's own replies, so the seed alone does not repeat "
-                    + "this run" + (keepTheRun ? "" : "; --store keeps what it sent"));
+        if (!generator.whatListensToTheRun().isEmpty()) {
+            out.println("  what it sends depends on the API's own replies, so the seed alone does "
+                    + "not repeat this run" + (keepTheRun ? "" : "; --store keeps what it sent"));
         }
         // An environment variable is invisible in the command somebody typed and in the transcript
         // they paste into a bug report, so a run configured by one has to say so somewhere a person

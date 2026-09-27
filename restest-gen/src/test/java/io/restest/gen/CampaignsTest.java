@@ -49,14 +49,23 @@ class CampaignsTest {
         Campaign carried = Campaigns.shipped();
 
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::name)
-                .containsExactly("nominal", "fuzzing");
+                .containsExactly("nominal", "mutation", "fuzzing");
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::share)
                 .describedAs("the shares of a plan add up to a hundred, this one included")
-                .containsExactly(75, 25);
+                .containsExactly(55, 20, 25);
+        assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::mutatesAccepted)
+                .containsExactly(false, true, false);
+        assertThat(carried.strategies().get(1).sources())
+                .describedAs("with nothing accepted to change, the changing strategy builds its "
+                        + "requests exactly as the ordinary one does")
+                .isEqualTo(carried.strategies().get(0).sources());
         assertThat(carried.operations().narrowsAnything())
                 .describedAs("the plan RESTest carries touches every operation there is")
                 .isFalse();
-        assertThat(carried.strategies().get(1).pushesAtTheApi()).isTrue();
+        assertThat(carried.strategies().get(2).pushesAtTheApi()).isTrue();
+        assertThat(carried.strategies().get(1).pushesAtTheApi())
+                .describedAs("changing one thing in an accepted request is not pushing")
+                .isFalse();
         assertThat(Campaigns.shippedText())
                 .describedAs("printed for somebody to copy, so it keeps the comments that say why")
                 .contains("# What a run does when nobody has said otherwise.")
@@ -110,7 +119,7 @@ class CampaignsTest {
                 .describedAs("the list RESTest carries is in play on every run, so the plan that "
                         + "names it has nothing wrong with it")
                 .isEmpty();
-        assertThat(found.campaign().strategies()).hasSize(2);
+        assertThat(found.campaign().strategies()).hasSize(3);
     }
 
     @Test
@@ -269,7 +278,11 @@ class CampaignsTest {
 
         Campaign tenth = carried.withTheShareOfPushingSetTo(10);
         assertThat(tenth.strategies()).extracting(Campaign.PlannedStrategy::share)
-                .containsExactly(90, 10);
+                .describedAs("the other two keep their proportion to each other, 55 to 20")
+                .containsExactly(66, 24, 10);
+        assertThat(tenth.strategies()).extracting(Campaign.PlannedStrategy::mutatesAccepted)
+                .describedAs("and the one that changes accepted requests still does")
+                .containsExactly(false, true, false);
         assertThat(tenth.strategies().get(0).sources())
                 .describedAs("the shares move; what each strategy draws on does not")
                 .isEqualTo(carried.strategies().get(0).sources());
@@ -278,6 +291,6 @@ class CampaignsTest {
                 .describedAs("a strategy given none of the time would never run, so asking for "
                         + "no pushing takes it out rather than listing a run nobody will get")
                 .extracting(Campaign.PlannedStrategy::name)
-                .containsExactly("nominal");
+                .containsExactly("nominal", "mutation");
     }
 }

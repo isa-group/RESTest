@@ -17,8 +17,10 @@ package io.restest.report;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
+import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionOutcome;
+import io.restest.core.execution.TestCase;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
@@ -81,11 +83,14 @@ public final class ConsoleReport implements RunListener {
     private int attempts;
     private int faults;
 
-    /** The names of the lists a run pushes at the API with, rather than tries to work with. */
-    private final Set<String> awkwardSources;
-
-    /** How many requests carried at least one value from one of them. */
+    /** How many requests were built to push at the API with awkward values throughout. */
     private long awkward;
+
+    /** How many were made by changing one thing in a request the API had accepted. */
+    private long changed;
+
+    /** How many of those broke something the description states, expecting to be refused. */
+    private long changedAgainstTheDescription;
 
     /** How many faults to print in full before the screen stops being the right place for them. */
     private final int faultsShown;
@@ -99,28 +104,28 @@ public final class ConsoleReport implements RunListener {
     /** What the command running this says before the run begins, printed under the first line. */
     private final String introduction;
 
-    private ConsoleReport(Appendable out, Set<String> awkwardSources, ReportSettings settings,
-            String introduction) {
+    private ConsoleReport(Appendable out, ReportSettings settings, String introduction) {
         this.out = Objects.requireNonNull(out, "out");
         this.introduction = Objects.requireNonNull(introduction, "introduction");
-        this.awkwardSources = Set.copyOf(Objects.requireNonNull(awkwardSources, "awkwardSources"));
         this.faultsShown = settings.faultsShownOnTheConsole();
         this.skippedShown = settings.skippedOperationsShownOnTheConsole();
     }
 
     /** A report that writes wherever you tell it to. */
     public static ConsoleReport to(Appendable out) {
-        return new ConsoleReport(out, Set.of(), ReportSettings.defaults(), "");
+        return new ConsoleReport(out, ReportSettings.defaults(), "");
     }
 
     /**
-     * A report that writes wherever you tell it to, knows which lists a run pushes with, and is
-     * told how many faults belong on a screen.
+     * A report that writes wherever you tell it to, and is told how many faults belong on a
+     * screen.
      *
-     * <p>Part of a run is spent on requests built from values nobody sensible would send. Whatever
-     * those earn - a refusal, or an acceptance, or the API falling over - lands in the same counts
-     * as everything else, and a summary that did not separate them would read as though the API
-     * were behaving that way towards ordinary traffic.
+     * <p>Part of a run is spent on requests built from values nobody sensible would send, and part
+     * on requests the API accepted sent again with one thing broken. Whatever those earn - a
+     * refusal, or an acceptance, or the API falling over - lands in the same counts as everything
+     * else, and a summary that did not separate them would read as though the API were behaving
+     * that way towards ordinary traffic. Each request says which kind it was, and the summary
+     * counts them by that.
      *
      * <p>A run that keeps testing for as long as it was given will ask an API the same question
      * thousands of times, and an API that is broken is broken every time. Printing all of them
@@ -128,13 +133,11 @@ public final class ConsoleReport implements RunListener {
      * screen says so once and stops. The count at the end is of all of them, printed or not.
      *
      * @param out where to write
-     * @param awkwardSources the names of the lists a run pushes at the API with
      * @param settings how much of what was found belongs on a screen
      * @return the report
      */
-    public static ConsoleReport to(Appendable out, Set<String> awkwardSources,
-            ReportSettings settings) {
-        return to(out, awkwardSources, settings, "");
+    public static ConsoleReport to(Appendable out, ReportSettings settings) {
+        return to(out, settings, "");
     }
 
     /**
@@ -148,16 +151,13 @@ public final class ConsoleReport implements RunListener {
      * one inside the other.
      *
      * @param out where to write
-     * @param awkwardSources the names of the lists a run pushes at the API with
      * @param settings how much of what was found belongs on a screen
      * @param introduction the lines to print under the first one, each ending in a line break;
      *     empty for none
      * @return the report
      */
-    public static ConsoleReport to(Appendable out, Set<String> awkwardSources,
-            ReportSettings settings, String introduction) {
-        return new ConsoleReport(out, awkwardSources,
-                Objects.requireNonNull(settings, "settings"), introduction);
+    public static ConsoleReport to(Appendable out, ReportSettings settings, String introduction) {
+        return new ConsoleReport(out, Objects.requireNonNull(settings, "settings"), introduction);
     }
 
     /**
@@ -184,8 +184,15 @@ public final class ConsoleReport implements RunListener {
             }
             case RunEvent.InteractionCompleted completed -> {
                 attempts++;
-                if (carriedSomethingAwkward(completed.interaction())) {
+                TestCase sent = completed.interaction().testCase();
+                if (sent.intent() == Intent.PUSHING) {
                     awkward++;
+                }
+                if (sent.mutation().isPresent()) {
+                    changed++;
+                    if (sent.intent() == Intent.REFUSAL_EXPECTED) {
+                        changedAgainstTheDescription++;
+                    }
                 }
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
@@ -277,17 +284,6 @@ public final class ConsoleReport implements RunListener {
     }
 
 
-    /** Whether any value in this attempt came from a list the run pushes at the API with. */
-    private boolean carriedSomethingAwkward(io.restest.core.execution.Interaction interaction) {
-        if (awkwardSources.isEmpty()) {
-            return false;
-        }
-        return interaction.testCase().parameterValues().stream()
-                .map(io.restest.core.execution.ParameterValue::origin)
-                .anyMatch(origin -> origin instanceof io.restest.core.execution.ValueOrigin.Generated
-                        made && awkwardSources.contains(made.source()));
-    }
-
     private void summarise(RunEvent.RunFinished finished) {
         summariseWhatWasSent(finished);
         // After the verdict, because it qualifies it: "no faults found" says nothing about an
@@ -349,6 +345,14 @@ public final class ConsoleReport implements RunListener {
                     + "would send" + (refusals > 0
                             ? ", which accounts for some of the " + refusals + " refusals above"
                             : ""));
+        }
+        if (changed > 0) {
+            // Split by what each change expected, because only those that broke what the
+            // description states are refusals anybody predicted; the rest went where the
+            // description says nothing, and either answer to them is a fair one.
+            write("  " + changed + " of them changed one thing in a request the API had accepted, "
+                    + changedAgainstTheDescription + " of them breaking what the description "
+                    + "states");
         }
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "

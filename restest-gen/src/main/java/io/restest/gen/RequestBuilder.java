@@ -69,6 +69,12 @@ import java.util.StringJoiner;
  * media types the operation's own successful responses declare, so that an API serving more than one
  * - a versioned one, say - is not left guessing what this client can read; where they declare none,
  * the header says the client will take anything.
+ *
+ * <p>A value can also arrive for a place the operation does not declare it in: a required query
+ * parameter sent as a header instead, to see what the API does when something it needs is somewhere
+ * else. It is written the way that place writes things when a document says nothing - as a
+ * {@code name=value} pair in the query string, a single header, or a cookie - rather than dropped,
+ * which would send a different request from the one recorded.
  */
 public final class RequestBuilder {
 
@@ -180,7 +186,23 @@ public final class RequestBuilder {
             testCase.parameterValue(parameter.name(), ParameterLocation.QUERY).ifPresent(value ->
                     asQuery(parameter, value.value()).forEach(query::add));
         }
+        // Spread out one piece per element, which is what the query string does when a document
+        // says nothing about how a parameter is written.
+        undeclared(operation, testCase, ParameterLocation.QUERY).forEach(value ->
+                pairs(value.name(), value.value(), true).forEach(query::add));
         return query.toString();
+    }
+
+    /**
+     * The values a test case carries in a place the operation declares nothing of that name in, in
+     * the order the test case carries them.
+     */
+    private static List<ParameterValue> undeclared(Operation operation, TestCase testCase,
+            ParameterLocation location) {
+        return testCase.parameterValues().stream()
+                .filter(value -> value.location() == location
+                        && operation.parameter(value.name(), location).isEmpty())
+                .toList();
     }
 
     /**
@@ -220,6 +242,9 @@ public final class RequestBuilder {
                     headers.add(Header.of(parameter.name(), headerValue(parameter.name(),
                             joined(value.value(), parameter, ",")))));
         }
+        undeclared(operation, testCase, ParameterLocation.HEADER).forEach(value ->
+                headers.add(Header.of(value.name(), headerValue(value.name(),
+                        joined(value.value(), false, ",")))));
         // Written out rather than left to the HTTP client to add. The client would add the same
         // thing, but only to what goes on the wire - and then the request we recorded, reported and
         // print as a curl command would be missing a header the API actually received.
@@ -235,6 +260,8 @@ public final class RequestBuilder {
                     // otherwise read as the start of another cookie.
                     cookies.put(parameter.name(), encode(joined(value.value(), parameter, ","))));
         }
+        undeclared(operation, testCase, ParameterLocation.COOKIE).forEach(value ->
+                cookies.put(value.name(), encode(joined(value.value(), true, ","))));
         if (!cookies.isEmpty()) {
             StringJoiner jar = new StringJoiner("; ");
             cookies.forEach((name, value) -> jar.add(name + "=" + value));

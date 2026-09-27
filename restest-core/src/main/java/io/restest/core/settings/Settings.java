@@ -46,6 +46,7 @@ import java.util.Objects;
  * @param engine how requests are sent
  * @param schedule how far ahead of the API the run works
  * @param generation what an invented value may look like
+ * @param mutation which changes may be made to requests the API accepted, and how large
  * @param memory how much of what the API said is remembered
  * @param document what is accepted when a description is fetched
  * @param report how much of what was found is written out
@@ -54,6 +55,7 @@ public record Settings(
         EngineSettings engine,
         ScheduleSettings schedule,
         GenerationSettings generation,
+        MutationSettings mutation,
         MemorySettings memory,
         DocumentSettings document,
         ReportSettings report) {
@@ -62,6 +64,7 @@ public record Settings(
             EngineSettings.defaults(),
             ScheduleSettings.defaults(),
             GenerationSettings.defaults(),
+            MutationSettings.defaults(),
             MemorySettings.defaults(),
             DocumentSettings.defaults(),
             ReportSettings.defaults());
@@ -70,6 +73,7 @@ public record Settings(
         Objects.requireNonNull(engine, "engine");
         Objects.requireNonNull(schedule, "schedule");
         Objects.requireNonNull(generation, "generation");
+        Objects.requireNonNull(mutation, "mutation");
         Objects.requireNonNull(memory, "memory");
         Objects.requireNonNull(document, "document");
         Objects.requireNonNull(report, "report");
@@ -155,6 +159,27 @@ public record Settings(
                         DEFAULTS.generation.sendableAttempts()),
                 typed.wholeNumber("generation.writableBodyAttempts",
                         DEFAULTS.generation.writableBodyAttempts())));
+        MutationSettings mutation = group("mutation", () -> new MutationSettings(
+                typed.yesOrNo("mutation.violations", DEFAULTS.mutation.violations()),
+                typed.yesOrNo("mutation.probes", DEFAULTS.mutation.probes()),
+                typed.yesOrNo("mutation.dropRequired", DEFAULTS.mutation.dropRequired()),
+                typed.yesOrNo("mutation.wrongLocation", DEFAULTS.mutation.wrongLocation()),
+                typed.yesOrNo("mutation.wrongType", DEFAULTS.mutation.wrongType()),
+                typed.yesOrNo("mutation.outsideABound", DEFAULTS.mutation.outsideABound()),
+                typed.yesOrNo("mutation.breakAnEnumeration",
+                        DEFAULTS.mutation.breakAnEnumeration()),
+                typed.yesOrNo("mutation.breakAPattern", DEFAULTS.mutation.breakAPattern()),
+                typed.yesOrNo("mutation.sendNull", DEFAULTS.mutation.sendNull()),
+                typed.yesOrNo("mutation.sendEmpty", DEFAULTS.mutation.sendEmpty()),
+                typed.yesOrNo("mutation.oversize", DEFAULTS.mutation.oversize()),
+                typed.yesOrNo("mutation.oversizeWithNoLimit",
+                        DEFAULTS.mutation.oversizeWithNoLimit()),
+                typed.yesOrNo("mutation.emptyWithNoRule", DEFAULTS.mutation.emptyWithNoRule()),
+                typed.wholeNumber("mutation.acceptedKept", DEFAULTS.mutation.acceptedKept()),
+                typed.wholeNumber("mutation.oversizedLength",
+                        DEFAULTS.mutation.oversizedLength()),
+                typed.wholeNumber("mutation.oversizedItems",
+                        DEFAULTS.mutation.oversizedItems())));
         MemorySettings memory = group("memory", () -> new MemorySettings(
                 typed.wholeNumber("memory.mostValuesUnderOneName",
                         DEFAULTS.memory.mostValuesUnderOneName()),
@@ -179,7 +204,7 @@ public record Settings(
                         DEFAULTS.report.faultsShownOnTheConsole()),
                 typed.wholeNumber("report.skippedOperationsShownOnTheConsole",
                         DEFAULTS.report.skippedOperationsShownOnTheConsole())));
-        return new Settings(engine, schedule, generation, memory, document, report);
+        return new Settings(engine, schedule, generation, mutation, memory, document, report);
     }
 
     /**
@@ -251,6 +276,23 @@ public record Settings(
             case "generation.writableBodyAttempts" ->
                     String.valueOf(generation.writableBodyAttempts());
 
+            case "mutation.violations" -> String.valueOf(mutation.violations());
+            case "mutation.probes" -> String.valueOf(mutation.probes());
+            case "mutation.dropRequired" -> String.valueOf(mutation.dropRequired());
+            case "mutation.wrongLocation" -> String.valueOf(mutation.wrongLocation());
+            case "mutation.wrongType" -> String.valueOf(mutation.wrongType());
+            case "mutation.outsideABound" -> String.valueOf(mutation.outsideABound());
+            case "mutation.breakAnEnumeration" -> String.valueOf(mutation.breakAnEnumeration());
+            case "mutation.breakAPattern" -> String.valueOf(mutation.breakAPattern());
+            case "mutation.sendNull" -> String.valueOf(mutation.sendNull());
+            case "mutation.sendEmpty" -> String.valueOf(mutation.sendEmpty());
+            case "mutation.oversize" -> String.valueOf(mutation.oversize());
+            case "mutation.oversizeWithNoLimit" -> String.valueOf(mutation.oversizeWithNoLimit());
+            case "mutation.emptyWithNoRule" -> String.valueOf(mutation.emptyWithNoRule());
+            case "mutation.acceptedKept" -> String.valueOf(mutation.acceptedKept());
+            case "mutation.oversizedLength" -> String.valueOf(mutation.oversizedLength());
+            case "mutation.oversizedItems" -> String.valueOf(mutation.oversizedItems());
+
             case "memory.mostValuesUnderOneName" ->
                     String.valueOf(memory.mostValuesUnderOneName());
             case "memory.mostNames" -> String.valueOf(memory.mostNames());
@@ -283,32 +325,37 @@ public record Settings(
 
     /** These settings with the engine's changed. */
     public Settings withEngine(EngineSettings value) {
-        return new Settings(value, schedule, generation, memory, document, report);
+        return new Settings(value, schedule, generation, mutation, memory, document, report);
     }
 
     /** These settings with the schedule's changed. */
     public Settings withSchedule(ScheduleSettings value) {
-        return new Settings(engine, value, generation, memory, document, report);
+        return new Settings(engine, value, generation, mutation, memory, document, report);
     }
 
     /** These settings with generation's changed. */
     public Settings withGeneration(GenerationSettings value) {
-        return new Settings(engine, schedule, value, memory, document, report);
+        return new Settings(engine, schedule, value, mutation, memory, document, report);
+    }
+
+    /** These settings with what may be changed in accepted requests changed. */
+    public Settings withMutation(MutationSettings value) {
+        return new Settings(engine, schedule, generation, value, memory, document, report);
     }
 
     /** These settings with the memory's changed. */
     public Settings withMemory(MemorySettings value) {
-        return new Settings(engine, schedule, generation, value, document, report);
+        return new Settings(engine, schedule, generation, mutation, value, document, report);
     }
 
     /** These settings with the document's changed. */
     public Settings withDocument(DocumentSettings value) {
-        return new Settings(engine, schedule, generation, memory, value, report);
+        return new Settings(engine, schedule, generation, mutation, memory, value, report);
     }
 
     /** These settings with the report's changed. */
     public Settings withReport(ReportSettings value) {
-        return new Settings(engine, schedule, generation, memory, document, value);
+        return new Settings(engine, schedule, generation, mutation, memory, document, value);
     }
 
     /** A number, without the exponent Java would otherwise print for a small or large one. */

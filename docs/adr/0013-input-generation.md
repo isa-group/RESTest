@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1 and M9.3
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3 and M10.1
 **Date:** 2026-09-13
 
 ## Context
@@ -643,3 +643,25 @@ wait for anything to be missing. Forgetting is not part of that unit and needs i
 to a `DELETE` is not always a deletion, and where the memory is thin, forgetting leaves invention in
 the place of a stale value.
 
+## Amendment (M10.1)
+
+**Date:** 2026-09-27
+
+**§3 and §4 are built, and the intent has four values rather than three.**
+[ADR-0027](0027-changing-one-thing-in-an-accepted-request.md) is the record; this notes where what
+was built departs from what was written here.
+
+**§4: a strategy says `mutates: accepted`.** Its requests are a request the API accepted with one
+thing changed, drawn from a memory of accepted requests that listens to the event stream, as §5
+said. Eleven operators, where §4 named five and the roadmap nine: "oversize" and "send the empty
+value" each became two, one that breaks what the document states and one where the document says
+nothing, so that the intent each records is true.
+
+**§3: four intents.** *Acceptable*, *refusal expected*, *unknown*, and a fourth, *pushing*, for the
+requests of the strategy §4's last paragraph describes, whose refusal cannot be put down to any one
+value. *Acceptable* exists and is not yet given to anything; ADR-0027 §2 says why. The consequence
+below that calls the intent "a store layout change" was wrong: the test case is stored as JSON, and
+the intent and the change it records are two more members of it.
+
+**The unit of work for sequences is still open.** A change to an accepted request is one request,
+not a sequence, and the two decisions "Left to M4, on purpose" are untouched by it.
