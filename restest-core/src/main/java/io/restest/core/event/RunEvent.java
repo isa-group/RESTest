@@ -84,6 +84,52 @@ public sealed interface RunEvent {
         }
     }
 
+    /**
+     * A list of values to send was read, and this run holds it.
+     *
+     * <p>Said of every list the run holds - the one RESTest carries as well as the ones somebody
+     * handed over - so that a report shows what a run was working with. Holding a list is not the
+     * same as drawing on it: a plan decides which lists each kind of request asks, and one that
+     * asks none of them, or a run told to do no pushing, holds a list and sends nothing from it.
+     * What this does settle is that the file was read, which a run that lost it could not claim.
+     *
+     * @param at   when it was said
+     * @param name what the list is called, which is how a plan names it
+     * @param from the file it was read from, as it was named, or the list RESTest carries
+     */
+    record DictionaryRead(Instant at, String name, String from) implements RunEvent {
+        public DictionaryRead {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(name, "name");
+            Objects.requireNonNull(from, "from");
+        }
+    }
+
+    /**
+     * A list of values to send could not be read, so none of its values will be sent - usually a
+     * file somebody handed over, and once in a while the list RESTest carries, which would be a
+     * fault in the tool.
+     *
+     * <p>The run goes on without it. Said so that a report can repeat it beside the verdict: a run
+     * that loses a list says so once, as it starts, and that line is easy to miss among the rest.
+     *
+     * @param at     when it was said
+     * @param from   the file or directory that was named, as it was named, or the list RESTest
+     *               carries
+     * @param reason why nothing could be read from it, in the words a report prints
+     */
+    record DictionaryRefused(Instant at, String from, String reason) implements RunEvent {
+        public DictionaryRefused {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(from, "from");
+            Objects.requireNonNull(reason, "reason");
+            if (reason.isBlank()) {
+                throw new IllegalArgumentException("a list that could not be read could not be "
+                        + "read for a reason, which a report prints");
+            }
+        }
+    }
+
     /** A request has been decided on, but not yet sent. */
     record TestCasePlanned(Instant at, TestCase testCase) implements RunEvent {
         public TestCasePlanned {

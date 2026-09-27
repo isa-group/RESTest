@@ -175,6 +175,113 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("a file that cannot be read is also named as refused, apart from the entries that "
+            + "merely go unused, so a report can say which lists a run went without")
+    void an_unreadable_file_is_named_as_refused(@TempDir Path directory) throws IOException {
+        write(directory.resolve("good.yaml"), "good", "type");
+        Path broken = directory.resolve("broken.yaml");
+        Files.writeString(broken, "key: [unclosed");
+        Files.writeString(directory.resolve("stale.yaml"), """
+                version: 1
+                name: stale
+                keyedBy: operationAndParameter
+                values:
+                  getOwnerRenamedSince:
+                    ownerId: [1]
+                """);
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
+
+        assertThat(found.refused()).singleElement().satisfies(refused -> {
+            assertThat(refused.from()).isEqualTo(broken.toString());
+            assertThat(refused.reason()).contains("broken.yaml").contains("could not be read");
+        });
+        assertThat(found.problems())
+                .describedAs("every refusal is still printed, alongside what merely goes unused")
+                .hasSize(2)
+                .contains(found.refused().getFirst().reason());
+    }
+
+    @Test
+    @DisplayName("a place that holds no dictionary at all is named as refused too")
+    void a_place_with_nothing_in_it_is_named_as_refused(@TempDir Path directory) {
+        Path nowhere = directory.resolve("nowhere.json");
+
+        assertThat(Dictionaries.gather(List.of(nowhere, directory), PET_SHOP).refused())
+                .extracting(Dictionaries.Refused::from)
+                .containsExactly(nowhere.toString(), directory.toString());
+    }
+
+    @Test
+    @DisplayName("a file whose only oddity is an operation with nothing under it is read, not refused")
+    void an_operation_with_nothing_under_it_costs_nothing(@TempDir Path directory)
+            throws IOException {
+        Path ids = Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  GET /owners:
+                    # nothing to fill: every place is settled by the document
+                  GET /owners/{ownerId}:
+                    ownerId: ["7"]
+                """);
+        ApiModel withAList = ApiModel.of("Pet shop", "1.0", List.of(
+                PET_SHOP.operations().getFirst(), Operation.of(HttpMethod.GET, "/owners")));
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), withAList);
+
+        assertThat(found.refused()).isEmpty();
+        assertThat(found.problems()).isEmpty();
+        assertThat(found.read()).extracting(Dictionaries.Read::name, Dictionaries.Read::from)
+                .describedAs("every list held, with where it came from, RESTest's own first")
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("fuzzing",
+                                "the list of values to push with that is built into RESTest"),
+                        org.assertj.core.groups.Tuple.tuple("ids", ids.toString()));
+    }
+
+    @Test
+    @DisplayName("an operation with nothing under it that the API does not have is still named, "
+            + "since the name is stale whether or not anything is under it")
+    void an_empty_operation_the_api_does_not_have_is_named(@TempDir Path directory)
+            throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  GET /oops:
+                  GET /owners/{ownerId}:
+                    ownerId: ["7"]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_SHOP).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("1 operation(s) written with nothing under them are not in this API "
+                        + "(GET /oops)");
+    }
+
+    @Test
+    @DisplayName("a file that is read and holds not one value is said to add nothing, rather than "
+            + "look like a file that was used")
+    void a_file_holding_no_values_is_named(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("empty.yaml"), """
+                version: 1
+                name: empty
+                keyedBy: type
+                values:
+                  # string: [to be written]
+                """);
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
+
+        assertThat(found.refused()).isEmpty();
+        assertThat(found.problems()).singleElement(org.assertj.core.api.InstanceOfAssertFactories
+                .STRING).contains("empty.yaml holds no values at all, so it adds nothing");
+    }
+
+    @Test
     @DisplayName("somewhere there is no dictionary at all is said, rather than quietly ignored")
     void a_place_with_nothing_in_it_is_reported(@TempDir Path directory) {
         assertThat(Dictionaries.gather(List.of(directory.resolve("nowhere.json")), PET_SHOP)

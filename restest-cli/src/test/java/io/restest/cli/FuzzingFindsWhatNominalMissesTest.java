@@ -23,6 +23,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.restest.core.json.JsonValue;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -159,6 +160,53 @@ class FuzzingFindsWhatNominalMissesTest {
         assertThat(screen)
                 .describedAs("a file nobody could read costs the values in it, not the run")
                 .contains("requests to 1 operations");
+        assertThat(screen.lines().toList())
+                .describedAs("and it is said again with the summary, where it cannot be missed")
+                .contains("1 list of values could not be read, so none of its values were sent:");
+
+        JsonValue.JsonObject dictionaries = (JsonValue.JsonObject) ((JsonValue.JsonObject)
+                io.restest.core.json.JsonText.read(Files.readString(
+                        directory.resolve("out").resolve("report.json"))))
+                .member("dictionaries").orElseThrow();
+        assertThat(((JsonValue.JsonArray) dictionaries.member("read").orElseThrow()).elements())
+                .describedAs("a run that went without a list can be told apart by reading the "
+                        + "file: only RESTest's own is held, which --fuzzing 0 leaves unasked")
+                .extracting(read -> ((JsonValue.JsonObject) read).member("name").orElseThrow())
+                .containsExactly(JsonValue.of("fuzzing"));
+        assertThat(((JsonValue.JsonArray) dictionaries.member("refused").orElseThrow()).elements())
+                .singleElement().satisfies(refused -> assertThat(
+                        ((JsonValue.JsonObject) refused).member("from").orElseThrow())
+                        .isEqualTo(JsonValue.of(broken.toString())));
+    }
+
+    @Test
+    @DisplayName("an operation written down with nothing under it costs nothing: the file's other "
+            + "values are still sent")
+    void an_operation_with_nothing_under_it_does_not_cost_the_file(@TempDir Path directory)
+            throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
+        Path mine = Files.writeString(directory.resolve("mine.yaml"), """
+                version: 1
+                name: mine
+                keyedBy: operationAndParameter
+                values:
+                  GET /elsewhere:
+                    # nothing to fill: every place is settled by the document
+                  search:
+                    q: [ZZEMPTYBLOCKZZ]
+                """);
+
+        String screen = run(directory.resolve("out"), document, "--fuzzing", "0",
+                "--dictionary", mine.toString());
+
+        assertThat(screen).doesNotContain("could not be read");
+        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
+        com.github.tomakehurst.wiremock.client.WireMock.verify(
+                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+                com.github.tomakehurst.wiremock.client.WireMock
+                        .getRequestedFor(urlPathEqualTo("/search"))
+                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
+                                .equalTo("ZZEMPTYBLOCKZZ")));
     }
 
     @Test

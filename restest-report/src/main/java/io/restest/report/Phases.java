@@ -96,6 +96,12 @@ final class Phases {
             case RunEvent.OperationSkipped ignored -> {
                 // Nor is an operation no stretch of it will try.
             }
+            case RunEvent.DictionaryRead ignored -> {
+                // Nor is a list of values, read before any stretch of it began.
+            }
+            case RunEvent.DictionaryRefused ignored -> {
+                // The same.
+            }
             case RunEvent.FaultFound ignored -> {
                 // A fault is a judgement about a reply, and the reply has been counted already.
             }

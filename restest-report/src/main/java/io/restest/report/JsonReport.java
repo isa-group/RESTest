@@ -82,7 +82,9 @@ import java.util.Set;
  * stopped it writing, so nothing is quietly missing.
  *
  * <p>It also names every operation the run said it would not try, each with the reason, so that a
- * run which found nothing wrong says what it did not look at.
+ * run which found nothing wrong says what it did not look at - and every list of values the run
+ * held, beside any it could not read, so that a run made without the values somebody meant it to
+ * have can be told from one made with them.
  *
  * <p>Fault kinds are named by number from a catalogue several testing tools share, and the report
  * says which version of that catalogue it used, because a fault code only means something next to
@@ -184,6 +186,12 @@ public final class JsonReport implements RunListener {
      * description has operations, never as long as the run.
      */
     private final List<RunEvent.OperationSkipped> skipped = new ArrayList<>();
+
+    /** The lists of values the run holds, in the order it said so. */
+    private final List<RunEvent.DictionaryRead> dictionariesRead = new ArrayList<>();
+
+    /** The lists that were handed over and could not be read, in the order the run said so. */
+    private final List<RunEvent.DictionaryRefused> dictionariesRefused = new ArrayList<>();
     private String api = "";
     private String baseUrl = "";
     private int attempts;
@@ -261,6 +269,8 @@ public final class JsonReport implements RunListener {
                 baseUrl = started.baseUrl();
             }
             case RunEvent.OperationSkipped skip -> skipped.add(skip);
+            case RunEvent.DictionaryRead read -> dictionariesRead.add(read);
+            case RunEvent.DictionaryRefused refused -> dictionariesRefused.add(refused);
             case RunEvent.InteractionCompleted completed -> attempted(completed.interaction());
             case RunEvent.FaultFound found -> took(found.finding());
             case RunEvent.RunFinished finished -> {
@@ -396,6 +406,7 @@ public final class JsonReport implements RunListener {
         report.put("api", pair("title", JsonValue.of(api), "baseUrl", JsonValue.of(baseUrl)));
         report.put("totals", totals());
         report.put("skippedOperations", skippedOperations());
+        report.put("dictionaries", dictionaries());
         report.put("limits", limits());
         report.put("settings", settings());
         report.put("engine", engineStatistics());
@@ -466,6 +477,27 @@ public final class JsonReport implements RunListener {
                 .map(skip -> pair("operation", JsonValue.of(skip.operation().value()),
                         "reason", JsonValue.of(skip.reason())))
                 .toList());
+    }
+
+    /**
+     * The lists of values the run held, with where each came from, and the ones it could not read.
+     *
+     * <p>A list that cannot be read costs the run its values and does not end it, so a run made
+     * without a list somebody meant it to have finishes like any other. Its results alone look
+     * exactly like a run that had the list and found it did not help. This is where anything
+     * reading the file can tell the two apart: a file it handed over is either named under
+     * {@code read} or explained under {@code refused}. Being held is not being drawn on - that is
+     * the plan's to decide - but a list that was never read certainly was not.
+     */
+    private JsonValue dictionaries() {
+        return pair("read", JsonValue.array(dictionariesRead.stream()
+                        .map(read -> pair("name", JsonValue.of(read.name()),
+                                "from", JsonValue.of(read.from())))
+                        .toList()),
+                "refused", JsonValue.array(dictionariesRefused.stream()
+                        .map(refused -> pair("from", JsonValue.of(refused.from()),
+                                "reason", JsonValue.of(refused.reason())))
+                        .toList()));
     }
 
     /**

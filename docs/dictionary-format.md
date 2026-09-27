@@ -17,7 +17,9 @@ restest run api.yaml --url https://api.example --dictionary ids.yaml --dictionar
 `.yaml`, `.yml` and `.json` file in it, read in name order. RESTest always uses its own list of
 values to push at an API with on top of whatever you give it; `--fuzzing 0` turns that off.
 
-A file that cannot be read costs the values in it and is reported. It never ends the run.
+A file that cannot be read costs the values in it and is reported — as the run starts, again at
+the end of its summary, and in `report.json` (see [What a run says about your file](#what-a-run-says-about-your-file)).
+It never ends the run.
 
 ## The file
 
@@ -112,6 +114,20 @@ the path everywhere and you will always be right. RESTest turns them into whiche
 its own output, so the two never come apart.
 
 Unquoted is fine. YAML is happy with `GET /pets/{petId}:` as a key.
+
+An operation with nothing under it is an operation with nothing to fill in, and so is `values:`
+with nothing under it. A comment on its own is fine:
+
+```yaml
+values:
+  GET /pets:
+    # nothing to fill: every place is settled by the document
+  getOwner:
+    ownerId: [1, 2, 3]
+```
+
+A place with nothing under it is not: `ownerId:` alone is refused, because it could mean no values or
+the single value null. Write `[]` for the first and `[null]` for the second.
 
 ### Naming a place in the request
 
@@ -281,15 +297,35 @@ The entries under the `operationId` are the ones kept.
 
 None of it ends the run. A dictionary is advice, and a run with some of it unusable is still a run.
 
-Two things are never called wrong. Where the document runs out — a shape written in a way the parser
-could not read, or the point at which one starts repeating itself — nothing below that is judged,
-though everything above it still is. And a name the
-document declares twice in one operation is not judged either, since one entry feeds both and what
-settles one of them need not settle the other.
+A file that could not be read at all — or a directory with no dictionary in it, or a path with
+nothing there — is said three times, because a run made without the values somebody meant it to have
+looks, from its results alone, exactly like a run made with them that found they did not help. Once
+as the run starts, once more at the very end of the summary:
 
-An object that merely allows properties it does not name is not one of those: a value is only ever
-asked for under a name the document writes down, so an entry for `body.anything` is reported however
-willing the API would be to receive it.
+```
+1 list of values could not be read, so none of its values were sent:
+  ids.yaml has nothing under 'ownerId' in 'getOwner', where a list of values belongs: write [] for no values, or [null] to send null
+```
+
+and once in `report.json`, which names every list the run holds — RESTest's own included — with the
+file it came from, beside every one it refused:
+
+```json
+"dictionaries": {
+  "read": [{"name": "fuzzing", "from": "the list of values to push with that is built into RESTest"}],
+  "refused": [{"from": "ids.yaml", "reason": "ids.yaml has nothing under 'ownerId' in 'getOwner', ..."}]
+}
+```
+
+Anything that runs RESTest with a file of yours and compares the results can check that the file is
+under `read` and nothing is under `refused` before it believes them. Being read is not the same as
+being used — which lists each kind of request asks is the plan's to decide, and `--fuzzing 0`, for
+one, leaves the list RESTest carries held and unasked — but a file that was never read was certainly
+not used.
+
+A file that is read and holds not a single value — every entry commented out, say — is not refused,
+since nothing in it is wrong, but it is said as the run starts, and so is an operation written with
+nothing under it that the API does not have.
 
 ## Writing one of these from a specification
 

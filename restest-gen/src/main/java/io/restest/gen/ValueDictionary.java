@@ -247,6 +247,21 @@ public final class ValueDictionary implements Dictionary {
     }
 
     /**
+     * Whether there is not one value anywhere in this dictionary.
+     *
+     * <p>A file can be read perfectly well and still hold nothing - every entry commented out, or
+     * never filled in - and such a file adds nothing to a run. A run says so, because otherwise it
+     * would look exactly like a file that was used.
+     *
+     * @return true when no key and no place has a single value under it
+     */
+    public boolean holdsNoValues() {
+        return values.values().stream().allMatch(List::isEmpty)
+                && perOperation.values().stream()
+                        .allMatch(places -> places.values().stream().allMatch(List::isEmpty));
+    }
+
+    /**
      * The keys this dictionary holds values under, for a run to say when none of them matches
      * anything in the document it was pointed at.
      *
