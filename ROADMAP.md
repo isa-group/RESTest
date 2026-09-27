@@ -9,7 +9,7 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
 still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 29 delivered, 1 measured and not merged, 15 more in v2.0, 28 after it.
+13 milestones: 29 delivered, 2 measured and not merged, 14 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -22,7 +22,7 @@ Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](d
 | ⏭ | After v2.0. The row stays, numbered as it was, and is not started before the competition version ships |
 | 🛑 | Supervision point. Stop there and wait for review instead of starting the next increment |
 | → | The row moved. It names where the work now lives, and is no longer an increment of its own |
-| ✗ | Measured and not merged. The row was built and measured by its milestone's own rule, and left out because no number it is judged by improved. It names the pull request that recorded why, and its notes say where the code is kept |
+| ✗ | Measured and not merged. The row was built and measured by its milestone's own rule, and left out because no number it is judged by improved. It names the pull request that recorded why, and its notes say where the code is kept. One row, 9.4, carries the mark without having been built: it was set aside on what recorded runs showed, before any code, and its notes say why that is less than its milestone's rule asks |
 
 A letter after the number — `1.1a`, `1.7b`, `2.7a`, `3.1b` — marks a row that was split after it was
 written. The letters keep the original number, so earlier pull requests and the ADRs that cite them
@@ -39,7 +39,7 @@ nothing in them is an increment of its own.
 | M0 | Foundations | all | 3 / 3 ✅ |
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
 | M2 | Specification fidelity and input generation | 2.10b came back from 9.1 for 2.1; four rows wait | 10 / 14 |
-| M9 | Reach — every operation the API will answer, answered early | all but 9.3, which was measured and not merged | 2 / 4 |
+| M9 | Reach — every operation the API will answer, answered early | all but 9.3, measured and not merged, and 9.4, set aside before it was built | 2 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 0 / 6 |
@@ -60,7 +60,7 @@ getting there *early*; the **Fault detection** ranking is the first alone.
 | Measured | How | What moves it here |
 |---|---|---|
 | Unique server failures | Distinct 5XX replies, told apart by their error message | Requests that break things in *different* ways: mutations of accepted requests (10.1), bodies of the wrong shape (10.2), sequences over real resources — delete then read, create twice (10.3). The tool's own oracles play no part: the benchmark counts the 5XX itself |
-| Operations covered | Operations that answered 2XX at least once | Identifiers that exist (2.5b ✅, 9.2 ✅), the required-only request drawn often (2.9), no budget spent on operations that can never answer (9.4) |
+| Operations covered | Operations that answered 2XX at least once | Identifiers that exist (2.5b ✅, 9.2 ✅), the required-only request drawn often (2.9) |
 | Code coverage | Methods, statements and branches the API executed | Everything above, plus variety: values, optional parameters and body properties that change from request to request (2.5a ✅, 2.7c ✅, 10.2) |
 | Area under each curve | The same three, integrated over the hour | An opening lap that sends every operation its best request in the first seconds (9.1), and 0% idle time (✅, measured by the benchmark's own clock at 1.9). The `Accept` header ADR-0017 asked for ships since 2.5a |
 
@@ -85,9 +85,9 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 |---|---|---|
 | Tue 22 Sep | Replan accepted | This file, ADR-0024 and ADR-0025 reviewed. 8.3 launched the same night, its three plans and the five dictionaries written first |
 | Wed 23 Sep | Registered | The competition's submission system holds the tool's name and authors; the entry is updated freely until the deadline, so registering costs nothing and removes one thing that can go wrong on 8 October |
-| Sun 27 Sep | M9 measured | 2.9, 9.1, 9.2 and 9.4 merged, 9.3 measured and not merged; 8.4 running overnight |
+| Sun 27 Sep | M9 measured | 2.9, 9.1 and 9.2 merged, 9.3 measured and not merged, 9.4 set aside on recorded runs; 8.4 running overnight |
 | Fri 2 Oct | M10 measured | 10.1–10.3 and 11.2 merged; 8.5 running overnight; which output of the manual to publish decided (12.3) |
-| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9 but 9.3, M10, M11, 12.1, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
+| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9 but 9.3 and 9.4, M10, M11, 12.1, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
 | Thu 8 Oct | **Submission** | 8.6 read; v2.0.0 tagged from the frozen commit (12.4); tool submitted, one day before the deadline |
 | Fri 9 Oct | Deadline | Anywhere on Earth. Nothing is submitted on this day by plan |
 | Mon 12 Oct | `master` replaced | 12.5, once the tag stands |
@@ -107,9 +107,10 @@ row of M8 names the rows written *while* it runs.
 
 1. **11.1** the settings, first, so that every lever after it lands with its switch. **8.3** runs
    overnight in the meantime.
-2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** — reach; 9.3 was measured and not merged. Each row
-   is measured on a restarted containerised pet-clinic before it is merged (the way 2.5b was), and
-   **8.4** measures the milestone as a whole, overnight, on the five.
+2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** — reach; 9.3 was measured and not merged, and 9.4
+   set aside on recorded runs before it was built. Each row is measured on a restarted
+   containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measures the
+   milestone as a whole, overnight, on the five.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
 4. **12.1**, **7.2a**, **12.2** — the command line frozen, the image, the documentation. Fixes from
    8.4 and 8.5 land here, behind a switch when they change behaviour.
@@ -121,7 +122,8 @@ row of M8 names the rows written *while* it runs.
 
 Three things were asked of the maintainer at the replan rather than at the row, and **all three
 were approved on 22 September 2026**: **9.4** takes the narrow version of the first of ADR-0017's
-open questions, which is on the deferred list; **12.3** writes the manual once and builds HTML and
+open questions, which is on the deferred list (*set aside unbuilt on 27 September; see its
+notes*); **12.3** writes the manual once and builds HTML and
 PDF from it, so that the only decision left — which output to publish, due 2 October — is a cheap
 one; **12.4** tags `v2.0.0-rc.1` for the submission if the manual is late and `v2.0.0` when it
 lands, with a check that the two commits differ in documentation files only.
@@ -362,7 +364,7 @@ number goes in the pull request. A row whose number is not better is not merged.
 | 9.1 ✅ [#322](https://github.com/isa-group/RESTest/pull/322) | **A scheduler of its own, and an opening lap.** The choice of *what to send next* left `RunLoop`: a `Scheduler` holds the deadline and the order, and the loop does what it says ([ADR-0026](docs/adr/0026-what-a-run-sends-first.md)). Its first job is an **opening lap**, before anything is drawn: every operation once, with the request it is most likely to accept - the parameters it requires and no others, a body wherever one is described, the plan's own sources asked in turn, a closed list of accepted values first and then what the API has already returned - in five steps, lists, creations, reads of one thing, changes, deletions, each waiting at most `schedule.openingLapPatience` for the answers to the one before to be heard. Charged to the budget, announced as a phase of its own and reported in the summary and in `report.json`; `schedule.openingLap` switches it off. An operation that declares no 2XX media type gets `Accept: */*`. **Three things differ from the row as approved, on the corpus's evidence**: the order goes by step rather than by method and then path depth, a value the API returned ranks above the document's sample, and a body goes wherever one is described rather than only where it is marked required - see the notes. **Not taken**: shares as stretches of time, back in 2.10b for 2.1 | The first seconds of a run cover what the tool can cover on its own, which is what the area under the curve rewards. Measured against two containerised APIs restarted before every run, five seeds, a minute each, the lap switched on against off: kafka-rest-proxy had 28.6 operations answered 2XX two seconds in against 14.2, and the area under that curve rose 17%, better on every seed; pet-clinic had 30.8 five seconds in against 19.6, the area up 15%, better on four seeds of five. Both ended the minute higher too: 34.2 operations against 29.6, and 32.2 against 30.8 |
 | 9.2 ✅ [#331](https://github.com/isa-group/RESTest/pull/331) | **Identifiers by resource** (the narrow version of 4.1). A path parameter is filled from the identifier of the things its kind of address returned: `{petTypeId}` under `/pettypes/{petTypeId}` from the `id` of what `GET /pettypes` lists. The kind is the fixed part before the gap, or the one the gap's own name names, plural and singular spelt alike; a reply's things are a list's elements, an object, or what a wrapper with no identifier holds; nothing is kept from a `DELETE`. Four steps, first answer wins: the gap's exact name within those things, then `id` or the kind followed by id, then 2.5b's name anywhere, then anything written like an identifier - the second and fourth only for a gap itself named like one. Every candidate gated on kind, closed list, `uuid`/`int32`/`int64` and sendability. **One thing differs from the row as approved**: the kind is asked before the exact name, chosen by the maintainer on 26 September, with its own switch so the order can be measured - see the notes. `memory.identifiersByResource` and `memory.identifiersByResourceFirst`. No synonym table and no similarity score, which stay in 4.1 | The operations behind a gap the replies call something else get identifiers that exist. Four priority APIs restarted before every run, five seeds, a minute each: gestao-hospital covered 18.0 operations against 9.0 with it off, 16.8 of them within five seconds against 2.8, better on every seed; pet-clinic 33.0 against 31.8, the area up 3.8%, better on four seeds of five; notebook-manager's reads, changes and deletes by id answered 2XX 29.4% of the time against 10.3%; kafka-rest-proxy, whose gaps its replies already name, within noise. Over the corpus's declared replies, 325 of 1,838 gaps are reachable only this way |
 | 9.3 ✗ [#332](https://github.com/isa-group/RESTest/pull/332) | **Make what you need** (the narrow version of 4.2 and 4.4). When a consumer needs an identifier nobody has — no reply has carried one, or every one carried has since been deleted — the scheduler sends the producer first and the consumer right after, with what came back; a two-step sequence, the second test case naming the exchange its value came from. **Built, measured and not merged**: the pairs, the memory forgetting what a 2XX `DELETE` removed, and a switch for each. On four priority APIs, restarted before every run, five seeds, a minute each, 7 pairs fired in 338,229 requests, and neither lever moved operations covered, branch coverage or distinct server failures - see the notes. The code is kept on the branch `experiment/m9-3-sequence-pairs` | Nothing a person can see, which is why it is not merged. What it taught is recorded instead: on APIs whose every kind of thing has a list, the memory is never empty, and repeating good requests adds little covered code after the first ten seconds |
-| 9.4 ▶ | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler keeps, per operation, a count of what it answered. An operation whose last *N* answers were all of the kinds that say *this will never work as asked* — the shipped list is 401, 403, 404, 405 and 501, and the list is a setting — has its share shrink towards a floor; an operation that has never answered 2XX is never starved of attempts. Weighted sampling over those counters, three settings — *N*, the floor and the list — no learning rate, no reward. What is **not** taken: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | An hour is not spent on the operations the API will never answer — the ones behind a login the tool does not have, the methods it does not implement — and goes instead to the ones it might |
+| 9.4 ✗ [#333](https://github.com/isa-group/RESTest/pull/333) | **Budget hygiene** — the narrow version of the first of [ADR-0017's open questions](#the-three-open-questions), **approved by the maintainer on 22 September 2026** and taken no further. The scheduler was to keep, per operation, a count of what it answered, and an operation whose last *N* answers were all of the kinds that say *this will never work as asked* would have its share shrink towards a floor, never to nothing. **Set aside before it was built**: the maintainer ruled out of the list 404 and every other answer that depends on the requests the tool generates, which leaves 401, 405 and 501, with 403 on the line. Replayed over thirty-one recorded runs, the narrowed rule has nothing to act on in any run of four of the 2027 five, and on the fifth, flight-search, moves under 0.1% of its requests without 403 and 2.6-4.1% with it - which was not measured, see the notes. What is **not** taken either: scoring dependency candidates by what the API answered (question 2) and reading the text of an error reply (question 3) | Nothing a person can see, which is why it was not built. What it taught is recorded instead: on the APIs the tool is measured against, the answers that would say *this will never work* whatever is sent are almost never given, and the one given often - 404 - depends on what was sent |
 
 ### Notes
 
@@ -500,10 +502,65 @@ calibrated. It is still a run learning from what it has seen, which is why it is
 than assumed, and why the two neighbouring questions are named as *not* taken. It costs what 2.5b
 already cost: a run using it is reproduced by replaying the stored requests, not from the seed.
 
-**9.4 — the seam it proves.** `docs/DESIGN.md` lists `FeedbackListener` — observes every
-interaction, may return scheduling hints — among the extension points, and ADR-0017 noticed that no
-row delivered it. This one does: the counters are a listener on the event stream, and the hint is a
-weight per operation. The seam gets its throwaway-free proof by being used.
+**9.4 — the seam it would have proved.** `docs/DESIGN.md` lists `FeedbackListener` — observes
+every interaction, may return scheduling hints — among the extension points, and ADR-0017 noticed
+that no row delivered it. This one was to: the counters a listener on the event stream, the hint a
+weight per operation, the seam proved by being used rather than by a throwaway. Since 9.4 was not
+built, the seam has no implementation and no row, and `docs/DESIGN.md` says so.
+
+**9.4 — what was measured, and why it was not built.** The row was approved with 404 in its list,
+and the plan written for it kept it there. Asked what each code meant, the maintainer ruled out 404
+and every other answer that depends on the requests the tool generates, before any code: a 404 to
+`GET /owners/{ownerId}` says the identifier was wrong, which is the tool's doing, and setting the
+operation aside for it punishes the operation for the generator's guess. What is left is what should
+say the same thing whatever is sent - 401, no credentials; 405, the method is not there; 501, not
+implemented - with 403 on the line, since whether something is forbidden can depend on which thing
+was asked for.
+
+Before building it, the rule was replayed over what thirty-one runs had recorded: every reply in
+the order it arrived, each request matched back to its operation through its API's own document, an
+operation set aside once its last ten answers were all in the list and sent a tenth as often from
+then on, and every request it would have held back counted as moved to the others. The runs are
+8.3's, twenty minutes each at `da17d2ba` - the 2027 five in campaigns of their own, one for each of
+its three plans, and the eleven APIs of the 2026 edition under the shipped plan, which counts the
+2027 five a fourth time - and the 2027 five again for thirty seconds at `cc415925`, seed 7.
+
+| API | runs | 401, 403, 405, 501 | 401, 405, 501 | with 404, for comparison |
+|---|---|---:|---:|---:|
+| flight-search | 2027 plans ×3, 20 min | 5 operations, 3.4-4.0% | at most 1 operation, under 0.1% | 19 operations, 22-24% |
+| flight-search | 2026 edition, 20 min | 4 operations, 4.1% | none | 18 operations, 24.1% |
+| flight-search | `cc415925`, 30 s | 3 operations, 2.6% | none | 16 operations, 20.0% |
+| gestao-hospital, kafka-rest-proxy, notebook-manager, pet-clinic | all five runs each | none | none | up to 52.6% (kafka-rest-proxy) |
+| project-tracking-system | 2026 edition, 20 min | 13 operations, 2.4% | 13 operations, 2.4% | 13 operations, 2.4% |
+| blog, erc20, features-service, market, person-controller | 2026 edition, 20 min | none | none | up to 5.5% (blog) |
+
+No API answered 501 once, and only project-tracking-system answered 405. So for the competition's
+five known APIs the narrowed rule has nothing to act on in twenty-three runs of twenty-five without
+403, and in the other two, both flight-search's under 8.3's plans, it sets one operation aside and
+moves under 0.1% of the requests: switching it on or off would send the same requests, or as good
+as, which is the argument 2.9 made about pet-clinic. With 403 in the list, flight-search has
+2.6-4.1% of its requests moved in every one of its five runs, and **that was not measured**: whether
+it would have changed operations covered, branches or distinct server failures is not known, and
+nothing here claims it would not.
+
+The recordings also show that even the narrowed list is not what it was meant to be. On
+project-tracking-system every one of the thirteen operations the rule would set aside for 405 also
+answers 200 or 400 to other requests - `POST /app/api/locations` answered 405 602 times and 200 404
+times - so there 405 depends on what is sent too, and nine of the thirteen had already answered 2XX.
+The same is true of the 401s and 403s on flight-search, given by operations that also answer 400 and
+404. A list of codes cannot say that an operation will never work; only the operation's answers to
+different requests can, and that is a different lever from the one approved.
+
+Building it and running the comparison M9 asks for - a restarted API, five seeds, on against off -
+would have measured one API where it moves a few percent of the requests, with M10's gate five days
+away. The maintainer chose to record it instead.
+
+What would reopen it: an API where whole operations answer 401, 405 or 501 to every request while
+others answer. The competition's own authentication material, which 12.1's `--header` hands over,
+removes the likeliest source of 401 before this row could.
+
+**9.4 — what is not taken, still.** The reward-shaped version - go where it breaks - stays with
+the deferred list, and so do questions 2 and 3.
 
 ## M10 — Break
 
@@ -629,11 +686,11 @@ answer, and each row below names what is written while it runs.
 | # | Increment | What it enables |
 |---|---|---|
 | 8.3 ▶ | **The baseline is an ablation over where values come from.** The tip of `v2` after 2.5b, twenty minutes per run, one run, three plans: **declared and invented** — enumerations, samples and defaults from the document, plus invented values, and nothing with a memory; **plus observed** — the plan RESTest ships, which adds what the API itself has returned; **plus dictionaries** — the shipped plan with a hand-written list of values per API passed with `--dictionary`. The first two on the eleven APIs of the 2026 edition, the third on the 2027 five, since a dictionary has to be written per API. Every variant is a plan file or a command-line flag in the harness repository; nothing here changes. About nine hours, overnight. **Runs alongside 11.1** | What each source is worth is known before any lever is built on top of it, and the third plan gives the ceiling: how good the tool is when somebody who knows the API hands it the values — which the competition will not do |
-| 8.4 ▶ | **Screening M9.** The 2027 five, twenty minutes each, one run: the full tool, then each M9 switch off in turn. About ten hours, overnight after 9.4 merges. **Runs alongside 10.1.** A lever that does not move its measurement is switched off in the shipped settings and stays in the code | What each reach lever is worth is known before the break levers are built on top of it, and a lever that costs more than it earns is found before the dress rehearsal |
+| 8.4 ▶ | **Screening M9.** The 2027 five, twenty minutes each, one run: the full tool, then each M9 switch off in turn. About ten hours, overnight once M9 is closed, which 9.4's record does. **Runs alongside 10.1.** A lever that does not move its measurement is switched off in the shipped settings and stays in the code | What each reach lever is worth is known before the break levers are built on top of it, and a lever that costs more than it earns is found before the dress rehearsal |
 | 8.5 ▶ | **Screening M10.** The same shape for the M10 switches, counting distinct 5XX messages and branch coverage. About eight hours, overnight after 10.3 merges. **Runs alongside 12.1 and 12.2** | The same, for the break levers |
 | 8.6 ▶ 🛑 | **The dress rehearsal.** The competition's protocol exactly: the five known APIs, one hour, five runs, eight cores and sixteen gigabytes, the benchmark-compliant image from the harness repository, built from the frozen commit on top of 7.2a's image — the artefact 12.4 submits — started at noon on 6 October. Twenty-five hours. **Runs alongside 12.3 only** — nothing that changes behaviour is written while it runs. 🛑 Its results are read on 8 October; the only change they may cause is a fix for a run that failed outright, re-measured on that API alone for one hour before the tag | The number the tool will post in the competition is known, with its variance, before the tool is submitted — and the image the competition receives is one that has already run for twenty-five hours |
 | 8.1 ⏭ | **The field**, after submission, at the 2026 edition's own scale so that its published table is the comparison. RESTest 2.0 on the eleven APIs the 2026 edition ran on, one hour, five runs: fifty-five hours. The 2026 report gives every other tool's numbers on those APIs at that budget, so they are not re-run here; RESTest 1.x alone is re-run on the same machine, three runs, as the calibration point between the organisers' hardware and ours — about thirty-three hours. 12–25 October | The table that goes in the paper: RESTest 2.0 beside the whole 2026 field on the APIs and budget that field was measured on, with the hardware difference bounded by a tool that appears in both columns |
-| 8.2 ⏭ 🛑 | **The ablation and the replication package**, after submission, at twenty minutes per run like 8.3. Two axes. *Sources*, 8.3's three plans again on the final tool; *levers*, by group rather than one switch at a time: everything on; reach off; break off; hygiene off; everything off. Eight variants — the shipped plan with everything on is in both axes — on the 2027 five, five runs each: about sixty-five hours, 26 October – 1 November. The harness repository public with every campaign's pinned commits and raw data, so a reviewer reproduces any number in the paper from two commands | Every claim in the paper is a measurement somebody else can repeat, and the paper says what each idea is worth rather than that the whole is good |
+| 8.2 ⏭ 🛑 | **The ablation and the replication package**, after submission, at twenty minutes per run like 8.3. Two axes. *Sources*, 8.3's three plans again on the final tool; *levers*, by group rather than one switch at a time: everything on; reach off; break off; everything off. Six variants — the shipped plan with everything on is in both axes — on the 2027 five, five runs each: about fifty hours, 26 October – 1 November. *Hygiene off was a fifth group until 9.4 was set aside unbuilt, and the count before it was one too many.* The harness repository public with every campaign's pinned commits and raw data, so a reviewer reproduces any number in the paper from two commands | Every claim in the paper is a measurement somebody else can repeat, and the paper says what each idea is worth rather than that the whole is good |
 
 ### Notes
 
@@ -882,7 +939,10 @@ approval; the first was asked for by this plan and approved on 22 September 2026
   no learning and no hyper-parameters. At its narrowest it is hygiene: stop spending budget on
   operations that answer nothing but 405 or 401. **That narrowest version is [9.4](#m9--reach)**,
   asked for at the replan of 22 September and approved the same day; the reward-shaped version
-  stays here.
+  stays here. *9.4 was set aside on 27 September before it was built: with the answers that
+  depend on what the tool sends taken out of its list, recorded runs show it with next to nothing
+  to act on across the 2027 five - under 0.1% of flight-search's requests - except 2.6-4.1% of
+  flight-search's if 403 stays in, which was not measured.*
 - **Predicting acceptance.** Whether M4.2 may score dependency candidates by what the API answered,
   which also costs the seed reproducibility ADR-0013 §7 promises.
 - **Error messages.** Whether a warm-up may read the *text* of an error to learn which parameter was

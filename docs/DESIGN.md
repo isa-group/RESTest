@@ -131,11 +131,13 @@ database inside the request loop. The store is for looking back; the event strea
 These are architectural requirements rather than features, and they are the whole of what
 "extensible" means here. Each is verified during its milestone by writing a throwaway
 implementation, demonstrating it, and deleting it — so that the seam is known to be real rather than
-assumed. In v2.0 the non-blocking engine, `Oracle` and `FeedbackListener` have shipped
-implementations — the engine and its idle-time accounting since M1, the two oracles since 1.6, and
-the budget hygiene of M9 for the listener — which is a stronger proof than a throwaway one. Not yet
-exercised, and proven when their milestones are taken after v2.0: `ExternalDataProvider`,
-`ConstraintSource` and `FlowSource`, and `CorpusOracle` ([ADR-0024](adr/0024-the-competition-version.md)).
+assumed. In v2.0 the non-blocking engine and `Oracle` have shipped implementations — the engine
+and its idle-time accounting since M1, the two oracles since 1.6 — which is a stronger proof than a
+throwaway one. Not yet exercised, and proven when their milestones are taken after v2.0:
+`ExternalDataProvider`, `ConstraintSource` and `FlowSource`, and `CorpusOracle`
+([ADR-0024](adr/0024-the-competition-version.md)). `FeedbackListener` has no milestone: its first
+implementation was to be the budget hygiene of 9.4, which was set aside before it was built
+([ADR-0017](adr/0017-what-we-take-from-autoresttest.md), M9.4 amendment).
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
 named after any technology, and no dependency on any model library.
@@ -306,7 +308,7 @@ black-box only; B+W = black-box and white-box modes both available. The last two
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/master) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
-| **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing; budget hygiene from per-operation counters | Identifier reuse from replies, by name and by the resource a path names; producer-then-consumer sequences; delete-then-read and create-twice operators | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
+| **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; producer-then-consumer sequences; delete-then-read and create-twice operators | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
 | RESTest 2.x (planned) | Java | 2.0, 3.0.x, 3.1.x | B | + CBT (IDL), ART, external providers | + property-level dependency graph, CRUD lifecycle model, declared links | + IDL-constrained, external providers | + WFC catalogue, HTTP-semantics, stateful and constraint-aware oracles, corpus oracles |
 
 ## After v2.0
@@ -354,8 +356,9 @@ competition, and all of the same kind: each would have a run learn from what it 
 - Whether the choice of which operation to call next may be steered by counters over what each
   operation has been answering. *Its narrowest version — withdrawing budget from operations whose
   recent answers all say the request can never work as asked, with no reward and no learning rate —
-  is 9.4 in [`ROADMAP.md`](../ROADMAP.md), approved on 22 September 2026; the reward-shaped version
-  stays here.*
+  is 9.4 in [`ROADMAP.md`](../ROADMAP.md), approved on 22 September 2026 and set aside before it
+  was built on 27 September, once its list was narrowed to the answers that do not depend on what
+  the tool sends; the reward-shaped version stays here.*
 - Whether the choice among inferred dependency candidates may be scored by what the API answered.
 - Whether a warm-up may read the *text* of an error reply rather than only its status code.
 
