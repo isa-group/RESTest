@@ -223,7 +223,8 @@ since §5's header changed what some requests say; the comparison is the round a
 - **9.3 has a place to stand.** Its producer-then-consumer sequence is a step the scheduler can
   hand the loop; the round's ordering and waiting are indirect — the shared memory by name — and do
   not replace a sequence that carries one reply to one consumer, survives deletions and underlies
-  10.3's operators.
+  10.3's operators. *9.3 built that step and did not merge it: the pairs almost never fired, because
+  a list refills the memory every round ([ADR-0013](0013-input-generation.md), M9.3 amendment).*
 
 ## Alternatives considered
 
