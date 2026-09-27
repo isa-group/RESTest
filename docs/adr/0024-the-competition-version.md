@@ -75,7 +75,7 @@ Four milestones are added to the roadmap and taken before anything else:
 
 | Milestone | What it is | Measurement it moves |
 |---|---|---|
-| M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations whose recent answers all say *this will never work as asked* — 9.4 names the codes, and they are a setting | Operations covered, coverage, and the area under both |
+| M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations whose recent answers all say *this will never work as asked* — 9.4 names the codes, and they are a setting. *9.3 was measured and not merged, and 9.4 set aside before it was built* | Operations covered, coverage, and the area under both |
 | M10 Break | Mutations of requests the API accepted; bodies of the wrong shape; sequences over real resources — delete then read, create twice | Unique server failures and the error branches of the API |
 | M11 Settings | One place for every number decided during development, layered from defaults, a file, the environment and the command line; every lever with a switch (ADR-0025) | None directly. It is what makes the ablation a campaign rather than a branch per variant |
 | M12 Closing | The list in §1 | None. It is what makes the submission a release |
@@ -113,7 +113,9 @@ is today.
   narrowest version of the first open question of ADR-0017, weighted sampling over per-operation
   counters with no reward and no learning rate, as 9.4 — and the maintainer approved it on
   22 September 2026. The two neighbouring questions are not taken, and the reward-shaped version
-  stays deferred.
+  stays deferred. *The maintainer later narrowed 9.4's list to the answers that do not depend on
+  what the tool sends, and replayed over recorded runs it had next to nothing to act on, so it was
+  set aside before it was built (ADR-0017, M9.4 amendment).*
 - **The rest of the design principles are untouched**: zero configuration to start, never crash on a
   document, test cases as data, one event stream, no global state, nothing blocking the loop.
 
@@ -145,7 +147,8 @@ repository is made public as the replication package.
   than forty. The documentation says so plainly, and `docs/DESIGN.md`'s comparison table describes
   v2.0 rather than the tool it will be.
 - **`FeedbackListener` acquires a milestone.** ADR-0017 noticed the seam had none; 9.4 is its first
-  implementation.
+  implementation. *9.4 was not built, so the seam is without an implementation and without a row
+  again.*
 - **Two decisions ADR-0013 left to M4 are taken at 9.3**, because M4 is now after v2.0: the unit of
   work of a sequence, and what to do about interference between concurrent sequences. 9.3 amends
   ADR-0013 with both. *9.3 built both and was not merged, because it moved no measured number; the

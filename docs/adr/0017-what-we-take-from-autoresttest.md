@@ -258,3 +258,35 @@ budget, with the part of its waits that has nothing in flight counted in the idl
 half of a warm-up this record called ordinary scheduling. It reads no error text and steers nothing by status code: what one step learns reaches
 the next only through the memory of values the API returned, which ADR-0021 already licensed. The
 refusal of a preparation phase outside the budget stands. [ADR-0026](0026-what-a-run-sends-first.md).
+
+## Amendment (M9.4)
+
+**Date:** 2026-09-27
+
+**Open question 1 was answered in its narrow form, and then not built.** The maintainer approved
+the hygiene version on 22 September as roadmap row 9.4: an operation whose last answers were all of
+the kinds that say *this will never work as asked* gets a smaller share of the run, never none. On
+27 September, before any code, the maintainer narrowed the list those answers come from: nothing
+that depends on the requests the tool generates. That rules out 404, which says the identifier or the
+address was wrong - the generator's guess, not the operation's nature - and leaves 401, 405 and 501,
+with 403 on the line.
+
+Replayed over what thirty-one runs had recorded - the 2027 five under roadmap row 8.3's three
+plans and the eleven APIs of the 2026 edition, twenty minutes each, and the 2027 five again for
+thirty seconds - the narrowed rule has nothing to act on in twenty-three of the twenty-five runs of
+the 2027 five, and in the other two, both flight-search's, it moves under 0.1% of the requests. No
+API answered 501 once, and only one answered 405. With 403 kept in, flight-search has 2.6-4.1% of
+its requests moved, and that was not measured. The recordings also show the narrowed list falling
+short of its own idea: the 405s of that one API, and the 401s and 403s of flight-search, come from
+operations that answer other requests with 200, 400 or 404, so they too depend on what was sent.
+The row is recorded as set aside before it was built, with the numbers in `ROADMAP.md`'s notes on
+9.4.
+
+Three things follow. **The line this record drew stands**: nothing in v2.0 steers by what an
+operation has been answering, and the reward-shaped version stays deferred with questions 2 and 3.
+**`FeedbackListener` is again a seam with no milestone**, which is what the consequence
+above said before 9.4 gave it one. **Whoever reopens the question starts from the narrowed list,
+and from what the recordings add to it**: an answer the tool's own choice of values can cause
+says more about those values than about the operation, and the recordings show that no status code
+is safe from that on its own. What would say *this operation will never work* is the same refusal
+to requests that differ, which is a lever this record has not weighed.
