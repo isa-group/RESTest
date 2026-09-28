@@ -120,7 +120,8 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
         for (PlannedStrategy way : strategies) {
             int given = shares.get(way.name());
             if (given > 0) {
-                divided.add(new PlannedStrategy(way.name(), given, way.sources()));
+                divided.add(new PlannedStrategy(way.name(), given, way.sources(),
+                        way.mutatesAccepted()));
             }
         }
         return new Campaign(divided, operations);
@@ -167,11 +168,19 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
      * thing: {@link Strategy} is what this becomes once the sources it names have been found and
      * built. This one can be read out of a file; that one cannot.
      *
+     * <p>Most strategies build every request from nothing. One that <em>mutates</em> builds its
+     * requests by taking one the API has already accepted and changing exactly one thing in it; its
+     * sources are then what it falls back on, for an operation the API has not accepted anything
+     * for yet, or whose accepted request has nothing in it that can be changed.
+     *
      * @param name what it is called, as a report would print it
      * @param share how much of the run's time it gets, out of a hundred
      * @param sources where its values come from, asked in the order written
+     * @param mutatesAccepted whether its requests are made by changing one thing in a request the
+     *     API accepted, its sources being used only when that cannot be done
      */
-    public record PlannedStrategy(String name, int share, List<Entry> sources) {
+    public record PlannedStrategy(String name, int share, List<Entry> sources,
+            boolean mutatesAccepted) {
 
         public PlannedStrategy {
             Objects.requireNonNull(name, "name");
@@ -188,6 +197,17 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
                 throw new IllegalArgumentException("a strategy with no sources of values could "
                         + "not fill in a single request: " + name);
             }
+        }
+
+        /**
+         * A strategy that builds every one of its requests from nothing.
+         *
+         * @param name what it is called, as a report would print it
+         * @param share how much of the run's time it gets, out of a hundred
+         * @param sources where its values come from, asked in the order written
+         */
+        public PlannedStrategy(String name, int share, List<Entry> sources) {
+            this(name, share, sources, false);
         }
 
         /**

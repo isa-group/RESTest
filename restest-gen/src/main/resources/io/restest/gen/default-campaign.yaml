@@ -5,10 +5,12 @@
 # is the whole point of the format: print it with `restest run --print-campaign`, save it, edit
 # it, and pass it back with --campaign.
 #
-# Two strategies. Most of the run builds requests meant to work, from whatever the document and
-# your own lists of values have to say. The rest pushes at the API with values nobody sensible
-# would send, which is how an API gets asked what it does when something unexpected arrives -
-# looking not for a refusal, which is a fair answer, but for the API falling over.
+# Three strategies. Most of the run builds requests meant to work, from whatever the document and
+# your own lists of values have to say. Some of it takes a request the API has accepted and sends
+# it again with exactly one thing wrong, so that whatever the API does next is down to that one
+# thing. The rest pushes at the API with values nobody sensible would send, which is how an API
+# gets asked what it does when something unexpected arrives - looking not for a refusal, which is
+# a fair answer, but for the API falling over.
 #
 # The shares add up to 100, and so do the weights inside any one group.
 
@@ -18,7 +20,7 @@ strategies:
 
   # Requests meant to work.
   - name: nominal
-    share: 75
+    share: 55
     sources:
 
       # A closed list of accepted values is not advice: it is the whole set of values the API
@@ -83,6 +85,39 @@ strategies:
 
           # What the API uses when the caller sends nothing. One value, so it never varies,
           # which is why it is asked least.
+          - source: default
+            weight: 5
+
+  # A request the API accepted, sent again with exactly one thing changed: something it requires
+  # left out, a number one past the largest it allows, a word where it wants a number, a value off
+  # the closed list it states. An API checks what it is sent before acting on it, and a
+  # request with many things wrong is turned away by the first check - so the code behind that
+  # check, where the failures a correct request never reaches tend to live, never runs. Changing
+  # one thing gets past every check but one.
+  #
+  # Which changes are made, and how large, are settings rather than part of the plan: see
+  # `restest run --print-settings`, under mutation. Only the changes that break what the document
+  # states are made unless you say otherwise; `mutation.probes` adds the ones it does not rule on,
+  # such as ten thousand characters where no limit is stated. With them all off, this strategy's
+  # share is built exactly as nominal builds its own.
+  #
+  # The sources below are what it falls back on: until the API has accepted anything for an
+  # operation, or when nothing in what it accepted can be changed, the request is built from them,
+  # the same way nominal builds one.
+  - name: mutation
+    share: 20
+    mutates: accepted
+    sources:
+      - source: enum
+      - weighted:
+          - source: example
+            weight: 15
+          - source: random
+            weight: 20
+          - source: observed
+            weight: 20
+          - dictionaries: given
+            weight: 40
           - source: default
             weight: 5
 

@@ -88,6 +88,31 @@ class ObservedValuesTest {
         }
 
         @Test
+        @DisplayName("nothing is kept from the reply to a request with one thing deliberately "
+                + "changed, which the API may have accepted when it should not have")
+        void nothing_is_kept_from_a_changed_request() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET));
+            TestCase changed = TestCase.changed(GET_PET, List.of(), Optional.empty(),
+                    io.restest.core.execution.Intent.REFUSAL_EXPECTED,
+                    new io.restest.core.execution.Mutation(
+                            io.restest.core.execution.InteractionId.generate(), "oversize",
+                            io.restest.core.model.ParameterLocation.BODY, "body.name",
+                            "sent 10000 characters for body.name"));
+            Interaction answered = Interaction.answered(changed,
+                    HttpRequestRecord.of(HttpMethod.GET, "https://api.example/pets/7"),
+                    new HttpResponseRecord(StatusLine.of(200),
+                            List.of(Header.of("Content-Type", "application/json")),
+                            Optional.of(Payload.of("{\"id\": 7, \"name\": \"xxxx\"}"
+                                    .getBytes(StandardCharsets.UTF_8), "application/json"))),
+                    Instant.EPOCH, Duration.ofMillis(3));
+
+            seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, answered));
+
+            assertThat(valuesUnder(seen, "name")).isEmpty();
+            assertThat(valuesUnder(seen, "id")).isEmpty();
+        }
+
+        @Test
         @DisplayName("a value deep inside a reply is found under its own name, not its address")
         void a_value_deep_inside_is_found_under_its_name() {
             ObservedValues seen = new ObservedValues(anApiReturning(PET));

@@ -94,9 +94,66 @@ class CampaignDocumentTest {
         assertThat(plan.operations().narrowsAnything()).isFalse();
     }
 
+    @Test
+    @DisplayName("a strategy may change requests the API accepted, falling back on its sources")
+    void a_strategy_that_changes_accepted_requests_is_read() {
+        Campaign plan = CampaignDocument.read("""
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 80
+                    sources:
+                      - source: random
+                  - name: mutation
+                    share: 20
+                    mutates: accepted
+                    sources:
+                      - source: enum
+                      - source: random
+                """, "ours.yaml");
+
+        assertThat(plan.strategies()).extracting(Campaign.PlannedStrategy::mutatesAccepted)
+                .containsExactly(false, true);
+        assertThat(plan.strategies().get(1).sources())
+                .describedAs("what it builds from when there is nothing accepted to change")
+                .hasSize(2);
+        assertThat(plan.strategies().get(1).pushesAtTheApi()).isFalse();
+    }
+
     @Nested
     @DisplayName("what a plan is refused for")
     class Refusals {
+
+        @Test
+        @DisplayName("changing anything but the requests the API accepted, which is all there is")
+        void mutating_something_else() {
+            assertThatThrownBy(() -> CampaignDocument.read("""
+                    version: 1
+                    strategies:
+                      - name: mutation
+                        share: 100
+                        mutates: everything
+                        sources:
+                          - source: random
+                    """, "ours.yaml"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("'everything'")
+                    .hasMessageContaining("mutates: accepted");
+        }
+
+        @Test
+        @DisplayName("a strategy that changes accepted requests with nothing to fall back on")
+        void mutating_with_no_sources() {
+            assertThatThrownBy(() -> CampaignDocument.read("""
+                    version: 1
+                    strategies:
+                      - name: mutation
+                        share: 100
+                        mutates: accepted
+                    """, "ours.yaml"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("sources");
+        }
 
         @Test
         @DisplayName("a word that is not one of the sources RESTest has, with the ones it has")

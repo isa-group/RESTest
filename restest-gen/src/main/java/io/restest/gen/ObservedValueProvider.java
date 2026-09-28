@@ -26,18 +26,11 @@ import io.restest.core.model.ApiModel;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
-import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ChoiceSchema;
-import io.restest.core.schema.NothingSchema;
-import io.restest.core.schema.NullSchema;
-import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
-import io.restest.core.schema.SchemaMetadata;
-import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
-import io.restest.core.schema.UnsupportedSchema;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -489,7 +482,7 @@ public final class ObservedValueProvider implements ValueProvider {
                             .filter(offered -> !offered.equals(value.was()));
                     if (fresh.isPresent()) {
                         JsonValue changed =
-                                replaced(chosen.value(), value.steps(), 0, fresh.get());
+                                Shapes.replaced(chosen.value(), value.steps(), fresh.get());
                         return new GeneratedValue(changed, new ValueOrigin.Derived(chosen.from(),
                                 thing + ", with '" + value.asked().path() + "' changed"));
                     }
@@ -560,28 +553,9 @@ public final class ObservedValueProvider implements ValueProvider {
         }
     }
 
-    /** The same value with the one at the end of this way down replaced. */
-    private static JsonValue replaced(JsonValue in, List<Object> steps, int at, JsonValue with) {
-        if (at == steps.size()) {
-            return with;
-        }
-        if (steps.get(at) instanceof String name && in instanceof JsonValue.JsonObject thing) {
-            Map<String, JsonValue> members = new LinkedHashMap<>(thing.members());
-            members.put(name, replaced(members.get(name), steps, at + 1, with));
-            return new JsonValue.JsonObject(members);
-        }
-        if (steps.get(at) instanceof Integer index && in instanceof JsonValue.JsonArray list) {
-            List<JsonValue> elements = new ArrayList<>(list.elements());
-            elements.set(index, replaced(elements.get(index), steps, at + 1, with));
-            return new JsonValue.JsonArray(elements);
-        }
-        return in;
-    }
-
     /** A property the document says the API sends and never receives. */
     private boolean onlyEverReturned(CanonicalSchema property) {
-        return property.metadata().access() == SchemaMetadata.Access.READ_ONLY
-                || resolved(property).metadata().access() == SchemaMetadata.Access.READ_ONLY;
+        return Shapes.onlyEverReturned(model, property, AS_DEEP_AS_A_CHANGE_REACHES);
     }
 
     /**
@@ -616,52 +590,11 @@ public final class ObservedValueProvider implements ValueProvider {
      * seen.
      */
     private boolean couldSatisfy(JsonValue value, CanonicalSchema wanted) {
-        return couldSatisfy(value, wanted, 0);
-    }
-
-    private boolean couldSatisfy(JsonValue value, CanonicalSchema wanted, int depth) {
-        // Counted, because a document may point one shape at another and that one back again. It
-        // parses cleanly and it is nobody's mistake to make a request for; following it without
-        // counting ends the run, which design principle 2 forbids for any document at all.
-        if (depth > AS_DEEP_AS_A_CHANGE_REACHES) {
-            return false;
-        }
-        List<JsonValue> allowed = wanted.metadata().enumeration();
-        if (!allowed.isEmpty() && !allowed.contains(value)) {
-            return false;
-        }
-        return switch (wanted) {
-            case StringSchema ignored -> value instanceof JsonValue.JsonString;
-            case NumberSchema number -> value instanceof JsonValue.JsonNumber written
-                    && (number.kind() != NumberKind.INTEGER
-                            || written.value().stripTrailingZeros().scale() <= 0);
-            case BooleanSchema ignored -> value instanceof JsonValue.JsonBoolean;
-            case ArraySchema ignored -> value instanceof JsonValue.JsonArray;
-            case ObjectSchema ignored -> value instanceof JsonValue.JsonObject;
-            case NullSchema ignored -> value instanceof JsonValue.JsonNull;
-            case AnySchema ignored -> true;
-            case ChoiceSchema choice -> choice.alternatives().stream()
-                    .anyMatch(alternative -> couldSatisfy(value, alternative, depth + 1));
-            case SchemaReference reference -> model.resolve(reference)
-                    .map(named -> couldSatisfy(value, named, depth + 1)).orElse(false);
-            // Nothing satisfies a shape that accepts nothing, and a shape nobody could read is not
-            // one to guess at.
-            case NothingSchema ignored -> false;
-            case UnsupportedSchema ignored -> false;
-        };
+        return Shapes.couldSatisfy(model, value, wanted, AS_DEEP_AS_A_CHANGE_REACHES);
     }
 
     /** The shape itself, where the document referred to one it declared elsewhere by name. */
     private CanonicalSchema resolved(CanonicalSchema schema) {
-        CanonicalSchema here = schema;
-        for (int hops = 0; hops < AS_DEEP_AS_A_CHANGE_REACHES
-                && here instanceof SchemaReference reference; hops++) {
-            CanonicalSchema named = model.resolve(reference).orElse(null);
-            if (named == null) {
-                return here;
-            }
-            here = named;
-        }
-        return here;
+        return Shapes.resolved(model, schema, AS_DEEP_AS_A_CHANGE_REACHES);
     }
 }

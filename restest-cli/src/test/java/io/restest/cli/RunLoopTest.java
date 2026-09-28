@@ -332,7 +332,7 @@ class RunLoopTest {
                     }
                 }
             });
-            events.subscribe(generator.whatListensToTheRun().orElseThrow());
+            generator.whatListensToTheRun().forEach(events::subscribe);
             events.subscribe(event -> {
                 if (event instanceof RunEvent.TestCasePlanned sent) {
                     planned.add(sent.testCase());

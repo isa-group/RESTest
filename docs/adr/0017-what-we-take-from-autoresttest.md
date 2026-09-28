@@ -290,3 +290,14 @@ and from what the recordings add to it**: an answer the tool's own choice of val
 says more about those values than about the operation, and the recordings show that no status code
 is safe from that on its own. What would say *this operation will never work* is the same refusal
 to requests that differ, which is a lever this record has not weighed.
+
+## Amendment (M10.1)
+
+**Date:** 2026-09-27
+
+**Adoption 5 is built.** `wrongLocation` sends a required query parameter, header or cookie as one of
+the other two, restricted to required parameters exactly as this record asked, and never to a place
+where the operation declares something of that name. It is one of eleven operators in
+[ADR-0027](0027-changing-one-thing-in-an-accepted-request.md), in the family whose requests expect
+to be refused. The companion operator this record refused - sending parameters the document never
+declared - is still refused, for the reason given.

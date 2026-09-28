@@ -322,3 +322,15 @@ starts out as a fence rather than a repair.
 `restest-cli`: "9.1 carries it to the scheduler" in §1 meant the numbers, which the scheduler is
 handed by constructor like every other part. The page of switches §4 promises is 11.2's; until it
 exists, this switch is documented in the settings page beside every other setting.
+
+## Amendment (M10.1)
+
+**Date:** 2026-09-27
+
+**A seventh group, `mutation.*`, holds the switches of the mutation operators**, which §1's table
+put in `generation.*`. Sixteen settings: a switch for each of the two families of operator, one for
+each of the eleven operators, how many of each operation's accepted requests are kept, and how long
+an oversized word and list are. The reasons are in
+[ADR-0027](0027-changing-one-thing-in-an-accepted-request.md) §6: `generation.*` is about what an
+invented value may look like, a person switching mutations off should find every switch in one
+place, and 10.2's shape operators join the same group. Sixty-two settings in all.

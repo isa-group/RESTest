@@ -23,7 +23,7 @@ version: 1
 
 strategies:
   - name: nominal
-    share: 75
+    share: 60
     sources:
       - source: enum
       - weighted:
@@ -35,6 +35,13 @@ strategies:
             weight: 50
           - source: default
             weight: 5
+
+  - name: mutation
+    share: 15
+    mutates: accepted
+    sources:
+      - source: enum
+      - source: random
 
   - name: fuzzing
     share: 25
@@ -58,12 +65,15 @@ Every request is built one way throughout, and which way is drawn per request, b
 `share` is out of a hundred, and the shares of a plan add up to a hundred. A file that does not is
 refused, and told what it does add up to.
 
-Most runs want two: one building requests meant to work, one pushing at the API with values nobody
-sensible would send. The second is not looking for a refusal — a refusal is a fair answer, and a
-great many APIs accept an empty word quite happily. It is looking for the API falling over.
+Most runs want two or three: one building requests meant to work, one pushing at the API with
+values nobody sensible would send, and one [changing a request that worked](#changing-one-thing-in-a-request-that-worked).
+The pushing one is not looking for a refusal — a refusal is a fair answer, and a great many APIs
+accept an empty word quite happily. It is looking for the API falling over.
 
-There is no key saying which is which. A strategy that draws on the list of values to push with is
-one that pushes, and that is how the run's summary knows how many of its requests were of that kind.
+No key says a strategy pushes. A strategy that draws on the list of values to push with is one that
+pushes, and each of its requests records that it was, which is how the run's summary knows how many
+were of that kind. A strategy that changes accepted requests does say so, with `mutates: accepted`,
+because nothing it draws on could tell.
 
 ## Sources
 
@@ -185,6 +195,69 @@ about, so it answers wherever anything could, and a source written below it is a
 nothing. A run says so when it sees one rather than refusing the plan, because a shape nothing
 satisfies leaves invention with no answer either.
 
+## Changing one thing in a request that worked
+
+A strategy can build its requests a third way: take a request the API has already **accepted**, and
+send it again with exactly one thing changed.
+
+```yaml
+  - name: mutation
+    share: 20
+    mutates: accepted
+    sources:
+      - source: enum
+      - source: random
+```
+
+An API checks what it is sent before it acts on it, and a request with several things wrong is
+turned away by the first check it meets — so the code behind that check, where the failures a
+correct request never reaches tend to live, never runs. Changing one thing gets past every check but
+one, and whatever the API does next is down to that one thing: it refuses it, which is right; it
+accepts it, which says a check is missing; or it fails, which is what a run is looking for.
+
+`mutates:` takes one word, `accepted`. The `sources:` are still required, and they are what the
+strategy falls back on: until the API has accepted something for an operation, or when nothing in
+what it accepted can be changed, the request is built from them the ordinary way. The plan RESTest
+carries gives its `mutation` strategy the same sources as `nominal`, so that its fallback requests
+are exactly the ones `nominal` would build.
+
+What is changed is one value — a parameter, or one property inside a JSON body, however deep — and
+how is one of eleven kinds, in two families:
+
+| Family | The kind of change | What is sent |
+|---|---|---|
+| violations | `dropRequired` | a required parameter or body property left out |
+| | `wrongLocation` | a required query parameter, header or cookie sent as one of the other two |
+| | `wrongType` | a value of another kind: a word where a number is declared |
+| | `outsideABound` | one step past a stated limit: one below the smallest number, one character more than the longest word, one item more than a list may hold |
+| | `breakAnEnumeration` | a value that is not on the closed list: `AVAILABLE` where `available` is |
+| | `breakAPattern` | a word close to the accepted one that its stated pattern refuses |
+| | `sendNull` | `null` for a body property that may not be null |
+| | `sendEmpty` | an empty word, list or object where the description forbids one |
+| | `oversize` | a word of ten thousand characters, or a list of a thousand items, where the description states a smaller most |
+| probes | `oversizeWithNoLimit` | the same where the description states no most at all |
+| | `emptyWithNoRule` | an empty word, list or object where nothing forbids one |
+
+A **violation** breaks something the description states, so the request records that it expects
+to be refused. A **probe** goes where the description says nothing, so either answer may be right,
+and the request records that it expects nothing in particular. Probes are off unless
+`mutation.probes` is turned on. Both record what was changed, and in
+which accepted request, so a stored run can put the two side by side.
+
+Some things are never changed, because the change would not be the one recorded: a value in the
+path is never left out or emptied, since the address would then be a different one; a header the
+client writes itself, such as `Content-Type`, is never left out or moved, since it would be put
+back; and a body sent as the fields of a web form, which cannot say `null`, is left alone.
+
+Which kinds of change are made, and how large an oversized value is, are **settings**, not part of
+the plan, because they are about how the tool behaves rather than about the API: every kind, and
+each family, can be switched off — see [`mutation.*`](settings.md#mutation). With both families off,
+a strategy that says `mutates: accepted` builds every request from its sources, exactly as an
+ordinary one would.
+
+A run that changes accepted requests is, like one that draws on `observed`, not repeated by its
+seed alone: which requests were accepted is the API's answer.
+
 ## The first round of a run
 
 Before anything is chosen, a run sends every operation it can test once, each with the request it
@@ -280,4 +353,6 @@ output would say so.
 - a source in a group with no `weight`
 - shares, or the weights in one group, that do not add up to a hundred
 - a group with one source in it, where there is nothing to choose between
+- `mutates:` saying anything but `accepted`
+- a strategy that says `mutates: accepted` and has no `sources:` to fall back on
 - a key written twice, which YAML allows and which would leave the first quietly replaced

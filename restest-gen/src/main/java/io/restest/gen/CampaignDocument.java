@@ -46,6 +46,12 @@ import java.util.Set;
  *             weight: 60
  *           - source: random
  *             weight: 40
+ *   - name: mutation
+ *     share: 25
+ *     mutates: accepted
+ *     sources:
+ *       - source: enum
+ *       - source: random
  * operations:
  *   methods: [GET, POST]
  * }</pre>
@@ -59,7 +65,14 @@ final class CampaignDocument {
     private static final List<String> MEMBERS = List.of("version", "strategies", "operations");
 
     /** The members one strategy may have. */
-    private static final List<String> STRATEGY_MEMBERS = List.of("name", "share", "sources");
+    private static final List<String> STRATEGY_MEMBERS =
+            List.of("name", "share", "mutates", "sources");
+
+    /**
+     * What a strategy says it changes, when it builds its requests by changing ones the API
+     * accepted rather than from nothing. One word, for now: the requests the API accepted.
+     */
+    private static final String ACCEPTED = "accepted";
 
     /** The members the operation filter may have. */
     private static final List<String> OPERATIONS_MEMBERS = List.of("methods", "only");
@@ -141,13 +154,31 @@ final class CampaignDocument {
         String where = "the strategy called '" + name + "'";
         int share = asShare(YamlText.asWholeNumber(required(stated, "share", describedAs),
                 where + "'s 'share'", describedAs), where + "'s 'share'", describedAs);
+        boolean mutates = stated.member("mutates")
+                .map(said -> mutates(YamlText.asText(said, where + "'s 'mutates'", describedAs),
+                        where, describedAs))
+                .orElse(false);
         List<Campaign.Entry> sources = new ArrayList<>();
         for (JsonValue held : YamlText.asList(required(stated, "sources", describedAs),
                 where + "'s 'sources'", describedAs)) {
             sources.add(entry(YamlText.asObject(held, "a source of " + where, describedAs),
                     where, describedAs));
         }
-        return new Campaign.PlannedStrategy(name, share, sources);
+        return new Campaign.PlannedStrategy(name, share, sources, mutates);
+    }
+
+    /**
+     * What a strategy says it changes. Only the requests the API accepted can be changed, and
+     * anything else is refused by name: a plan that meant something this version cannot do should
+     * be told so, not run as though it had said nothing.
+     */
+    private static boolean mutates(String said, String where, String describedAs) {
+        if (!ACCEPTED.equals(said)) {
+            throw new JsonException(describedAs + ": " + where + " says it changes '" + said
+                    + "', and the only requests a strategy can change are the ones the API "
+                    + "accepted, written 'mutates: " + ACCEPTED + "'");
+        }
+        return true;
     }
 
     /**

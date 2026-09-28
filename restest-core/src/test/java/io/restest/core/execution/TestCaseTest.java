@@ -25,6 +25,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.model.ParameterLocation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -130,5 +131,70 @@ class TestCaseTest {
         assertThat(testCase.parameterValues()).hasSize(1);
         assertThatExceptionOfType(UnsupportedOperationException.class)
                 .isThrownBy(() -> testCase.parameterValues().clear());
+    }
+
+    @Test
+    @DisplayName("a test case built from nothing expects nothing in particular unless told")
+    void a_fresh_test_case_expects_nothing_in_particular() {
+        TestCase testCase = TestCase.of(GET_PET, List.of());
+
+        assertThat(testCase.intent()).isEqualTo(Intent.UNKNOWN);
+        assertThat(testCase.mutation()).isEmpty();
+        assertThat(TestCase.of(GET_PET, List.of(), Optional.empty(), Intent.PUSHING).intent())
+                .isEqualTo(Intent.PUSHING);
+    }
+
+    @Test
+    @DisplayName("a test case made by changing an accepted one says what was changed")
+    void a_changed_test_case_names_its_change() {
+        Mutation change = new Mutation(InteractionId.generate(), "outsideABound",
+                ParameterLocation.PATH, "petId", "sent -1, one below the smallest allowed");
+
+        TestCase changed = TestCase.changed(GET_PET, List.of(ParameterValue.of("petId",
+                ParameterLocation.PATH, JsonValue.of(-1L), new ValueOrigin.Generated(
+                        "outsideABound"))), Optional.empty(), Intent.REFUSAL_EXPECTED, change);
+
+        assertThat(changed.intent()).isEqualTo(Intent.REFUSAL_EXPECTED);
+        assertThat(changed.mutation()).contains(change);
+        assertThat(TestCase.changed(GET_PET, List.of(), Optional.empty(), Intent.UNKNOWN, change)
+                .intent())
+                .describedAs("a change the document does not rule on expects nothing")
+                .isEqualTo(Intent.UNKNOWN);
+    }
+
+    @Test
+    @DisplayName("expecting a refusal without saying what was broken is refused")
+    void expecting_a_refusal_needs_a_change() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> TestCase.of(GET_PET, List.of(), Optional.empty(),
+                        Intent.REFUSAL_EXPECTED))
+                .withMessageContaining("says what it broke");
+    }
+
+    @Test
+    @DisplayName("a changed test case cannot claim to be believed in, nor to be awkward throughout")
+    void a_changed_test_case_claims_neither_acceptance_nor_pushing() {
+        Mutation change = new Mutation(InteractionId.generate(), "dropRequired",
+                ParameterLocation.QUERY, "limit", "left out 'limit'");
+
+        for (Intent claimed : List.of(Intent.ACCEPTABLE, Intent.PUSHING)) {
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> TestCase.changed(GET_PET, List.of(), Optional.empty(),
+                            claimed, change))
+                    .withMessageContaining(claimed.name());
+        }
+    }
+
+    @Test
+    @DisplayName("a change names its kind, its place and itself in words")
+    void a_change_is_described_completely() {
+        InteractionId accepted = InteractionId.generate();
+
+        assertThatIllegalArgumentException().isThrownBy(() -> new Mutation(accepted, " ",
+                ParameterLocation.QUERY, "limit", "left out 'limit'"));
+        assertThatIllegalArgumentException().isThrownBy(() -> new Mutation(accepted,
+                "dropRequired", ParameterLocation.QUERY, "", "left out 'limit'"));
+        assertThatIllegalArgumentException().isThrownBy(() -> new Mutation(accepted,
+                "dropRequired", ParameterLocation.QUERY, "limit", " "));
     }
 }

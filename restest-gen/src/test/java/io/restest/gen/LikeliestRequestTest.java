@@ -167,7 +167,7 @@ class LikeliestRequestTest {
                 .describedAs("before the API has said anything, the sample is the best there is")
                 .isEqualTo(JsonValue.of("cluster-1"));
 
-        generator.whatListensToTheRun().orElseThrow().on(new RunEvent.InteractionCompleted(
+        generator.whatListensToTheRun().get(0).on(new RunEvent.InteractionCompleted(
                 Instant.EPOCH, answered("getKafkaCluster", "{\"cluster_id\": \"Xk3p9\"}")));
 
         ParameterValue sent = generator.likeliestRequest(getCluster).orElseThrow()
