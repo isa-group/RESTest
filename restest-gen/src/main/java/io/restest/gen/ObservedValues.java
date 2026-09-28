@@ -166,6 +166,13 @@ public final class ObservedValues implements RunListener {
         if (interaction.testCase().mutation().isPresent()) {
             return;
         }
+        // Nor what came back to a step of a series built around a thing the run created. The
+        // thing is deleted moments later more often than not, and the series is only worth
+        // anything if what it knows about its thing stays with it: another request handed the
+        // identifier would be asking about a thing whose fate only the series knows.
+        if (interaction.testCase().sequence().isPresent()) {
+            return;
+        }
         HttpResponseRecord response = interaction.response().orElse(null);
         if (response == null || !theApiWasHappy(response.statusCode())) {
             return;
@@ -205,25 +212,51 @@ public final class ObservedValues implements RunListener {
      * kind of thing and is not filed under this one.
      */
     private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from, int depth) {
-        if (depth > settings.asDeepAsAReplyIsRead()) {
+        for (JsonValue.JsonObject thing : thingsIn(reply, settings.asDeepAsAReplyIsRead(), depth)) {
+            Map<String, JsonValue> single = new LinkedHashMap<>();
+            thing.members().forEach((name, value) -> {
+                if ((value instanceof JsonValue.JsonString
+                        || value instanceof JsonValue.JsonNumber)
+                        && smallEnoughToSend(value)) {
+                    single.put(name, value);
+                }
+            });
+            if (!single.isEmpty()) {
+                underTheKindOfThingTheyAre.remember(kind, new JsonValue.JsonObject(single), from);
+            }
+        }
+    }
+
+    /**
+     * The things one reply is made of, found the way they are found for keeping them under their
+     * kind, outermost first: a list's elements, an object, and what is inside an object with
+     * nothing in it named like an identifier, which is usually a wrapper around the things rather
+     * than one of them.
+     *
+     * @param reply what the API sent back
+     * @param asDeep how far into it to look
+     * @return the things, in the order the reply has them
+     */
+    static List<JsonValue.JsonObject> thingsIn(JsonValue reply, int asDeep) {
+        return thingsIn(reply, asDeep, 0);
+    }
+
+    private static List<JsonValue.JsonObject> thingsIn(JsonValue reply, int asDeep, int depth) {
+        List<JsonValue.JsonObject> found = new ArrayList<>();
+        collectTheThingsIn(reply, asDeep, depth, found);
+        return found;
+    }
+
+    private static void collectTheThingsIn(JsonValue reply, int asDeep, int depth,
+            List<JsonValue.JsonObject> found) {
+        if (depth > asDeep) {
             return;
         }
         switch (reply) {
             case JsonValue.JsonArray list -> list.elements().forEach(element ->
-                    rememberTheThingsIn(element, kind, from, depth + 1));
+                    collectTheThingsIn(element, asDeep, depth + 1, found));
             case JsonValue.JsonObject thing -> {
-                Map<String, JsonValue> single = new LinkedHashMap<>();
-                thing.members().forEach((name, value) -> {
-                    if ((value instanceof JsonValue.JsonString
-                            || value instanceof JsonValue.JsonNumber)
-                            && smallEnoughToSend(value)) {
-                        single.put(name, value);
-                    }
-                });
-                if (!single.isEmpty()) {
-                    underTheKindOfThingTheyAre.remember(kind,
-                            new JsonValue.JsonObject(single), from);
-                }
+                found.add(thing);
                 // Judged by the names the thing came with rather than by what was kept of it: a
                 // thing whose identifier is empty or too long to keep is still a thing, not a
                 // wrapper, and what is inside it is still some other kind.
@@ -232,7 +265,7 @@ public final class ObservedValues implements RunListener {
                     for (JsonValue inside : thing.members().values()) {
                         if (inside instanceof JsonValue.JsonObject
                                 || inside instanceof JsonValue.JsonArray) {
-                            rememberTheThingsIn(inside, kind, from, depth + 1);
+                            collectTheThingsIn(inside, asDeep, depth + 1, found);
                         }
                     }
                 }
@@ -365,7 +398,7 @@ public final class ObservedValues implements RunListener {
                 || kindOfThingInTheName(property).filter(kind::equals).isPresent();
     }
 
-    private static boolean isABareIdentifier(String name) {
+    static boolean isABareIdentifier(String name) {
         return name.equalsIgnoreCase("id") || name.equalsIgnoreCase("_id");
     }
 
@@ -390,9 +423,20 @@ public final class ObservedValues implements RunListener {
      * that happens to be invalid.
      */
     private Optional<JsonValue> readable(HttpResponseRecord response) {
+        return readable(response, settings.longestReplyRead());
+    }
+
+    /**
+     * The reply as a value, when there is one worth reading, no larger than this.
+     *
+     * @param response what came back
+     * @param longestReplyRead the largest reply that is read at all, in bytes
+     * @return the value, or nothing for a reply that is not whole JSON of a size worth reading
+     */
+    static Optional<JsonValue> readable(HttpResponseRecord response, int longestReplyRead) {
         Payload body = response.body().orElse(null);
         if (body == null || body.truncated() || body.size() == 0
-                || body.size() > settings.longestReplyRead() || !isJson(body.mediaType())) {
+                || body.size() > longestReplyRead || !isJson(body.mediaType())) {
             return Optional.empty();
         }
         try {
@@ -543,16 +587,26 @@ public final class ObservedValues implements RunListener {
      * awkward values sit inside the things it returns rather than on their own.
      */
     boolean smallEnoughToSend(JsonValue value) {
+        return smallEnoughToSend(value, settings.longestValueKept());
+    }
+
+    /**
+     * Whether a value is one anybody could send, judged against this longest value.
+     *
+     * @param value the value
+     * @param longestValueKept how long any word in it, or any number written out in full, may be
+     * @return whether it could be sent
+     */
+    static boolean smallEnoughToSend(JsonValue value, int longestValueKept) {
         return switch (value) {
-            case JsonValue.JsonString text ->
-                    text.value().length() <= settings.longestValueKept();
+            case JsonValue.JsonString text -> text.value().length() <= longestValueKept;
             case JsonValue.JsonNumber number ->
                     number.value().precision() + Math.abs((long) number.value().scale())
-                            <= settings.longestValueKept();
-            case JsonValue.JsonObject thing ->
-                    thing.members().values().stream().allMatch(this::smallEnoughToSend);
-            case JsonValue.JsonArray list ->
-                    list.elements().stream().allMatch(this::smallEnoughToSend);
+                            <= longestValueKept;
+            case JsonValue.JsonObject thing -> thing.members().values().stream()
+                    .allMatch(inside -> smallEnoughToSend(inside, longestValueKept));
+            case JsonValue.JsonArray list -> list.elements().stream()
+                    .allMatch(inside -> smallEnoughToSend(inside, longestValueKept));
             // Nothing and true or false, neither of which has a size.
             case JsonValue.JsonNull ignored -> true;
             case JsonValue.JsonBoolean ignored -> true;

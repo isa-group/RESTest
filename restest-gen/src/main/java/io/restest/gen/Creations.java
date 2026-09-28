@@ -114,7 +114,13 @@ final class Creations {
                 }
             }
         }
-        return new Creation(creation, own, under);
+        // The list the thing joins, read at the creation's own address: GET /owners beside
+        // POST /owners.
+        Optional<Operation> list = operations.stream()
+                .filter(operation -> operation.method() == HttpMethod.GET
+                        && operation.path().equals(creation.path()))
+                .findFirst();
+        return new Creation(creation, own, under, list);
     }
 
     /** The address one gap past the creation's own, when some operation lives there. */
@@ -268,11 +274,15 @@ final class Creations {
      * @param own the thing's own addresses, the creation's with one more gap first, then any found
      *     by kind, in the order the document declares them
      * @param under the operations whose addresses carry on past one of those, in document order
+     * @param list the read of the list the thing joins, at the creation's own address, when the
+     *     document declares one
      */
-    record Creation(Operation creation, List<Address> own, List<Under> under) {
+    record Creation(Operation creation, List<Address> own, List<Under> under,
+            Optional<Operation> list) {
 
         Creation {
             Objects.requireNonNull(creation, "creation");
+            Objects.requireNonNull(list, "list");
             own = List.copyOf(own);
             under = List.copyOf(under);
         }

@@ -266,7 +266,7 @@ public final class ObservedValueProvider implements ValueProvider {
      * The forms identifiers are declared in, checked: a {@code uuid} has to read as one, and an
      * {@code int32} or {@code int64} has to fit. Any other form is not judged here.
      */
-    private static boolean inTheDeclaredForm(JsonValue value, CanonicalSchema wanted) {
+    static boolean inTheDeclaredForm(JsonValue value, CanonicalSchema wanted) {
         if (wanted instanceof StringSchema text && value instanceof JsonValue.JsonString word
                 && text.format().filter("uuid"::equals).isPresent()) {
             try {

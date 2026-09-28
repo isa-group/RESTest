@@ -46,7 +46,9 @@ import java.util.random.RandomGenerator;
  * left out, because changing it again would be two changes, and the point is that the API's answer
  * can be put down to one. So is a request built from awkward values throughout, which is not a
  * request anybody believes in. And so is a deletion: the thing it deleted is gone, so the same
- * request sent again with something else changed would only be told there is no such thing.
+ * request sent again with something else changed would only be told there is no such thing. A step
+ * of a series built around a thing the run created is left out as well, since what happens to that
+ * thing is the series' business alone.
  *
  * <p>Only the most recent few are kept for each operation, and the oldest let go, for the same
  * reason the memory of values the API returned is kept small: a request that worked a while ago may
@@ -127,6 +129,7 @@ final class AcceptedRequests implements RunListener {
                 .isPresent();
         return accepted
                 && testCase.mutation().isEmpty()
+                && testCase.sequence().isEmpty()
                 && testCase.intent() != Intent.PUSHING
                 && model.operation(testCase.operation())
                         .filter(operation -> operation.method() != HttpMethod.DELETE)
