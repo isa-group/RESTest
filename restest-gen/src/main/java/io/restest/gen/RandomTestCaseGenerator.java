@@ -390,8 +390,8 @@ public final class RandomTestCaseGenerator {
             int mostAwaited = (int) Math.min(Integer.MAX_VALUE, 2L
                     * settings.schedule().workAheadFactor() * settings.engine().maxConcurrency());
             Sequences possible = new Sequences(model, Creations.among(this.testable),
-                    settings.sequences(), Math.max(1, mostAwaited), shapes, steps,
-                    this::fillForASeries);
+                    settings.sequences(), settings.generation().hardNestingDepth(),
+                    Math.max(1, mostAwaited), shapes, steps, this::fillForASeries);
             if (possible.startsAny()) {
                 series = possible;
                 later = Collections.unmodifiableMap(byStrategy);

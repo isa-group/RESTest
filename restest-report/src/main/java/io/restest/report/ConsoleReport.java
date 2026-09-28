@@ -295,10 +295,12 @@ public final class ConsoleReport implements RunListener {
         }
         // A step of a series may only fail because of the steps before it - a thing read after it
         // was deleted - and the command below sends this one alone, so say so rather than hand
-        // over a command that answers differently.
-        finding.interaction().testCase().sequence().ifPresent(step -> write("      step "
-                + step.step() + " of a " + step.shape() + " series: " + step.description()
-                + ". The command below sends this step alone, without the ones before it"));
+        // over a command that answers differently. The creation a series begins with has nothing
+        // before it, and its command repeats it as it was.
+        finding.interaction().testCase().sequence().filter(step -> step.step() > 1)
+                .ifPresent(step -> write("      step " + step.step() + " of a " + step.shape()
+                        + " series: " + step.description() + ". The command below sends this "
+                        + "step alone, without the ones before it"));
         write("      " + CurlCommand.of(finding.interaction().request()));
         write("");
     }

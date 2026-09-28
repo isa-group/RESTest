@@ -182,6 +182,20 @@ class SequencingStrategyTest {
         assertThat(generator.dependsOnTheApisAnswers()).isFalse();
     }
 
+    @Test
+    @DisplayName("a plan that sends series, on an API where nothing can start one, has none to "
+            + "begin, and says the seed repeats it")
+    void no_series_without_a_creation() {
+        ApiModel readsOnly = ApiModel.of("Things", "1.0", List.of(LIST_THINGS, GET_THING));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(readsOnly, SEED,
+                List.of(), onlySeries(), Settings.defaults());
+
+        assertThat(generator.sequences()).isEmpty();
+        assertThat(generator.dependsOnTheApisAnswers())
+                .describedAs("no creation, so no series, so nothing built from an answer")
+                .isFalse();
+    }
+
     /**
      * The shipped plan as it was before it had a strategy that sends series: its share back with
      * nominal, and everything else as it is.

@@ -683,9 +683,13 @@ not a sequence, and the two decisions "Left to M4, on purpose" are untouched by 
 it needs.* A series asks about the thing its own creation made, as far as the reply lets anyone
 tell. Its identifier is read from the creation's reply or its `Location` header, never from a list
 the reply holds nor from what the creation was sent in its own address, and a `POST` whose address
-ends in a gap starts no series about a thing: it names a thing that already exists. What cannot be
-told apart from the reply is a thing the creation names itself: when a body's `id` is an identifier
-the memory supplied, as petstore's may be, the series is about the thing that `POST` wrote. The gaps
+ends in a gap is only sent twice: it names a thing that already exists, so nothing is asked about
+it. Two things the reply cannot settle. A thing the creation names itself: when the name it was
+sent is one the memory supplied - petstore's `POST /pet` with a remembered `id`, its `POST /user`
+with a remembered `username` - the series is about whatever that `POST` wrote. And a `POST` that
+attaches a thing which already exists and answers with it, which reads like one that makes a thing
+under another; GitHub answers its attachments with lists, which are never read for an identifier.
+The gaps
 before the thing's own take what the creation was sent, and neither memory hears a step, so nothing
 a series learns reaches another request. The honest limit this record named holds too: a thing whose
 creation needs something the run cannot make - a kafka cluster, which only exists - is created under

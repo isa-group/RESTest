@@ -196,6 +196,24 @@ class CreationsTest {
     }
 
     @Test
+    @DisplayName("an addition of a thing that already exists reads like the making of one, which "
+            + "the addresses alone cannot tell apart")
+    void an_attachment_reads_like_a_creation() {
+        ApiModel github = TheCorpus.community("GitHub");
+
+        Creations.Creation allowedTeams = Creations.among(github.operations())
+                .of(operation(github, HttpMethod.POST,
+                        "/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams"))
+                .orElseThrow();
+
+        assertThat(allowedTeams.own()).extracting(Creations.Address::path)
+                .describedAs("the teams it allows are the organisation's own, made before the run; "
+                        + "what keeps a series off them is GitHub answering with a list of them, "
+                        + "which is never read for an identifier")
+                .contains("/teams/{team_id}");
+    }
+
+    @Test
     @DisplayName("an operation that is not a creation makes nothing")
     void a_read_makes_nothing() {
         assertThat(Creations.among(PET_CLINIC.operations())

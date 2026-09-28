@@ -44,7 +44,9 @@ import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.StringSchema;
+import io.restest.core.exec.EngineSettings;
 import io.restest.core.settings.MemorySettings;
+import io.restest.core.settings.ScheduleSettings;
 import io.restest.core.settings.SequenceSettings;
 import io.restest.core.settings.Settings;
 import java.math.BigDecimal;
@@ -321,6 +323,92 @@ class SequencesTest {
                             + "the memory of the machine writing one")
                     .hasSize(1);
         }
+        ApiModel words = things(StringSchema.of(), StringSchema.of(), StringSchema.of());
+        assertThat(run(words, Sequences.Shape.DELETE_TWICE, addThing(words), request ->
+                reply(request, 201, "{\"id\":1e2147483647}")))
+                .describedAs("nor as a word, where the gap wants one")
+                .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a word longer than any number a reply may carry is not read as a number")
+    void a_word_too_long_to_be_a_number() {
+        ApiModel api = things(ANY_WHOLE_NUMBER, ANY_WHOLE_NUMBER, ANY_WHOLE_NUMBER);
+        String digits = "9".repeat(JsonText.LONGEST_NUMBER_IN_A_REPLY + 1);
+
+        assertThat(run(api, Sequences.Shape.DELETE_TWICE, addThing(api), request ->
+                reply(request, 201, "{\"id\":\"" + digits + "\"}")))
+                .describedAs("reading a number takes longer the longer it is, on the thread that "
+                        + "decides what to send")
+                .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a word the identifier was found as is not read as a number too large to write "
+            + "out when a body wants one")
+    void a_body_identifier_does_not_grow() {
+        ApiModel api = things(StringSchema.of(), StringSchema.of(), StringSchema.of());
+
+        List<Sent> sent = run(api, Sequences.Shape.PUT_TWICE, addThing(api), request ->
+                request.operation().value().equals("addThing")
+                        ? reply(request, 201, "{\"id\":\"1e2146483646\"}")
+                        : reply(request, 200, ""));
+
+        TestCase put = sent.get(1).request();
+        assertThat(put.parameterValue("thingId", ParameterLocation.PATH).orElseThrow().value())
+                .isEqualTo(JsonValue.of("1e2146483646"));
+        assertThat(((JsonValue.JsonObject) put.body().orElseThrow().value()).member("id"))
+                .describedAs("the body's id is a number, and this word as a number is two "
+                        + "thousand million digits long")
+                .isNotEqualTo(Optional.of(JsonValue.of(new BigDecimal("1e2146483646"))));
+    }
+
+    @Test
+    @DisplayName("a number goes where a word is wanted only in a place named the way identifiers "
+            + "are")
+    void a_number_is_not_a_slug() {
+        ApiModel teams = ApiModel.of("Teams", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/teams").withRequestBody(RequestBodyModel.json(
+                                ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")),
+                                true))
+                        .withId(OperationId.of("addTeam")),
+                Operation.of(HttpMethod.DELETE, "/teams/{team_slug}", List.of(Parameter.of(
+                                "team_slug", ParameterLocation.PATH, true, StringSchema.of())))
+                        .withId(OperationId.of("deleteTeam"))));
+
+        List<Sent> sent = run(teams, Sequences.Shape.DELETE_TWICE,
+                teams.operation(OperationId.of("addTeam")).orElseThrow(), request ->
+                        reply(request, 201, "{\"id\":1234567,\"slug\":\"justice-league\"}"));
+
+        assertThat(sent)
+                .describedAs("a team's number is not its slug, so nothing is deleted by it")
+                .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("past twice what a run keeps in flight, the oldest step waiting is forgotten, and "
+            + "its series with it")
+    void the_oldest_step_waiting_is_forgotten() {
+        ScheduleSettings schedule = ScheduleSettings.defaults();
+        Settings oneAtATime = Settings.defaults()
+                .withSchedule(new ScheduleSettings(1, schedule.announcementsAllowedToPileUp(),
+                        schedule.stragglerGrace(), schedule.openingLap(),
+                        schedule.openingLapPatience()))
+                .withEngine(EngineSettings.defaults().withConcurrency(1, 1, 1))
+                .withSequences(only(Sequences.Shape.CREATE_TWICE));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PET_CLINIC, SEED,
+                List.of(), onlySeries(), oneAtATime);
+        Sequences series = generator.sequences().orElseThrow();
+
+        TestCase oldest = firstStepOf(generator, ADD_OWNER);
+        TestCase second = firstStepOf(generator, ADD_OWNER);
+        TestCase third = firstStepOf(generator, ADD_OWNER);
+
+        assertThat(series.stepsPlanned(oldest)).isZero();
+        assertThat(series.stepsPlanned(second)).isEqualTo(2);
+        assertThat(series.stepsPlanned(third)).isEqualTo(2);
+        assertThat(series.heard(oldest, Optional.of(reply(oldest, 201, "{\"id\":895}"))))
+                .isEmpty();
     }
 
     @Test
@@ -521,19 +609,22 @@ class SequencesTest {
 
     /**
      * A small API of things, whose read, replacement and deletion each declare the thing's gap the
-     * way a test needs.
+     * way a test needs. A replacement's body carries the thing's number as its {@code id}.
      */
     private static ApiModel things(CanonicalSchema read, CanonicalSchema replace,
             CanonicalSchema delete) {
         RequestBodyModel named = RequestBodyModel.json(ObjectSchema.of(Map.of("name",
                 StringSchema.of()), Set.of("name")), true);
+        // A replacement says which thing it replaces, by a number of its own.
+        RequestBodyModel replacement = RequestBodyModel.json(ObjectSchema.of(Map.of("name",
+                StringSchema.of(), "id", ANY_WHOLE_NUMBER), Set.of("name", "id")), true);
         return ApiModel.of("Things", "1.0", List.of(
                 Operation.of(HttpMethod.POST, "/things").withRequestBody(named)
                         .withId(OperationId.of("addThing")),
                 Operation.of(HttpMethod.GET, "/things/{thingId}", List.of(thingId(read)))
                         .withId(OperationId.of("getThing")),
                 Operation.of(HttpMethod.PUT, "/things/{thingId}", List.of(thingId(replace)))
-                        .withRequestBody(named).withId(OperationId.of("replaceThing")),
+                        .withRequestBody(replacement).withId(OperationId.of("replaceThing")),
                 Operation.of(HttpMethod.DELETE, "/things/{thingId}", List.of(thingId(delete)))
                         .withId(OperationId.of("deleteThing"))));
     }

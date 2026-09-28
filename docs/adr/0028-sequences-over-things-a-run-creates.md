@@ -177,33 +177,52 @@ access, and the first of them is no team of the run's. Then three rules are trie
 3. the kind of thing followed by id.
 
 A property only written like an identifier - `ownerId` inside a pet - is some other thing's, and is
-not taken. Nor is a value the creation was sent in its own address: a reply that hands back the
-owner a pet was made under would otherwise offer the owner's `id` as the pet's. When the body carries
-none that fits, the `Location` header is read. The end of its address is matched against the thing's
-own, because pet-clinic answers a creation under `/petclinic/api` with `/api/owners/895`, and each
-part of it is unescaped once the parts are told apart, so `a%2Fb` is one word.
+not taken. Nor is a value in the body that the creation was sent in its own address: a reply that
+hands back the owner a pet was made under would otherwise offer the owner's `id` as the pet's. The
+refusal goes by value, so a new thing whose identifier happens to be its parent's loses it too - on
+pet-clinic, whose identifiers are small numbers counted up, a pet can share its owner's; there the
+`Location` header still names it. When the body carries none that fits, the `Location` header is
+read. The end of its address is matched against the thing's own, because pet-clinic answers a
+creation under `/petclinic/api` with `/api/owners/895`, and each part of it is unescaped once the
+parts are told apart, so `a%2Fb` is one word. What the header names is the thing's own address, so
+it is not refused.
 
 Every candidate must fit the gap it goes into: the kind of value, the declared form, the closed
 list, and whether an address can carry it. An address writes a number and a word alike, so a word is
-read as a number where a number is wanted, and a number is written as a word where a word is:
-BigOven's review is read at an integer `{reviewId}` and deleted at a string one.
+read as a number where a number is wanted, and a number is written as a word where a word is wanted
+in a place named the way identifiers are: BigOven's review is read at an integer `{reviewId}` and
+deleted at a string one, but a GitHub team's number is not taken for its `{team_slug}`.
 
 How much of a reply is read is not the memory's setting. A series reads its creation's reply
 whenever the engine kept all of it, so a run that switches the memory off, by any of its limits at
-zero, still sends its series. No value read out of a reply is sent longer, written out, than the text
-it came from: `{"id":1e2147483647}` is a dozen characters, and written out it would be two thousand
-million, more than the machine writing it has room for.
+zero, still sends its series. It keeps only the words and numbers of the objects the thing may be,
+not the whole reply. No value read out of a reply is sent longer, written out, than the text it came
+from: `{"id":1e2147483647}` is a dozen characters, and written out it would be two thousand million,
+more than the machine writing it has room for. A word is read as a number only when it is no longer
+than the longest number the reader takes from an API, a thousand characters, since reading a number
+takes longer the longer it is, and it is read on the thread that decides what to send.
 
 Declared `links` are not read. They are row 4.3, and nearly no document writes them.
 
 The gaps before the thing's own are sent what the creation was sent, so a pet is read under the
-owner it was created under. A body's own identifier property, where a step sends a body that
-declares one and does not mark it read-only, is sent the thing's identifier. Every identifier a
-series uses is one the API gave back for what the series made - or, for a thing its creation named
-itself, the name it was given, as a kafka topic is named. That last case is the one a reply cannot
-settle: when a creation's body carries an identifier the memory supplied, as petstore's `POST /pet`
-may, the API may have replaced a pet rather than made one, and the series is about the pet that
-`POST` wrote.
+owner it was created under - an owner the memory may well have supplied, which the series did not
+make and never deletes. A body's own identifier property, where a step sends a body that declares
+one and does not mark it read-only, is sent the thing's identifier. The thing's own identifier is
+one the API gave back for what the series made - or, for a thing its creation named itself, the name
+it was given, as a kafka topic is named.
+
+Two cases a reply cannot settle:
+- **A thing the creation names itself, with a name the memory supplied.** Petstore's `POST /pet` may
+  send the `id` of a pet that already exists, and its `POST /user` a remembered `username`. The API
+  may then have replaced the thing rather than made one, and the series is about whatever that
+  `POST` wrote.
+- **A creation that attaches a thing which already exists, and answers with it.** Its addresses read
+  like those of one that makes a thing under another: GitHub's `POST .../restrictions/teams` looks
+  like pet-clinic's `POST /owners/{ownerId}/pets`, and is taken to make a team that lives at
+  `/teams/{team_id}`. What keeps a series off GitHub's teams is that it answers with a list of them.
+  An API that answered with the one thing attached would have its series ask about it, and delete it.
+  No rule on the addresses tells the two apart without losing pet-clinic's pets and visits, which
+  have addresses of their own too.
 
 ### 6. The unit of work, and interference
 
@@ -289,8 +308,86 @@ a question a unit of work would have to answer, and this is the answer: none.
 
 ## Measurement
 
-*To be filled in with the five APIs of the 2027 edition, restarted before every run, five seeds,
-sixty seconds, the six switches off against on.*
+**Setup.**
+- The five APIs of the 2027 edition, from the benchmark's own images, each restarted before every
+  run with a fresh results directory.
+- Five seeds, sixty seconds, the shipped plan, `--store`.
+- Two arms, their order swapped seed by seed: **off**, the six `sequences.*` switches off, which is
+  the plan as it was with the share built the ordinary way; and **on**, as this ships.
+- 28 September, evening, with no build or other measurement running; the build measured is this
+  record's first version, before the second review's changes, none of which alters what these five
+  APIs are sent.
+- Distinct 5XX are counted three ways: by message, with times, identifiers and runs of digits taken
+  out; by exception kind, the body's `title`, `exception` or `error`; and by the benchmark's own
+  count over its proxy's recording.
+
+| API | 5XX by message: off / on | By exception kind | Benchmark's count | Branches covered | Operations 2XX | Requests |
+|---|---|---|---|---|---|---|
+| pet-clinic | 218.4 / 216.6 | 69.4 / 70.6 | 81.4 / 83.0 | 151.0 / **153.0** | 32.2 / **33.6** | 5,020 / 5,003 |
+| kafka-rest-proxy | 7.2 / 7.8 | 7.2 / 7.8 | 1.8 / 2.6 | 846.0 / **858.6** | 34.4 / 34.2 | 3,173 / 2,856 |
+| notebook-manager | 4 / 4 | 4 / 4 | 1 / 1 | 16 / 16 | 5 / 5 | 38,434 / 38,691 |
+| gestao-hospital | 3 / 3 | 1 / 1 | 3 / 3 | 42.4 / 41.8 | 15.8 / 15.8 | 18,492 / 18,462 |
+| flight-search | 0 / 0 | 0 / 0 | 0 / 0 | 40 / 40 | 19.0 / 19.6 | 3,980 / 3,926 |
+
+- **pet-clinic reaches one operation more on every seed**, 31-33 off against 33-34 on, and covers as
+  many branches or more on every seed (150/151/151/153/150 against 152/154/151/153/155). The
+  operation is `GET /owners/{ownerId}/pets/{petId}`: it answered 2XX in every run, only ever to a
+  step of `safeGet` (12 times) or `putTwice` (9), and never to an ordinary request, which does not
+  pair a pet with its own owner. The distinct 5XX did not move beyond seed-to-seed noise by any of
+  the three counts.
+- **kafka-rest-proxy covered 12.6 branches more**, better on three seeds of five
+  (852/833/849/861/835 against 848/855/865/858/867), and never counted fewer distinct 5XX. Its
+  series are almost all `createTwice` of actions rather than things: altering broker and cluster
+  configurations, producing records, creating access lists - its one creation of a topic was
+  accepted once in five runs. It sent 10% fewer requests, more of its time going on altering broker
+  configurations, which takes seconds each, and on deleting them.
+- **The other three did not move.** gestao-hospital accepted 4 of its 2,255 creations, since its
+  `POST /v1/hospitais/` stopped answering 2XX on the afternoon of 28 September for every build, and
+  flight-search none of its 391. notebook-manager's failures carry no message to tell a new one
+  apart by, and its 32 branches were half covered in both arms.
+
+**How far the series went.** Over the 25 runs of the **on** arm, 7,218 series started - a creation
+sent as their first step - and:
+- **4,134 began**, their creation accepted: 59.4 a run on pet-clinic, 753.4 on notebook-manager, 13.2
+  on kafka-rest-proxy, 0.8 on gestao-hospital and none on flight-search. The 3,084 creations
+  refused are gestao-hospital's (2,251), flight-search's (391), pet-clinic's (280) and
+  kafka-rest-proxy's (155). A series builds its creation the way the likeliest request is built, and
+  it shows: pet-clinic accepted 51% of the series' creations against 28% of its ordinary ones.
+- **3,861 asked their question** - sent the step the series exists for - and **3,860 went all the
+  way**, 93% of those that began: 58.0 a run on pet-clinic, 700.0 on notebook-manager, 13.2 on
+  kafka-rest-proxy.
+- Of the rest, **257 were cut short by a step they needed**: 256 on notebook-manager, where the
+  first read or the deletion found nothing (252 answered 404, 4 answered 500), 207 of them right
+  after an ordinary request had deleted that notebook - its identifiers are small numbers the memory
+  learns from the listings, which is the interference §6 accepts - and one replacement on
+  pet-clinic. 16 were overtaken by the end of the run.
+- **None stopped for want of an identifier**: every thing the APIs made was found, in the body or
+  the `Location` header, and fitted every step it was needed for.
+
+**What the questions were answered.** Recorded, not judged, and read here by hand.
+- Every read after a deletion (857), every second deletion (993) and every write under a deleted
+  thing (16) was answered 404, which is why no new failure appeared. notebook-manager answers a
+  deletion with 202, where §9's rule keeps the steps after it from expecting the refusal they got.
+- The same creation twice was answered 201 again by pet-clinic (58) and notebook-manager (904), and
+  500 by notebook-manager twice, a failure its ordinary requests reach as well.
+- `safeGet`'s first and last reads were the same on pet-clinic 52 times in 59. The other 7 are a
+  vet's specialties, the same ones in another order: a set, returned in whatever order it comes.
+- On notebook-manager they were the same 686 times in 760, and the 74 that differed are the one
+  thing a series has found so far. 26 were written at their own address in between, by ordinary
+  requests. 38 coincided with a write sent elsewhere whose body carried their `id`, and a check over
+  every run says which: **a `POST /notebooks` whose body carries the `id` of a notebook that exists
+  replaces that notebook** instead of making another or refusing - 157 notebooks took, straight
+  after such a creation, a name only it had sent. A `PATCH` to one notebook naming another in its
+  body changed the one its address named. The creation is sent by ordinary requests all run long;
+  what showed it was a series reading the same thing twice. Judging it is 3.2's and 4.5's, and the
+  catalogue's mass assignment.
+
+**What ships.** All six series, on. `safeGet` and `putTwice`, the two the plan said would ship off
+if they moved nothing, are the only ones that reached pet-clinic's pets under their owners, and
+`safeGet`'s two reads are what showed notebook-manager's creations replacing notebooks. The three
+that delete reached nothing new on these five APIs. They are kept on because theirs are the
+questions the related tools ask most, and because the steps after a creation cost little: 3% of
+pet-clinic's requests and 4% of notebook-manager's.
 
 ## Consequences
 

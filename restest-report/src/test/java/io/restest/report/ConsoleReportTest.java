@@ -482,12 +482,32 @@ class ConsoleReportTest {
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Finding.of(WfcFault.HTTP_STATUS_500,
                 Runs.answering(readAgain, 500), "the API answered 500")));
 
-        assertThat(screen.toString())
+        List<String> lines = screen.toString().lines().toList();
+        int said = lines.indexOf("      step 4 of a readAfterDelete series: read it again: the API "
+                + "said it deleted it, so it should be gone. The command below sends this step "
+                + "alone, without the ones before it");
+        assertThat(said)
                 .describedAs("the command on its own reads a thing nobody deleted, and would not "
-                        + "answer the same")
-                .contains("      step 4 of a readAfterDelete series: read it again: the API said "
-                        + "it deleted it, so it should be gone. The command below sends this step "
-                        + "alone, without the ones before it\n      curl ");
+                        + "answer the same, so the fault says which step it was: %s", lines)
+                .isNotNegative();
+        assertThat(lines.get(said + 1)).describedAs("just above the command it is about")
+                .startsWith("      curl ");
+    }
+
+    @Test
+    @DisplayName("a fault found by the creation a series begins with is printed like any other, "
+            + "since nothing came before it")
+    void a_fault_found_by_a_first_step_is_printed_like_any_other() {
+        TestCase creation = step("addPet", SequenceStep.first("createTwice",
+                "create a thing, to send the same creation again"));
+
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Finding.of(WfcFault.HTTP_STATUS_500,
+                Runs.answering(creation, 500), "the API answered 500")));
+
+        assertThat(screen.toString())
+                .contains("curl ")
+                .doesNotContain("step 1 of")
+                .doesNotContain("without the ones before it");
     }
 
     @Test

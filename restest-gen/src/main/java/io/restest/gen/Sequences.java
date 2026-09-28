@@ -29,6 +29,7 @@ import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
+import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.BodyContent;
@@ -98,19 +99,26 @@ import java.util.random.RandomGenerator;
  * <p>The identifier is read from the creation's reply, the way a person would: a property named like
  * the gap it goes in, then one called {@code id}, then the kind of thing followed by id - in the
  * reply itself, or inside a wrapper around it, but never inside a list, which may be listing things
- * that were there before the creation. A value the creation was itself sent in its address is never
- * taken either: that names what the thing was made under, such as the owner of a new pet. Only when
- * the reply carries none that fits is the {@code Location} header read, whose address ends with the
- * thing's own. Gaps before the thing's own are sent what the creation was sent; the thing's own gap,
- * and a body's own identifier where a step sends one, are sent the thing's identifier. So every
- * identifier a series uses is one the API gave back for what the series made - or, for a thing its
- * creation names itself, as a topic is named, the name it was given.
+ * that were there before the creation. Nor is a value taken from the reply's body when the creation
+ * was sent it in its own address: that names what the thing was made under, such as the owner of a
+ * new pet. Only when the body carries none that fits is the {@code Location} header read, whose
+ * address ends with the thing's own. Gaps before the thing's own are sent what the creation was
+ * sent, which may well be something the run did not make, such as that owner; the thing's own gap,
+ * and a body's own identifier where a step sends one, are sent the thing's identifier - one the API
+ * gave back for what the series made, or, for a thing its creation names itself, as a topic is
+ * named, the name it was given.
+ *
+ * <p>What a reply cannot tell apart is a creation that attaches a thing which already exists and
+ * answers with it: adding a team to the ones allowed on a branch looks, address by address, like
+ * adding a pet under an owner. A reply that lists what was attached is left alone, as every list is;
+ * one that hands back the single thing attached would have it asked about, and deleted.
  *
  * <p>How much of a reply is read does not depend on how much the memory of what the API returned
  * reads, so switching that memory off leaves the series alone. A reply is read whenever the engine
  * kept all of it, and no value read out of one is sent longer, written out, than the text it was
  * read from: a number such as {@code 1e2147483647} is a dozen characters in a reply and two thousand
- * million in an address.
+ * million in an address. A word is read as a number only when it is no longer than the longest
+ * number a reply may carry, since reading a number takes longer the longer it is.
  *
  * <p>Every step says so on the request - see {@link SequenceStep} - naming the kind of series, the
  * step, and the earlier exchanges it follows, so that a stored run can be judged later. What a
@@ -121,14 +129,9 @@ import java.util.random.RandomGenerator;
  */
 final class Sequences {
 
-    /**
-     * How far through names pointing at other names a shape is followed. A safeguard, like the one
-     * the memory of what the API returned keeps for the same job.
-     */
-    private static final int HOPS = 6;
-
     private final ApiModel model;
     private final Creations creations;
+    private final int hops;
     private final int mostAwaited;
     private final RandomGenerator shapes;
     private final RandomGenerator steps;
@@ -143,6 +146,8 @@ final class Sequences {
      * @param model the API
      * @param creations what each creation makes, and where it lives
      * @param settings which series are switched on
+     * @param hops how far through names pointing at other names a shape is followed: as far as
+     *     anything the run builds is ever nested
      * @param mostAwaited how many steps may await their answers at once: as many as a run keeps
      *     awaiting an answer, and as many again answered but not yet read. Beyond it the oldest is
      *     forgotten and its series ends - which a run never reaches, and which keeps a generator
@@ -153,13 +158,18 @@ final class Sequences {
      * @param steps where the optional parameters of the steps that draw them come from, for the same
      *     reason
      * @param filler how one request is built
-     * @throws IllegalArgumentException if {@code mostAwaited} is less than one
+     * @throws IllegalArgumentException if {@code hops} or {@code mostAwaited} is less than one
      */
-    Sequences(ApiModel model, Creations creations, SequenceSettings settings, int mostAwaited,
-            RandomGenerator shapes, RandomGenerator steps, Filler filler) {
+    Sequences(ApiModel model, Creations creations, SequenceSettings settings, int hops,
+            int mostAwaited, RandomGenerator shapes, RandomGenerator steps, Filler filler) {
         this.model = Objects.requireNonNull(model, "model");
         this.creations = Objects.requireNonNull(creations, "creations");
         Objects.requireNonNull(settings, "settings");
+        if (hops < 1) {
+            throw new IllegalArgumentException("a shape is followed at least one name further, "
+                    + "not " + hops);
+        }
+        this.hops = hops;
         if (mostAwaited < 1) {
             throw new IllegalArgumentException("at least one step has to be able to await its "
                     + "answer, not " + mostAwaited);
@@ -414,8 +424,11 @@ final class Sequences {
      * the reply, three rules in turn: a property named like one of the gaps the thing's own
      * addresses have, then one called {@code id} or {@code _id}, then the kind of thing followed by
      * id. A property that is only written like an identifier - {@code ownerId} inside a pet - is not
-     * taken: it is some other thing's. Nor is a value the creation was sent in its own address, which
-     * a reply that hands back the thing the new one was made under would otherwise offer.
+     * taken: it is some other thing's. Nor is a value in the body the creation was sent in its own
+     * address, which a reply that hands back the thing the new one was made under would otherwise
+     * offer. The price is a new thing whose identifier happens to be its parent's, which is then
+     * found only in the {@code Location} header, if at all: the header names the thing's own address,
+     * so what it says is not refused.
      */
     private Optional<GeneratedValue> identifierFor(Open open, Operation operation, String gap) {
         Optional<Parameter> declared = operation.parameter(gap, ParameterLocation.PATH);
@@ -423,7 +436,7 @@ final class Sequences {
         if (declared.isEmpty() || response == null) {
             return Optional.empty();
         }
-        CanonicalSchema schema = Shapes.resolved(model, declared.get().schema(), HOPS);
+        CanonicalSchema schema = Shapes.resolved(model, declared.get().schema(), hops);
         Reply reply = replyOf(open, response);
         Set<String> gaps = new LinkedHashSet<>();
         gaps.add(gap);
@@ -435,13 +448,13 @@ final class Sequences {
                 name -> kind.isPresent() && ObservedValues.kindOfThingInTheName(name)
                         .filter(kind.get()::equals).isPresent());
         for (Predicate<String> rule : rules) {
-            for (JsonValue.JsonObject thing : reply.things()) {
-                for (Map.Entry<String, JsonValue> member : thing.members().entrySet()) {
+            for (Map<String, JsonValue> thing : reply.things()) {
+                for (Map.Entry<String, JsonValue> member : thing.entrySet()) {
                     if (!rule.test(member.getKey())) {
                         continue;
                     }
                     Optional<JsonValue> fits = fitting(member.getValue(), schema,
-                            ParameterLocation.PATH, reply.size());
+                            ParameterLocation.PATH, reply.size(), gap);
                     if (fits.isPresent()
                             && !reply.itsAddress().contains(asAnAddressWritesIt(fits.get()))) {
                         return Optional.of(new GeneratedValue(fits.get(),
@@ -455,7 +468,7 @@ final class Sequences {
         for (String location : response.headerValues("Location")) {
             Optional<JsonValue> fits = fromTheLocation(location, open.creation)
                     .flatMap(text -> fitting(JsonValue.of(text), schema, ParameterLocation.PATH,
-                            text.length()));
+                            text.length(), gap));
             if (fits.isPresent()) {
                 return Optional.of(new GeneratedValue(fits.get(), new ValueOrigin.Derived(
                         open.created.id(), "the identifier in the Location header "
@@ -470,8 +483,8 @@ final class Sequences {
         if (open.reply == null) {
             // Only a reply the engine kept all of: the engine's limit is the only one, since the
             // memory's, meant for the listings a run reads by the thousand, is not this one's.
-            List<JsonValue.JsonObject> things = ObservedValues.readable(response, Integer.MAX_VALUE)
-                    .map(Sequences::thingsIn).orElse(List.of());
+            List<Map<String, JsonValue>> things = ObservedValues.readable(response,
+                    Integer.MAX_VALUE).map(Sequences::thingsIn).orElse(List.of());
             Set<String> itsAddress = new HashSet<>();
             for (ParameterValue sent : open.sent.get(1).parameterValues()) {
                 if (sent.location() == ParameterLocation.PATH) {
@@ -489,10 +502,11 @@ final class Sequences {
      * object, and what is inside an object with nothing in it named like an identifier, which is
      * usually a wrapper around the thing. Never what is inside a list: a creation that answers with
      * a list may be listing things that were there before it. How deep a reply can go is the
-     * reader's to limit, and it does.
+     * reader's to limit, and it does. Of each thing only its words and numbers are kept, which are
+     * all an identifier can be, so that a series does not hold on to the whole of a large reply.
      */
-    private static List<JsonValue.JsonObject> thingsIn(JsonValue reply) {
-        List<JsonValue.JsonObject> found = new ArrayList<>();
+    private static List<Map<String, JsonValue>> thingsIn(JsonValue reply) {
+        List<Map<String, JsonValue>> found = new ArrayList<>();
         if (reply instanceof JsonValue.JsonObject thing) {
             collectTheThingsIn(thing, found);
         }
@@ -500,8 +514,14 @@ final class Sequences {
     }
 
     private static void collectTheThingsIn(JsonValue.JsonObject thing,
-            List<JsonValue.JsonObject> found) {
-        found.add(thing);
+            List<Map<String, JsonValue>> found) {
+        Map<String, JsonValue> kept = new LinkedHashMap<>();
+        thing.members().forEach((name, value) -> {
+            if (value instanceof JsonValue.JsonString || value instanceof JsonValue.JsonNumber) {
+                kept.put(name, value);
+            }
+        });
+        found.add(Collections.unmodifiableMap(kept));
         if (thing.members().keySet().stream().noneMatch(ObservedValues::looksLikeAnIdentifier)) {
             for (JsonValue inside : thing.members().values()) {
                 if (inside instanceof JsonValue.JsonObject wrapped) {
@@ -584,17 +604,24 @@ final class Sequences {
     /**
      * A value the API returned, as one that could go where this shape is declared: no longer,
      * written out, than the text it was read from; a word or a number of the kind wanted; in the
-     * form declared; and sendable there. An address writes a number and a word the same way, so a
-     * number written as a word is read as the number it is where a number is wanted, and a number
-     * is written as a word where a word is.
+     * form declared; and sendable there.
+     *
+     * <p>An address writes a number and a word the same way, so a number written as a word is read
+     * as the number it is where a number is wanted - when it is no longer than a reply may write a
+     * number - and a number is written as a word where a word is wanted in a place named the way
+     * identifiers are: {@code {reviewId}}, but not {@code {team_slug}}, which a thing's number is
+     * not.
+     *
+     * @param place the name of the gap or the property the value would go in
      */
     private Optional<JsonValue> fitting(JsonValue value, CanonicalSchema wanted,
-            ParameterLocation where, int longest) {
+            ParameterLocation where, int longest, String place) {
         List<JsonValue> candidates = new ArrayList<>();
         if (value instanceof JsonValue.JsonString || value instanceof JsonValue.JsonNumber) {
             candidates.add(value);
         }
-        if (value instanceof JsonValue.JsonString text && wanted instanceof NumberSchema) {
+        if (value instanceof JsonValue.JsonString text && wanted instanceof NumberSchema
+                && text.value().length() <= JsonText.LONGEST_NUMBER_IN_A_REPLY) {
             try {
                 candidates.add(JsonValue.of(new BigDecimal(text.value())));
             } catch (NumberFormatException notANumber) {
@@ -602,6 +629,7 @@ final class Sequences {
             }
         }
         if (value instanceof JsonValue.JsonNumber number && wanted instanceof StringSchema
+                && ObservedValues.looksLikeAnIdentifier(place)
                 && ObservedValues.smallEnoughToSend(number, longest)) {
             candidates.add(JsonValue.of(number.value().toPlainString()));
         }
@@ -609,7 +637,7 @@ final class Sequences {
             // The length first, before anything writes the value out: every later question does,
             // and a number like 1e2147483647 written out does not fit in memory.
             if (ObservedValues.smallEnoughToSend(candidate, longest)
-                    && Shapes.couldSatisfy(model, candidate, wanted, HOPS)
+                    && Shapes.couldSatisfy(model, candidate, wanted, hops)
                     && ObservedValueProvider.inTheDeclaredForm(candidate, wanted)
                     && RequestBuilder.canBeSentFrom(candidate, where)) {
                 return Optional.of(candidate);
@@ -632,7 +660,7 @@ final class Sequences {
         Optional<CanonicalSchema> declared = target.operation().requestBody()
                 .flatMap(described -> described.contentFor(body.mediaType()))
                 .map(BodyContent::schema)
-                .map(schema -> Shapes.resolved(model, schema, HOPS));
+                .map(schema -> Shapes.resolved(model, schema, hops));
         if (declared.isEmpty() || !(declared.get() instanceof ObjectSchema shape)) {
             return body;
         }
@@ -644,7 +672,7 @@ final class Sequences {
                     || target.aboutTheThingItself() && ObservedValues.isABareIdentifier(name)
                     || kind.isPresent() && ObservedValues.kindOfThingInTheName(name)
                             .filter(kind.get()::equals).isPresent();
-            if (!itsIdentifier || Shapes.onlyEverReturned(model, property.getValue(), HOPS)) {
+            if (!itsIdentifier || Shapes.onlyEverReturned(model, property.getValue(), hops)) {
                 continue;
             }
             // A word the identifier was found as may be read as a number here, and may not grow in
@@ -652,8 +680,8 @@ final class Sequences {
             int asLong = identifier instanceof JsonValue.JsonString word
                     ? word.value().length() : Integer.MAX_VALUE;
             Optional<JsonValue> fits = fitting(identifier,
-                    Shapes.resolved(model, property.getValue(), HOPS), ParameterLocation.BODY,
-                    asLong);
+                    Shapes.resolved(model, property.getValue(), hops), ParameterLocation.BODY,
+                    asLong, name);
             if (fits.isPresent()) {
                 Map<String, JsonValue> members = new LinkedHashMap<>(sent.members());
                 members.put(name, fits.get());
@@ -941,13 +969,13 @@ final class Sequences {
     /**
      * What a series reads out of its creation's answer, once for all its steps.
      *
-     * @param things the objects in the reply that may be the thing: the reply, and what a wrapper
-     *     around it holds
+     * @param things the words and numbers of each object in the reply that may be the thing: the
+     *     reply, and what a wrapper around it holds
      * @param size how long the reply was, in bytes; nothing read out of it is sent longer than this
      * @param itsAddress the values the creation was sent in its own address, as an address writes
      *     them
      */
-    private record Reply(List<JsonValue.JsonObject> things, int size, Set<String> itsAddress) {
+    private record Reply(List<Map<String, JsonValue>> things, int size, Set<String> itsAddress) {
     }
 
     /** One series under way. */

@@ -58,6 +58,12 @@ import java.util.Optional;
  * changes it, or does something to it - and what it answers with is that thing, which the run did
  * not make.
  *
+ * <p>The addresses cannot tell a {@code POST} that attaches a thing which already exists from one
+ * that makes a thing under another. Adding one of an organisation's teams to those allowed on a
+ * branch, {@code POST .../restrictions/teams}, reads like adding a pet under an owner, and is taken
+ * to make a team that lives at {@code /teams/{team_id}}; what keeps a series off the team is its
+ * reply, which {@link Sequences} reads.
+ *
  * <p>Only operations the run can attempt are considered, on either side, so an operation a plan set
  * aside is never sent as part of a series. {@link Sequences} decides what to send about the things
  * made; this only says where they are.

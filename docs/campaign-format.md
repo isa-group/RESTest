@@ -60,7 +60,10 @@ touch at all, and can be left out.
 
 ## Strategies
 
-Every request is built one way throughout, and which way is drawn per request, by share.
+Every request is built one way throughout, and which way is drawn per request, by share. The one
+exception is a strategy that [sends series](#series-of-requests-around-a-thing-the-run-created):
+the requests after a series' first are sent in turns of their own, ahead of the ordinary ones, so
+such a strategy takes more of the run's time than its share says.
 
 `share` is out of a hundred, and the shares of a plan add up to a hundred. A file that does not is
 refused, and told what it does add up to.
@@ -298,8 +301,10 @@ them:
 Which series a creation starts is drawn among the ones that can be asked of what it makes, from
 where the document says the thing lives: `/owners/{ownerId}` for `POST /owners`, `/pets/{petId}`
 for a pet made under its owner. The identifier is read from the reply to the creation, and from its
-`Location` header when the reply carries none. A series stops when a step its question needs is not
-a success: nothing is asked about a creation the API refused.
+`Location` header when the reply carries none - never from inside a list, which may list things
+that were there before. A `POST` whose address ends in a gap, such as `POST /pet/{petId}`, names a
+thing that already exists, so it is only ever sent twice. A series stops when a step its question
+needs is not a success: nothing is asked about a creation the API refused.
 
 `sends:` takes one word, `sequences`. The `sources:` build every step of every series, the creation
 included, and every request the strategy builds for an operation that creates nothing, which is
