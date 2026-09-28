@@ -65,21 +65,22 @@ RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/a
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
 F100  HTTP Status 500
-      deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/617  ->  500
+      getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
       the API answered 500, so it fell over while handling this request
-      curl -i -X DELETE 'https://petstore3.swagger.io/api/v3/store/order/617' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0'
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-655 requests to 19 operations in 10.5s, 14% of it idle
-  opening lap: 19 requests in 2.5s, 6 of 19 operations answered 2xx
-  160 2xx, 206 4xx, 289 5xx
-  111 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 206 refusals above
-  15 operation(s) answered 500, 15 answered some 5xx
-345 faults:
-  289 x F100  HTTP Status 500
-  56 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (311.1 KiB)
+567 requests to 19 operations in 10.4s, 13% of it idle
+  opening lap: 19 requests in 2.3s, 9 of 19 operations answered 2xx
+  171 2xx, 245 4xx, 151 5xx
+  112 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 245 refusals above
+  34 of them changed one thing in a request the API had accepted, 34 of them breaking what the description states
+  11 operation(s) answered 500, 11 answered some 5xx
+184 faults:
+  151 x F100  HTTP Status 500
+  33 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (126.1 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -96,7 +97,7 @@ seconds in with that round against 14.2 without it, pet-clinic 30.8 against 19.6
 and the area under that curve — which is what the competitions RESTest is measured in reward — rose
 17% and 15%. `--set schedule.openingLap=false` switches it off.
 
-The line after it — `160 2xx, 206 4xx, 289 5xx` — is worth a glance even when nothing is wrong. If
+The line after it — `171 2xx, 245 4xx, 151 5xx` — is worth a glance even when nothing is wrong. If
 almost everything comes back refused, the requests were the problem rather than the API.
 
 The last line before the faults counts operations rather than replies, and that is the number worth
@@ -132,13 +133,15 @@ sends none of them.
 
 Another fifth take a request the API has already accepted and send it again with exactly one thing
 changed: something it requires left out, a number one past the largest it allows, a word where it
-wants a number, ten thousand characters where it states no limit. An API checks what it is sent
+wants a number, a value off the closed list it states. An API checks what it is sent
 before acting on it, and a request with many things wrong is turned away by the first check; one
 with a single thing wrong gets past every check but that one, which is where the failures a correct
 request never reaches tend to be. The summary says how many requests were changed this way, and how
-many of them broke something the document states. Every kind of change can be switched off —
-`--set mutation.probes=false` keeps only the ones the document forbids, and
-[docs/settings.md](docs/settings.md#mutation) lists the rest. The other way round, the values *you* know are good — real identifiers, the
+many of them broke something the document states. Every kind of change can be switched off, and
+[docs/settings.md](docs/settings.md#mutation) lists them. The changes the document does not rule
+on — ten thousand characters where no limit is stated, an empty word where nothing forbids one —
+are off unless you add `--set mutation.probes=true`: measured on five APIs they found nothing the
+others had not. The other way round, the values *you* know are good — real identifiers, the
 surnames the API actually holds — go in a YAML file next to the specification and are handed over
 with `--dictionary`, which takes a file or a directory and may be repeated;
 [docs/dictionary-format.md](docs/dictionary-format.md) is the format.
@@ -157,8 +160,8 @@ the API's answer too: what such a run sends depends on what the API answered, so
 own no longer repeats it — it makes a similar run rather than the same one. `--store` keeps every
 request and reply of the run you actually had, which is the record to go back to; sending those
 requests again is a later milestone's job. Taking `source: observed` out of the plan below, and
-switching the changes off with `--set mutation.violations=false --set mutation.probes=false`, puts
-the old promise back exactly.
+switching the changes off with `--set mutation.violations=false`, puts the old promise back
+exactly.
 
 Which of those a run prefers, and in what proportion, is itself a file. `restest run
 --print-campaign` writes out the plan RESTest follows when it is given none: which sources fill in

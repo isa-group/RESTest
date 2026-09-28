@@ -26,12 +26,13 @@ import org.junit.jupiter.api.Test;
 class MutationSettingsTest {
 
     @Test
-    @DisplayName("by default every kind of change is made, in both families")
+    @DisplayName("by default every change that breaks what the document states is made, and none "
+            + "of those it does not rule on")
     void everything_is_on_by_default() {
         MutationSettings defaults = MutationSettings.defaults();
 
         assertThat(defaults.violations()).isTrue();
-        assertThat(defaults.probes()).isTrue();
+        assertThat(defaults.probes()).isFalse();
         assertThat(defaults.anyFamilyOn()).isTrue();
         assertThat(defaults.acceptedKept()).isEqualTo(16);
         assertThat(defaults.oversizedLength()).isEqualTo(10_000);
@@ -48,7 +49,8 @@ class MutationSettingsTest {
                 .describedAs("each kind keeps its own switch, so turning a family back on "
                         + "brings back what it had")
                 .isTrue();
-        assertThat(Settings.from(Map.of("mutation.violations", "false")).mutation().anyFamilyOn())
+        assertThat(Settings.from(Map.of("mutation.violations", "false", "mutation.probes", "true"))
+                .mutation().anyFamilyOn())
                 .describedAs("one family is enough for something to be changed")
                 .isTrue();
         assertThat(Settings.from(Map.of("mutation.violations", "false",

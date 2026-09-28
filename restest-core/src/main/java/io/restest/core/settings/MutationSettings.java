@@ -27,6 +27,10 @@ package io.restest.core.settings;
  * an empty word where nothing says a word may not be empty - and there nobody can say in advance
  * which answer is right, which is exactly why it is worth asking.
  *
+ * <p>Only the first family is on unless somebody says otherwise. The second found nothing the
+ * first had not when it was measured, and cost time on an API slow to answer a very long word;
+ * it is one setting away for whoever wants to try it on their own API.
+ *
  * <p>Inside each family every kind of change has a switch of its own, so that an experiment can
  * measure what one of them is worth by turning it off and nothing else. A kind of change is made
  * only when its own switch and its family's are both on.
@@ -77,8 +81,12 @@ public record MutationSettings(
         int oversizedLength,
         int oversizedItems) {
 
+    // Probes off. Measured against five APIs restarted before every run, five seeds, a minute
+    // each, they found nothing the violations had not, and on one API they cost a third of the
+    // requests: a word ten thousand characters long takes longer to answer. They stay a line away
+    // for the experiment that measures them over a longer run.
     private static final MutationSettings DEFAULTS = new MutationSettings(
-            true, true,
+            true, false,
             true, true, true, true, true, true, true, true, true,
             true, true,
             16, 10_000, 1_000);
@@ -89,7 +97,10 @@ public record MutationSettings(
         atLeastOne(oversizedItems, "oversizedItems");
     }
 
-    /** What a run does when nobody has said otherwise: every kind of change, in both families. */
+    /**
+     * What a run does when nobody has said otherwise: every kind of change that breaks what the
+     * documentation states, and none of those it does not rule on, which are one setting away.
+     */
     public static MutationSettings defaults() {
         return DEFAULTS;
     }

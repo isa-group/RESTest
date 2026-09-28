@@ -143,7 +143,7 @@ mutation:
   # whether accepted requests are changed in ways the description forbids
   violations: true            # default
   # whether accepted requests are changed in ways the description does not rule on
-  probes: true                # default
+  probes: false               # default
   # leave out a parameter or body property the description says is required
   dropRequired: true          # default
   # send a required parameter in the query, a header or a cookie other than its own
@@ -330,13 +330,15 @@ What a strategy whose plan says `mutates: accepted` may change in a request the 
 [the campaign file](campaign-format.md#changing-one-thing-in-a-request-that-worked). A kind of
 change is made only when its own switch and its family's are both on. The first family,
 `violations`, breaks something the description states, so a refusal is the right answer; the second,
-`probes`, goes where the description says nothing, and either answer may be right. With both off,
-such a strategy builds its requests the ordinary way.
+`probes`, goes where the description says nothing, and either answer may be right. Probes are off
+unless you turn them on: measured against five APIs, a minute each, they found no server failure the
+violations had not, and on one API they cost a third of the requests. With both off, such a strategy
+builds its requests the ordinary way.
 
 | Setting | Default | What it does |
 |---|---|---|
 | `violations` | `true` | whether accepted requests are changed in ways the description forbids |
-| `probes` | `true` | whether accepted requests are changed in ways the description does not rule on |
+| `probes` | `false` | whether accepted requests are changed in ways the description does not rule on |
 | `dropRequired` | `true` | leave out a parameter or body property the description says is required |
 | `wrongLocation` | `true` | send a required parameter in the query, a header or a cookie other than its own |
 | `wrongType` | `true` | send a value of another kind, such as a word where a number is declared |

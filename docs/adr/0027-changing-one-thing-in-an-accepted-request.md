@@ -206,12 +206,55 @@ arrives. If 8.5 shows the draw leaving pairs unvisited, it is the obvious next s
 and how long an oversized word and list are - sixteen settings. ADR-0025's table put the switches
 in `generation.*`; this amends it (see ADR-0025, Amendment M10.1). A person looking for "switch the
 mutations off" finds them in one place, 10.2's shape operators have somewhere to join them, and
-`generation.*` keeps saying what an invented value may look like. Switching both families off is
-two lines, and it makes the mutating strategy build every request from its sources.
+`generation.*` keeps saying what an invented value may look like. With the probes shipped off, one
+line - `mutation.violations=false` - switches every change off, and the mutating strategy then
+builds every request from its sources.
 
 ## Measurement
 
-*To be completed from the measurement below before merging; see the roadmap's 10.1 notes.*
+The five APIs of the 2027 edition, from the benchmark's own images, each restarted before every
+run with a fresh results directory; five seeds, sixty seconds, the shipped plan, three arms
+alternated seed by seed: both families off, violations only, both families. Measured on 28
+September on a machine running nothing else, from the commit this record lands with.
+
+| API | Distinct 5XX by message: off / violations / both | By exception kind | Branches covered | Operations 2XX |
+|---|---|---|---|---|
+| pet-clinic | 158.6 / **211.2** / 211.2 | 51.8 / **60.8** / 61.4 | 150.2 / **153.4** / 152.4 | 32.8 / 33.0 / 33.2 |
+| kafka-rest-proxy | 6.8 / 7.4 / 6.8 | 6.8 / 7.4 / 6.8 | 851.6 / 851.4 / 850.4 | 35.0 / 34.4 / 35.2 |
+| notebook-manager | 4 / 4 / 4 | 4 / 4 / 4 | 16 / 16 / 16 | 5 / 5 / 5 |
+| gestao-hospital | 3 / 3 / 3 | 1 / 1 / 1 | 55.8 / 54.4 / 58.8 | 18.0 / 17.8 / 18.0 |
+| flight-search | 0 / 0 / 0 | 0 / 0 / 0 | 40 / 40 / 40 | 19.6 / 20.0 / 19.8 |
+
+*Distinct by message* keys a failure by operation, status and reply body, with timestamps,
+identifiers and runs of digits taken out; *by exception kind* keeps only the body's `title`,
+`error` or equivalent, which a value echoed back into the body cannot inflate. Means over five
+seeds.
+
+- **pet-clinic** gains a third more distinct server failures by message, and a sixth more by
+  exception kind, better on every seed by either count - the lowest seed with violations on beats
+  the highest with them off - and the area under the distinct-failure curve rises from 119.5 to
+  148.6. The failures are new kinds, not new values: a word sent for a numeric path parameter
+  (`MethodArgumentTypeMismatchException`; that kind of change was the first to reach 198 of the
+  distinct failures, summed over the five seeds), a list where a body wants a word (`HttpMessageNotReadableException`), one below a stated minimum
+  (`ConstraintViolationException`). Branch coverage rises by three, on every seed.
+- **The other four** do not move beyond noise. Their failures are few and reached by ordinary
+  requests already, and three of them state almost no rule for a violation to break.
+- **Nothing is lost**: operations answered 2XX, idle time (1.1-1.7% in every arm) and the count
+  of (operation, status) pairs answering 5XX are unchanged, though nominal gives up twenty points of
+  share.
+- **The probes add nothing over the violations** on any of the five, and on kafka-rest-proxy they
+  cost a third of the requests (1,845 a minute against about 2,800), ten thousand characters taking
+  longer to answer. **They ship switched off** (`mutation.probes=false`), decided by the maintainer
+  on 28 September; the evaluation harness measures them by ablation over longer runs.
+- **The intents hold up.** Between 2% (pet-clinic) and 28% (flight-search) of the requests
+  expecting a refusal were accepted. Sampled, they are the APIs being lenient - `true` accepted
+  where a word is declared, `null` where a field may not be null, a value off a closed list - which
+  is what 3.1's *negative data must be refused* will report, not an intent recorded wrongly.
+- **How often the mutating strategy's turn changes something depends on the API.** Changed
+  requests, violations only, are 15.7% of notebook-manager's requests, 11.7% of pet-clinic's, 6.8%
+  of gestao-hospital's, 5.7% of kafka-rest-proxy's and 0.8% of flight-search's, against a share of
+  twenty; the rest fell back to building from its sources, because the operation had nothing
+  accepted yet or nothing in it that a switched-on kind could change.
 
 ## Consequences
 

@@ -240,7 +240,8 @@ how is one of eleven kinds, in two families:
 
 A **violation** breaks something the description states, so the request records that it expects
 to be refused. A **probe** goes where the description says nothing, so either answer may be right,
-and the request records that it expects nothing in particular. Both record what was changed, and in
+and the request records that it expects nothing in particular. Probes are off unless
+`mutation.probes` is turned on. Both record what was changed, and in
 which accepted request, so a stored run can put the two side by side.
 
 Some things are never changed, because the change would not be the one recorded: a value in the

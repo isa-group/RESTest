@@ -89,15 +89,17 @@ strategies:
             weight: 5
 
   # A request the API accepted, sent again with exactly one thing changed: something it requires
-  # left out, a number one past the largest it allows, a word where it wants a number, ten thousand
-  # characters where it states no limit. An API checks what it is sent before acting on it, and a
+  # left out, a number one past the largest it allows, a word where it wants a number, a value off
+  # the closed list it states. An API checks what it is sent before acting on it, and a
   # request with many things wrong is turned away by the first check - so the code behind that
   # check, where the failures a correct request never reaches tend to live, never runs. Changing
   # one thing gets past every check but one.
   #
   # Which changes are made, and how large, are settings rather than part of the plan: see
-  # `restest run --print-settings`, under mutation. With them all off, this strategy's share is
-  # built exactly as nominal builds its own.
+  # `restest run --print-settings`, under mutation. Only the changes that break what the document
+  # states are made unless you say otherwise; `mutation.probes` adds the ones it does not rule on,
+  # such as ten thousand characters where no limit is stated. With them all off, this strategy's
+  # share is built exactly as nominal builds its own.
   #
   # The sources below are what it falls back on: until the API has accepted anything for an
   # operation, or when nothing in what it accepted can be changed, the request is built from them,

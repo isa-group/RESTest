@@ -69,6 +69,10 @@ class MutationsTest {
 
     private static final int DRAWS = 200;
 
+    /** Every kind of change, the probes included, which a run leaves off unless told. */
+    private static final MutationSettings BOTH_FAMILIES =
+            Settings.from(Map.of("mutation.probes", "true")).mutation();
+
     private static final NumberSchema LIMIT = new NumberSchema(SchemaMetadata.none(),
             NumberKind.INTEGER, Optional.of(BigDecimal.ONE), Optional.empty(),
             Optional.of(BigDecimal.valueOf(100)), Optional.empty(), Optional.empty(),
@@ -471,7 +475,8 @@ class MutationsTest {
         @Test
         @DisplayName("with violations off only probes come out, and the other way round")
         void each_family_switches_off_alone() {
-            Map<String, String> probesOnly = new HashMap<>(Map.of("mutation.violations", "false"));
+            Map<String, String> probesOnly = new HashMap<>(Map.of("mutation.violations", "false",
+                    "mutation.probes", "true"));
             Map<String, String> violationsOnly = new HashMap<>(Map.of("mutation.probes", "false"));
 
             assertThat(draw(Settings.from(probesOnly).mutation(), ADD_PET, ADDED))
@@ -480,6 +485,15 @@ class MutationsTest {
                     .extracting(each -> each.mutation().orElseThrow().operator())
                     .containsOnly("oversizeWithNoLimit", "emptyWithNoRule");
             assertThat(draw(Settings.from(violationsOnly).mutation(), ADD_PET, ADDED))
+                    .isNotEmpty()
+                    .allSatisfy(each -> assertThat(each.intent())
+                            .isEqualTo(Intent.REFUSAL_EXPECTED));
+        }
+
+        @Test
+        @DisplayName("left as they are, the settings make every violation and no probe")
+        void by_default_no_probes() {
+            assertThat(draw(MutationSettings.defaults(), ADD_PET, ADDED))
                     .isNotEmpty()
                     .allSatisfy(each -> assertThat(each.intent())
                             .isEqualTo(Intent.REFUSAL_EXPECTED));
@@ -498,9 +512,8 @@ class MutationsTest {
         @DisplayName("every kind of change, all on, and every one of them is different from what "
                 + "was accepted and names it")
         void everything_on() {
-            List<TestCase> changed = new ArrayList<>(draw(MutationSettings.defaults(), ADD_PET,
-                    ADDED));
-            changed.addAll(draw(MutationSettings.defaults(), FIND_PETS, FOUND));
+            List<TestCase> changed = new ArrayList<>(draw(BOTH_FAMILIES, ADD_PET, ADDED));
+            changed.addAll(draw(BOTH_FAMILIES, FIND_PETS, FOUND));
 
             assertThat(changed).extracting(each -> each.mutation().orElseThrow().operator())
                     .containsAll(java.util.Arrays.stream(Mutations.Operator.values())
@@ -525,7 +538,7 @@ class MutationsTest {
                             new ValueOrigin.Generated("random"))),
                     InteractionId.generate());
 
-            assertThat(draw(MutationSettings.defaults(), ADD_PET_BY_FORM, byForm)).isEmpty();
+            assertThat(draw(BOTH_FAMILIES, ADD_PET_BY_FORM, byForm)).isEmpty();
         }
     }
 
@@ -554,7 +567,7 @@ class MutationsTest {
                     InteractionId.generate());
             List<TestCase> changed = new ArrayList<>();
             for (long seed = 0; seed < DRAWS; seed++) {
-                new Mutations(round, MutationSettings.defaults(), GenerationSettings.defaults(),
+                new Mutations(round, BOTH_FAMILIES, GenerationSettings.defaults(),
                         new SplittableRandom(seed)).changeOneThingIn(addThing, accepted)
                         .ifPresent(changed::add);
             }
@@ -808,7 +821,8 @@ class MutationsTest {
     }
 
     private static Map<String, String> onlyTheSwitch(String operator) {
-        Map<String, String> given = new HashMap<>();
+        Map<String, String> given = new HashMap<>(Map.of("mutation.violations", "true",
+                "mutation.probes", "true"));
         for (Mutations.Operator each : Mutations.Operator.values()) {
             given.put("mutation." + each.written(), String.valueOf(each.written().equals(operator)));
         }
