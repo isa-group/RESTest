@@ -9,7 +9,7 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
 still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 30 delivered, 2 measured and not merged, 13 more in v2.0, 28 after it.
+13 milestones: 31 delivered, 2 measured and not merged, 12 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
