@@ -32,6 +32,11 @@ import java.util.Objects;
  * clock, which is what lets the same division serve a thirty-second check and a two-hour campaign:
  * a quarter is a quarter either way.
  *
+ * <p>There is a third way, between the two. A strategy may take a request the API has already
+ * accepted and send it again with exactly one thing changed - a required value left out, a number
+ * one past the largest allowed - so that whatever the API does next can be put down to that one
+ * change.
+ *
  * <p>Every request belongs to exactly one of these. Which sources fill in the individual values
  * inside it is a separate question, answered by the sources this one carries.
  *
@@ -44,8 +49,12 @@ import java.util.Objects;
  *     refusal is a fair answer, an acceptance may be fair too, and what it is looking for is the
  *     third answer, where the API falls over
  * @param values where the values in its requests come from, asked in order until one answers
+ * @param mutatesAccepted whether its requests are made by changing one thing in a request the API
+ *     accepted. Such a strategy still has values: they build its requests the ordinary way when
+ *     there is nothing accepted to change
  */
-public record Strategy(String name, int share, boolean pushesAtTheApi, ValueProvider values) {
+public record Strategy(String name, int share, boolean pushesAtTheApi, ValueProvider values,
+        boolean mutatesAccepted) {
 
     public Strategy {
         Objects.requireNonNull(name, "name");
@@ -57,5 +66,17 @@ public record Strategy(String name, int share, boolean pushesAtTheApi, ValueProv
             throw new IllegalArgumentException("a strategy given none of the time would never run, "
                     + "so leaving it out is the way to say that: " + name + " asked for " + share);
         }
+    }
+
+    /**
+     * A strategy that builds every one of its requests from nothing.
+     *
+     * @param name what it is called, as a report would print it
+     * @param share how much of the testing time it gets
+     * @param pushesAtTheApi whether its requests push at the API with awkward values
+     * @param values where the values in its requests come from
+     */
+    public Strategy(String name, int share, boolean pushesAtTheApi, ValueProvider values) {
+        this(name, share, pushesAtTheApi, values, false);
     }
 }

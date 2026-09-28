@@ -179,7 +179,7 @@ class CampaignCommandTest {
                 .isNotEmpty();
         assertThat(screen.toString())
                 .describedAs("and the run says the seed it printed no longer repeats it on its own")
-                .contains("values from the API's own replies");
+                .contains("what it sends depends on the API's own replies");
     }
 
     @Test

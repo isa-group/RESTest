@@ -21,7 +21,9 @@ import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.Intent;
 import io.restest.core.execution.InteractionOutcome;
+import io.restest.core.execution.Mutation;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
@@ -151,9 +153,17 @@ public final class InteractionDocument {
         document.put("parameters", JsonValue.array(
                 testCase.parameterValues().stream().map(InteractionDocument::of).toList()));
         testCase.body().ifPresent(body -> document.put("body", of(body)));
+        document.put("intent", JsonValue.of(written(testCase.intent())));
+        testCase.mutation().ifPresent(mutation -> document.put("mutation", of(mutation)));
         return JsonValue.object(document);
     }
 
+    /**
+     * A test case read back. One stored before RESTest recorded what it expected, or what it
+     * changed, has neither member, and reads back as expecting nothing in particular and changing
+     * nothing. The second is true of every request built then; the first is the most that can be
+     * said of one whose expectation nobody wrote down, a request that pushed at the API included.
+     */
     private static TestCase toTestCase(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the test case");
         List<ParameterValue> parameters = array(document, "parameters").stream()
@@ -163,7 +173,53 @@ public final class InteractionDocument {
                 TestCaseId.of(string(document, "id")),
                 OperationId.of(string(document, "operation")),
                 parameters,
-                document.member("body").map(InteractionDocument::toBodyValue));
+                document.member("body").map(InteractionDocument::toBodyValue),
+                document.member("intent").map(intent -> toIntent(text(intent, "intent")))
+                        .orElse(Intent.UNKNOWN),
+                document.member("mutation").map(InteractionDocument::toMutation));
+    }
+
+    /**
+     * How an intent is written. Spelled out rather than taken from the names in the code, so that
+     * renaming one there cannot quietly change what every stored run says.
+     */
+    private static String written(Intent intent) {
+        return switch (intent) {
+            case ACCEPTABLE -> "acceptable";
+            case REFUSAL_EXPECTED -> "refusalExpected";
+            case UNKNOWN -> "unknown";
+            case PUSHING -> "pushing";
+        };
+    }
+
+    private static Intent toIntent(String written) {
+        for (Intent intent : Intent.values()) {
+            if (written(intent).equals(written)) {
+                return intent;
+            }
+        }
+        throw new JsonException("A test case was recorded with the intent '" + written
+                + "', which is not one this version knows");
+    }
+
+    private static JsonValue of(Mutation mutation) {
+        Map<String, JsonValue> document = new LinkedHashMap<>();
+        document.put("of", JsonValue.of(mutation.of().value()));
+        document.put("operator", JsonValue.of(mutation.operator()));
+        document.put("in", JsonValue.of(mutation.location().name()));
+        document.put("path", JsonValue.of(mutation.path()));
+        document.put("description", JsonValue.of(mutation.description()));
+        return JsonValue.object(document);
+    }
+
+    private static Mutation toMutation(JsonValue value) {
+        JsonValue.JsonObject document = object(value, "what was changed");
+        return new Mutation(
+                InteractionId.of(string(document, "of")),
+                string(document, "operator"),
+                ParameterLocation.valueOf(string(document, "in")),
+                string(document, "path"),
+                string(document, "description"));
     }
 
     private static JsonValue of(ParameterValue parameter) {

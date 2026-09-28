@@ -49,37 +49,83 @@ import java.util.Set;
  * just a chain of such derived values across several test cases and interactions, not something this
  * type needs to represent as a group.
  *
+ * <p>Every test case also says what its builder expected - see {@link Intent} - and, when it was
+ * made by changing one thing in a request the API had already accepted, what that one thing was -
+ * see {@link Mutation}. Those two travel with the values because they are facts about how the
+ * request was built, and nothing that sees only the request on the wire could work them out.
+ *
  * @param id this test case's identity, stable across generation, execution and storage
  * @param operation which operation this attempts to invoke
  * @param parameterValues the chosen value for each parameter this attempt supplies, in no
  *     particular order beyond what {@link #parameterValues()} returns
  * @param body the chosen request body, absent when the operation takes none or none was supplied
+ * @param intent what was expected of the API when this was built
+ * @param mutation the one thing changed in an accepted request to make this one, absent when it
+ *     was built from nothing
  */
 public record TestCase(
         TestCaseId id,
         OperationId operation,
         List<ParameterValue> parameterValues,
-        Optional<BodyValue> body) {
+        Optional<BodyValue> body,
+        Intent intent,
+        Optional<Mutation> mutation) {
 
     public TestCase {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(operation, "operation");
         Objects.requireNonNull(parameterValues, "parameterValues");
         Objects.requireNonNull(body, "body");
+        Objects.requireNonNull(intent, "intent");
+        Objects.requireNonNull(mutation, "mutation");
         parameterValues = List.copyOf(parameterValues);
         rejectDuplicateParameterValues(parameterValues);
+        rejectAnIntentThatCannotBeTrue(intent, mutation);
     }
 
     /** A fresh test case for the given operation, with the given parameter values and no body. */
     public static TestCase of(OperationId operation, List<ParameterValue> parameterValues) {
-        return new TestCase(TestCaseId.generate(), operation, parameterValues, Optional.empty());
+        return of(operation, parameterValues, Optional.empty(), Intent.UNKNOWN);
     }
 
     /** A fresh test case for the given operation, with the given parameter values and body. */
     public static TestCase of(OperationId operation, List<ParameterValue> parameterValues,
             BodyValue body) {
-        return new TestCase(TestCaseId.generate(), operation, parameterValues,
-                Optional.of(Objects.requireNonNull(body, "body")));
+        return of(operation, parameterValues, Optional.of(Objects.requireNonNull(body, "body")),
+                Intent.UNKNOWN);
+    }
+
+    /**
+     * A fresh test case built from nothing, saying what was expected of it.
+     *
+     * @param operation which operation it attempts
+     * @param parameterValues the value chosen for each parameter it supplies
+     * @param body the body chosen, if any
+     * @param intent what was expected; not {@link Intent#REFUSAL_EXPECTED}, which is only ever the
+     *     intent of a request made by changing one that was accepted
+     * @return the test case
+     */
+    public static TestCase of(OperationId operation, List<ParameterValue> parameterValues,
+            Optional<BodyValue> body, Intent intent) {
+        return new TestCase(TestCaseId.generate(), operation, parameterValues, body, intent,
+                Optional.empty());
+    }
+
+    /**
+     * A fresh test case made by changing one thing in a request the API had accepted.
+     *
+     * @param operation which operation it attempts, the same as the accepted request's
+     * @param parameterValues the values it supplies, all but the changed one as they were
+     * @param body the body it sends, if any
+     * @param intent {@link Intent#REFUSAL_EXPECTED} when the change breaks what the documentation
+     *     says, {@link Intent#UNKNOWN} when the documentation does not rule on it
+     * @param mutation what was changed, and in which accepted request
+     * @return the test case
+     */
+    public static TestCase changed(OperationId operation, List<ParameterValue> parameterValues,
+            Optional<BodyValue> body, Intent intent, Mutation mutation) {
+        return new TestCase(TestCaseId.generate(), operation, parameterValues, body, intent,
+                Optional.of(Objects.requireNonNull(mutation, "mutation")));
     }
 
     /**
@@ -98,6 +144,28 @@ public record TestCase(
         return parameterValues.stream()
                 .filter(value -> value.location() == location && value.name().equals(name))
                 .findFirst();
+    }
+
+    /**
+     * Two intents only make sense beside a change, and two only without one.
+     *
+     * <p>Expecting a refusal is expecting it <em>because</em> of something that was broken, and a
+     * test case that says so without saying what was broken states an expectation nobody could
+     * check. The other way round, a request made by changing an accepted one is never built from
+     * values somebody believes in throughout, nor from values that are all awkward at once: one
+     * thing in it is different from a request that worked, and that is all it claims.
+     */
+    private static void rejectAnIntentThatCannotBeTrue(Intent intent, Optional<Mutation> mutation) {
+        if (intent == Intent.REFUSAL_EXPECTED && mutation.isEmpty()) {
+            throw new IllegalArgumentException("a test case expecting to be refused says what it "
+                    + "broke, and this one names no change");
+        }
+        if (mutation.isPresent()
+                && (intent == Intent.ACCEPTABLE || intent == Intent.PUSHING)) {
+            throw new IllegalArgumentException("a test case made by changing one thing in an "
+                    + "accepted request either expects a refusal or expects nothing in particular, "
+                    + "not " + intent);
+        }
     }
 
     /**

@@ -88,7 +88,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
 
     /** The groups there are, in printing order. */
     public static List<String> groups() {
-        return List.of("engine", "schedule", "generation", "memory", "document", "report");
+        return List.of("engine", "schedule", "generation", "mutation", "memory", "document",
+                "report");
     }
 
     /**
@@ -230,6 +231,39 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many times a value is invented again after an unsendable one"),
             key("generation", "writableBodyAttempts", SettingKind.WHOLE_NUMBER,
                     "how many bodies are drawn while looking for one its media type can carry"),
+
+            key("mutation", "violations", SettingKind.YES_OR_NO,
+                    "whether accepted requests are changed in ways the description forbids"),
+            key("mutation", "probes", SettingKind.YES_OR_NO,
+                    "whether accepted requests are changed in ways the description does not rule on"),
+            key("mutation", "dropRequired", SettingKind.YES_OR_NO,
+                    "leave out a parameter or body property the description says is required"),
+            key("mutation", "wrongLocation", SettingKind.YES_OR_NO,
+                    "send a required parameter in the query, a header or a cookie other than its own"),
+            key("mutation", "wrongType", SettingKind.YES_OR_NO,
+                    "send a value of another kind, such as a word where a number is declared"),
+            key("mutation", "outsideABound", SettingKind.YES_OR_NO,
+                    "send a value one step past a limit the description states"),
+            key("mutation", "breakAnEnumeration", SettingKind.YES_OR_NO,
+                    "send a value that is not on the closed list the description states"),
+            key("mutation", "breakAPattern", SettingKind.YES_OR_NO,
+                    "send a word the stated pattern refuses"),
+            key("mutation", "sendNull", SettingKind.YES_OR_NO,
+                    "send null for a body property that may not be null"),
+            key("mutation", "sendEmpty", SettingKind.YES_OR_NO,
+                    "send an empty word, list or object where the description forbids one"),
+            key("mutation", "oversize", SettingKind.YES_OR_NO,
+                    "send a word or list far longer than the longest the description allows"),
+            key("mutation", "oversizeWithNoLimit", SettingKind.YES_OR_NO,
+                    "the same where the description states no longest length; a probe"),
+            key("mutation", "emptyWithNoRule", SettingKind.YES_OR_NO,
+                    "send an empty word, list or object where nothing forbids one; a probe"),
+            key("mutation", "acceptedKept", SettingKind.WHOLE_NUMBER,
+                    "how many of each operation's accepted requests are kept to be changed, newest first"),
+            key("mutation", "oversizedLength", SettingKind.WHOLE_NUMBER,
+                    "how many characters an oversized word has"),
+            key("mutation", "oversizedItems", SettingKind.WHOLE_NUMBER,
+                    "how many items an oversized list has"),
 
             key("memory", "mostValuesUnderOneName", SettingKind.WHOLE_NUMBER,
                     "how many values the run remembers under any one name, and things of any "

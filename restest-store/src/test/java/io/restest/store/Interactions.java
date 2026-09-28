@@ -86,7 +86,8 @@ final class Interactions {
 
     /**
      * Everything a single interaction can carry at once: repeated headers, a body that was sent, a
-     * reply that was truncated, parameter values from all three kinds of source.
+     * reply that was truncated, parameter values from all three kinds of source, and a change made
+     * to a request the API had accepted.
      */
     static Interaction elaborate() {
         TestCase testCase = new TestCase(
@@ -105,7 +106,12 @@ final class Interactions {
                 Optional.of(new BodyValue("application/json",
                         JsonValue.object(new java.util.LinkedHashMap<>(java.util.Map.of(
                                 "name", JsonValue.of("a widget")))),
-                        new ValueOrigin.Generated("random"))));
+                        new ValueOrigin.Generated("random"))),
+                io.restest.core.execution.Intent.REFUSAL_EXPECTED,
+                Optional.of(new io.restest.core.execution.Mutation(
+                        io.restest.core.execution.InteractionId.of("accepted-one"),
+                        "dropRequired", ParameterLocation.QUERY, "limit",
+                        "left out the required query parameter 'limit'")));
 
         HttpRequestRecord request = new HttpRequestRecord(HttpMethod.POST,
                 "http://localhost:8080/widgets?verbose=true",

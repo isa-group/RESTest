@@ -46,6 +46,8 @@ import org.junit.jupiter.api.io.TempDir;
  *
  * <p>The comparison is the point. The same command, against the same API, with the same number to
  * start from, finds nothing when it has no such list and finds the server error when it has one.
+ * Both runs have the changes to accepted requests switched off: one of those sends an empty word
+ * too, and finds the same bug another way.
  */
 class FuzzingFindsWhatNominalMissesTest {
 
@@ -105,8 +107,14 @@ class FuzzingFindsWhatNominalMissesTest {
     void the_awkward_values_are_what_find_it(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
 
-        String withAwkwardValues = run(directory.resolve("with"), document, "--fuzzing", "25");
-        String withoutThem = run(directory.resolve("without"), document, "--fuzzing", "0");
+        // The changes made to accepted requests switched off in both runs: one of them sends an
+        // empty word wherever nothing forbids one, and reaches this bug too - which is what they
+        // are for, and not what this test is comparing. Left on in the first run, it would pass
+        // even if the list of awkward values lost its empty word.
+        String withAwkwardValues = run(directory.resolve("with"), document, "--fuzzing", "25",
+                "--set", "mutation.violations=false", "--set", "mutation.probes=false");
+        String withoutThem = run(directory.resolve("without"), document, "--fuzzing", "0",
+                "--set", "mutation.violations=false", "--set", "mutation.probes=false");
 
         assertThat(withAwkwardValues)
                 .describedAs("an empty search term is in RESTest's own list of awkward values, and "

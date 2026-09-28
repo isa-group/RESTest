@@ -153,6 +153,29 @@ class RequestBuilderTest {
     }
 
     @Test
+    @DisplayName("a value sent somewhere the operation does not declare it is written the way that "
+            + "place writes things, not dropped")
+    void a_value_in_an_undeclared_place_is_written() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("limit", ParameterLocation.QUERY, true, StringSchema.of()),
+                Parameter.of("X-Trace", ParameterLocation.HEADER, true, StringSchema.of()),
+                Parameter.of("session", ParameterLocation.COOKIE, true, StringSchema.of())));
+
+        HttpRequestRecord request = build(operation,
+                value("limit", ParameterLocation.HEADER, JsonValue.of("10")),
+                value("X-Trace", ParameterLocation.COOKIE, JsonValue.of("t 1")),
+                value("session", ParameterLocation.QUERY, JsonValue.array(JsonValue.of("a"),
+                        JsonValue.of("b"))));
+
+        assertThat(request.headerValues("limit")).containsExactly("10");
+        assertThat(request.headerValues("Cookie")).containsExactly("X-Trace=t%201");
+        assertThat(request.url())
+                .describedAs("a list spread out one piece per element, as the query string does "
+                        + "when nothing says otherwise")
+                .isEqualTo("https://example.com/api/v3/pets?session=a&session=b");
+    }
+
+    @Test
     @DisplayName("an operation with nothing to fill in is just its address")
     void an_operation_without_parameters_is_just_its_url() {
         assertThat(build(Operation.of(HttpMethod.GET, "/pets")).url())

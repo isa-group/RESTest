@@ -407,6 +407,10 @@ class SettingsTest {
                     .schedule().workAheadFactor()).isEqualTo(3);
             assertThat(from.withGeneration(GenerationSettings.defaults()).generation())
                     .isEqualTo(GenerationSettings.defaults());
+            assertThat(from.withMutation(from.mutation().withNothingChanged()).mutation()
+                    .anyFamilyOn()).isFalse();
+            assertThat(from.withMutation(from.mutation().withNothingChanged()).generation())
+                    .isEqualTo(from.generation());
             assertThat(from.withMemory(new MemorySettings(0, 0, 0, 0, 0, false, false)).memory()
                     .mostNames()).isZero();
             assertThat(from.withDocument(new DocumentSettings(Duration.ofSeconds(1), 10))

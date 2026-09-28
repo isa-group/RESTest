@@ -80,6 +80,9 @@ import java.util.concurrent.ConcurrentMap;
  * file, because what it is keyed by is worked out from the document's addresses rather than
  * written down, and it is kept only when {@link MemorySettings#identifiersByResource()} is on.
  *
+ * <p>What came back from a request made by changing one thing in an accepted one is not kept: a
+ * value the API should have refused and accepted anyway is not a value anybody believes in.
+ *
  * <p>It hears about replies through the run's stream of announcements rather than by reading the
  * record of the run afterwards, and it does so on purpose: what it wants is <em>recent</em>, not
  * complete. An identifier seen forty minutes ago may have been deleted since, so only the last
@@ -157,6 +160,12 @@ public final class ObservedValues implements RunListener {
             return;
         }
         Interaction interaction = completed.interaction();
+        // Not what came back from a request with one thing deliberately broken in it. An API that
+        // wrongly accepts a name ten thousand characters long and hands it back would otherwise
+        // have it sent again in ordinary requests, which are the ones meant to work.
+        if (interaction.testCase().mutation().isPresent()) {
+            return;
+        }
         HttpResponseRecord response = interaction.response().orElse(null);
         if (response == null || !theApiWasHappy(response.statusCode())) {
             return;

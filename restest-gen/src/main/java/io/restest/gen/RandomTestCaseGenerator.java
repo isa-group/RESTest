@@ -17,8 +17,10 @@ package io.restest.gen;
 
 import io.restest.core.event.RunListener;
 import io.restest.core.execution.BodyValue;
+import io.restest.core.execution.Intent;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
+import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
@@ -108,8 +110,19 @@ import java.util.stream.Stream;
  * what the API answered, and an API answers differently on a different day - so starting a run like
  * that from the same number gets a similar run rather than the same one, which is one of the
  * reasons every request it did send is worth keeping. Every other source reads the document, which
- * says the same thing every time. A run says for itself which kind it is: there is something to
- * listen to its replies with only when the plan asked for a source with a memory.
+ * says the same thing every time. The same goes for a plan with a way of building requests that
+ * changes one thing in a request the API accepted, since which requests were accepted is the API's
+ * answer too. A run says for itself which kind it is: there is something to listen to its replies
+ * with only when the plan asked for a source with a memory, or for changes to accepted requests.
+ *
+ * <p>Such a change is made by taking one of the requests the API has accepted for the operation
+ * and changing exactly one thing in it, so that whatever the API does next can be put down to that
+ * one change. Until the API has accepted something for the operation, or when nothing in what it
+ * accepted can be changed, the request is built the ordinary way from that strategy's own sources.
+ *
+ * <p>Every request says what was expected of it: a request pushing at the API with awkward values
+ * expects nothing in particular and says so as pushing; a changed request says whether its change
+ * breaks what the document states; everything else expects nothing in particular.
  *
  * <p>One generator belongs to one sequence of decisions, so it is used from one thread at a time.
  */
@@ -143,6 +156,8 @@ public final class RandomTestCaseGenerator {
     private final ValueProvider values;
     private final List<Dictionary> given;
     private final ObservedValues observed;
+    private final AcceptedRequests accepted;
+    private final Mutations mutations;
     private final Campaign campaign;
     private final List<Strategy> strategies;
 
@@ -261,14 +276,27 @@ public final class RandomTestCaseGenerator {
         this.strategies = strategiesFor(campaign, dictionaries, model, random, observed,
                 settings.generation());
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
+        // Only when the plan has a way of building requests that changes accepted ones, and the
+        // settings leave at least one kind of change switched on, with its family. Otherwise
+        // nothing listens for accepted requests, and such a strategy builds its requests exactly as
+        // an ordinary one with the same sources would, drawing the same numbers.
+        this.accepted = this.strategies.stream().anyMatch(Strategy::mutatesAccepted)
+                && Mutations.anythingSwitchedOn(settings.mutation())
+                ? new AcceptedRequests(model, settings.mutation()) : null;
+        this.mutations = this.accepted == null ? null
+                : new Mutations(model, settings.mutation(), settings.generation(), random);
         // Whether an operation can be tested at all is asked of an ordinary way of building a
         // request, never of one built to push at the API: a list of awkward values answers for
         // almost anything, so asking it would count an operation testable and then leave it with
         // nothing for the three quarters of requests built the ordinary way. The plan may list its
         // pushing strategy first, so this is chosen by what a strategy is rather than by position.
+        // An ordinary one by preference - one that neither pushes nor changes accepted requests -
+        // though a strategy that changes them builds its fallback requests the ordinary way too.
         this.values = this.strategies.stream()
-                .filter(way -> !way.pushesAtTheApi())
+                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted())
                 .findFirst()
+                .or(() -> this.strategies.stream().filter(way -> !way.pushesAtTheApi())
+                        .findFirst())
                 .orElse(this.strategies.get(0))
                 .values();
         // The ordinary way of building a request, with its choices turned into a ranking, and a
@@ -276,8 +304,11 @@ public final class RandomTestCaseGenerator {
         // generator's own source, since splitting would move that source on and change every
         // ordinary request after it - the one thing asking for these requests must never do.
         this.likeliest = campaign.strategies().stream()
-                .filter(planned -> !planned.pushesAtTheApi())
+                .filter(planned -> !planned.pushesAtTheApi() && !planned.mutatesAccepted())
                 .findFirst()
+                .or(() -> campaign.strategies().stream()
+                        .filter(planned -> !planned.pushesAtTheApi())
+                        .findFirst())
                 .map(planned -> new Strategy(planned.name(), planned.share(), false,
                         valuesFor(askedInTurn(planned), dictionaries, model,
                                 new SplittableRandom(seed).split(), observed,
@@ -372,20 +403,30 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * What has to be told about every exchange, when the plan asks for a source that needs telling.
+     * What has to be told about every exchange, when the plan asks for something that needs telling.
      *
-     * <p>Only one source does: the one that reuses what the API has already sent back, which cannot
-     * know anything unless somebody passes on what came back. Whoever runs the tests subscribes
-     * this to the run's stream of announcements, the same way a report or a rule is subscribed.
+     * <p>Two things do: the source that reuses what the API has already sent back, and the memory
+     * of the requests the API accepted, which a way of building requests that changes them draws
+     * on. Neither can know anything unless somebody passes on what came back. Whoever runs the tests
+     * subscribes each of these to the run's stream of announcements, the same way a report or a rule
+     * is subscribed.
      *
      * <p>Empty for every other plan, and it being empty rather than a listener that does nothing is
-     * the point: a run whose plan says nothing about the API's replies does not watch them at all,
-     * and stays repeatable from its starting number.
+     * the point: a run whose plan says nothing that depends on the API's replies does not watch them
+     * at all, and stays repeatable from its starting number.
      *
-     * @return what to subscribe, or nothing when this plan has no source with a memory
+     * @return what to subscribe, in the order to subscribe it, or nothing when this plan has no
+     *     part that remembers what the API answered
      */
-    public Optional<RunListener> whatListensToTheRun() {
-        return Optional.ofNullable(observed);
+    public List<RunListener> whatListensToTheRun() {
+        List<RunListener> listening = new ArrayList<>(2);
+        if (observed != null) {
+            listening.add(observed);
+        }
+        if (accepted != null) {
+            listening.add(accepted);
+        }
+        return List.copyOf(listening);
     }
 
     /** The plan this run is following. */
@@ -402,12 +443,13 @@ public final class RandomTestCaseGenerator {
      * The names of the lists this run draws on when it is pushing at the API rather than trying to
      * work.
      *
-     * <p>A report wants these so it can say how many requests were of that kind. Without them, a run
-     * that spends a quarter of its time sending values nobody sensible would send reads as though
-     * the API were turning away far more ordinary traffic than it is.
+     * <p>Empty when this run sends nothing of the kind: when its plan has no strategy that pushes,
+     * or has one and was handed no list to push with, so that the strategy was left out. A report
+     * does not need these to count such requests - each request says it was pushing - but what a
+     * run will do is worth being able to ask before it does it.
      *
-     * <p>The names of the <em>lists</em>, which is what a report was told each value came from -
-     * not the names of the strategies drawing on them, which a plan may call anything.
+     * <p>The names of the <em>lists</em>, which is what each value records it came from - not the
+     * names of the strategies drawing on them, which a plan may call anything.
      *
      * @return the names, empty when this run sends nothing of the kind
      */
@@ -490,7 +532,17 @@ public final class RandomTestCaseGenerator {
     }
 
     private Optional<TestCase> fill(Operation operation) {
-        return fill(operation, nextStrategy(), Filling.DRAWN);
+        Strategy strategy = nextStrategy();
+        if (strategy.mutatesAccepted() && mutations != null) {
+            // Nothing is drawn when nothing has been accepted yet, so an operation the API has
+            // never accepted costs this way of building a request no numbers at all.
+            Optional<TestCase> changed = accepted.oneOf(operation.id(), random)
+                    .flatMap(base -> mutations.changeOneThingIn(operation, base));
+            if (changed.isPresent()) {
+                return changed;
+            }
+        }
+        return fill(operation, strategy, Filling.DRAWN);
     }
 
     /**
@@ -551,17 +603,39 @@ public final class RandomTestCaseGenerator {
             }
         }
         Optional<RequestBodyModel> declared = operation.requestBody();
-        if (declared.isEmpty()) {
-            return Optional.of(TestCase.of(operation.id(), chosen));
-        }
-        Optional<BodyValue> body = body(operation, declared.get(), strategy, filling);
-        if (body.isEmpty()) {
+        Optional<BodyValue> body = declared.isEmpty()
+                ? Optional.empty() : body(operation, declared.get(), strategy, filling);
+        if (declared.isPresent() && body.isEmpty() && declared.get().required()) {
             // An API that says it needs a body will refuse a request without one whatever else is
             // in it, so there is nothing to learn from sending it.
-            return declared.get().required()
-                    ? Optional.empty() : Optional.of(TestCase.of(operation.id(), chosen));
+            return Optional.empty();
         }
-        return Optional.of(TestCase.of(operation.id(), chosen, body.get()));
+        return Optional.of(TestCase.of(operation.id(), chosen, body,
+                intentOf(strategy, chosen, body)));
+    }
+
+    /**
+     * What a request expects, which is what the way of building it expects - provided it carries
+     * something that way chose.
+     *
+     * <p>A request pushing at the API says so only when it carries something awkward: a parameter
+     * whose value came from a list of values to push with, or a body, whose values such a strategy
+     * fills from that list wherever it has one. A request of that strategy's with nothing in it - an
+     * operation with no parameters, say - is the same request an ordinary strategy would send, and
+     * calling it pushing would be claiming something about it that is not so. Everything else
+     * expects nothing in particular: a value invented to fit may still be refused for a rule the
+     * document never wrote down.
+     */
+    private static Intent intentOf(Strategy strategy, List<ParameterValue> chosen,
+            Optional<BodyValue> body) {
+        if (!strategy.pushesAtTheApi()) {
+            return Intent.UNKNOWN;
+        }
+        boolean carriesSomethingAwkward = body.isPresent() || chosen.stream()
+                .map(ParameterValue::origin)
+                .anyMatch(origin -> origin instanceof ValueOrigin.Generated made
+                        && PUSHES_AT_THE_API.equals(made.source()));
+        return carriesSomethingAwkward ? Intent.PUSHING : Intent.UNKNOWN;
     }
 
     /**
@@ -822,7 +896,7 @@ public final class RandomTestCaseGenerator {
                         + "value");
             }
             ways.add(new Strategy(planned.name(), planned.share(), planned.pushesAtTheApi(),
-                    values));
+                    values, planned.mutatesAccepted()));
         }
         if (ways.isEmpty()) {
             // Every strategy in the plan pushes, and there is nothing to push with. Running some
@@ -881,7 +955,8 @@ public final class RandomTestCaseGenerator {
                         .forEach(source -> inTurn.add(new Campaign.Entry.Single(source)));
             }
         }
-        return new Campaign.PlannedStrategy(planned.name(), planned.share(), inTurn);
+        return new Campaign.PlannedStrategy(planned.name(), planned.share(), inTurn,
+                planned.mutatesAccepted());
     }
 
     /**
