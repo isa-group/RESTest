@@ -26,6 +26,7 @@ import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.execution.Mutation;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
+import io.restest.core.execution.SequenceStep;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.TestCaseId;
@@ -155,14 +156,16 @@ public final class InteractionDocument {
         testCase.body().ifPresent(body -> document.put("body", of(body, mostBodyBytes)));
         document.put("intent", JsonValue.of(written(testCase.intent())));
         testCase.mutation().ifPresent(mutation -> document.put("mutation", of(mutation)));
+        testCase.sequence().ifPresent(step -> document.put("sequence", of(step)));
         return JsonValue.object(document);
     }
 
     /**
-     * A test case read back. One stored before RESTest recorded what it expected, or what it
-     * changed, has neither member, and reads back as expecting nothing in particular and changing
-     * nothing. The second is true of every request built then; the first is the most that can be
-     * said of one whose expectation nobody wrote down, a request that pushed at the API included.
+     * A test case read back. One stored before RESTest recorded what it expected, what it changed,
+     * or which series it was a step of, has none of those members, and reads back as expecting
+     * nothing in particular, changing nothing and standing alone. The last two are true of every
+     * request built then; the first is the most that can be said of one whose expectation nobody
+     * wrote down, a request that pushed at the API included.
      */
     private static TestCase toTestCase(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the test case");
@@ -176,7 +179,8 @@ public final class InteractionDocument {
                 document.member("body").map(InteractionDocument::toBodyValue),
                 document.member("intent").map(intent -> toIntent(text(intent, "intent")))
                         .orElse(Intent.UNKNOWN),
-                document.member("mutation").map(InteractionDocument::toMutation));
+                document.member("mutation").map(InteractionDocument::toMutation),
+                document.member("sequence").map(InteractionDocument::toSequenceStep));
     }
 
     /**
@@ -219,6 +223,27 @@ public final class InteractionDocument {
                 string(document, "operator"),
                 ParameterLocation.valueOf(string(document, "in")),
                 string(document, "path"),
+                string(document, "description"));
+    }
+
+    private static JsonValue of(SequenceStep step) {
+        Map<String, JsonValue> document = new LinkedHashMap<>();
+        document.put("shape", JsonValue.of(step.shape()));
+        document.put("step", JsonValue.of(step.step()));
+        document.put("follows", JsonValue.array(step.follows().stream()
+                .<JsonValue>map(exchange -> JsonValue.of(exchange.value())).toList()));
+        document.put("description", JsonValue.of(step.description()));
+        return JsonValue.object(document);
+    }
+
+    private static SequenceStep toSequenceStep(JsonValue value) {
+        JsonValue.JsonObject document = object(value, "the step of a series");
+        return new SequenceStep(
+                string(document, "shape"),
+                number(member(document, "step"), "step").intValueExact(),
+                array(document, "follows").stream()
+                        .map(exchange -> InteractionId.of(text(exchange, "follows")))
+                        .toList(),
                 string(document, "description"));
     }
 

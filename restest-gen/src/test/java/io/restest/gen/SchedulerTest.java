@@ -19,7 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.execution.Header;
+import io.restest.core.execution.HttpRequestRecord;
+import io.restest.core.execution.HttpResponseRecord;
+import io.restest.core.execution.Interaction;
 import io.restest.core.execution.ParameterValue;
+import io.restest.core.execution.Payload;
+import io.restest.core.execution.StatusLine;
+import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
@@ -28,11 +35,14 @@ import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
+import io.restest.core.settings.Settings;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -199,6 +209,89 @@ class SchedulerTest {
     }
 
     @Test
+    @DisplayName("the next step of a series, once its answer is heard, goes before the ordinary turn")
+    void a_series_goes_before_the_ordinary_turn() {
+        Scheduler scheduler = aSeriesScheduler(Duration.ofMinutes(1));
+
+        assertThat(steps(scheduler, 1)).containsExactly("send getPet");
+        Scheduler.Step.Send creation = (Scheduler.Step.Send) scheduler.next();
+        assertThat(creation.operation()).isEqualTo(ADD);
+        TestCase first = scheduler.testCaseFor(creation).orElseThrow();
+        assertThat(first.sequence()).isPresent();
+
+        scheduler.heard(first, Optional.of(created(first)));
+
+        Scheduler.Step.Send again = (Scheduler.Step.Send) scheduler.next();
+        assertThat(again.continuation())
+                .describedAs("the same creation again, before listPets, whose turn it was")
+                .isPresent();
+        assertThat(again.operation()).isEqualTo(ADD);
+        TestCase second = scheduler.testCaseFor(again).orElseThrow();
+        assertThat(second.sequence().orElseThrow().step()).isEqualTo(2);
+        assertThat(second.body()).isEqualTo(first.body());
+        assertThat(steps(scheduler, 1)).containsExactly("send listPets");
+    }
+
+    @Test
+    @DisplayName("a request that is not a step of a series is heard and ignored")
+    void an_ordinary_answer_changes_nothing() {
+        Scheduler scheduler = aSeriesScheduler(Duration.ofMinutes(1));
+        Scheduler.Step.Send read = (Scheduler.Step.Send) scheduler.next();
+        TestCase ordinary = scheduler.testCaseFor(read).orElseThrow();
+
+        scheduler.heard(ordinary, Optional.of(created(ordinary)));
+
+        assertThat(steps(scheduler, 1)).containsExactly("send addPet");
+    }
+
+    @Test
+    @DisplayName("an answer heard after the time is up starts nothing")
+    void nothing_after_the_time_is_up() {
+        Scheduler scheduler = aSeriesScheduler(Duration.ofSeconds(5));
+        scheduler.next();
+        Scheduler.Step.Send creation = (Scheduler.Step.Send) scheduler.next();
+        TestCase first = scheduler.testCaseFor(creation).orElseThrow();
+
+        now = START.plusSeconds(5);
+        scheduler.heard(first, Optional.of(created(first)));
+
+        assertThat(steps(scheduler, 1)).containsExactly("time is up");
+    }
+
+    @Test
+    @DisplayName("a creation nothing came back to ends its series, and the ordinary turn goes on")
+    void a_creation_without_an_answer_ends_its_series() {
+        Scheduler scheduler = aSeriesScheduler(Duration.ofMinutes(1));
+        scheduler.next();
+        Scheduler.Step.Send creation = (Scheduler.Step.Send) scheduler.next();
+        TestCase first = scheduler.testCaseFor(creation).orElseThrow();
+
+        scheduler.heard(first, Optional.empty());
+
+        assertThat(steps(scheduler, 1)).containsExactly("send listPets");
+    }
+
+    @Test
+    @DisplayName("a step that cannot be built lets the ordinary turn go on, and its series ends "
+            + "when the question needed it")
+    void a_step_that_cannot_be_built() {
+        // safeGet: its read of the pet needs the pet's identifier, and the reply carries none.
+        Scheduler scheduler = aSeriesScheduler(Duration.ofMinutes(1),
+                new SequenceSettings(false, false, false, false, true, false));
+        scheduler.next();
+        Scheduler.Step.Send creation = (Scheduler.Step.Send) scheduler.next();
+        TestCase first = scheduler.testCaseFor(creation).orElseThrow();
+        scheduler.heard(first, Optional.of(answered(first, 201, "{\"name\":\"Rex\"}")));
+
+        Scheduler.Step.Send read = (Scheduler.Step.Send) scheduler.next();
+        assertThat(read.continuation()).isPresent();
+        assertThat(read.operation()).isEqualTo(GET);
+        assertThat(scheduler.testCaseFor(read)).isEmpty();
+
+        assertThat(steps(scheduler, 2)).containsExactly("send listPets", "end of a round");
+    }
+
+    @Test
     @DisplayName("a run with nothing it can attempt is refused rather than going round nothing")
     void nothing_to_attempt_is_not_a_run() {
         ApiModel empty = ApiModel.of("Nothing", "1.0", List.of());
@@ -207,6 +300,35 @@ class SchedulerTest {
                 .isThrownBy(() -> scheduler(empty, ScheduleSettings.defaults(),
                         Duration.ofMinutes(1)))
                 .withMessageContaining("nothing to do");
+    }
+
+    /** A scheduler with no first round whose every creation starts a series: createTwice. */
+    private Scheduler aSeriesScheduler(Duration budget) {
+        return aSeriesScheduler(budget, new SequenceSettings(false, false, false, false, false,
+                true));
+    }
+
+    private Scheduler aSeriesScheduler(Duration budget, SequenceSettings series) {
+        Campaign onlySeries = new Campaign(List.of(new Campaign.PlannedStrategy("sequences", 100,
+                List.of(new Campaign.Entry.Single(new Campaign.Source.Builtin(
+                        Campaign.Builtin.RANDOM))), false, true)), WhichOperations.everything());
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PETS, 20260923L,
+                List.of(), onlySeries, Settings.defaults().withSequences(series));
+        return new Scheduler(generator, withoutAFirstRound(), START.plus(budget), clock,
+                this::heard);
+    }
+
+    private static Interaction created(TestCase sent) {
+        return answered(sent, 201, "{\"id\":\"7\"}");
+    }
+
+    private static Interaction answered(TestCase sent, int status, String body) {
+        return Interaction.answered(sent, HttpRequestRecord.of(HttpMethod.POST,
+                        "https://api.example/pets"),
+                new HttpResponseRecord(StatusLine.of(status),
+                        List.of(Header.of("Content-Type", "application/json")),
+                        Optional.of(Payload.text(body, "application/json"))),
+                Instant.EPOCH, Duration.ofMillis(1));
     }
 
     private Scheduler scheduler(ApiModel model, ScheduleSettings settings, Duration budget) {

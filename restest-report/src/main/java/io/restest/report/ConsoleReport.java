@@ -93,6 +93,19 @@ public final class ConsoleReport implements RunListener {
     /** How many of those broke something the description states, expecting to be refused. */
     private long changedAgainstTheDescription;
 
+    /**
+     * How many steps of series about a thing the run created were sent, by the kind of series, in
+     * the order the kinds were first heard of: every creation the API accepted, and every step
+     * after one.
+     */
+    private final Map<String, Long> stepsByKindOfSeries = new LinkedHashMap<>();
+
+    /** How many series began: how many creations meant to begin one the API accepted. */
+    private long seriesBegun;
+
+    /** How many creations meant to begin a series the API did not accept, so that none began. */
+    private long seriesNotBegun;
+
     /** How many faults to print in full before the screen stops being the right place for them. */
     private final int faultsShown;
 
@@ -206,6 +219,18 @@ public final class ConsoleReport implements RunListener {
                         changedAgainstTheDescription++;
                     }
                 }
+                sent.sequence().ifPresent(step -> {
+                    // A creation refused made nothing for a series to be about, so it is no step
+                    // of one: it is an ordinary request that did not work.
+                    if (step.step() == 1 && !theApiAccepted(completed.interaction())) {
+                        seriesNotBegun++;
+                        return;
+                    }
+                    stepsByKindOfSeries.merge(step.shape(), 1L, Long::sum);
+                    if (step.step() == 1) {
+                        seriesBegun++;
+                    }
+                });
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
                 serverErrors.note(completed.interaction());
@@ -268,8 +293,21 @@ public final class ConsoleReport implements RunListener {
         if (details.size() > DETAILS_SHOWN) {
             write("        ... and " + (details.size() - DETAILS_SHOWN) + " more");
         }
+        // A step of a series may only fail because of the steps before it - a thing read after it
+        // was deleted - and the command below sends this one alone, so say so rather than hand
+        // over a command that answers differently. The creation a series begins with has nothing
+        // before it, and its command repeats it as it was.
+        finding.interaction().testCase().sequence().filter(step -> step.step() > 1)
+                .ifPresent(step -> write("      step " + step.step() + " of a " + step.shape()
+                        + " series: " + step.description() + ". The command below sends this "
+                        + "step alone, without the ones before it"));
         write("      " + CurlCommand.of(finding.interaction().request()));
         write("");
+    }
+
+    /** Whether the API answered with a success. */
+    private static boolean theApiAccepted(Interaction interaction) {
+        return interaction.statusCode().filter(code -> code >= 200 && code < 300).isPresent();
     }
 
     /**
@@ -386,6 +424,21 @@ public final class ConsoleReport implements RunListener {
             write("  " + changed + " of them changed one thing in a request the API had accepted, "
                     + changedAgainstTheDescription + " of them breaking what the description "
                     + "states");
+        }
+        if (seriesBegun > 0) {
+            // By the kind of series rather than by what each step expected, which is the report's
+            // to count and not to interpret: what each step of each kind is for is the tool's
+            // business, and the stored run says it step by step.
+            long steps = stepsByKindOfSeries.values().stream().mapToLong(Long::longValue).sum();
+            write("  " + steps + " of them were steps of " + seriesBegun + " series about a thing "
+                    + "the run created: " + stepsByKindOfSeries.entrySet().stream()
+                            .map(kind -> kind.getKey() + " " + kind.getValue())
+                            .collect(java.util.stream.Collectors.joining(", "))
+                    + (seriesNotBegun > 0 ? "; " + seriesNotBegun + " creation(s) meant to begin "
+                            + "one were not accepted" : ""));
+        } else if (seriesNotBegun > 0) {
+            write("  " + seriesNotBegun + " creation(s) meant to begin a series about a thing the "
+                    + "run created were not accepted, so no series began");
         }
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "

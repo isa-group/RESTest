@@ -120,9 +120,18 @@ import java.util.stream.Stream;
  * one change. Until the API has accepted something for the operation, or when nothing in what it
  * accepted can be changed, the request is built the ordinary way from that strategy's own sources.
  *
+ * <p>A plan may also have a way of building requests that sends series. When it is drawn for an
+ * operation that creates something, that creation becomes the first request of a short series about
+ * the thing it creates - read it, delete it, read it again - whose later requests are built one at a
+ * time, as the answers come in, with the identifier the API gave the thing. The series draw on
+ * numbers of their own, so whichever of them is chosen, and whenever their answers arrive, the
+ * ordinary requests are drawn from the numbers they would have been drawn from anyway.
+ *
  * <p>Every request says what was expected of it: a request pushing at the API with awkward values
  * expects nothing in particular and says so as pushing; a changed request says whether its change
- * breaks what the document states; everything else expects nothing in particular.
+ * breaks what the document states; a step of a series says what came before it, and expects a
+ * refusal where what came before was the API deleting the thing it asks about; everything else
+ * expects nothing in particular.
  *
  * <p>One generator belongs to one sequence of decisions, so it is used from one thread at a time.
  */
@@ -170,6 +179,18 @@ public final class RandomTestCaseGenerator {
     private final List<Operation> testable;
     private final Map<OperationId, String> untestable;
     private final List<OperationId> setAsideByThePlan;
+
+    /**
+     * The series a creation may start, or {@code null} when the plan has no way of building
+     * requests that sends them, every series is switched off, or no creation can start one.
+     */
+    private final Sequences sequences;
+
+    /**
+     * For each way of building requests that sends series, by its name, where the values of the
+     * steps after the creation come from: its own sources, drawing on numbers of their own.
+     */
+    private final Map<String, ValueProvider> laterSteps;
 
     /**
      * A generator for this API, starting from a number of the system's choosing.
@@ -293,7 +314,8 @@ public final class RandomTestCaseGenerator {
         // An ordinary one by preference - one that neither pushes nor changes accepted requests -
         // though a strategy that changes them builds its fallback requests the ordinary way too.
         this.values = this.strategies.stream()
-                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted())
+                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted()
+                        && !way.sendsSequences())
                 .findFirst()
                 .or(() -> this.strategies.stream().filter(way -> !way.pushesAtTheApi())
                         .findFirst())
@@ -304,7 +326,8 @@ public final class RandomTestCaseGenerator {
         // generator's own source, since splitting would move that source on and change every
         // ordinary request after it - the one thing asking for these requests must never do.
         this.likeliest = campaign.strategies().stream()
-                .filter(planned -> !planned.pushesAtTheApi() && !planned.mutatesAccepted())
+                .filter(planned -> !planned.pushesAtTheApi() && !planned.mutatesAccepted()
+                        && !planned.sendsSequences())
                 .findFirst()
                 .or(() -> campaign.strategies().stream()
                         .filter(planned -> !planned.pushesAtTheApi())
@@ -341,6 +364,41 @@ public final class RandomTestCaseGenerator {
         // same command would explain itself differently each time it was run. The map is built here
         // and never handed anywhere else, so wrapping it keeps document order without a second copy.
         this.untestable = Collections.unmodifiableMap(cannot);
+
+        // Series only where the plan sends them, some are switched on, and some creation can start
+        // one. Their numbers come from copies of the seed split after the one the likeliest request
+        // draws on: one for choosing which series a creation starts, one for the steps after it. A
+        // split of the generator's own source would move it on, and a second copy split first
+        // would give the likeliest request's own numbers over again.
+        Sequences series = null;
+        Map<String, ValueProvider> later = Map.of();
+        if (this.strategies.stream().anyMatch(Strategy::sendsSequences)
+                && settings.sequences().anyOn()) {
+            SplittableRandom root = new SplittableRandom(seed);
+            root.split();
+            RandomGenerator shapes = root.split();
+            RandomGenerator steps = root.split();
+            Map<String, ValueProvider> byStrategy = new LinkedHashMap<>();
+            for (Campaign.PlannedStrategy planned : campaign.strategies()) {
+                if (planned.sendsSequences()) {
+                    byStrategy.put(planned.name(), valuesFor(planned, dictionaries, model, steps,
+                            observed, settings.generation()));
+                }
+            }
+            // Every request a run may keep awaiting an answer, and as many again answered and not
+            // yet read: the most steps that can be waiting at once.
+            int mostAwaited = (int) Math.min(Integer.MAX_VALUE, 2L
+                    * settings.schedule().workAheadFactor() * settings.engine().maxConcurrency());
+            Sequences possible = new Sequences(model, Creations.among(this.testable),
+                    settings.sequences(), settings.generation().hardNestingDepth(),
+                    Math.max(1, mostAwaited), shapes, steps, this::fillForASeries);
+            if (possible.startsAny()) {
+                series = possible;
+                later = Collections.unmodifiableMap(byStrategy);
+            }
+        }
+        this.sequences = series;
+        this.laterSteps = later;
     }
 
     /**
@@ -412,8 +470,9 @@ public final class RandomTestCaseGenerator {
      * is subscribed.
      *
      * <p>Empty for every other plan, and it being empty rather than a listener that does nothing is
-     * the point: a run whose plan says nothing that depends on the API's replies does not watch them
-     * at all, and stays repeatable from its starting number.
+     * the point: a run whose plan remembers nothing the API replied does not watch the replies at
+     * all. Whether it is repeatable from its starting number is a separate question - see
+     * {@link #dependsOnTheApisAnswers()} - since a series needs no memory to depend on them.
      *
      * @return what to subscribe, in the order to subscribe it, or nothing when this plan has no
      *     part that remembers what the API answered
@@ -427,6 +486,26 @@ public final class RandomTestCaseGenerator {
             listening.add(accepted);
         }
         return List.copyOf(listening);
+    }
+
+    /**
+     * Whether what this run sends depends on what the API answers, so that starting it again from
+     * the same number gets a similar run rather than the same one.
+     *
+     * <p>It does whenever something listens to the replies - see {@link #whatListensToTheRun()} -
+     * and whenever a creation can start a series, whose later requests are built from their
+     * earlier answers, and only once those answers are in.
+     */
+    public boolean dependsOnTheApisAnswers() {
+        return !whatListensToTheRun().isEmpty() || sequences != null;
+    }
+
+    /**
+     * The series a creation may start: nothing when the plan sends none, every series is switched
+     * off, or no creation of the run can start one.
+     */
+    Optional<Sequences> sequences() {
+        return Optional.ofNullable(sequences);
     }
 
     /** The plan this run is following. */
@@ -518,7 +597,7 @@ public final class RandomTestCaseGenerator {
         if (likeliest == null || untestable.containsKey(operation.id())) {
             return Optional.empty();
         }
-        return fill(operation, likeliest, Filling.LIKELIEST);
+        return fill(operation, likeliest, Filling.LIKELIEST, random);
     }
 
     /**
@@ -542,7 +621,37 @@ public final class RandomTestCaseGenerator {
                 return changed;
             }
         }
-        return fill(operation, strategy, Filling.DRAWN);
+        if (strategy.sendsSequences() && sequences != null && sequences.startsOn(operation)) {
+            // A creation drawn for this way of building requests is the first step of a series
+            // about what it creates. Whether it starts one is read off the document, drawing
+            // nothing, so an operation that starts none is built below exactly as it would have
+            // been. One that cannot be built is not built again the ordinary way: a second go
+            // would draw the numbers twice.
+            return sequences.begin(operation, strategy.values(),
+                    laterSteps.get(strategy.name()));
+        }
+        return fill(operation, strategy, Filling.DRAWN, random);
+    }
+
+    /**
+     * One request of a series, built the way every request is.
+     *
+     * <p>With no source for optional parameters, the request an operation is likeliest to accept:
+     * everything it requires and a body wherever one is described, which draws no numbers of its
+     * own. With one, some of its optional parameters as well, chosen from those numbers rather than
+     * from the ones the ordinary requests are drawn from - a series' later steps are built whenever
+     * the answers to its earlier ones arrive, and that must not change which ordinary requests
+     * follow.
+     */
+    private Optional<TestCase> fillForASeries(Operation operation, ValueProvider values,
+            Optional<RandomGenerator> optionalParameters) {
+        if (untestable.containsKey(operation.id())) {
+            return Optional.empty();
+        }
+        Strategy series = new Strategy("series", 1, false, values);
+        return optionalParameters.isPresent()
+                ? fill(operation, series, Filling.DRAWN, optionalParameters.get())
+                : fill(operation, series, Filling.LIKELIEST, random);
     }
 
     /**
@@ -558,7 +667,14 @@ public final class RandomTestCaseGenerator {
         LIKELIEST
     }
 
-    private Optional<TestCase> fill(Operation operation, Strategy strategy, Filling filling) {
+    /**
+     * A request for an operation, built one way. What the operation merely accepts - how many
+     * optional parameters, which ones, whether a body - is decided, when the filling decides it
+     * by chance, from the numbers given, which are the generator's own for every request but the
+     * later steps of a series.
+     */
+    private Optional<TestCase> fill(Operation operation, Strategy strategy, Filling filling,
+            RandomGenerator decisions) {
         List<ParameterValue> chosen = new ArrayList<>();
         int optionalRemaining = 0;
         for (Parameter parameter : operation.parameters()) {
@@ -580,13 +696,14 @@ public final class RandomTestCaseGenerator {
         // drawn first, so that an experiment can measure what drawing the count first is worth.
         boolean bySize = settings.generation().optionalParametersBySize();
         int stillToInclude = filling == Filling.DRAWN && bySize
-                ? howManyOptionalParametersToInclude(optionalRemaining) : 0;
+                ? howManyOptionalParametersToInclude(optionalRemaining, decisions) : 0;
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required()) {
                 boolean include = filling == Filling.DRAWN && !bySize
-                        ? random.nextDouble() < settings.generation().optionalBodyChance()
+                        ? decisions.nextDouble() < settings.generation().optionalBodyChance()
                         : stillToInclude > 0 && (stillToInclude == optionalRemaining
-                                || random.nextDouble() < (double) stillToInclude / optionalRemaining);
+                                || decisions.nextDouble()
+                                        < (double) stillToInclude / optionalRemaining);
                 optionalRemaining--;
                 if (include) {
                     stillToInclude--;
@@ -604,7 +721,8 @@ public final class RandomTestCaseGenerator {
         }
         Optional<RequestBodyModel> declared = operation.requestBody();
         Optional<BodyValue> body = declared.isEmpty()
-                ? Optional.empty() : body(operation, declared.get(), strategy, filling);
+                ? Optional.empty()
+                : body(operation, declared.get(), strategy, filling, decisions);
         if (declared.isPresent() && body.isEmpty() && declared.get().required()) {
             // An API that says it needs a body will refuse a request without one whatever else is
             // in it, so there is nothing to learn from sending it.
@@ -649,12 +767,15 @@ public final class RandomTestCaseGenerator {
      * it all but never reaches once there are several such things to decide.
      *
      * @param howManyThereAre how many optional parameters the operation has
+     * @param decisions where the chances come from
      * @return how many of them this request will try to include, never more than that
      */
-    private int howManyOptionalParametersToInclude(int howManyThereAre) {
+    private int howManyOptionalParametersToInclude(int howManyThereAre,
+            RandomGenerator decisions) {
         int howManyToInclude = 0;
         while (howManyToInclude < howManyThereAre
-                && random.nextDouble() < settings.generation().optionalParameterContinueChance()) {
+                && decisions.nextDouble()
+                        < settings.generation().optionalParameterContinueChance()) {
             howManyToInclude++;
         }
         return howManyToInclude;
@@ -672,7 +793,7 @@ public final class RandomTestCaseGenerator {
      * always sent one would only ever see one of those behaviours.
      */
     private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
-            Strategy strategy, Filling filling) {
+            Strategy strategy, Filling filling, RandomGenerator decisions) {
         if (!declared.required()) {
             // Never where the client refuses a body, and then nothing is drawn: the answer is
             // already known, and a draw would move the numbers every later decision comes from.
@@ -680,7 +801,8 @@ public final class RandomTestCaseGenerator {
             // and always sent in the likeliest request.
             boolean leftOut = RequestBuilder.cannotBeSentWithABody(operation.method())
                     || (filling == Filling.DRAWN
-                            && random.nextDouble() >= settings.generation().optionalBodyChance());
+                            && decisions.nextDouble()
+                                    >= settings.generation().optionalBodyChance());
             if (leftOut) {
                 return Optional.empty();
             }
@@ -880,12 +1002,18 @@ public final class RandomTestCaseGenerator {
             ApiModel model, RandomGenerator random, ObservedValues observed,
             GenerationSettings inventing) {
         List<Strategy> ways = new ArrayList<>();
+        // One set of sources for every strategy that names the same ones. Built twice, each would
+        // keep its own memory of the spelling rules it has read, and reading a rule for the first
+        // time draws numbers - so a strategy that falls back on the sources another one has would
+        // not build what that one builds from the same numbers, and switching off what makes it
+        // different would not give back the plan without it.
+        Map<List<Campaign.Entry>, ValueProvider> built = new LinkedHashMap<>();
         for (Campaign.PlannedStrategy planned : campaign.strategies()) {
             if (pushesWithNothingToPushWith(planned, dictionaries)) {
                 continue;
             }
-            ValueProvider values =
-                    valuesFor(planned, dictionaries, model, random, observed, inventing);
+            ValueProvider values = built.computeIfAbsent(planned.sources(), same ->
+                    valuesFor(planned, dictionaries, model, random, observed, inventing));
             if (values instanceof ValueProviderChain chain && chain.providers().isEmpty()) {
                 // Every source this strategy names turned out to be a list nobody handed over, so
                 // it has nothing at all to fill a value with. It would still be drawn for its
@@ -896,7 +1024,7 @@ public final class RandomTestCaseGenerator {
                         + "value");
             }
             ways.add(new Strategy(planned.name(), planned.share(), planned.pushesAtTheApi(),
-                    values, planned.mutatesAccepted()));
+                    values, planned.mutatesAccepted(), planned.sendsSequences()));
         }
         if (ways.isEmpty()) {
             // Every strategy in the plan pushes, and there is nothing to push with. Running some
@@ -956,7 +1084,7 @@ public final class RandomTestCaseGenerator {
             }
         }
         return new Campaign.PlannedStrategy(planned.name(), planned.share(), inTurn,
-                planned.mutatesAccepted());
+                planned.mutatesAccepted(), planned.sendsSequences());
     }
 
     /**

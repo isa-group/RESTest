@@ -37,6 +37,10 @@ import java.util.Objects;
  * one past the largest allowed - so that whatever the API does next can be put down to that one
  * change.
  *
+ * <p>And a fourth. A strategy may turn a creation into the first request of a short series about
+ * the thing created - read it, delete it, read it again - so that the faults only several requests
+ * together reach can be reached.
+ *
  * <p>Every request belongs to exactly one of these. Which sources fill in the individual values
  * inside it is a separate question, answered by the sources this one carries.
  *
@@ -52,9 +56,12 @@ import java.util.Objects;
  * @param mutatesAccepted whether its requests are made by changing one thing in a request the API
  *     accepted. Such a strategy still has values: they build its requests the ordinary way when
  *     there is nothing accepted to change
+ * @param sendsSequences whether a creation it builds starts a series of requests about the thing
+ *     created. Its values build every step of the series, and every request it builds for an
+ *     operation that creates nothing
  */
 public record Strategy(String name, int share, boolean pushesAtTheApi, ValueProvider values,
-        boolean mutatesAccepted) {
+        boolean mutatesAccepted, boolean sendsSequences) {
 
     public Strategy {
         Objects.requireNonNull(name, "name");
@@ -77,6 +84,21 @@ public record Strategy(String name, int share, boolean pushesAtTheApi, ValueProv
      * @param values where the values in its requests come from
      */
     public Strategy(String name, int share, boolean pushesAtTheApi, ValueProvider values) {
-        this(name, share, pushesAtTheApi, values, false);
+        this(name, share, pushesAtTheApi, values, false, false);
+    }
+
+    /**
+     * A strategy that builds its requests from nothing, or by changing accepted ones.
+     *
+     * @param name what it is called, as a report would print it
+     * @param share how much of the testing time it gets
+     * @param pushesAtTheApi whether its requests push at the API with awkward values
+     * @param values where the values in its requests come from
+     * @param mutatesAccepted whether its requests are made by changing one thing in a request the
+     *     API accepted
+     */
+    public Strategy(String name, int share, boolean pushesAtTheApi, ValueProvider values,
+            boolean mutatesAccepted) {
+        this(name, share, pushesAtTheApi, values, mutatesAccepted, false);
     }
 }

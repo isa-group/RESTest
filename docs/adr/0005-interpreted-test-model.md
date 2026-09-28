@@ -256,3 +256,20 @@ consumer to derive rather than being restated here.
 - The status code on a received response is kept exactly as observed, with no plausibility check: an
   oracle (M3.2) is what judges whether it is a valid HTTP status, and the model must be able to hold
   the observation for the oracle to have something to judge.
+
+## Amendment (M10.3)
+
+**Date:** 2026-09-28
+
+**A test case may say it is a step of a series, and there is still no identifier for the series.**
+[ADR-0028](0028-sequences-over-things-a-run-creates.md) has a run send short series about a thing
+it created: create it, delete it, read it again. Each step is an ordinary test case with a seventh
+component, `SequenceStep`: the kind of series, the step's number, and the exchanges of the same
+series it was built from or should be compared with.
+
+What M1.1b argued is kept. A series is the closure of the exchanges its steps name - `follows`
+beside the `Derived` origins its values already carry - not a record of its own that could drift
+from them. A step names its deletion, which no value's origin does, because a read expecting a
+refusal has to say what it expects it for; `REFUSAL_EXPECTED` is allowed with a step as it is with a
+change, and a test case is never both. The component travels in the test case's JSON, so the
+store's layout does not change, and a run stored before reads back with none.

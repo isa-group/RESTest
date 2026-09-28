@@ -28,7 +28,9 @@ package io.restest.core.execution;
  * <p>It is a statement about the request, made when the request was built, and it stays true
  * whatever the API answers. Which rules read it, and what they conclude, is decided elsewhere.
  * When the request is one that was made by changing a single thing in a request the API had
- * already accepted, {@link Mutation} says what that one thing was.
+ * already accepted, {@link Mutation} says what that one thing was; when it is one step of a series
+ * built around a thing the run created itself, {@link SequenceStep} says which series and what came
+ * before it.
  */
 public enum Intent {
 
@@ -42,11 +44,13 @@ public enum Intent {
     ACCEPTABLE,
 
     /**
-     * One thing in it was changed so that it breaks what the API's documentation says, and the API
-     * is expected to turn it away.
+     * The API is expected to turn it away, for a reason the test case names.
      *
-     * <p>Always made from a request the API had accepted, and always with a {@link Mutation}
-     * saying what was changed: an acceptance afterwards can then be put down to that change alone.
+     * <p>One of two reasons. Either one thing in a request the API had accepted was changed so that
+     * it breaks what the documentation says, and a {@link Mutation} says what was changed. Or the
+     * request asks about a thing the API itself said, a moment before, that it had deleted, and a
+     * {@link SequenceStep} names that exchange. Either way, an acceptance afterwards can be put down
+     * to that one reason.
      */
     REFUSAL_EXPECTED,
 

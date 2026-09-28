@@ -23,6 +23,8 @@ import io.restest.core.json.JsonText;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
+import io.restest.core.settings.Settings;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,7 +68,7 @@ class RunOrderTest {
     @DisplayName("going round the operations produces the requests it always produced")
     void going_round_the_operations_sends_what_it_always_sent() throws IOException {
         ApiModel model = petClinic();
-        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED);
+        RandomTestCaseGenerator generator = withoutSeries(model);
         List<Operation> operations = generator.testableOperations();
 
         List<String> lines = new ArrayList<>();
@@ -82,7 +84,7 @@ class RunOrderTest {
     @DisplayName("the scheduler, with the first round switched off, sends what the loop always sent")
     void the_scheduler_without_a_first_round_sends_what_was_always_sent() throws IOException {
         ApiModel model = petClinic();
-        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED);
+        RandomTestCaseGenerator generator = withoutSeries(model);
         ScheduleSettings noFirstRound = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                 false, Duration.ofSeconds(2));
         Instant now = Instant.parse("2026-09-23T10:00:00Z");
@@ -103,7 +105,7 @@ class RunOrderTest {
     @DisplayName("and with the first round on, what follows the round is still what was always sent")
     void what_follows_the_first_round_is_what_was_always_sent() throws IOException {
         ApiModel model = petClinic();
-        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED);
+        RandomTestCaseGenerator generator = withoutSeries(model);
         Instant now = Instant.parse("2026-09-23T10:00:00Z");
         Scheduler scheduler = new Scheduler(generator, ScheduleSettings.defaults(),
                 now.plusSeconds(60), InstantSource.fixed(now), announced -> { });
@@ -126,6 +128,19 @@ class RunOrderTest {
 
         assertThat(inTheRound).isEqualTo(model.operations().size());
         assertThat(String.join("\n", lines) + "\n").isEqualTo(pinned(lines));
+    }
+
+    /**
+     * The generator a run starts from with no plan of its own, every series switched off. A series
+     * begins with a creation built the way the likeliest request is, not the way the ordinary
+     * rounds build one, and what is pinned here is the ordinary rounds.
+     */
+    private static RandomTestCaseGenerator withoutSeries(ApiModel model) {
+        return new RandomTestCaseGenerator(model, SEED,
+                Dictionaries.fuzzing().map(List::of).orElse(List.of()),
+                Campaigns.carried().withTheShareOfPushingSetTo(
+                        RandomTestCaseGenerator.AWKWARD_SHARE),
+                Settings.defaults().withSequences(SequenceSettings.noneSent()));
     }
 
     /** One request as one line: the operation, then every value it carries and where it came from. */

@@ -82,8 +82,11 @@ public final class JsonText {
      */
     private static final int AS_DEEP_AS_A_REPLY_MAY_BE = 100;
 
-    /** How long a single number in such a reply may be written, in characters. */
-    private static final int LONGEST_NUMBER_IN_A_REPLY = 1_000;
+    /**
+     * How long a single number in such a reply may be written, in characters. Public so that a
+     * number an API writes as a word is held to the same limit when it is read as a number.
+     */
+    public static final int LONGEST_NUMBER_IN_A_REPLY = 1_000;
 
     /** How long a single piece of text in such a reply may be, in characters. */
     private static final int LONGEST_TEXT_IN_A_REPLY = 1_024 * 1_024;

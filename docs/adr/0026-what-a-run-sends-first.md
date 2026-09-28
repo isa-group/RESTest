@@ -252,3 +252,14 @@ since §5's header changed what some requests say; the comparison is the round a
   about when requests go out, which is the scheduler's. It uses the plan's sources and adds nothing
   to the format.
 - **Shares as stretches of time now.** See §7.
+
+## Amendment (M10.3)
+
+**Date:** 2026-09-28
+
+**The scheduler also hands on a series' next step.** A creation may be the first request of a short
+series about the thing it made ([ADR-0028](0028-sequences-over-things-a-run-creates.md)). Whoever
+sends hands the answer to every step back to the scheduler. After the opening lap, the next step of
+a series goes before the ordinary turn, built with what the answer said. The scheduler still draws
+no number itself - which series a creation starts is drawn where requests are built, from numbers
+of their own - so with no series the ordinary rounds are what §1 says they are.

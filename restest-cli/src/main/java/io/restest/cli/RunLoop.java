@@ -59,6 +59,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * of a run, where the first round goes in steps and each step waits for the answers to the one
  * before - and even that wait has a limit, so one request the API never answers costs the run that
  * limit once rather than the whole budget.
+ *
+ * <p>Some requests are steps of a short series about a thing the run has just created. The loop
+ * hands what came back to every one of them to the scheduler the moment it arrives, before the slot
+ * the request held is given back, so that the next step of that series is waiting by the time there
+ * is room to send it.
  */
 final class RunLoop {
 
@@ -190,12 +195,17 @@ final class RunLoop {
                                 notGenerated++;
                             } else {
                                 notAssembled++;
+                                // A step of a series that could not be put on the wire is a step
+                                // nothing came back to, so that its series goes on without it or
+                                // ends.
+                                scheduler.heard(testCase.get(), Optional.empty());
                             }
                         } else {
                             events.publish(new RunEvent.TestCasePlanned(Instant.now(),
                                     testCase.get()));
                             send(engine, testCase.get(), request, slots,
-                                    send.inTheOpeningLap() ? stepAnswered : null, answers, events);
+                                    send.inTheOpeningLap() ? stepAnswered : null, answers, events,
+                                    scheduler);
                             sent++;
                             if (send.inTheOpeningLap()) {
                                 sentInThisStep++;
@@ -226,17 +236,29 @@ final class RunLoop {
      * out, is what stops one slow operation from holding up every other request in the run.
      */
     private static void send(HttpEngine engine, TestCase testCase, HttpRequestRecord request,
-            Semaphore slots, Semaphore alsoTell, Answers answers, EventStream events) {
+            Semaphore slots, Semaphore alsoTell, Answers answers, EventStream events,
+            Scheduler scheduler) {
         try {
             engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
                 try {
                     announce(interaction, answers, events);
                 } finally {
-                    slots.release();
-                    // After the announcement, never before: whoever is waiting on this is waiting
-                    // to know that what came back is on its way to everybody listening.
-                    if (alsoTell != null) {
-                        alsoTell.release();
+                    try {
+                        // Before the slot is given back, so that the next step of a series is
+                        // waiting by the time the loop next decides what to send - which comes
+                        // after it sends whatever it had already decided on and was waiting for
+                        // room to send; and whatever the announcement did, so that no series is
+                        // left waiting for ever.
+                        if (testCase.sequence().isPresent()) {
+                            scheduler.heard(testCase, Optional.ofNullable(interaction));
+                        }
+                    } finally {
+                        slots.release();
+                        // After the announcement, never before: whoever is waiting on this is
+                        // waiting to know that what came back is on its way to everybody listening.
+                        if (alsoTell != null) {
+                            alsoTell.release();
+                        }
                     }
                 }
             });

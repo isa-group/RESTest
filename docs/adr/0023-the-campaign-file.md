@@ -274,3 +274,22 @@ nominal 55, mutation 20, fuzzing 25. [ADR-0027](0027-changing-one-thing-in-an-ac
 of ADR-0013 §3, still to come. It has come: a request built by a pushing strategy records the intent
 *pushing*, and the console counts those requests by it rather than by the names of the lists their
 values came from. Pushing itself is still worked out from what a strategy draws on, as §5 decided.
+
+## Amendment (M10.3)
+
+**Date:** 2026-09-28
+
+**A strategy may say `sends: sequences`.**
+- A creation drawn for it becomes the first request of a short series about the thing created, and
+  every other request it builds is built from its `sources:` the ordinary way.
+- The key is new and optional, so the format stays at version 1.
+- A strategy saying both `mutates` and `sends` is refused, and so is one that sends series from the
+  list of values to push with.
+
+**The plan RESTest ships has four strategies:** nominal 45, sequences 10, mutation 20, fuzzing 25.
+[ADR-0028](0028-sequences-over-things-a-run-creates.md) §1 is the record.
+
+**Strategies that name the same sources share one built set of them.** This changes nothing about
+what the file says. Two strategies building from the same sources separately parted company the
+first time either read a spelling rule, so a strategy meant to fall back on what nominal builds did
+not quite build it (ADR-0028 §8).

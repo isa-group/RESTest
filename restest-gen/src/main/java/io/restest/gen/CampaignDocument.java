@@ -47,8 +47,14 @@ import java.util.Set;
  *           - source: random
  *             weight: 40
  *   - name: mutation
- *     share: 25
+ *     share: 15
  *     mutates: accepted
+ *     sources:
+ *       - source: enum
+ *       - source: random
+ *   - name: sequences
+ *     share: 10
+ *     sends: sequences
  *     sources:
  *       - source: enum
  *       - source: random
@@ -66,13 +72,19 @@ final class CampaignDocument {
 
     /** The members one strategy may have. */
     private static final List<String> STRATEGY_MEMBERS =
-            List.of("name", "share", "mutates", "sources");
+            List.of("name", "share", "mutates", "sends", "sources");
 
     /**
      * What a strategy says it changes, when it builds its requests by changing ones the API
      * accepted rather than from nothing. One word, for now: the requests the API accepted.
      */
     private static final String ACCEPTED = "accepted";
+
+    /**
+     * What a strategy says it sends, when a creation it builds starts a series of requests about
+     * the thing created rather than standing alone. One word, for now: series.
+     */
+    private static final String SEQUENCES = "sequences";
 
     /** The members the operation filter may have. */
     private static final List<String> OPERATIONS_MEMBERS = List.of("methods", "only");
@@ -158,13 +170,30 @@ final class CampaignDocument {
                 .map(said -> mutates(YamlText.asText(said, where + "'s 'mutates'", describedAs),
                         where, describedAs))
                 .orElse(false);
+        boolean sends = stated.member("sends")
+                .map(said -> sends(YamlText.asText(said, where + "'s 'sends'", describedAs),
+                        where, describedAs))
+                .orElse(false);
         List<Campaign.Entry> sources = new ArrayList<>();
         for (JsonValue held : YamlText.asList(required(stated, "sources", describedAs),
                 where + "'s 'sources'", describedAs)) {
             sources.add(entry(YamlText.asObject(held, "a source of " + where, describedAs),
                     where, describedAs));
         }
-        return new Campaign.PlannedStrategy(name, share, sources, mutates);
+        return new Campaign.PlannedStrategy(name, share, sources, mutates, sends);
+    }
+
+    /**
+     * What a strategy says it sends. Only series about a thing the run created can be sent, and
+     * anything else is refused by name, for the reason {@link #mutates} gives.
+     */
+    private static boolean sends(String said, String where, String describedAs) {
+        if (!SEQUENCES.equals(said)) {
+            throw new JsonException(describedAs + ": " + where + " says it sends '" + said
+                    + "', and the only thing a strategy can send besides single requests is a "
+                    + "series about a thing it created, written 'sends: " + SEQUENCES + "'");
+        }
+        return true;
     }
 
     /**

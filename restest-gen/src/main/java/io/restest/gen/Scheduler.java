@@ -16,6 +16,7 @@
 package io.restest.gen;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.Operation;
 import io.restest.core.settings.ScheduleSettings;
@@ -25,6 +26,8 @@ import java.time.InstantSource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 /**
@@ -51,11 +54,19 @@ import java.util.function.Consumer;
  * says so, so that whoever sends can stop a run that has shown it can send nothing at all, or that
  * nobody is answering.
  *
- * <p>Nothing here is decided by chance: which operation comes next depends only on the document, the
- * settings and the clock. A run with the first round switched off therefore builds exactly the test
- * cases it built before there was a first round, in the same order, from the same starting number.
+ * <p>Some of those requests are the first step of a short series about a thing the run has just
+ * created - read it, delete it, read it again. Whoever sends hands the answer to every step back
+ * here, and the next step of that series is sent before the next ordinary request, built with what
+ * the answer said. One step of a series is waiting for its answer at any time; any number of series
+ * and ordinary requests go out alongside it.
  *
- * <p>One scheduler belongs to one run, and is asked from one thread.
+ * <p>Nothing here is decided by chance: which operation comes next depends only on the document, the
+ * settings, the clock and, where a series is under way, what the API answered it. A run with the
+ * first round switched off and no series therefore builds exactly the test cases it built before
+ * there was a first round, in the same order, from the same starting number.
+ *
+ * <p>One scheduler belongs to one run, and is asked from one thread - except to be told what came
+ * back to a step of a series, which it hears from whichever thread the answer arrived on.
  */
 public final class Scheduler {
 
@@ -69,6 +80,16 @@ public final class Scheduler {
     private final Instant deadline;
     private final InstantSource clock;
     private final Consumer<? super RunEvent> announce;
+
+    /** The series a creation may start, or {@code null} when the run sends none. */
+    private final Sequences series;
+
+    /**
+     * Series ready for their next step: a step answered, or one that could not be built. Heard from
+     * whichever thread an answer arrives on and taken from the one that decides, so it never
+     * blocks and never refuses: nothing that tells it something may be kept waiting.
+     */
+    private final Queue<Ready> ready = new ConcurrentLinkedQueue<>();
 
     /** Which step of the first round is being sent, and how far through it. */
     private int step;
@@ -109,6 +130,7 @@ public final class Scheduler {
         this.lap = settings.openingLap() && generator.canBuildTheLikeliestRequest()
                 ? OpeningLap.steps(operations) : List.of();
         this.patience = settings.openingLapPatience();
+        this.series = generator.sequences().orElse(null);
     }
 
     /** When the run's time is up. */
@@ -156,6 +178,19 @@ public final class Scheduler {
             announce.accept(new RunEvent.PhaseFinished(clock.instant(), OPENING_LAP, false));
             return new Step.EndOfAPass(true);
         }
+        // A series waiting for its next step goes before the ordinary turn, so that each of its
+        // steps is sent as soon as there is room once the answer to the one before is in. One
+        // that has nothing more to send is simply left behind.
+        for (Ready waiting = ready.poll(); waiting != null; waiting = ready.poll()) {
+            Optional<Sequences.Next> following = switch (waiting) {
+                case Ready.Heard heard -> series.heard(heard.step(), heard.answer());
+                case Ready.NotBuilt unbuilt -> series.notBuilt(unbuilt.next());
+            };
+            if (following.isPresent()) {
+                return new Step.Send(following.get().operation(), false,
+                        Optional.of(new Continuation(following.get())));
+            }
+        }
         Operation operation = operations.get(next++);
         if (next == operations.size()) {
             next = 0;
@@ -175,9 +210,50 @@ public final class Scheduler {
      */
     public Optional<TestCase> testCaseFor(Step.Send send) {
         Objects.requireNonNull(send, "send");
+        if (send.continuation().isPresent()) {
+            Sequences.Next next = send.continuation().get().next;
+            Optional<TestCase> built = series.build(next);
+            if (built.isEmpty()) {
+                // Said here rather than by whoever sends, who has no test case to say it with: the
+                // series goes on without the step, or ends if it cannot.
+                ready.add(new Ready.NotBuilt(next));
+            }
+            return built;
+        }
         return send.inTheOpeningLap()
                 ? generator.likeliestRequest(send.operation())
                 : generator.generate(send.operation());
+    }
+
+    /**
+     * Tells the scheduler what came back to a request, so that a series it was a step of can go on.
+     *
+     * <p>Called from whichever thread the answer arrived on, for every request built - and, with
+     * nothing, for one that could not be sent at all. A request that is not a step of a series is
+     * ignored. This only takes the news; the next step is decided and built by the thread that
+     * decides, the next time it asks what to do.
+     *
+     * @param sent the request
+     * @param answer what came back, or nothing when nothing did
+     */
+    public void heard(TestCase sent, Optional<Interaction> answer) {
+        Objects.requireNonNull(sent, "sent");
+        Objects.requireNonNull(answer, "answer");
+        if (series != null && sent.sequence().isPresent()) {
+            ready.add(new Ready.Heard(sent, answer));
+        }
+    }
+
+    /** A series ready for whatever comes after a step. */
+    private sealed interface Ready {
+
+        /** The step was answered, or could not be sent. */
+        record Heard(TestCase step, Optional<Interaction> answer) implements Ready {
+        }
+
+        /** The step could not be built, so it was never sent. */
+        record NotBuilt(Sequences.Next next) implements Ready {
+        }
     }
 
     /**
@@ -209,10 +285,23 @@ public final class Scheduler {
          * @param operation which operation
          * @param inTheOpeningLap whether it belongs to the first round, which waits for its answers
          *     before the round goes on
+         * @param continuation the series this request is the next step of, when it is one
          */
-        record Send(Operation operation, boolean inTheOpeningLap) implements Step {
+        record Send(Operation operation, boolean inTheOpeningLap,
+                Optional<Continuation> continuation) implements Step {
             public Send {
                 Objects.requireNonNull(operation, "operation");
+                Objects.requireNonNull(continuation, "continuation");
+            }
+
+            /**
+             * A request of its own, not the next step of a series.
+             *
+             * @param operation which operation
+             * @param inTheOpeningLap whether it belongs to the first round
+             */
+            public Send(Operation operation, boolean inTheOpeningLap) {
+                this(operation, inTheOpeningLap, Optional.empty());
             }
         }
 
@@ -239,6 +328,26 @@ public final class Scheduler {
 
         /** The time is up: send nothing more. */
         record TimeIsUp() implements Step {
+        }
+    }
+
+    /**
+     * The next step of a series, which {@link #testCaseFor} builds once there is room to send it.
+     *
+     * <p>What is inside is for the scheduler and what builds requests; whoever sends only carries
+     * it from the one to the other.
+     */
+    public static final class Continuation {
+
+        private final Sequences.Next next;
+
+        private Continuation(Sequences.Next next) {
+            this.next = next;
+        }
+
+        @Override
+        public String toString() {
+            return next.toString();
         }
     }
 }

@@ -47,6 +47,7 @@ import java.util.Objects;
  * @param schedule how far ahead of the API the run works
  * @param generation what an invented value may look like
  * @param mutation which changes may be made to requests the API accepted, and how large
+ * @param sequences which series of requests may be sent around a thing the run created itself
  * @param memory how much of what the API said is remembered
  * @param document what is accepted when a description is fetched
  * @param report how much of what was found is written out
@@ -56,6 +57,7 @@ public record Settings(
         ScheduleSettings schedule,
         GenerationSettings generation,
         MutationSettings mutation,
+        SequenceSettings sequences,
         MemorySettings memory,
         DocumentSettings document,
         ReportSettings report) {
@@ -65,6 +67,7 @@ public record Settings(
             ScheduleSettings.defaults(),
             GenerationSettings.defaults(),
             MutationSettings.defaults(),
+            SequenceSettings.defaults(),
             MemorySettings.defaults(),
             DocumentSettings.defaults(),
             ReportSettings.defaults());
@@ -74,6 +77,7 @@ public record Settings(
         Objects.requireNonNull(schedule, "schedule");
         Objects.requireNonNull(generation, "generation");
         Objects.requireNonNull(mutation, "mutation");
+        Objects.requireNonNull(sequences, "sequences");
         Objects.requireNonNull(memory, "memory");
         Objects.requireNonNull(document, "document");
         Objects.requireNonNull(report, "report");
@@ -189,6 +193,14 @@ public record Settings(
                 typed.wholeNumber("mutation.oversizedItems",
                         DEFAULTS.mutation.oversizedItems()),
                 typed.wholeNumber("mutation.nestingDepth", DEFAULTS.mutation.nestingDepth())));
+        SequenceSettings sequences = group("sequences", () -> new SequenceSettings(
+                typed.yesOrNo("sequences.readAfterDelete", DEFAULTS.sequences.readAfterDelete()),
+                typed.yesOrNo("sequences.deleteTwice", DEFAULTS.sequences.deleteTwice()),
+                typed.yesOrNo("sequences.writeUnderDeleted",
+                        DEFAULTS.sequences.writeUnderDeleted()),
+                typed.yesOrNo("sequences.putTwice", DEFAULTS.sequences.putTwice()),
+                typed.yesOrNo("sequences.safeGet", DEFAULTS.sequences.safeGet()),
+                typed.yesOrNo("sequences.createTwice", DEFAULTS.sequences.createTwice())));
         MemorySettings memory = group("memory", () -> new MemorySettings(
                 typed.wholeNumber("memory.mostValuesUnderOneName",
                         DEFAULTS.memory.mostValuesUnderOneName()),
@@ -213,7 +225,8 @@ public record Settings(
                         DEFAULTS.report.faultsShownOnTheConsole()),
                 typed.wholeNumber("report.skippedOperationsShownOnTheConsole",
                         DEFAULTS.report.skippedOperationsShownOnTheConsole())));
-        return new Settings(engine, schedule, generation, mutation, memory, document, report);
+        return new Settings(engine, schedule, generation, mutation, sequences, memory, document,
+                report);
     }
 
     /**
@@ -310,6 +323,13 @@ public record Settings(
             case "mutation.oversizedItems" -> String.valueOf(mutation.oversizedItems());
             case "mutation.nestingDepth" -> String.valueOf(mutation.nestingDepth());
 
+            case "sequences.readAfterDelete" -> String.valueOf(sequences.readAfterDelete());
+            case "sequences.deleteTwice" -> String.valueOf(sequences.deleteTwice());
+            case "sequences.writeUnderDeleted" -> String.valueOf(sequences.writeUnderDeleted());
+            case "sequences.putTwice" -> String.valueOf(sequences.putTwice());
+            case "sequences.safeGet" -> String.valueOf(sequences.safeGet());
+            case "sequences.createTwice" -> String.valueOf(sequences.createTwice());
+
             case "memory.mostValuesUnderOneName" ->
                     String.valueOf(memory.mostValuesUnderOneName());
             case "memory.mostNames" -> String.valueOf(memory.mostNames());
@@ -342,37 +362,50 @@ public record Settings(
 
     /** These settings with the engine's changed. */
     public Settings withEngine(EngineSettings value) {
-        return new Settings(value, schedule, generation, mutation, memory, document, report);
+        return new Settings(value, schedule, generation, mutation, sequences, memory, document,
+                report);
     }
 
     /** These settings with the schedule's changed. */
     public Settings withSchedule(ScheduleSettings value) {
-        return new Settings(engine, value, generation, mutation, memory, document, report);
+        return new Settings(engine, value, generation, mutation, sequences, memory, document,
+                report);
     }
 
     /** These settings with generation's changed. */
     public Settings withGeneration(GenerationSettings value) {
-        return new Settings(engine, schedule, value, mutation, memory, document, report);
+        return new Settings(engine, schedule, value, mutation, sequences, memory, document,
+                report);
     }
 
     /** These settings with what may be changed in accepted requests changed. */
     public Settings withMutation(MutationSettings value) {
-        return new Settings(engine, schedule, generation, value, memory, document, report);
+        return new Settings(engine, schedule, generation, value, sequences, memory, document,
+                report);
+    }
+
+    /** These settings with which series of requests may be sent changed. */
+    public Settings withSequences(SequenceSettings value) {
+        return new Settings(engine, schedule, generation, mutation, value, memory, document,
+                report);
     }
 
     /** These settings with the memory's changed. */
     public Settings withMemory(MemorySettings value) {
-        return new Settings(engine, schedule, generation, mutation, value, document, report);
+        return new Settings(engine, schedule, generation, mutation, sequences, value, document,
+                report);
     }
 
     /** These settings with the document's changed. */
     public Settings withDocument(DocumentSettings value) {
-        return new Settings(engine, schedule, generation, mutation, memory, value, report);
+        return new Settings(engine, schedule, generation, mutation, sequences, memory, value,
+                report);
     }
 
     /** These settings with the report's changed. */
     public Settings withReport(ReportSettings value) {
-        return new Settings(engine, schedule, generation, mutation, memory, document, value);
+        return new Settings(engine, schedule, generation, mutation, sequences, memory, document,
+                value);
     }
 
     /** A number, without the exponent Java would otherwise print for a small or large one. */

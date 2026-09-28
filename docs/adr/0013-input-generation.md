@@ -665,3 +665,40 @@ the intent and the change it records are two more members of it.
 
 **The unit of work for sequences is still open.** A change to an accepted request is one request,
 not a sequence, and the two decisions "Left to M4, on purpose" are untouched by it.
+
+## Amendment (M10.3)
+
+**Date:** 2026-09-28
+
+**The two decisions "Left to M4, on purpose" are taken**, by
+[ADR-0028](0028-sequences-over-things-a-run-creates.md), which records how.
+- **The unit of work is a series:** a fixed list of steps about a thing the series created, each
+  built once the answer to the one before is in, one step of it in flight at a time.
+- **Interference between concurrent series is accepted rather than prevented,** as the M9.3
+  amendment had it.
+- **The trigger is no longer the open part:** a series starts when the plan's strategy that sends
+  them is drawn for a creation, and waits for nothing to be missing.
+
+**The rule this record proposed holds:** *a sequence never borrows an identifier; it creates what
+it needs.* A series asks about the thing its own creation made, as far as the reply lets anyone
+tell. Its identifier is read from the creation's reply or its `Location` header, never from a list
+the reply holds nor from what the creation was sent in its own address, and a `POST` whose address
+ends in a gap is only sent twice: it names a thing that already exists, so nothing is asked about
+it. Two things the reply cannot settle. A thing the creation names itself: when the name it was
+sent is one the memory supplied - petstore's `POST /pet` with a remembered `id`, its `POST /user`
+with a remembered `username` - the series is about whatever that `POST` wrote. And a `POST` that
+attaches a thing which already exists and answers with it, which reads like one that makes a thing
+under another; GitHub answers its attachments with lists, which are never read for an identifier.
+The gaps
+before the thing's own take what the creation was sent, and neither memory hears a step, so nothing
+a series learns reaches another request. The honest limit this record named holds too: a thing whose
+creation needs something the run cannot make - a kafka cluster, which only exists - is created under
+one the memory supplies.
+
+**§7's table gains a row.** A plan that sends series is reproduced by replaying the stored run, like
+one with a memory, because a series builds its later steps from its earlier answers. Its choices -
+which series, which step comes next - draw on numbers of their own, so a series never moves the
+ordinary rounds' numbers on. Where a creation has nothing optional in it, the ordinary rounds are the
+ones the same seed draws without series; where it has, the turn that begins a series leaves the
+optional parts out rather than drawing which to send, and the ordinary requests after it draw
+different numbers.

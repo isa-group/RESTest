@@ -113,6 +113,30 @@ class ObservedValuesTest {
         }
 
         @Test
+        @DisplayName("nothing is kept from the reply to a step of a series, which is about a thing "
+                + "only that series may know the fate of")
+        void nothing_is_kept_from_a_step_of_a_series() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET));
+            TestCase step = TestCase.stepOf(GET_PET, List.of(), Optional.empty(),
+                    io.restest.core.execution.Intent.UNKNOWN,
+                    new io.restest.core.execution.SequenceStep("readAfterDelete", 2,
+                            List.of(io.restest.core.execution.InteractionId.generate()),
+                            "read what was created: it should be there"));
+            Interaction answered = Interaction.answered(step,
+                    HttpRequestRecord.of(HttpMethod.GET, "https://api.example/pets/7"),
+                    new HttpResponseRecord(StatusLine.of(200),
+                            List.of(Header.of("Content-Type", "application/json")),
+                            Optional.of(Payload.of("{\"id\": 7, \"name\": \"Rex\"}"
+                                    .getBytes(StandardCharsets.UTF_8), "application/json"))),
+                    Instant.EPOCH, Duration.ofMillis(3));
+
+            seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, answered));
+
+            assertThat(valuesUnder(seen, "name")).isEmpty();
+            assertThat(valuesUnder(seen, "id")).isEmpty();
+        }
+
+        @Test
         @DisplayName("a value deep inside a reply is found under its own name, not its address")
         void a_value_deep_inside_is_found_under_its_name() {
             ObservedValues seen = new ObservedValues(anApiReturning(PET));

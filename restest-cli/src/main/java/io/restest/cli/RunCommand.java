@@ -632,7 +632,7 @@ final class RunCommand implements Callable<Integer> {
         // The seed has just been printed, and for this plan it promises less than it usually does.
         // Saying so here rather than leaving somebody to find out by running the same command
         // twice and getting two different runs.
-        if (!generator.whatListensToTheRun().isEmpty()) {
+        if (generator.dependsOnTheApisAnswers()) {
             out.println("  what it sends depends on the API's own replies, so the seed alone does "
                     + "not repeat this run" + (keepTheRun ? "" : "; --store keeps what it sent"));
         }

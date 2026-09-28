@@ -78,6 +78,18 @@ class SqliteInteractionStoreTest {
     }
 
     @Test
+    @DisplayName("a step of a series comes back with where it stood and what it followed")
+    void a_step_of_a_series_survives_the_round_trip() {
+        Interaction stored = Interactions.aStepOfASeries();
+
+        store.record(stored);
+
+        assertThat(store.find(InteractionQuery.all())).containsExactly(stored);
+        assertThat(store.find(InteractionQuery.all()).get(0).testCase().sequence())
+                .isEqualTo(stored.testCase().sequence());
+    }
+
+    @Test
     @DisplayName("a repeated header stays repeated, and in the order it arrived")
     void repeated_headers_survive() {
         store.record(Interactions.elaborate());

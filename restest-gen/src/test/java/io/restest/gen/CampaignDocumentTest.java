@@ -120,9 +120,89 @@ class CampaignDocumentTest {
         assertThat(plan.strategies().get(1).pushesAtTheApi()).isFalse();
     }
 
+    @Test
+    @DisplayName("a strategy may send series about the things it creates, with its own sources")
+    void a_strategy_that_sends_series() {
+        Campaign plan = CampaignDocument.read("""
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 90
+                    sources:
+                      - source: random
+                  - name: sequences
+                    share: 10
+                    sends: sequences
+                    sources:
+                      - source: enum
+                      - source: random
+                """, "ours.yaml");
+
+        assertThat(plan.strategies()).extracting(Campaign.PlannedStrategy::sendsSequences)
+                .containsExactly(false, true);
+        assertThat(plan.strategies()).extracting(Campaign.PlannedStrategy::mutatesAccepted)
+                .containsExactly(false, false);
+        assertThat(plan.strategies().get(1).sources())
+                .describedAs("what every step of a series is built from")
+                .hasSize(2);
+    }
+
     @Nested
     @DisplayName("what a plan is refused for")
     class Refusals {
+
+        @Test
+        @DisplayName("sending anything but series, which is all there is")
+        void sending_something_else() {
+            assertThatThrownBy(() -> CampaignDocument.read("""
+                    version: 1
+                    strategies:
+                      - name: sequences
+                        share: 100
+                        sends: everything
+                        sources:
+                          - source: random
+                    """, "ours.yaml"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("'everything'")
+                    .hasMessageContaining("sends: sequences");
+        }
+
+        @Test
+        @DisplayName("a strategy that both changes accepted requests and sends series")
+        void changing_and_sending_series_at_once() {
+            assertThatThrownBy(() -> CampaignDocument.read("""
+                    version: 1
+                    strategies:
+                      - name: both
+                        share: 100
+                        mutates: accepted
+                        sends: sequences
+                        sources:
+                          - source: random
+                    """, "ours.yaml"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("ours.yaml")
+                    .hasMessageContaining("not both");
+        }
+
+        @Test
+        @DisplayName("a strategy that sends series built from the values meant to be refused")
+        void sending_series_while_pushing() {
+            assertThatThrownBy(() -> CampaignDocument.read("""
+                    version: 1
+                    strategies:
+                      - name: sequences
+                        share: 100
+                        sends: sequences
+                        sources:
+                          - dictionary: fuzzing
+                          - source: random
+                    """, "ours.yaml"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("values meant to work")
+                    .hasMessageContaining("'fuzzing'");
+        }
 
         @Test
         @DisplayName("changing anything but the requests the API accepted, which is all there is")

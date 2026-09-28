@@ -166,6 +166,13 @@ public final class ObservedValues implements RunListener {
         if (interaction.testCase().mutation().isPresent()) {
             return;
         }
+        // Nor what came back to a step of a series built around a thing the run created. The
+        // thing is deleted moments later more often than not, and the series is only worth
+        // anything if what it knows about its thing stays with it: another request handed the
+        // identifier would be asking about a thing whose fate only the series knows.
+        if (interaction.testCase().sequence().isPresent()) {
+            return;
+        }
         HttpResponseRecord response = interaction.response().orElse(null);
         if (response == null || !theApiWasHappy(response.statusCode())) {
             return;
@@ -365,7 +372,7 @@ public final class ObservedValues implements RunListener {
                 || kindOfThingInTheName(property).filter(kind::equals).isPresent();
     }
 
-    private static boolean isABareIdentifier(String name) {
+    static boolean isABareIdentifier(String name) {
         return name.equalsIgnoreCase("id") || name.equalsIgnoreCase("_id");
     }
 
@@ -390,9 +397,20 @@ public final class ObservedValues implements RunListener {
      * that happens to be invalid.
      */
     private Optional<JsonValue> readable(HttpResponseRecord response) {
+        return readable(response, settings.longestReplyRead());
+    }
+
+    /**
+     * The reply as a value, when there is one worth reading, no larger than this.
+     *
+     * @param response what came back
+     * @param longestReplyRead the largest reply that is read at all, in bytes
+     * @return the value, or nothing for a reply that is not whole JSON of a size worth reading
+     */
+    static Optional<JsonValue> readable(HttpResponseRecord response, int longestReplyRead) {
         Payload body = response.body().orElse(null);
         if (body == null || body.truncated() || body.size() == 0
-                || body.size() > settings.longestReplyRead() || !isJson(body.mediaType())) {
+                || body.size() > longestReplyRead || !isJson(body.mediaType())) {
             return Optional.empty();
         }
         try {
@@ -543,16 +561,26 @@ public final class ObservedValues implements RunListener {
      * awkward values sit inside the things it returns rather than on their own.
      */
     boolean smallEnoughToSend(JsonValue value) {
+        return smallEnoughToSend(value, settings.longestValueKept());
+    }
+
+    /**
+     * Whether a value is one anybody could send, judged against this longest value.
+     *
+     * @param value the value
+     * @param longestValueKept how long any word in it, or any number written out in full, may be
+     * @return whether it could be sent
+     */
+    static boolean smallEnoughToSend(JsonValue value, int longestValueKept) {
         return switch (value) {
-            case JsonValue.JsonString text ->
-                    text.value().length() <= settings.longestValueKept();
+            case JsonValue.JsonString text -> text.value().length() <= longestValueKept;
             case JsonValue.JsonNumber number ->
                     number.value().precision() + Math.abs((long) number.value().scale())
-                            <= settings.longestValueKept();
-            case JsonValue.JsonObject thing ->
-                    thing.members().values().stream().allMatch(this::smallEnoughToSend);
-            case JsonValue.JsonArray list ->
-                    list.elements().stream().allMatch(this::smallEnoughToSend);
+                            <= longestValueKept;
+            case JsonValue.JsonObject thing -> thing.members().values().stream()
+                    .allMatch(inside -> smallEnoughToSend(inside, longestValueKept));
+            case JsonValue.JsonArray list -> list.elements().stream()
+                    .allMatch(inside -> smallEnoughToSend(inside, longestValueKept));
             // Nothing and true or false, neither of which has a size.
             case JsonValue.JsonNull ignored -> true;
             case JsonValue.JsonBoolean ignored -> true;

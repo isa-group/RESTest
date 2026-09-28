@@ -172,6 +172,17 @@ class TestCaseTest {
     }
 
     @Test
+    @DisplayName("the first step of a series follows nothing, so it has no reason to expect a "
+            + "refusal")
+    void a_first_step_cannot_expect_a_refusal() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> TestCase.stepOf(GET_PET, List.of(), Optional.empty(),
+                        Intent.REFUSAL_EXPECTED, SequenceStep.first("readAfterDelete",
+                                "create a pet to read after deleting it")))
+                .withMessageContaining("names neither");
+    }
+
+    @Test
     @DisplayName("a changed test case cannot claim to be believed in, nor to be awkward throughout")
     void a_changed_test_case_claims_neither_acceptance_nor_pushing() {
         Mutation change = new Mutation(InteractionId.generate(), "dropRequired",
@@ -183,6 +194,55 @@ class TestCaseTest {
                             claimed, change))
                     .withMessageContaining(claimed.name());
         }
+    }
+
+    @Test
+    @DisplayName("a step of a series says where it stands, and may expect a refusal for it")
+    void a_step_of_a_series_says_where_it_stands() {
+        InteractionId creation = InteractionId.generate();
+        InteractionId deletion = InteractionId.generate();
+        SequenceStep afterTheDeletion = new SequenceStep("readAfterDelete", 4,
+                List.of(creation, deletion), "read the pet the API said it deleted");
+
+        TestCase read = TestCase.stepOf(GET_PET, List.of(ParameterValue.of("petId",
+                ParameterLocation.PATH, JsonValue.of(12L), new ValueOrigin.Derived(creation,
+                        "the 'id' of what POST /pets created, earlier in this series"))),
+                Optional.empty(), Intent.REFUSAL_EXPECTED, afterTheDeletion);
+
+        assertThat(read.sequence()).contains(afterTheDeletion);
+        assertThat(read.mutation()).isEmpty();
+        assertThat(read.intent())
+                .describedAs("the deletion the step follows is the reason a refusal is expected")
+                .isEqualTo(Intent.REFUSAL_EXPECTED);
+        assertThat(TestCase.of(GET_PET, List.of()).sequence())
+                .describedAs("a request built on its own stands alone")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a step of a series claims neither acceptance nor pushing")
+    void a_step_claims_neither_acceptance_nor_pushing() {
+        SequenceStep first = SequenceStep.first("createTwice", "create a pet");
+
+        for (Intent claimed : List.of(Intent.ACCEPTABLE, Intent.PUSHING)) {
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> TestCase.stepOf(GET_PET, List.of(), Optional.empty(),
+                            claimed, first))
+                    .withMessageContaining(claimed.name());
+        }
+    }
+
+    @Test
+    @DisplayName("a test case is a change to an accepted request or a step of a series, not both")
+    void a_change_and_a_step_do_not_mix() {
+        Mutation change = new Mutation(InteractionId.generate(), "dropRequired",
+                ParameterLocation.QUERY, "limit", "left out 'limit'");
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new TestCase(TestCaseId.generate(), GET_PET, List.of(),
+                        Optional.empty(), Intent.REFUSAL_EXPECTED, Optional.of(change),
+                        Optional.of(SequenceStep.first("createTwice", "create a pet"))))
+                .withMessageContaining("not both");
     }
 
     @Test

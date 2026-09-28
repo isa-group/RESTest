@@ -100,6 +100,18 @@ class AcceptedRequestsTest {
     }
 
     @Test
+    @DisplayName("a step of a series is not kept: what happens to its thing is the series' alone")
+    void a_step_of_a_series_is_not_kept() {
+        AcceptedRequests memory = new AcceptedRequests(API, MutationSettings.defaults());
+        TestCase step = TestCase.stepOf(LIST_PETS, List.of(), Optional.empty(), Intent.UNKNOWN,
+                io.restest.core.execution.SequenceStep.first("createTwice", "create a thing"));
+
+        memory.on(new RunEvent.InteractionCompleted(Instant.EPOCH, answered(step, 200)));
+
+        assertThat(memory.of(LIST_PETS)).isEmpty();
+    }
+
+    @Test
     @DisplayName("a deletion is not kept: what it deleted is gone")
     void a_deletion_is_not_kept() {
         AcceptedRequests memory = new AcceptedRequests(API, MutationSettings.defaults());
