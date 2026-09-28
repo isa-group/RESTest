@@ -293,7 +293,8 @@ public final class RandomTestCaseGenerator {
         // An ordinary one by preference - one that neither pushes nor changes accepted requests -
         // though a strategy that changes them builds its fallback requests the ordinary way too.
         this.values = this.strategies.stream()
-                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted())
+                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted()
+                        && !way.sendsSequences())
                 .findFirst()
                 .or(() -> this.strategies.stream().filter(way -> !way.pushesAtTheApi())
                         .findFirst())
@@ -304,7 +305,8 @@ public final class RandomTestCaseGenerator {
         // generator's own source, since splitting would move that source on and change every
         // ordinary request after it - the one thing asking for these requests must never do.
         this.likeliest = campaign.strategies().stream()
-                .filter(planned -> !planned.pushesAtTheApi() && !planned.mutatesAccepted())
+                .filter(planned -> !planned.pushesAtTheApi() && !planned.mutatesAccepted()
+                        && !planned.sendsSequences())
                 .findFirst()
                 .or(() -> campaign.strategies().stream()
                         .filter(planned -> !planned.pushesAtTheApi())
@@ -880,12 +882,18 @@ public final class RandomTestCaseGenerator {
             ApiModel model, RandomGenerator random, ObservedValues observed,
             GenerationSettings inventing) {
         List<Strategy> ways = new ArrayList<>();
+        // One set of sources for every strategy that names the same ones. Built twice, each would
+        // keep its own memory of the spelling rules it has read, and reading a rule for the first
+        // time draws numbers - so a strategy that falls back on the sources another one has would
+        // not build what that one builds from the same numbers, and switching off what makes it
+        // different would not give back the plan without it.
+        Map<List<Campaign.Entry>, ValueProvider> built = new LinkedHashMap<>();
         for (Campaign.PlannedStrategy planned : campaign.strategies()) {
             if (pushesWithNothingToPushWith(planned, dictionaries)) {
                 continue;
             }
-            ValueProvider values =
-                    valuesFor(planned, dictionaries, model, random, observed, inventing);
+            ValueProvider values = built.computeIfAbsent(planned.sources(), same ->
+                    valuesFor(planned, dictionaries, model, random, observed, inventing));
             if (values instanceof ValueProviderChain chain && chain.providers().isEmpty()) {
                 // Every source this strategy names turned out to be a list nobody handed over, so
                 // it has nothing at all to fill a value with. It would still be drawn for its
@@ -896,7 +904,7 @@ public final class RandomTestCaseGenerator {
                         + "value");
             }
             ways.add(new Strategy(planned.name(), planned.share(), planned.pushesAtTheApi(),
-                    values, planned.mutatesAccepted()));
+                    values, planned.mutatesAccepted(), planned.sendsSequences()));
         }
         if (ways.isEmpty()) {
             // Every strategy in the plan pushes, and there is nothing to push with. Running some
@@ -956,7 +964,7 @@ public final class RandomTestCaseGenerator {
             }
         }
         return new Campaign.PlannedStrategy(planned.name(), planned.share(), inTurn,
-                planned.mutatesAccepted());
+                planned.mutatesAccepted(), planned.sendsSequences());
     }
 
     /**

@@ -35,6 +35,7 @@ import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.StringSchema;
+import io.restest.core.settings.SequenceSettings;
 import io.restest.core.settings.Settings;
 import java.io.IOException;
 import java.time.Duration;
@@ -146,22 +147,29 @@ class MutatingStrategyTest {
             + "a strategy that changes accepted requests")
     void switched_off_it_is_the_plan_it_was() throws IOException {
         Campaign shipped = Campaigns.shipped();
+        // The plan before there was a strategy that changes accepted requests: nominal with every
+        // share that is not pushing, and fuzzing. The series a creation may start are switched
+        // off throughout, so that what is compared is the changes and nothing else.
         Campaign before = new Campaign(List.of(
-                new Campaign.PlannedStrategy("nominal", 75, shipped.strategies().get(0).sources()),
-                shipped.strategies().get(2)), WhichOperations.everything());
-        Settings off = Settings.defaults().withMutation(
-                Settings.defaults().mutation().withNothingChanged());
+                new Campaign.PlannedStrategy("nominal", 75, strategy(shipped, "nominal").sources()),
+                strategy(shipped, "fuzzing")), WhichOperations.everything());
+        Settings noSeries = Settings.defaults().withSequences(SequenceSettings.noneSent());
+        Settings off = noSeries.withMutation(noSeries.mutation().withNothingChanged());
         List<Dictionary> fuzzing = Dictionaries.fuzzing().map(List::of).orElse(List.of());
 
         assertThat(drawn(new RandomTestCaseGenerator(API, SEED, fuzzing, shipped, off)))
                 .isEqualTo(drawn(new RandomTestCaseGenerator(API, SEED, fuzzing, before,
-                        Settings.defaults())));
-        assertThat(drawn(new RandomTestCaseGenerator(API, SEED, fuzzing, shipped,
-                Settings.defaults())))
+                        noSeries)));
+        assertThat(drawn(new RandomTestCaseGenerator(API, SEED, fuzzing, shipped, noSeries)))
                 .describedAs("and so does it with them on, for as long as the API has accepted "
                         + "nothing, since there is nothing to change and nothing is drawn")
                 .isEqualTo(drawn(new RandomTestCaseGenerator(API, SEED, fuzzing, before,
-                        Settings.defaults())));
+                        noSeries)));
+    }
+
+    private static Campaign.PlannedStrategy strategy(Campaign plan, String name) {
+        return plan.strategies().stream().filter(way -> way.name().equals(name)).findFirst()
+                .orElseThrow();
     }
 
     @Test

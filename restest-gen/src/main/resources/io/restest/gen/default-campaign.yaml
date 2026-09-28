@@ -5,12 +5,14 @@
 # is the whole point of the format: print it with `restest run --print-campaign`, save it, edit
 # it, and pass it back with --campaign.
 #
-# Three strategies. Most of the run builds requests meant to work, from whatever the document and
-# your own lists of values have to say. Some of it takes a request the API has accepted and sends
-# it again with exactly one thing wrong, so that whatever the API does next is down to that one
-# thing. The rest pushes at the API with values nobody sensible would send, which is how an API
-# gets asked what it does when something unexpected arrives - looking not for a refusal, which is
-# a fair answer, but for the API falling over.
+# Four strategies. Most of the run builds requests meant to work, from whatever the document and
+# your own lists of values have to say. A little of it turns a creation into the first request of a
+# short series about the thing created - delete it and read it again, create it twice - because
+# some faults only show across several requests. Some of it takes a request the API has accepted
+# and sends it again with exactly one thing wrong, so that whatever the API does next is down to
+# that one thing. The rest pushes at the API with values nobody sensible would send, which is how
+# an API gets asked what it does when something unexpected arrives - looking not for a refusal,
+# which is a fair answer, but for the API falling over.
 #
 # The shares add up to 100, and so do the weights inside any one group.
 
@@ -20,7 +22,7 @@ strategies:
 
   # Requests meant to work.
   - name: nominal
-    share: 55
+    share: 45
     sources:
 
       # A closed list of accepted values is not advice: it is the whole set of values the API
@@ -85,6 +87,36 @@ strategies:
 
           # What the API uses when the caller sends nothing. One value, so it never varies,
           # which is why it is asked least.
+          - source: default
+            weight: 5
+
+  # A creation, sent as the first request of a short series about the thing it creates. Each series
+  # asks one question: is a deleted thing gone when it is read again? is a second deletion answered
+  # calmly? can something still be added under a thing that no longer exists? does sending the same
+  # replacement twice give the same thing? does reading change anything? does the same creation
+  # sent twice break anything? Every step after the creation is sent once the answer to the one
+  # before has arrived, with the identifier the API gave the thing - read out of its reply, or out
+  # of the Location header it sent - so the series is about the thing it made and nothing else.
+  #
+  # Which series are sent is a setting rather than part of the plan: see
+  # `restest run --print-settings`, under sequences. With them all off, this strategy's share is
+  # built exactly as nominal builds its own, and so is every request of it that is not a creation.
+  #
+  # The sources below are where every step's values come from, the creation's included.
+  - name: sequences
+    share: 10
+    sends: sequences
+    sources:
+      - source: enum
+      - weighted:
+          - source: example
+            weight: 15
+          - source: random
+            weight: 20
+          - source: observed
+            weight: 20
+          - dictionaries: given
+            weight: 40
           - source: default
             weight: 5
 

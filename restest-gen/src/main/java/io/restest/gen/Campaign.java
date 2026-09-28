@@ -121,7 +121,7 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
             int given = shares.get(way.name());
             if (given > 0) {
                 divided.add(new PlannedStrategy(way.name(), given, way.sources(),
-                        way.mutatesAccepted()));
+                        way.mutatesAccepted(), way.sendsSequences()));
             }
         }
         return new Campaign(divided, operations);
@@ -173,14 +173,23 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
      * sources are then what it falls back on, for an operation the API has not accepted anything
      * for yet, or whose accepted request has nothing in it that can be changed.
      *
+     * <p>One that <em>sends series</em> turns a creation into the first request of a short series
+     * about the thing created - read it, delete it, read it again - built from its own sources
+     * throughout; on any operation that creates nothing, it builds the request from those sources
+     * the ordinary way. It cannot also change accepted requests, since each of the two says what
+     * its requests are about, and it cannot push at the API: a series is only worth sending when
+     * the thing it is about was created with values meant to work.
+     *
      * @param name what it is called, as a report would print it
      * @param share how much of the run's time it gets, out of a hundred
      * @param sources where its values come from, asked in the order written
      * @param mutatesAccepted whether its requests are made by changing one thing in a request the
      *     API accepted, its sources being used only when that cannot be done
+     * @param sendsSequences whether a creation it builds starts a series of requests about the
+     *     thing created
      */
     public record PlannedStrategy(String name, int share, List<Entry> sources,
-            boolean mutatesAccepted) {
+            boolean mutatesAccepted, boolean sendsSequences) {
 
         public PlannedStrategy {
             Objects.requireNonNull(name, "name");
@@ -197,6 +206,29 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
                 throw new IllegalArgumentException("a strategy with no sources of values could "
                         + "not fill in a single request: " + name);
             }
+            if (mutatesAccepted && sendsSequences) {
+                throw new IllegalArgumentException("a strategy either changes accepted requests or "
+                        + "sends series of requests, not both: " + name);
+            }
+            if (sendsSequences && drawsOnTheListToPushWith(sources)) {
+                throw new IllegalArgumentException("a strategy that sends series builds them from "
+                        + "values meant to work, so it cannot draw on the list of values called '"
+                        + RandomTestCaseGenerator.PUSHES_AT_THE_API + "': " + name);
+            }
+        }
+
+        /**
+         * A strategy that builds its requests from nothing, or by changing accepted ones.
+         *
+         * @param name what it is called, as a report would print it
+         * @param share how much of the run's time it gets, out of a hundred
+         * @param sources where its values come from, asked in the order written
+         * @param mutatesAccepted whether its requests are made by changing one thing in a request
+         *     the API accepted
+         */
+        public PlannedStrategy(String name, int share, List<Entry> sources,
+                boolean mutatesAccepted) {
+            this(name, share, sources, mutatesAccepted, false);
         }
 
         /**
@@ -221,6 +253,14 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
          * @return whether it draws on the list of values to push with
          */
         public boolean pushesAtTheApi() {
+            return drawsOnTheListToPushWith(sources);
+        }
+
+        /**
+         * Whether these sources include the list of values to push with. Asked of the list itself
+         * rather than of the strategy, so that the strategy can ask it before it exists.
+         */
+        private static boolean drawsOnTheListToPushWith(List<Entry> sources) {
             return sources.stream().flatMap(entry -> entry.sources().stream())
                     .anyMatch(source -> source instanceof Source.OneList list
                             && list.name().equals(RandomTestCaseGenerator.PUSHES_AT_THE_API));
