@@ -88,8 +88,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
 
     /** The groups there are, in printing order. */
     public static List<String> groups() {
-        return List.of("engine", "schedule", "generation", "mutation", "memory", "document",
-                "report");
+        return List.of("engine", "schedule", "generation", "mutation", "sequences", "memory",
+                "document", "report");
     }
 
     /**
@@ -284,6 +284,19 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many items an oversized list has"),
             key("mutation", "nestingDepth", SettingKind.WHOLE_NUMBER,
                     "how many lists deep the member deepNesting adds is, at most a million"),
+
+            key("sequences", "readAfterDelete", SettingKind.YES_OR_NO,
+                    "create a thing, delete it, then read it and what hangs from it: is it gone?"),
+            key("sequences", "deleteTwice", SettingKind.YES_OR_NO,
+                    "create a thing and delete it twice: is the second deletion answered calmly?"),
+            key("sequences", "writeUnderDeleted", SettingKind.YES_OR_NO,
+                    "create a thing, delete it, then add or change something under it"),
+            key("sequences", "putTwice", SettingKind.YES_OR_NO,
+                    "create a thing and send it the same PUT twice, reading it after each"),
+            key("sequences", "safeGet", SettingKind.YES_OR_NO,
+                    "create a thing, read it, send other reads, then read it again: unchanged?"),
+            key("sequences", "createTwice", SettingKind.YES_OR_NO,
+                    "send the same creation twice"),
 
             key("memory", "mostValuesUnderOneName", SettingKind.WHOLE_NUMBER,
                     "how many values the run remembers under any one name, and things of any "

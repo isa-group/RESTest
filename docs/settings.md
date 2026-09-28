@@ -189,6 +189,20 @@ mutation:
   # how many lists deep the member deepNesting adds is, at most a million
   nestingDepth: 10000         # default
 
+sequences:
+  # create a thing, delete it, then read it and what hangs from it: is it gone?
+  readAfterDelete: true       # default
+  # create a thing and delete it twice: is the second deletion answered calmly?
+  deleteTwice: true           # default
+  # create a thing, delete it, then add or change something under it
+  writeUnderDeleted: true     # default
+  # create a thing and send it the same PUT twice, reading it after each
+  putTwice: true              # default
+  # create a thing, read it, send other reads, then read it again: unchanged?
+  safeGet: true               # default
+  # send the same creation twice
+  createTwice: true           # default
+
 memory:
   # how many values the run remembers under any one name, and things of any one kind. 0 remembers none
   mostValuesUnderOneName: 20  # default
@@ -383,6 +397,23 @@ are probes, the other five violations.
 | `oversizedLength` | `10000` | how many characters an oversized word has |
 | `oversizedItems` | `1000` | how many items an oversized list has |
 | `nestingDepth` | `10000` | how many lists deep the member deepNesting adds is, at most a million |
+
+### `sequences.*`
+
+Which series of requests a strategy whose plan says `sends: sequences` may send around a thing it
+created itself — see [the campaign file](campaign-format.md#series-of-requests-around-a-thing-the-run-created).
+Each series starts with that strategy's own creation, asks one question, and sends each of its steps
+once the answer to the one before has arrived, with the identifier the API gave the thing. With every
+series off, such a strategy builds its requests the ordinary way.
+
+| Setting | Default | What it does |
+|---|---|---|
+| `readAfterDelete` | `true` | create a thing, delete it, then read it and what hangs from it: is it gone? |
+| `deleteTwice` | `true` | create a thing and delete it twice: is the second deletion answered calmly? |
+| `writeUnderDeleted` | `true` | create a thing, delete it, then add or change something under it |
+| `putTwice` | `true` | create a thing and send it the same PUT twice, reading it after each |
+| `safeGet` | `true` | create a thing, read it, send other reads, then read it again: unchanged? |
+| `createTwice` | `true` | send the same creation twice |
 
 ### `memory.*`
 

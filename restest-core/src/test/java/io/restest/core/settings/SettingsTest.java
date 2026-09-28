@@ -411,6 +411,10 @@ class SettingsTest {
                     .anyFamilyOn()).isFalse();
             assertThat(from.withMutation(from.mutation().withNothingChanged()).generation())
                     .isEqualTo(from.generation());
+            assertThat(from.withSequences(SequenceSettings.noneSent()).sequences().anyOn())
+                    .isFalse();
+            assertThat(from.withSequences(SequenceSettings.noneSent()).mutation())
+                    .isEqualTo(from.mutation());
             assertThat(from.withMemory(new MemorySettings(0, 0, 0, 0, 0, false, false)).memory()
                     .mostNames()).isZero();
             assertThat(from.withDocument(new DocumentSettings(Duration.ofSeconds(1), 10))
