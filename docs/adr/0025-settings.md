@@ -334,3 +334,13 @@ an oversized word and list are. The reasons are in
 [ADR-0027](0027-changing-one-thing-in-an-accepted-request.md) §6: `generation.*` is about what an
 invented value may look like, a person switching mutations off should find every switch in one
 place, and 10.2's shape operators join the same group. Sixty-two settings in all.
+
+## Amendment (M10.3)
+
+**Date:** 2026-09-28
+
+**The `sequences` group §1 named is created,** with one switch for each of the six series
+[ADR-0028](0028-sequences-over-things-a-run-creates.md) sends: `readAfterDelete`, `deleteTwice`,
+`writeUnderDeleted`, `putTwice`, `safeGet` and `createTwice`. They are all on. It has no switch for
+the group as a whole, because the plan's strategy that sends series is that switch. §1's
+`sequences.pairs` was 9.3's, and 9.3 was not merged. Seventy-six settings in eight groups.

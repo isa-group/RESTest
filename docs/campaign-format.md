@@ -267,6 +267,55 @@ ordinary one would.
 A run that changes accepted requests is, like one that draws on `observed`, not repeated by its
 seed alone: which requests were accepted is the API's answer.
 
+## Series of requests around a thing the run created
+
+A strategy can build its requests a fourth way. When it is drawn for an operation that **creates**
+something - a `POST` - that request becomes the first of a short **series** about the thing it
+creates. The rest of the series is sent one step at a time, each once the answer to the one before
+has arrived, with the identifier the API gave the thing.
+
+```yaml
+  - name: sequences
+    share: 10
+    sends: sequences
+    sources:
+      - source: enum
+      - source: random
+```
+
+Some faults only show across several requests, and every series asks one question about one of
+them:
+
+| Series | The question | After the creation |
+|---|---|---|
+| `readAfterDelete` | Is a deleted thing gone for whoever reads it? | read it, delete it, read it again, read what hangs from it |
+| `deleteTwice` | Is a second deletion answered calmly? | delete it, delete it again |
+| `writeUnderDeleted` | Can something still be written under a thing that no longer exists? | delete it, then add or change one thing under it |
+| `putTwice` | Does the same replacement twice leave the same thing? | replace it, read it, the same replacement again, read it again |
+| `safeGet` | Does reading change anything? | read it, read it in other ways, read it again |
+| `createTwice` | Does creating the same thing twice break anything? | the same creation again |
+
+Which series a creation starts is drawn among the ones that can be asked of what it makes, from
+where the document says the thing lives: `/owners/{ownerId}` for `POST /owners`, `/pets/{petId}`
+for a pet made under its owner. The identifier is read from the reply to the creation, and from its
+`Location` header when the reply carries none. A series stops when a step its question needs is not
+a success: nothing is asked about a creation the API refused.
+
+`sends:` takes one word, `sequences`. The `sources:` build every step of every series, the creation
+included, and every request the strategy builds for an operation that creates nothing, which is
+built the ordinary way. The plan RESTest carries gives its `sequences` strategy nominal's sources, so
+that a turn that starts no series builds exactly the request nominal would.
+
+Which series are sent is a **setting**, not part of the plan - see
+[`sequences.*`](settings.md#sequences). With all six off, the strategy builds every request the
+ordinary way. What a series learns stays with it: the memory of what the API returned does not hear
+its replies, since the thing it made is usually deleted moments later.
+
+Each step records which series it belongs to, its place in it, and the earlier exchanges it
+follows, so a stored run says what every step was for. A run that sends series is, like one that
+draws on `observed`, not repeated by its seed alone: its later steps are built from its earlier
+answers.
+
 ## The first round of a run
 
 Before anything is chosen, a run sends every operation it can test once, each with the request it
@@ -364,4 +413,9 @@ output would say so.
 - a group with one source in it, where there is nothing to choose between
 - `mutates:` saying anything but `accepted`
 - a strategy that says `mutates: accepted` and has no `sources:` to fall back on
+- `sends:` saying anything but `sequences`
+- a strategy that says both `mutates:` and `sends:`, which would make its requests two different
+  things at once
+- a strategy that says `sends: sequences` and draws on the list of values to push with, since a
+  series is only worth sending about a thing created with values meant to work
 - a key written twice, which YAML allows and which would leave the first quietly replaced

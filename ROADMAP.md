@@ -9,7 +9,7 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
 still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 32 delivered, 2 measured and not merged, 11 more in v2.0, 28 after it.
+13 milestones: 33 delivered, 2 measured and not merged, 10 more in v2.0, 28 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -40,7 +40,7 @@ nothing in them is an increment of its own.
 | M1 | Walking skeleton | all | 13 / 13 ✅ |
 | M2 | Specification fidelity and input generation | 2.10b came back from 9.1 for 2.1; four rows wait | 10 / 14 |
 | M9 | Reach — every operation the API will answer, answered early | all but 9.3, measured and not merged, and 9.4, set aside before it was built | 2 / 4 |
-| M10 | Break — more distinct server failures | all | 2 / 3 |
+| M10 | Break — more distinct server failures | all | 3 / 3 ✅ |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 1 / 6 |
 | M12 | Closing v2.0 | all | 0 / 5 |
@@ -59,7 +59,7 @@ getting there *early*; the **Fault detection** ranking is the first alone.
 
 | Measured | How | What moves it here |
 |---|---|---|
-| Unique server failures | Distinct 5XX replies, told apart by their error message | Requests that break things in *different* ways: mutations of accepted requests (10.1), bodies of the wrong shape (10.2), sequences over real resources — delete then read, create twice (10.3). The tool's own oracles play no part: the benchmark counts the 5XX itself |
+| Unique server failures | Distinct 5XX replies, told apart by their error message | Requests that break things in *different* ways: mutations of accepted requests (10.1), bodies of the wrong shape (10.2), series over things the run created — read after delete, delete twice, create twice (10.3). The tool's own oracles play no part: the benchmark counts the 5XX itself |
 | Operations covered | Operations that answered 2XX at least once | Identifiers that exist (2.5b ✅, 9.2 ✅), the required-only request drawn often (2.9) |
 | Code coverage | Methods, statements and branches the API executed | Everything above, plus variety: values, optional parameters and body properties that change from request to request (2.5a ✅, 2.7c ✅, 10.2) |
 | Area under each curve | The same three, integrated over the hour | An opening lap that sends every operation its best request in the first seconds (9.1), and 0% idle time (✅, measured by the benchmark's own clock at 1.9). The `Accept` header ADR-0017 asked for ships since 2.5a |
@@ -573,7 +573,7 @@ counting distinct 5XX messages and branch coverage rather than operations covere
 |---|---|---|
 | 10.1 ✅ [#336](https://github.com/isa-group/RESTest/pull/336) | **Mutations of accepted requests** — the generator half of 3.1b, under ADR-0013 §4 ([ADR-0027](docs/adr/0027-changing-one-thing-in-an-accepted-request.md)). A strategy that says `mutates: accepted` takes a request the API answered 2XX - kept by a listener, the newest sixteen per operation, never a change, a push or a deletion - and changes exactly one thing in a parameter **or anywhere inside a JSON body**, falling back on its own sources when there is nothing to change. Eleven operators in **two families, each switchable** under a new settings group `mutation.*`: **violations**, which break what the document states - drop a required value, send it in another location (ADR-0017 item 5), the wrong type, one past a bound (2.3 returns here), off the enumeration, against the pattern, `null`, empty where forbidden, oversize beyond a stated most - and **probes**, where the document says nothing: oversize with no limit, empty where nothing forbids it. The test case gains the **intent** of §3, four values rather than three, and a record of the change naming the exchange it was made to. Shipped plan nominal 55, mutation 20, fuzzing 25; **the probes ship off**, chosen by the maintainer on the measurement. *Two things differ from the row as approved, both chosen by the maintainer on 27 September*: operators reach inside bodies, taking two of 10.2's items, and "oversize" and "the empty value" each became two operators, one per family, so that every recorded intent is true | A run asks "what happens when one thing is wrong?" of every request that worked, and reaches the failures behind an API's validation. The five 2027 APIs restarted before every run, five seeds, a minute each: pet-clinic's distinct server failures by message rose from 158.6 to 211.2, and by exception kind from 51.8 to 60.8, better on every seed by either count, the area under that curve up 24% and branch coverage up on every seed; the other four did not move. Nothing was lost - operations covered, idle time and the pairs of operation and status failing are unchanged - and the probes added nothing over the violations |
 | 10.2 ✅ [#337](https://github.com/isa-group/RESTest/pull/337) | **Bodies of the wrong shape** ([ADR-0027](docs/adr/0027-changing-one-thing-in-an-accepted-request.md#amendment-m102), amended). Seven operators join 10.1's eleven under `mutation.*`, in its two families. **Violations**: `wrongRoot`, the whole body as another kind the declared shape does not accept - a list holding the accepted object, a word, a number; `emptyBody`, no bytes at all, only where the body is required; `notJson`, the accepted body cut off halfway, or plain words; `wrongContentType`, the accepted body under `text/plain`, `application/xml` or a form's media type, whichever the operation does not take; `beyondItsWidth`, a number past what its `int32`, `int64`, `float` or `double` holds, in a parameter or a body. **Probes**: `deepNesting`, an undeclared member ten thousand lists deep, where undeclared members may hold anything; `extremeNumber`, the edges of every common width where nothing bounds the number. A body can now say the exact text it is sent as, which travels inside the test case. *Three things settled by the maintainer on 28 September, before any code*: deep nesting as an extra member and a probe, rather than the whole body replaced by it, which a JVM reader refuses at the first bracket; the numeric extremes as two operators, one per family; an empty body only where one is required. *A leaf of the wrong kind and arrays far longer than any limit were built at 10.1, as its operators at a place inside a body - see the notes* | The code an API runs before its own - reading a body, checking its media type, fitting a number into a fixed width - is reached, and fails in its own ways. The five 2027 APIs restarted before every run, five seeds, a minute each: pet-clinic's distinct server failures by message rose from 214.0 to 279.4 and by exception kind from 60.8 to 71.8, better on every seed by either count; kafka-rest-proxy, which refuses every broken body as it should, covered twelve more branches, better on every seed; the other three did not move. Nothing was lost - operations covered, requests sent, idle time - and the probes added nothing, so they ship off |
-| 10.3 ▶ | **Sequence operators over real resources**, built on a producer-then-consumer unit - the one 9.3 built and did not merge, on the branch `experiment/m9-3-sequence-pairs`, brought in here - and kept inside one unit of work each: create a resource, delete it, then read it, update it and delete it again; create the same thing twice; create two resources and update one with the other's identifier; create, delete, and send the deleted identifier to every consumer that takes one. Each is a named sequence with an intent, every identifier it uses is one the same sequence created, and what a unit knows about what it deleted stays in that unit | The server failures that only appear across several requests — the dangling reference, the double delete, the duplicate key — which single requests never reach and which the stateful tools we are measured against do reach |
+| 10.3 ✅ [#338](https://github.com/isa-group/RESTest/pull/338) | **Series of requests around a thing the run created** ([ADR-0028](docs/adr/0028-sequences-over-things-a-run-creates.md)). A strategy in the plan that says `sends: sequences` - shipped at 10, taken from nominal - turns a creation it is drawn for into the first request of a short series about the thing created. Each later step is built once the answer to the one before is in, with the identifier the API gave the thing, read from the reply's body or, where it has none, its `Location` header; the gaps before it take what the creation was sent. **Six series, one question each**, one switch each under `sequences.*`: `readAfterDelete`, `deleteTwice`, `writeUnderDeleted`, `putTwice`, `safeGet`, `createTwice`. Every step records its series, its place and the exchanges it follows, and expects a refusal only where the API has said it deleted what the step asks about; the verdicts are recorded, not judged. What a series learns stays with it: neither memory hears its steps. *What was built differs from the row as written, all of it chosen by the maintainer on 28 September after a survey of what the related tools do - see the notes*: one question per series, `deleteThenUse` split into three and `crossUpdate` not taken, PUT's idempotency and GET's safety added, a share in the plan and only a creation's turn starting a series | The server failures that only several requests together reach - a thing still there after its deletion, a second deletion that breaks, a write under a thing that is gone, a duplicate key. MEASUREMENT |
 
 ### Notes
 
@@ -625,23 +625,52 @@ made it reach every leaf of a body. What it cannot express is a body whose struc
 a dictionary entry is a value at a place and the place is fixed by the schema. That is a generator
 concern, and it is one operators do well: each says exactly which structural rule it broke.
 
-**10.3 — the oracles are not here either.** 4.5's stateful oracles — use after free, update
-idempotency — would judge these sequences. The benchmark judges them for us, by counting the 5XX;
-4.5 waits, and 10.3 records enough on each sequence for 4.5 to judge it offline later.
+**10.3 — what was built differs from the row, and why.** The row named four operators. Before
+any code the maintainer asked for a survey of how the related tools build sequences, and for
+HTTP's two promises about methods - a safe one changes nothing, an idempotent one leaves the same
+state however often it is repeated - to be tested too. The survey is in ADR-0028.
+- RESTler, Schemathesis, CATS and EvoMaster all check a thing is gone after its deletion.
+- EvoMaster alone checks PUT's idempotency and full replacement.
+- WuppieFuzz duplicates requests without comparing the answers.
+- Nobody checks a read's safety, a second deletion, or a write under a deleted thing.
+- Where a tool combines checks, it guards against their interfering.
 
-**10.3 — what 9.3's outcome adds to it.** 10.3 was to stand on a merged 9.3; it now has to bring in
-the unit itself, from the experiment branch or built again, and with it take the two decisions
-ADR-0013 left to M4 and amend ADR-0013. What ADR-0013's M9.3 amendment learned carries over: the
-unit worked where it fired, and 10.3's operators fire without waiting for anything to be missing,
-since each creates its own victim. If the unit and the operators together are more than one
-reviewable pull request, 10.3 is split, the unit first, as the calendar's rule for a grown row says.
+On that survey the maintainer settled, on 28 September:
+- **One series, one question.** The first proposal read, deleted, read, replaced and deleted again
+  in one series. The replacement may create the thing again, and a second deletion after it would
+  then ask something else. Reads do not interfere, since a safe method changes nothing.
+- **Six series.** `readAfterDelete`, `deleteTwice` and `writeUnderDeleted` are the row's
+  `deleteThenUse` and `danglingReference` as three questions. `createTwice` is the row's. `putTwice`
+  and `safeGet` are the idempotency and safety asked for. `crossUpdate` is not taken: no tool does
+  it, and it applies to few operations.
+- **A strategy in the plan with a share of 10**, taken from nominal, that starts a series only on a
+  creation's turn. Its own sources build every step. What a series learns stays with it.
+- **The verdicts are recorded, not judged**, which leaves the oracles to 3.2 and 4.5.
 
-**10.3 — why every operator creates its own victim.** Concurrent units interfere, as 9.3's notes
-accepted, and 10.3 inherits that with the unit. An operator that borrowed a deleted identifier from
-another unit's memory would then be sending something whose state it cannot know, and "delete then
-read" would mean nothing. Keeping each operator to resources its own sequence created is what lets
-its name stay true: the one thing the sequence did to that resource is the one thing the sequence
-knows about it.
+The rest the survey found - a child through another parent, a failed change or creation leaving a
+trace, merge-patch and a PUT that creates - is noted under M4.
+
+**10.3 — where the identifier comes from.** Read from the recorded runs of 8.4:
+- pet-clinic answers every creation with the thing and its `id`, and a `Location` without the base
+  address its document gives;
+- notebook-manager and gestao-hospital send `id` in the body only;
+- no priority document declares OpenAPI `links`, and one of the corpus's 46 does.
+
+So the body is read first, the `Location` header only when the body has nothing that fits, and
+declared links not at all; they stay 4.3's. The same runs predicted where series would have little
+to do: kafka-rest-proxy created no topic in twenty minutes, and flight-search accepted one
+registration.
+
+**10.3 — the oracles are not here either.** 4.5's stateful oracles - use after free, update
+idempotency - and 3.2's HTTP semantics, faults 113, 117 and 118 of the catalogue, would judge these
+series. The benchmark judges them for us, by counting the 5XX. Every step names its series, its
+place and the exchanges it follows, which is enough for either row to judge a stored run offline.
+
+**10.3 — what 9.3's outcome added to it.** ADR-0013's M9.3 amendment said the trigger, not the unit,
+was the open part, and a series that creates its own victim waits for nothing. The unit was built
+again rather than brought in, since the experiment branch predates 10.1 and 10.2. Its `followUp` is
+not reused either: it drew later steps from the numbers the ordinary requests come from, which would
+make them depend on how fast the API answers. The two decisions ADR-0013 left to M4 are taken there.
 
 ## M11 — Settings
 
@@ -891,8 +920,8 @@ comparison is the evaluation harness's job, not this report's.
 | 4.1 → [9.2](#m9--reach), rest ⏭ | Operation Dependency Graph inferred from names, types and schemas. 9.2 took the rule for path parameters; the graph over every property, the similarity score, the synonym table as versioned data, and the measurement against word vectors that ends in an ADR (ADR-0017 item 3) are still here | The tool knows `POST /pets` must precede `GET /pets/{id}` for every kind of parameter, not only the ones in a path |
 | 4.2 ⏭ | Runtime resource pool and value-source selection. The pool arrived at 2.5b; the producer-then-consumer choice was built at 9.3 and not merged, and comes back here; what is left is choosing among 4.1's candidates, and whether that choice may learn from what the API answered is ADR-0017's second open question | Identifiers from real responses get reused for every parameter the graph can reach |
 | 4.3 ⏭ | Declared OpenAPI `links` consumed when present | Free accuracy on the few specifications that declare them |
-| 4.4 → [10.3](#m10--break), rest ⏭ | CRUD lifecycle model and sequence generation. The two-step sequence was built at 9.3 and not merged, and the sequence operators went to 10.3; the lifecycle as a model, with sequences longer than two, is still here | Create-read-update-delete flows are exercised end to end |
-| 4.5 ⏭ | Stateful oracles: use-after-free, resource availability, failed update must not change, update idempotency. 10.3 records enough on each sequence for these to judge it offline | Bugs that only appear across several requests, *named* rather than only counted |
+| 4.4 → [10.3](#m10--break), rest ⏭ | CRUD lifecycle model and sequence generation. The two-step sequence was built at 9.3 and not merged, and six one-question series went to 10.3; the lifecycle as a model is still here, and so are the series 10.3's survey found and did not take - a child reached through another parent, a failed creation or change leaving a trace, a merge-patch that touches more than it names, a PUT that creates twice | Create-read-update-delete flows are exercised end to end |
+| 4.5 ⏭ | Stateful oracles: use-after-free, resource availability, failed update must not change, update idempotency, and a read that changes what it reads. 10.3 records, on every step of a series, which series, which step and the exchanges it follows, which is enough for these to judge a stored run offline | Bugs that only appear across several requests, *named* rather than only counted |
 | 4.6 ⏭ 🛑 | Arazzo import/export *(droppable — decide at the end of M4)* | Discovered flows become a standard, shareable document |
 
 ### Notes

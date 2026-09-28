@@ -665,3 +665,27 @@ the intent and the change it records are two more members of it.
 
 **The unit of work for sequences is still open.** A change to an accepted request is one request,
 not a sequence, and the two decisions "Left to M4, on purpose" are untouched by it.
+
+## Amendment (M10.3)
+
+**Date:** 2026-09-28
+
+**The two decisions "Left to M4, on purpose" are taken**, by
+[ADR-0028](0028-sequences-over-things-a-run-creates.md), which records how.
+- **The unit of work is a series:** a fixed list of steps about a thing the series created, each
+  built once the answer to the one before is in, one step of it in flight at a time.
+- **Interference between concurrent series is accepted rather than prevented,** as the M9.3
+  amendment had it.
+- **The trigger is no longer the open part:** a series starts when the plan's strategy that sends
+  them is drawn for a creation, and waits for nothing to be missing.
+
+**The rule this record proposed holds:** *a sequence never borrows an identifier; it creates what
+it needs.* The thing a series asks about is the one it created. The gaps before it take what the
+creation was sent, and neither memory hears a step, so nothing a series learns reaches another
+request. The honest limit this record named holds too: a thing whose creation needs something the
+run cannot make - a kafka cluster, which only exists - is created under one the memory supplies.
+
+**§7's table gains a row.** A plan that sends series is reproduced by replaying the stored run, like
+one with a memory, because a series builds its later steps from its earlier answers. Its choices -
+which series, which step comes next - draw on numbers of their own, so the requests of the ordinary
+rounds are the ones the same seed draws without them.
