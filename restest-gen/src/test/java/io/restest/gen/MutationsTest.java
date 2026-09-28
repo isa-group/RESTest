@@ -576,6 +576,18 @@ class MutationsTest {
             assertThat(changed).extracting(each -> each.body().orElseThrow().sentAs()
                             .orElseThrow())
                     .contains("this is not JSON", accepted.substring(0, accepted.length() / 2));
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().description())
+                    .contains("sent the body cut off after " + accepted.length() / 2
+                            + " characters of its " + accepted.length() + ", which is not JSON");
+            Operation addEmpty = Operation.of(HttpMethod.POST, "/empty")
+                    .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(), Set.of()),
+                            true))
+                    .withId(OperationId.of("addEmpty"));
+            assertThat(changesIn(addEmpty, bodied(addEmpty, JsonValue.object(Map.of())),
+                    "notJson"))
+                    .extracting(each -> each.body().orElseThrow().sentAs().orElseThrow())
+                    .describedAs("two characters are enough to cut in half")
+                    .contains("{");
             Operation addCount = Operation.of(HttpMethod.POST, "/count")
                     .withRequestBody(RequestBodyModel.json(NumberSchema.of(NumberKind.INTEGER),
                             true))
@@ -624,6 +636,14 @@ class MutationsTest {
                     .describedAs("a Content-Type the document declares itself would be sent in "
                             + "place of the one changed")
                     .isEmpty();
+            Operation otherHeader = Operation.of(HttpMethod.POST, "/pets/traced",
+                            List.of(Parameter.of("X-Trace", ParameterLocation.HEADER, false,
+                                    StringSchema.of())))
+                    .withRequestBody(RequestBodyModel.json(PET, true))
+                    .withId(OperationId.of("addTracedPet"));
+            assertThat(changesIn(otherHeader, bodied(otherHeader, REX), "wrongContentType"))
+                    .describedAs("any other header leaves the media type to the tool")
+                    .isNotEmpty();
         }
 
         @Test
@@ -685,6 +705,23 @@ class MutationsTest {
                     .isNotEmpty()
                     .allSatisfy(each -> assertThat(each.mutation().orElseThrow().description())
                             .contains("'nested2'"));
+            Operation twice = Operation.of(HttpMethod.POST, "/twice")
+                    .withRequestBody(RequestBodyModel.json(open, true))
+                    .withId(OperationId.of("addTwice"));
+            assertThat(changesIn(twice, bodied(twice, JsonValue.object(Map.of("nested2",
+                    JsonValue.of("x")))), "deepNesting"))
+                    .isNotEmpty()
+                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().description())
+                            .contains("'nested3'"));
+            ObjectSchema roomy = new ObjectSchema(SchemaMetadata.none(), properties("a",
+                    StringSchema.of()), Set.of(), Optional.empty(), Optional.empty(),
+                    Optional.of(5));
+            Operation addRoomy = Operation.of(HttpMethod.POST, "/roomy")
+                    .withRequestBody(RequestBodyModel.json(roomy, true))
+                    .withId(OperationId.of("addRoomy"));
+            assertThat(changesIn(addRoomy, bodied(addRoomy, one), "deepNesting"))
+                    .describedAs("a most number of members with room left under it")
+                    .isNotEmpty();
         }
 
         @Test
@@ -758,8 +795,11 @@ class MutationsTest {
 
             assertThat(changesIn(addCount, bodied(addCount, JsonValue.of(12)), "beyondItsWidth"))
                     .isNotEmpty()
-                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().path())
-                            .isEqualTo("body"));
+                    .allSatisfy(each -> {
+                        assertThat(each.mutation().orElseThrow().path()).isEqualTo("body");
+                        assertThat(each.mutation().orElseThrow().description())
+                                .contains(" for the body, one past the ");
+                    });
         }
 
         @Test
