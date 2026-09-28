@@ -21,6 +21,7 @@ import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.ParameterValue;
+import io.restest.core.execution.Payload;
 import io.restest.core.execution.SequenceStep;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.TestCaseId;
@@ -39,13 +40,17 @@ import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
-import io.restest.core.settings.MemorySettings;
+import io.restest.core.schema.StringSchema;
 import io.restest.core.settings.SequenceSettings;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -91,11 +96,21 @@ import java.util.random.RandomGenerator;
  * only adds an observation is left out when it cannot be built.
  *
  * <p>The identifier is read from the creation's reply, the way a person would: a property named like
- * the gap it goes in, then one called {@code id}, then the kind of thing followed by id. Only when the
- * reply carries none that fits is the {@code Location} header read, whose address ends with the
- * thing's own. Gaps before the thing's own, such as the owner a pet was created under, are sent what
- * the creation was sent, and so is a body's own identifier where a step sends one: every identifier
- * a series uses is one it made or was given with what it made.
+ * the gap it goes in, then one called {@code id}, then the kind of thing followed by id - in the
+ * reply itself, or inside a wrapper around it, but never inside a list, which may be listing things
+ * that were there before the creation. A value the creation was itself sent in its address is never
+ * taken either: that names what the thing was made under, such as the owner of a new pet. Only when
+ * the reply carries none that fits is the {@code Location} header read, whose address ends with the
+ * thing's own. Gaps before the thing's own are sent what the creation was sent; the thing's own gap,
+ * and a body's own identifier where a step sends one, are sent the thing's identifier. So every
+ * identifier a series uses is one the API gave back for what the series made - or, for a thing its
+ * creation names itself, as a topic is named, the name it was given.
+ *
+ * <p>How much of a reply is read does not depend on how much the memory of what the API returned
+ * reads, so switching that memory off leaves the series alone. A reply is read whenever the engine
+ * kept all of it, and no value read out of one is sent longer, written out, than the text it was
+ * read from: a number such as {@code 1e2147483647} is a dozen characters in a reply and two thousand
+ * million in an address.
  *
  * <p>Every step says so on the request - see {@link SequenceStep} - naming the kind of series, the
  * step, and the earlier exchanges it follows, so that a stored run can be judged later. What a
@@ -114,12 +129,13 @@ final class Sequences {
 
     private final ApiModel model;
     private final Creations creations;
-    private final MemorySettings memory;
+    private final int mostAwaited;
     private final RandomGenerator shapes;
     private final RandomGenerator steps;
     private final Filler filler;
     private final Map<OperationId, List<Shape>> possible;
-    private final Map<TestCaseId, Open> awaiting = new HashMap<>();
+    /** In the order the steps were built, so that the oldest is the one forgotten. */
+    private final Map<TestCaseId, Open> awaiting = new LinkedHashMap<>();
 
     /**
      * Series for the things these creations make.
@@ -127,19 +143,28 @@ final class Sequences {
      * @param model the API
      * @param creations what each creation makes, and where it lives
      * @param settings which series are switched on
-     * @param memory how much of a reply is read, and how long a value may be to be sent again
+     * @param mostAwaited how many steps may await their answers at once: as many as a run keeps
+     *     awaiting an answer, and as many again answered but not yet read. Beyond it the oldest is
+     *     forgotten and its series ends - which a run never reaches, and which keeps a generator
+     *     asked for requests by something that never hands the answers back from keeping every
+     *     series it began
      * @param shapes where the choice of series, and of what to write under a deleted thing, comes
      *     from - numbers of its own, so choosing never moves the ordinary requests on
      * @param steps where the optional parameters of the steps that draw them come from, for the same
      *     reason
      * @param filler how one request is built
+     * @throws IllegalArgumentException if {@code mostAwaited} is less than one
      */
-    Sequences(ApiModel model, Creations creations, SequenceSettings settings,
-            MemorySettings memory, RandomGenerator shapes, RandomGenerator steps, Filler filler) {
+    Sequences(ApiModel model, Creations creations, SequenceSettings settings, int mostAwaited,
+            RandomGenerator shapes, RandomGenerator steps, Filler filler) {
         this.model = Objects.requireNonNull(model, "model");
         this.creations = Objects.requireNonNull(creations, "creations");
         Objects.requireNonNull(settings, "settings");
-        this.memory = Objects.requireNonNull(memory, "memory");
+        if (mostAwaited < 1) {
+            throw new IllegalArgumentException("at least one step has to be able to await its "
+                    + "answer, not " + mostAwaited);
+        }
+        this.mostAwaited = mostAwaited;
         this.shapes = Objects.requireNonNull(shapes, "shapes");
         this.steps = Objects.requireNonNull(steps, "steps");
         this.filler = Objects.requireNonNull(filler, "filler");
@@ -168,6 +193,24 @@ final class Sequences {
         return possible.containsKey(Objects.requireNonNull(operation, "operation").id());
     }
 
+    /** Whether any creation of the run starts a series at all. */
+    boolean startsAny() {
+        return !possible.isEmpty();
+    }
+
+    /**
+     * How many steps the series a step belongs to plans, its creation included, asked while the
+     * step awaits its answer - which is how a test tells a series that went all the way from one
+     * that stopped short.
+     *
+     * @param step a step that was built and not yet heard
+     * @return the number of steps, or zero for a request that awaits nothing here
+     */
+    int stepsPlanned(TestCase step) {
+        Open open = awaiting.get(Objects.requireNonNull(step, "step").id());
+        return open == null ? 0 : open.plan.size() + 1;
+    }
+
     /**
      * The first step of a series about what this creation makes: the creation itself.
      *
@@ -193,7 +236,7 @@ final class Sequences {
                 SequenceStep.first(shape.named(), shape.firstStep()));
         Open open = new Open(shape, made, plan, later);
         open.sent.put(1, first);
-        awaiting.put(first.id(), open);
+        await(first, open);
         return Optional.of(first);
     }
 
@@ -213,10 +256,10 @@ final class Sequences {
             return Optional.empty();
         }
         int number = step.sequence().get().step();
+        Optional<Integer> status = answer.flatMap(Interaction::statusCode);
         answer.ifPresent(heard -> open.exchanges.put(number, heard.id()));
-        boolean succeeded = answer.flatMap(Interaction::statusCode)
-                .filter(code -> code >= 200 && code < 300)
-                .isPresent();
+        status.ifPresent(code -> open.statuses.put(number, code));
+        boolean succeeded = status.filter(code -> code >= 200 && code < 300).isPresent();
         if (number == 1) {
             if (!succeeded) {
                 return end(open);
@@ -262,9 +305,19 @@ final class Sequences {
                 : fresh(open, next.step, planned);
         built.ifPresent(request -> {
             open.sent.put(next.step, request);
-            awaiting.put(request.id(), open);
+            await(request, open);
         });
         return built;
+    }
+
+    /** Keeps a step until its answer is heard, the oldest forgotten beyond the most awaited. */
+    private void await(TestCase step, Open open) {
+        awaiting.put(step.id(), open);
+        if (awaiting.size() > mostAwaited) {
+            Iterator<TestCaseId> oldest = awaiting.keySet().iterator();
+            oldest.next();
+            oldest.remove();
+        }
     }
 
     private static Optional<Next> end(Open open) {
@@ -283,7 +336,7 @@ final class Sequences {
             return Optional.empty();
         }
         return Optional.of(TestCase.stepOf(earlier.operation(), earlier.parameterValues(),
-                earlier.body(), planned.intent(), recorded(open, step, planned)));
+                earlier.body(), intentOf(open, planned), recorded(open, step, planned)));
     }
 
     /** A step built afresh, the thing's identifier and what the creation was sent put in place. */
@@ -295,8 +348,9 @@ final class Sequences {
         if (target.gap().isPresent()) {
             identifier = identifierFor(open, target.operation(), target.gap().get());
             if (identifier.isEmpty()) {
-                // Every later step is about the same thing, so none of them could be built either.
-                open.over = true;
+                // Not the end of the series on its own account: another operation may declare the
+                // gap in a form the identifier fits. Whether the series can do without this step
+                // is the step's to say.
                 return Optional.empty();
             }
             pinned.put(target.gap().get(), identifier.get());
@@ -315,8 +369,28 @@ final class Sequences {
                 .map(value -> withTheThingsIdentifier(open, target, sent, value.value()))
                 .orElse(sent));
         return Optional.of(TestCase.stepOf(target.operation().id(),
-                filled.get().parameterValues(), body, planned.intent(),
+                filled.get().parameterValues(), body, intentOf(open, planned),
                 recorded(open, step, planned)));
+    }
+
+    /**
+     * What is expected of a step: what its plan says, except after a deletion the API only
+     * accepted. {@code 202 Accepted} promises the deletion without saying it is done, so a thing
+     * read or written under a moment later may rightly still be there, and a refusal is not
+     * expected of what follows.
+     */
+    private static Intent intentOf(Open open, Planned planned) {
+        if (planned.intent() != Intent.REFUSAL_EXPECTED) {
+            return planned.intent();
+        }
+        for (int earlier : planned.follows()) {
+            if (earlier > 1
+                    && open.planned(earlier).target().operation().method() == HttpMethod.DELETE
+                    && Integer.valueOf(202).equals(open.statuses.get(earlier))) {
+                return Intent.UNKNOWN;
+            }
+        }
+        return Intent.REFUSAL_EXPECTED;
     }
 
     /** Where a step stands, naming the earlier exchanges it follows that were answered. */
@@ -340,7 +414,8 @@ final class Sequences {
      * the reply, three rules in turn: a property named like one of the gaps the thing's own
      * addresses have, then one called {@code id} or {@code _id}, then the kind of thing followed by
      * id. A property that is only written like an identifier - {@code ownerId} inside a pet - is not
-     * taken: it is some other thing's.
+     * taken: it is some other thing's. Nor is a value the creation was sent in its own address, which
+     * a reply that hands back the thing the new one was made under would otherwise offer.
      */
     private Optional<GeneratedValue> identifierFor(Open open, Operation operation, String gap) {
         Optional<Parameter> declared = operation.parameter(gap, ParameterLocation.PATH);
@@ -349,40 +424,38 @@ final class Sequences {
             return Optional.empty();
         }
         CanonicalSchema schema = Shapes.resolved(model, declared.get().schema(), HOPS);
-        Optional<JsonValue> reply = ObservedValues.readable(response, memory.longestReplyRead());
-        if (reply.isPresent()) {
-            Set<String> gaps = new LinkedHashSet<>();
-            gaps.add(gap);
-            open.creation.own().forEach(address -> gaps.add(address.gap()));
-            Optional<String> kind = ObservedValues.kindOfThingAt(open.creation.creation().path());
-            List<Predicate<String>> rules = List.of(
-                    gaps::contains,
-                    ObservedValues::isABareIdentifier,
-                    name -> kind.isPresent() && ObservedValues.kindOfThingInTheName(name)
-                            .filter(kind.get()::equals).isPresent());
-            List<JsonValue.JsonObject> things =
-                    ObservedValues.thingsIn(reply.get(), memory.asDeepAsAReplyIsRead());
-            for (Predicate<String> rule : rules) {
-                for (JsonValue.JsonObject thing : things) {
-                    for (Map.Entry<String, JsonValue> member : thing.members().entrySet()) {
-                        if (!rule.test(member.getKey())) {
-                            continue;
-                        }
-                        Optional<JsonValue> fits =
-                                fitting(member.getValue(), schema, ParameterLocation.PATH);
-                        if (fits.isPresent()) {
-                            return Optional.of(new GeneratedValue(fits.get(),
-                                    new ValueOrigin.Derived(open.created.id(), "the '"
-                                            + member.getKey() + "' of what " + open.createdBy()
-                                            + " created, earlier in this series")));
-                        }
+        Reply reply = replyOf(open, response);
+        Set<String> gaps = new LinkedHashSet<>();
+        gaps.add(gap);
+        open.creation.own().forEach(address -> gaps.add(address.gap()));
+        Optional<String> kind = ObservedValues.kindOfThingAt(open.creation.creation().path());
+        List<Predicate<String>> rules = List.of(
+                gaps::contains,
+                ObservedValues::isABareIdentifier,
+                name -> kind.isPresent() && ObservedValues.kindOfThingInTheName(name)
+                        .filter(kind.get()::equals).isPresent());
+        for (Predicate<String> rule : rules) {
+            for (JsonValue.JsonObject thing : reply.things()) {
+                for (Map.Entry<String, JsonValue> member : thing.members().entrySet()) {
+                    if (!rule.test(member.getKey())) {
+                        continue;
+                    }
+                    Optional<JsonValue> fits = fitting(member.getValue(), schema,
+                            ParameterLocation.PATH, reply.size());
+                    if (fits.isPresent()
+                            && !reply.itsAddress().contains(asAnAddressWritesIt(fits.get()))) {
+                        return Optional.of(new GeneratedValue(fits.get(),
+                                new ValueOrigin.Derived(open.created.id(), "the '"
+                                        + member.getKey() + "' of what " + open.createdBy()
+                                        + " created, earlier in this series")));
                     }
                 }
             }
         }
         for (String location : response.headerValues("Location")) {
             Optional<JsonValue> fits = fromTheLocation(location, open.creation)
-                    .flatMap(text -> fitting(JsonValue.of(text), schema, ParameterLocation.PATH));
+                    .flatMap(text -> fitting(JsonValue.of(text), schema, ParameterLocation.PATH,
+                            text.length()));
             if (fits.isPresent()) {
                 return Optional.of(new GeneratedValue(fits.get(), new ValueOrigin.Derived(
                         open.created.id(), "the identifier in the Location header "
@@ -392,23 +465,89 @@ final class Sequences {
         return Optional.empty();
     }
 
+    /** What the creation's answer says, read the first time a step needs it and kept after. */
+    private static Reply replyOf(Open open, HttpResponseRecord response) {
+        if (open.reply == null) {
+            // Only a reply the engine kept all of: the engine's limit is the only one, since the
+            // memory's, meant for the listings a run reads by the thousand, is not this one's.
+            List<JsonValue.JsonObject> things = ObservedValues.readable(response, Integer.MAX_VALUE)
+                    .map(Sequences::thingsIn).orElse(List.of());
+            Set<String> itsAddress = new HashSet<>();
+            for (ParameterValue sent : open.sent.get(1).parameterValues()) {
+                if (sent.location() == ParameterLocation.PATH) {
+                    itsAddress.add(asAnAddressWritesIt(sent.value()));
+                }
+            }
+            open.reply = new Reply(things, response.body().map(Payload::size).orElse(0),
+                    Set.copyOf(itsAddress));
+        }
+        return open.reply;
+    }
+
+    /**
+     * The things a creation's reply may be about, outermost first: the reply, when it is one
+     * object, and what is inside an object with nothing in it named like an identifier, which is
+     * usually a wrapper around the thing. Never what is inside a list: a creation that answers with
+     * a list may be listing things that were there before it. How deep a reply can go is the
+     * reader's to limit, and it does.
+     */
+    private static List<JsonValue.JsonObject> thingsIn(JsonValue reply) {
+        List<JsonValue.JsonObject> found = new ArrayList<>();
+        if (reply instanceof JsonValue.JsonObject thing) {
+            collectTheThingsIn(thing, found);
+        }
+        return List.copyOf(found);
+    }
+
+    private static void collectTheThingsIn(JsonValue.JsonObject thing,
+            List<JsonValue.JsonObject> found) {
+        found.add(thing);
+        if (thing.members().keySet().stream().noneMatch(ObservedValues::looksLikeAnIdentifier)) {
+            for (JsonValue inside : thing.members().values()) {
+                if (inside instanceof JsonValue.JsonObject wrapped) {
+                    collectTheThingsIn(wrapped, found);
+                }
+            }
+        }
+    }
+
+    /**
+     * A word or a number the way an address carries it, so that {@code 12} and {@code "12"} are
+     * one value there. Anything else is written as JSON, which no word or number is.
+     */
+    private static String asAnAddressWritesIt(JsonValue value) {
+        return switch (value) {
+            case JsonValue.JsonString text -> text.value();
+            case JsonValue.JsonNumber number -> number.value().stripTrailingZeros().toPlainString();
+            default -> value.toString();
+        };
+    }
+
     /**
      * The thing's identifier, as it is written in a {@code Location} header whose address ends with
      * one of the thing's own addresses. The end rather than the whole, because an API behind a base
      * address often leaves the base out: pet-clinic answers a creation under {@code /petclinic/api}
-     * with {@code /api/owners/895}.
+     * with {@code /api/owners/895}. Each part of the address is read with its escapes undone, once
+     * it has been told apart from the others: {@code a%2Fb} is one part, the word {@code a/b}.
      */
     private static Optional<String> fromTheLocation(String location, Creations.Creation creation) {
         String path;
         try {
-            path = URI.create(location.trim()).getPath();
+            path = URI.create(location.trim()).getRawPath();
         } catch (IllegalArgumentException notAnAddress) {
             return Optional.empty();
         }
         if (path == null) {
             return Optional.empty();
         }
-        List<String> parts = Creations.partsOf(path);
+        List<String> parts = new ArrayList<>();
+        for (String written : Creations.partsOf(path)) {
+            Optional<String> part = unescaped(written);
+            if (part.isEmpty()) {
+                return Optional.empty();
+            }
+            parts.add(part.get());
+        }
         for (Creations.Address own : creation.own()) {
             List<String> template = Creations.partsOf(own.path());
             if (parts.size() < template.size() || template.isEmpty()) {
@@ -432,14 +571,25 @@ final class Sequences {
         return Optional.empty();
     }
 
+    /** One part of an address with its escapes undone, or nothing when they are not escapes. */
+    private static Optional<String> unescaped(String part) {
+        try {
+            // A plus in an address is a plus; only a form turns it into a space.
+            return Optional.of(URLDecoder.decode(part.replace("+", "%2B"), StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException badlyEscaped) {
+            return Optional.empty();
+        }
+    }
+
     /**
-     * A value the API returned, as one that could go where this shape is declared: a word or a
-     * number of the kind wanted, in the form declared, and small enough and sendable there. A number
-     * written as a word, as an address writes every number, is read as the number it is where a
-     * number is wanted.
+     * A value the API returned, as one that could go where this shape is declared: no longer,
+     * written out, than the text it was read from; a word or a number of the kind wanted; in the
+     * form declared; and sendable there. An address writes a number and a word the same way, so a
+     * number written as a word is read as the number it is where a number is wanted, and a number
+     * is written as a word where a word is.
      */
     private Optional<JsonValue> fitting(JsonValue value, CanonicalSchema wanted,
-            ParameterLocation where) {
+            ParameterLocation where, int longest) {
         List<JsonValue> candidates = new ArrayList<>();
         if (value instanceof JsonValue.JsonString || value instanceof JsonValue.JsonNumber) {
             candidates.add(value);
@@ -451,11 +601,17 @@ final class Sequences {
                 // Only a word, which the shape wants none of.
             }
         }
+        if (value instanceof JsonValue.JsonNumber number && wanted instanceof StringSchema
+                && ObservedValues.smallEnoughToSend(number, longest)) {
+            candidates.add(JsonValue.of(number.value().toPlainString()));
+        }
         for (JsonValue candidate : candidates) {
-            if (Shapes.couldSatisfy(model, candidate, wanted, HOPS)
+            // The length first, before anything writes the value out: every later question does,
+            // and a number like 1e2147483647 written out does not fit in memory.
+            if (ObservedValues.smallEnoughToSend(candidate, longest)
+                    && Shapes.couldSatisfy(model, candidate, wanted, HOPS)
                     && ObservedValueProvider.inTheDeclaredForm(candidate, wanted)
-                    && RequestBuilder.canBeSentFrom(candidate, where)
-                    && ObservedValues.smallEnoughToSend(candidate, memory.longestValueKept())) {
+                    && RequestBuilder.canBeSentFrom(candidate, where)) {
                 return Optional.of(candidate);
             }
         }
@@ -491,8 +647,13 @@ final class Sequences {
             if (!itsIdentifier || Shapes.onlyEverReturned(model, property.getValue(), HOPS)) {
                 continue;
             }
+            // A word the identifier was found as may be read as a number here, and may not grow in
+            // the reading; a number goes as it already was found fit to go.
+            int asLong = identifier instanceof JsonValue.JsonString word
+                    ? word.value().length() : Integer.MAX_VALUE;
             Optional<JsonValue> fits = fitting(identifier,
-                    Shapes.resolved(model, property.getValue(), HOPS), ParameterLocation.BODY);
+                    Shapes.resolved(model, property.getValue(), HOPS), ParameterLocation.BODY,
+                    asLong);
             if (fits.isPresent()) {
                 Map<String, JsonValue> members = new LinkedHashMap<>(sent.members());
                 members.put(name, fits.get());
@@ -533,18 +694,14 @@ final class Sequences {
 
     /** Whether this series can be asked of what this creation makes, from its addresses alone. */
     private static boolean canAsk(Shape shape, Creations.Creation creation) {
+        boolean reads = creation.first(HttpMethod.GET).isPresent();
+        boolean deletes = creation.first(HttpMethod.DELETE).isPresent();
         return switch (shape) {
-            case READ_AFTER_DELETE, DELETE_TWICE, WRITE_UNDER_DELETED -> {
-                boolean deletes = creation.first(HttpMethod.DELETE).isPresent();
-                yield switch (shape) {
-                    case READ_AFTER_DELETE -> deletes && creation.first(HttpMethod.GET).isPresent();
-                    case WRITE_UNDER_DELETED -> deletes && !writesUnder(creation).isEmpty();
-                    default -> deletes;
-                };
-            }
-            case PUT_TWICE -> creation.first(HttpMethod.PUT).isPresent()
-                    && creation.first(HttpMethod.GET).isPresent();
-            case SAFE_GET -> creation.first(HttpMethod.GET).isPresent();
+            case READ_AFTER_DELETE -> deletes && reads;
+            case DELETE_TWICE -> deletes;
+            case WRITE_UNDER_DELETED -> deletes && !writesUnder(creation).isEmpty();
+            case PUT_TWICE -> creation.first(HttpMethod.PUT).isPresent() && reads;
+            case SAFE_GET -> reads;
             case CREATE_TWICE -> true;
         };
     }
@@ -563,15 +720,14 @@ final class Sequences {
                         .or(() -> creation.first(HttpMethod.GET)).orElseThrow());
                 Target delete = onTheThing(both.flatMap(address -> address.with(HttpMethod.DELETE))
                         .or(() -> creation.first(HttpMethod.DELETE)).orElseThrow());
-                plan.add(step(read, true, List.of(1), Intent.UNKNOWN,
-                        "read what was created: it should be there"));
-                plan.add(step(delete, true, List.of(1), Intent.UNKNOWN, "delete it"));
+                plan.add(needed(read, List.of(1), "read what was created: it should be there"));
+                plan.add(needed(delete, List.of(1), "delete it"));
                 plan.add(again(2, read, List.of(1, 3), Intent.REFUSAL_EXPECTED,
                         "read it again: the API said it deleted it, so it should be gone"));
                 for (Creations.Under under : creation.under()) {
                     HttpMethod method = under.operation().method();
                     if (method == HttpMethod.GET || method == HttpMethod.HEAD) {
-                        plan.add(step(underIt(under), false, List.of(1, 3),
+                        plan.add(observing(underIt(under), List.of(1, 3),
                                 Intent.REFUSAL_EXPECTED, "read " + under.operation().path()
                                         + " under what was deleted: it should be gone too"));
                     }
@@ -579,7 +735,7 @@ final class Sequences {
             }
             case DELETE_TWICE -> {
                 Target delete = onTheThing(creation.first(HttpMethod.DELETE).orElseThrow());
-                plan.add(step(delete, true, List.of(1), Intent.UNKNOWN, "delete what was created"));
+                plan.add(needed(delete, List.of(1), "delete what was created"));
                 plan.add(again(2, delete, List.of(1, 2), Intent.UNKNOWN, "delete it again: not "
                         + "found and a success are both right answers, a server error is not"));
             }
@@ -589,8 +745,8 @@ final class Sequences {
                 Creations.Under chosen = writes.size() == 1
                         ? writes.get(0) : writes.get(shapes.nextInt(writes.size()));
                 HttpMethod method = chosen.operation().method();
-                plan.add(step(delete, true, List.of(1), Intent.UNKNOWN, "delete what was created"));
-                plan.add(step(underIt(chosen), false, List.of(1, 2),
+                plan.add(needed(delete, List.of(1), "delete what was created"));
+                plan.add(observing(underIt(chosen), List.of(1, 2),
                         method == HttpMethod.DELETE ? Intent.UNKNOWN : Intent.REFUSAL_EXPECTED,
                         method + " " + chosen.operation().path() + " under what was deleted: "
                                 + (method == HttpMethod.DELETE
@@ -605,8 +761,8 @@ final class Sequences {
                         .or(() -> creation.first(HttpMethod.PUT)).orElseThrow());
                 Target read = onTheThing(both.flatMap(address -> address.with(HttpMethod.GET))
                         .or(() -> creation.first(HttpMethod.GET)).orElseThrow());
-                plan.add(step(put, true, List.of(1), Intent.UNKNOWN, "replace what was created"));
-                plan.add(step(read, false, List.of(1, 2), Intent.UNKNOWN,
+                plan.add(needed(put, List.of(1), "replace what was created"));
+                plan.add(observing(read, List.of(1, 2), Intent.UNKNOWN,
                         "read it: it should be what was sent"));
                 plan.add(again(2, put, List.of(1, 2), Intent.UNKNOWN,
                         "the same replacement again"));
@@ -618,15 +774,15 @@ final class Sequences {
                         .filter(address -> address.operations().containsKey(HttpMethod.GET))
                         .findFirst().orElseThrow();
                 Target read = onTheThing(at.with(HttpMethod.GET).orElseThrow());
-                plan.add(step(read, true, List.of(1), Intent.UNKNOWN, "read what was created"));
+                plan.add(needed(read, List.of(1), "read what was created"));
                 if (read.operation().parameters().stream().anyMatch(declared ->
                         !declared.required())) {
-                    plan.add(new Planned(read, 0, true, false, List.of(1), Intent.UNKNOWN,
+                    plan.add(withSomeOptionalParameters(read, List.of(1),
                             "read it with some of its optional parameters"));
                 }
-                at.with(HttpMethod.HEAD).ifPresent(head -> plan.add(step(onTheThing(head), false,
+                at.with(HttpMethod.HEAD).ifPresent(head -> plan.add(observing(onTheThing(head),
                         List.of(1), Intent.UNKNOWN, "ask for its headers only")));
-                creation.list().ifPresent(list -> plan.add(step(theListOf(creation, list), false,
+                creation.list().ifPresent(list -> plan.add(observing(theListOf(creation, list),
                         List.of(1), Intent.UNKNOWN, "read the list it belongs to")));
                 plan.add(again(2, read, List.of(1, 2), Intent.UNKNOWN,
                         "read it once more: reading should have changed nothing"));
@@ -649,11 +805,27 @@ final class Sequences {
                 .toList();
     }
 
-    private static Planned step(Target target, boolean essential, List<Integer> follows,
-            Intent intent, String description) {
-        return new Planned(target, 0, false, essential, follows, intent, description);
+    /**
+     * A step the question needs, so that the series ends when it is not answered with a success:
+     * nothing is expected of it but that success.
+     */
+    private static Planned needed(Target target, List<Integer> follows, String description) {
+        return new Planned(target, 0, false, true, follows, Intent.UNKNOWN, description);
     }
 
+    /** A step that only adds an observation, left out when it cannot be built. */
+    private static Planned observing(Target target, List<Integer> follows, Intent intent,
+            String description) {
+        return new Planned(target, 0, false, false, follows, intent, description);
+    }
+
+    /** A read that only adds an observation, with some of its optional parameters drawn. */
+    private static Planned withSomeOptionalParameters(Target target, List<Integer> follows,
+            String description) {
+        return new Planned(target, 0, true, false, follows, Intent.UNKNOWN, description);
+    }
+
+    /** An earlier step sent again unchanged, left out when that one was never sent. */
     private static Planned again(int copyOf, Target target, List<Integer> follows, Intent intent,
             String description) {
         return new Planned(target, copyOf, false, false, follows, intent, description);
@@ -766,6 +938,18 @@ final class Sequences {
             boolean essential, List<Integer> follows, Intent intent, String description) {
     }
 
+    /**
+     * What a series reads out of its creation's answer, once for all its steps.
+     *
+     * @param things the objects in the reply that may be the thing: the reply, and what a wrapper
+     *     around it holds
+     * @param size how long the reply was, in bytes; nothing read out of it is sent longer than this
+     * @param itsAddress the values the creation was sent in its own address, as an address writes
+     *     them
+     */
+    private record Reply(List<JsonValue.JsonObject> things, int size, Set<String> itsAddress) {
+    }
+
     /** One series under way. */
     private static final class Open {
 
@@ -775,7 +959,9 @@ final class Sequences {
         private final ValueProvider values;
         private final Map<Integer, TestCase> sent = new HashMap<>();
         private final Map<Integer, InteractionId> exchanges = new HashMap<>();
+        private final Map<Integer, Integer> statuses = new HashMap<>();
         private Interaction created;
+        private Reply reply;
         private boolean over;
 
         private Open(Shape shape, Creations.Creation creation, List<Planned> plan,

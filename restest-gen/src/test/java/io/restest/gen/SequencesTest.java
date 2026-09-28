@@ -30,11 +30,21 @@ import io.restest.core.execution.SequenceStep;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.ValueOrigin;
+import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
+import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
+import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.NumberKind;
+import io.restest.core.schema.NumberSchema;
+import io.restest.core.schema.ObjectSchema;
+import io.restest.core.schema.StringSchema;
+import io.restest.core.settings.MemorySettings;
 import io.restest.core.settings.SequenceSettings;
 import io.restest.core.settings.Settings;
 import java.math.BigDecimal;
@@ -42,7 +52,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,6 +64,9 @@ class SequencesTest {
     private static final ApiModel PET_CLINIC = TheCorpus.priority("pet-clinic");
     private static final long SEED = 20261003L;
     private static final Operation ADD_OWNER = operation(PET_CLINIC, HttpMethod.POST, "/owners");
+
+    /** A whole number with nothing said about how large it may be. */
+    private static final CanonicalSchema ANY_WHOLE_NUMBER = NumberSchema.of(NumberKind.INTEGER);
 
     @Test
     @DisplayName("createTwice sends the same creation again, once the first was accepted")
@@ -277,7 +292,9 @@ class SequencesTest {
     @Test
     @DisplayName("an answer that never came is no answer: a step the question needs ends the series")
     void nothing_came_back() {
-        RandomTestCaseGenerator generator = only(Sequences.Shape.READ_AFTER_DELETE);
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PET_CLINIC, SEED,
+                List.of(), onlySeries(), Settings.defaults().withSequences(
+                        only(Sequences.Shape.READ_AFTER_DELETE)));
         Sequences series = generator.sequences().orElseThrow();
         TestCase first = firstStepOf(generator, ADD_OWNER);
 
@@ -286,6 +303,147 @@ class SequencesTest {
         TestCase built = series.build(read.orElseThrow()).orElseThrow();
 
         assertThat(series.heard(built, Optional.empty())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a number too long to write out is no identifier, however few characters the reply "
+            + "spends on it")
+    void a_number_too_long_to_write_out() {
+        ApiModel api = things(ANY_WHOLE_NUMBER, ANY_WHOLE_NUMBER, ANY_WHOLE_NUMBER);
+        List<Function<TestCase, Interaction>> answers = List.of(
+                request -> reply(request, 201, "{\"id\":1e2147483647}"),
+                request -> reply(request, 201, "{\"id\":\"1e2147483647\"}"),
+                request -> reply(request, 201, "", "Location", "/things/1e2147483647"));
+
+        for (Function<TestCase, Interaction> answer : answers) {
+            assertThat(run(api, Sequences.Shape.DELETE_TWICE, addThing(api), answer))
+                    .describedAs("two thousand million digits do not fit in an address, nor in "
+                            + "the memory of the machine writing one")
+                    .hasSize(1);
+        }
+    }
+
+    @Test
+    @DisplayName("a creation that answers with a list may be listing what was there before, so "
+            + "nothing in it is taken for the thing; a wrapper around the thing is looked inside")
+    void a_list_is_not_the_thing() {
+        assertThat(run(Sequences.Shape.DELETE_TWICE, ADD_OWNER, request ->
+                reply(request, 201, "[{\"id\":895}]"))).hasSize(1);
+
+        List<Sent> wrapped = run(Sequences.Shape.DELETE_TWICE, ADD_OWNER, request ->
+                method(request) == HttpMethod.POST
+                        ? reply(request, 201, "{\"data\":{\"id\":895}}")
+                        : reply(request, 204, ""));
+        assertThat(wrapped).hasSize(3);
+        assertThat(wrapped.get(1).request().parameterValue("ownerId", ParameterLocation.PATH)
+                .orElseThrow().value()).isEqualTo(JsonValue.of(new BigDecimal("895")));
+    }
+
+    @Test
+    @DisplayName("a reply that hands back the owner a pet was made under names the owner, so it "
+            + "names no pet")
+    void the_owner_is_not_the_pet() {
+        Operation addPet = operation(PET_CLINIC, HttpMethod.POST, "/owners/{ownerId}/pets");
+
+        List<Sent> sent = run(Sequences.Shape.DELETE_TWICE, addPet, request -> {
+            if (method(request) != HttpMethod.POST) {
+                return reply(request, 204, "");
+            }
+            JsonValue owner = request.parameterValue("ownerId", ParameterLocation.PATH)
+                    .orElseThrow().value();
+            return reply(request, 201, "{\"id\":" + JsonText.write(owner)
+                    + ",\"firstName\":\"George\",\"pets\":[{\"id\":14}]}");
+        });
+
+        assertThat(sent)
+                .describedAs("the id is the one the creation was sent in its own address, and "
+                        + "the pet inside the list is not looked for")
+                .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("after a deletion the API only accepted, a refusal is expected of nothing")
+    void a_deletion_only_accepted() {
+        List<Sent> sent = run(Sequences.Shape.READ_AFTER_DELETE, ADD_OWNER, request ->
+                switch (method(request)) {
+                    case POST -> reply(request, 201, "{\"id\":895}");
+                    case DELETE -> reply(request, 202, "");
+                    default -> reply(request, 200, "{\"id\":895}");
+                });
+
+        assertThat(sent).hasSize(5);
+        assertThat(sent).extracting(each -> each.request().intent())
+                .describedAs("202 promises a deletion without saying it is done, so the thing may "
+                        + "rightly be there a moment later")
+                .containsOnly(Intent.UNKNOWN);
+    }
+
+    @Test
+    @DisplayName("a step that only adds an observation is left out when the identifier does not "
+            + "fit it, and the question is still asked")
+    void a_step_the_identifier_does_not_fit_is_left_out() {
+        ApiModel api = things(StringSchema.ofFormat("uuid"), ANY_WHOLE_NUMBER, ANY_WHOLE_NUMBER);
+
+        List<Sent> sent = run(api, Sequences.Shape.PUT_TWICE, addThing(api), request ->
+                request.operation().value().equals("addThing")
+                        ? reply(request, 201, "{\"id\":12}")
+                        : reply(request, 200, ""));
+
+        assertThat(sent).extracting(each -> each.request().operation().value())
+                .describedAs("the reads want a uuid and the thing is 12, so neither is sent; the "
+                        + "second replacement, which is the question, still is")
+                .containsExactly("addThing", "replaceThing", "replaceThing");
+    }
+
+    @Test
+    @DisplayName("an identifier the reply gives as a number goes into a gap declared as a word, "
+            + "since an address writes both alike")
+    void a_number_where_a_word_is_wanted() {
+        ApiModel api = things(ANY_WHOLE_NUMBER, ANY_WHOLE_NUMBER, StringSchema.of());
+
+        List<Sent> sent = run(api, Sequences.Shape.DELETE_TWICE, addThing(api), request ->
+                request.operation().value().equals("addThing")
+                        ? reply(request, 201, "{\"id\":12}")
+                        : reply(request, 204, ""));
+
+        assertThat(sent).hasSize(3);
+        assertThat(sent.get(1).request().parameterValue("thingId", ParameterLocation.PATH)
+                .orElseThrow().value()).isEqualTo(JsonValue.of("12"));
+    }
+
+    @Test
+    @DisplayName("the parts of a Location are told apart before their escapes are undone, and a "
+            + "plus in one stays a plus")
+    void escapes_in_the_location() {
+        ApiModel api = things(StringSchema.of(), StringSchema.of(), StringSchema.of());
+
+        List<Sent> sent = run(api, Sequences.Shape.DELETE_TWICE, addThing(api), request ->
+                request.operation().value().equals("addThing")
+                        ? reply(request, 201, "", "Location", "/api/things/a%2Fb+c")
+                        : reply(request, 204, ""));
+
+        assertThat(sent).hasSize(3);
+        assertThat(sent.get(1).request().parameterValue("thingId", ParameterLocation.PATH)
+                .orElseThrow().value()).isEqualTo(JsonValue.of("a/b+c"));
+    }
+
+    @Test
+    @DisplayName("a series reads its creation's reply however little the memory of the API's "
+            + "replies is told to read")
+    void the_memory_switched_off_leaves_series_alone() {
+        MemorySettings readsNothing = MemorySettings.defaults();
+        readsNothing = new MemorySettings(readsNothing.mostValuesUnderOneName(),
+                readsNothing.mostNames(), 0, 0, 0, readsNothing.identifiersByResource(),
+                readsNothing.identifiersByResourceFirst());
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PET_CLINIC, SEED,
+                List.of(), onlySeries(), Settings.defaults().withMemory(readsNothing)
+                        .withSequences(only(Sequences.Shape.DELETE_TWICE)));
+
+        List<Sent> sent = run(generator, ADD_OWNER, request -> method(request) == HttpMethod.POST
+                ? reply(request, 201, "{\"id\":895}")
+                : reply(request, 204, ""));
+
+        assertThat(sent).hasSize(3);
     }
 
     @Test
@@ -308,11 +466,26 @@ class SequencesTest {
     /** Every step a series sends against an API that answers as told, until the series is over. */
     private static List<Sent> run(Sequences.Shape shape, Operation creation,
             Function<TestCase, Interaction> api) {
-        RandomTestCaseGenerator generator = only(shape);
+        return run(PET_CLINIC, shape, creation, api);
+    }
+
+    /** The same, for another API. */
+    private static List<Sent> run(ApiModel model, Sequences.Shape shape, Operation creation,
+            Function<TestCase, Interaction> api) {
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, SEED, List.of(),
+                onlySeries(), Settings.defaults().withSequences(only(shape)));
+        List<Sent> sent = run(generator, creation, api);
+        assertThat(sent.get(0).request().sequence().orElseThrow().shape())
+                .isEqualTo(shape.named());
+        return sent;
+    }
+
+    /** The same, for a generator made to the test's own taste. */
+    private static List<Sent> run(RandomTestCaseGenerator generator, Operation creation,
+            Function<TestCase, Interaction> api) {
         Sequences series = generator.sequences().orElseThrow();
         List<Sent> sent = new ArrayList<>();
         TestCase step = firstStepOf(generator, creation);
-        assertThat(step.sequence().orElseThrow().shape()).isEqualTo(shape.named());
         while (true) {
             Interaction answer = api.apply(step);
             sent.add(new Sent(step, answer));
@@ -335,17 +508,42 @@ class SequencesTest {
         return generator.generate(creation).orElseThrow();
     }
 
-    /** A generator whose every request of a creation starts this one series. */
-    private static RandomTestCaseGenerator only(Sequences.Shape shape) {
-        SequenceSettings on = new SequenceSettings(
+    /** Only this one series switched on. */
+    private static SequenceSettings only(Sequences.Shape shape) {
+        return new SequenceSettings(
                 shape == Sequences.Shape.READ_AFTER_DELETE,
                 shape == Sequences.Shape.DELETE_TWICE,
                 shape == Sequences.Shape.WRITE_UNDER_DELETED,
                 shape == Sequences.Shape.PUT_TWICE,
                 shape == Sequences.Shape.SAFE_GET,
                 shape == Sequences.Shape.CREATE_TWICE);
-        return new RandomTestCaseGenerator(PET_CLINIC, SEED, List.of(), onlySeries(),
-                Settings.defaults().withSequences(on));
+    }
+
+    /**
+     * A small API of things, whose read, replacement and deletion each declare the thing's gap the
+     * way a test needs.
+     */
+    private static ApiModel things(CanonicalSchema read, CanonicalSchema replace,
+            CanonicalSchema delete) {
+        RequestBodyModel named = RequestBodyModel.json(ObjectSchema.of(Map.of("name",
+                StringSchema.of()), Set.of("name")), true);
+        return ApiModel.of("Things", "1.0", List.of(
+                Operation.of(HttpMethod.POST, "/things").withRequestBody(named)
+                        .withId(OperationId.of("addThing")),
+                Operation.of(HttpMethod.GET, "/things/{thingId}", List.of(thingId(read)))
+                        .withId(OperationId.of("getThing")),
+                Operation.of(HttpMethod.PUT, "/things/{thingId}", List.of(thingId(replace)))
+                        .withRequestBody(named).withId(OperationId.of("replaceThing")),
+                Operation.of(HttpMethod.DELETE, "/things/{thingId}", List.of(thingId(delete)))
+                        .withId(OperationId.of("deleteThing"))));
+    }
+
+    private static Parameter thingId(CanonicalSchema schema) {
+        return Parameter.of("thingId", ParameterLocation.PATH, true, schema);
+    }
+
+    private static Operation addThing(ApiModel things) {
+        return things.operation(OperationId.of("addThing")).orElseThrow();
     }
 
     /** A plan that sends a series from every creation, values from the document and invention. */
@@ -378,9 +576,12 @@ class SequencesTest {
         HttpResponseRecord response = new HttpResponseRecord(StatusLine.of(status), headers,
                 body.isEmpty() ? Optional.empty()
                         : Optional.of(Payload.text(body, "application/json")));
-        return Interaction.answered(request, HttpRequestRecord.of(method(request),
-                "http://localhost/petclinic/api" + path(request)), response, Instant.EPOCH,
-                Duration.ofMillis(1));
+        Optional<Operation> atPetClinic = PET_CLINIC.operation(request.operation());
+        return Interaction.answered(request, HttpRequestRecord.of(
+                        atPetClinic.map(Operation::method).orElse(HttpMethod.GET),
+                        "http://localhost/petclinic/api"
+                                + atPetClinic.map(Operation::path).orElse("/")),
+                response, Instant.EPOCH, Duration.ofMillis(1));
     }
 
     private static HttpMethod method(TestCase request) {

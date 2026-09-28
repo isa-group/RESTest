@@ -51,12 +51,13 @@ import org.junit.jupiter.api.io.TempDir;
  * series about the things it creates - and misses them with the series switched off.
  *
  * <p>The stand-in keeps what it has made, which a stub on its own cannot: it hands out a fresh
- * identifier for every widget, and fails on three things only - reading a widget it has deleted,
- * deleting one a second time, and making a second widget with a name already taken. A request on
- * its own cannot reach any of them here: the plan draws on nothing the API returned, so an ordinary
- * request asks for a widget nobody made and is told there is none, and an invented name of twelve
- * characters is not invented twice in a run - at three, it was, a few times in the tens of
- * thousands of creations a few seconds against a stand-in send.
+ * identifier for every widget, and fails on five things only - reading a widget it has deleted,
+ * deleting one a second time, making a second widget with a name already taken, and listing or
+ * adding the parts of a widget it has deleted. A request on its own cannot reach any of them here:
+ * the plan draws on nothing the API returned, so an ordinary request asks for a widget nobody made
+ * and is told there is none, and an invented name of twelve characters is not invented twice in a
+ * run - at three, it was, a few times in the tens of thousands of creations a few seconds against a
+ * stand-in send.
  */
 class SequencesFindWhatSingleRequestsMissTest {
 
@@ -101,6 +102,30 @@ class SequencesFindWhatSingleRequestsMissTest {
                   responses:
                     "204": {description: deleted}
                     "404": {description: no such widget}
+              /widgets/{widgetId}/parts:
+                get:
+                  operationId: listParts
+                  parameters:
+                    - {name: widgetId, in: path, required: true, schema: {type: string, format: uuid}}
+                  responses:
+                    "200": {description: the widget's parts}
+                    "404": {description: no such widget}
+                post:
+                  operationId: addPart
+                  parameters:
+                    - {name: widgetId, in: path, required: true, schema: {type: string, format: uuid}}
+                  requestBody:
+                    required: true
+                    content:
+                      application/json:
+                        schema:
+                          type: object
+                          required: [name]
+                          properties:
+                            name: {type: string}
+                  responses:
+                    "201": {description: the part added}
+                    "404": {description: no such widget}
             """;
 
     /** Values from nothing the API returned, so that no ordinary request can name a real widget. */
@@ -121,6 +146,7 @@ class SequencesFindWhatSingleRequestsMissTest {
             """;
 
     private static final Pattern WIDGET = Pattern.compile("^/widgets/([^/]+)$");
+    private static final Pattern PARTS = Pattern.compile("^/widgets/([^/]+)/parts$");
     private static final Pattern NAME = Pattern.compile("\"name\"\\s*:\\s*\"([^\"]*)\"");
 
     private static final Widgets WIDGETS = new Widgets();
@@ -142,8 +168,8 @@ class SequencesFindWhatSingleRequestsMissTest {
     }
 
     @Test
-    @DisplayName("reading a deleted widget, deleting it twice and making it twice are found by "
-            + "series, and missed with them switched off")
+    @DisplayName("reading a deleted widget, deleting it twice, making it twice and reaching its "
+            + "parts once it is deleted are found by series, and missed with them switched off")
     void series_find_what_single_requests_miss(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
         Path plan = Files.writeString(directory.resolve("plan.yaml"), PLAN);
@@ -158,9 +184,10 @@ class SequencesFindWhatSingleRequestsMissTest {
                 "--set", "sequences.createTwice=false");
 
         assertThat(withSeries)
-                .describedAs("a widget read after its deletion, deleted twice, or made twice is "
-                        + "what makes this API fail")
-                .contains("3 operation(s) answered 500")
+                .describedAs("a widget read after its deletion, deleted twice or made twice, and "
+                        + "the parts of one deleted, listed or added to, are what makes this API "
+                        + "fail")
+                .contains("5 operation(s) answered 500")
                 .contains("series about a thing the run created");
         assertThat(without)
                 .describedAs("on its own a request only ever meets widgets nobody made, and "
@@ -218,6 +245,20 @@ class SequencesFindWhatSingleRequestsMissTest {
                 alive.put(id, true);
                 return reply(201, "{\"id\":\"" + id + "\",\"name\":\"" + named.group(1)
                         + "\"}");
+            }
+            Matcher parts = PARTS.matcher(path);
+            if (parts.matches()) {
+                Boolean state = alive.get(parts.group(1));
+                if (state == null) {
+                    return reply(404, "{\"message\":\"no such widget\"}");
+                }
+                if (!state) {
+                    return reply(500, "{\"message\":\"insert or select on parts violates "
+                            + "foreign key constraint parts_widget\"}");
+                }
+                return method.equals("POST")
+                        ? reply(201, "{\"id\":\"" + UUID.randomUUID() + "\"}")
+                        : reply(200, "[]");
             }
             Matcher one = WIDGET.matcher(path);
             if (!one.matches()) {

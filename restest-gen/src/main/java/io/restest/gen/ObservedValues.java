@@ -212,51 +212,25 @@ public final class ObservedValues implements RunListener {
      * kind of thing and is not filed under this one.
      */
     private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from, int depth) {
-        for (JsonValue.JsonObject thing : thingsIn(reply, settings.asDeepAsAReplyIsRead(), depth)) {
-            Map<String, JsonValue> single = new LinkedHashMap<>();
-            thing.members().forEach((name, value) -> {
-                if ((value instanceof JsonValue.JsonString
-                        || value instanceof JsonValue.JsonNumber)
-                        && smallEnoughToSend(value)) {
-                    single.put(name, value);
-                }
-            });
-            if (!single.isEmpty()) {
-                underTheKindOfThingTheyAre.remember(kind, new JsonValue.JsonObject(single), from);
-            }
-        }
-    }
-
-    /**
-     * The things one reply is made of, found the way they are found for keeping them under their
-     * kind, outermost first: a list's elements, an object, and what is inside an object with
-     * nothing in it named like an identifier, which is usually a wrapper around the things rather
-     * than one of them.
-     *
-     * @param reply what the API sent back
-     * @param asDeep how far into it to look
-     * @return the things, in the order the reply has them
-     */
-    static List<JsonValue.JsonObject> thingsIn(JsonValue reply, int asDeep) {
-        return thingsIn(reply, asDeep, 0);
-    }
-
-    private static List<JsonValue.JsonObject> thingsIn(JsonValue reply, int asDeep, int depth) {
-        List<JsonValue.JsonObject> found = new ArrayList<>();
-        collectTheThingsIn(reply, asDeep, depth, found);
-        return found;
-    }
-
-    private static void collectTheThingsIn(JsonValue reply, int asDeep, int depth,
-            List<JsonValue.JsonObject> found) {
-        if (depth > asDeep) {
+        if (depth > settings.asDeepAsAReplyIsRead()) {
             return;
         }
         switch (reply) {
             case JsonValue.JsonArray list -> list.elements().forEach(element ->
-                    collectTheThingsIn(element, asDeep, depth + 1, found));
+                    rememberTheThingsIn(element, kind, from, depth + 1));
             case JsonValue.JsonObject thing -> {
-                found.add(thing);
+                Map<String, JsonValue> single = new LinkedHashMap<>();
+                thing.members().forEach((name, value) -> {
+                    if ((value instanceof JsonValue.JsonString
+                            || value instanceof JsonValue.JsonNumber)
+                            && smallEnoughToSend(value)) {
+                        single.put(name, value);
+                    }
+                });
+                if (!single.isEmpty()) {
+                    underTheKindOfThingTheyAre.remember(kind,
+                            new JsonValue.JsonObject(single), from);
+                }
                 // Judged by the names the thing came with rather than by what was kept of it: a
                 // thing whose identifier is empty or too long to keep is still a thing, not a
                 // wrapper, and what is inside it is still some other kind.
@@ -265,7 +239,7 @@ public final class ObservedValues implements RunListener {
                     for (JsonValue inside : thing.members().values()) {
                         if (inside instanceof JsonValue.JsonObject
                                 || inside instanceof JsonValue.JsonArray) {
-                            collectTheThingsIn(inside, asDeep, depth + 1, found);
+                            rememberTheThingsIn(inside, kind, from, depth + 1);
                         }
                     }
                 }

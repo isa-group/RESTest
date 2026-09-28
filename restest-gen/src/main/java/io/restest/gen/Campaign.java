@@ -181,7 +181,10 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
      * the thing it is about was created with values meant to work.
      *
      * @param name what it is called, as a report would print it
-     * @param share how much of the run's time it gets, out of a hundred
+     * @param share how often it builds the request of an ordinary turn, out of a hundred. The
+     *     later requests of a series one of its creations starts are sent in turns of their own,
+     *     ahead of the ordinary ones, so a strategy that sends series takes more of the run's time
+     *     than its share says
      * @param sources where its values come from, asked in the order written
      * @param mutatesAccepted whether its requests are made by changing one thing in a request the
      *     API accepted, its sources being used only when that cannot be done

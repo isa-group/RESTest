@@ -657,7 +657,10 @@ trace, merge-patch and a PUT that creates - is noted under M4.
 - no priority document declares OpenAPI `links`, and one of the corpus's 46 does.
 
 So the body is read first, the `Location` header only when the body has nothing that fits, and
-declared links not at all; they stay 4.3's. The same runs predicted where series would have little
+declared links not at all; they stay 4.3's. A reply is taken for the thing the series made only where
+it can be: never a list, which may list things that were there before; never a value the creation
+was sent in its own address, which names what it was made under; and never for a `POST` whose
+address ends in a gap, which names a thing that already exists. The same runs predicted where series would have little
 to do: kafka-rest-proxy created no topic in twenty minutes, and flight-search accepted one
 registration.
 

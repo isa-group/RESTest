@@ -680,12 +680,21 @@ not a sequence, and the two decisions "Left to M4, on purpose" are untouched by 
   them is drawn for a creation, and waits for nothing to be missing.
 
 **The rule this record proposed holds:** *a sequence never borrows an identifier; it creates what
-it needs.* The thing a series asks about is the one it created. The gaps before it take what the
-creation was sent, and neither memory hears a step, so nothing a series learns reaches another
-request. The honest limit this record named holds too: a thing whose creation needs something the
-run cannot make - a kafka cluster, which only exists - is created under one the memory supplies.
+it needs.* A series asks about the thing its own creation made, as far as the reply lets anyone
+tell. Its identifier is read from the creation's reply or its `Location` header, never from a list
+the reply holds nor from what the creation was sent in its own address, and a `POST` whose address
+ends in a gap starts no series about a thing: it names a thing that already exists. What cannot be
+told apart from the reply is a thing the creation names itself: when a body's `id` is an identifier
+the memory supplied, as petstore's may be, the series is about the thing that `POST` wrote. The gaps
+before the thing's own take what the creation was sent, and neither memory hears a step, so nothing
+a series learns reaches another request. The honest limit this record named holds too: a thing whose
+creation needs something the run cannot make - a kafka cluster, which only exists - is created under
+one the memory supplies.
 
 **§7's table gains a row.** A plan that sends series is reproduced by replaying the stored run, like
 one with a memory, because a series builds its later steps from its earlier answers. Its choices -
-which series, which step comes next - draw on numbers of their own, so the requests of the ordinary
-rounds are the ones the same seed draws without them.
+which series, which step comes next - draw on numbers of their own, so a series never moves the
+ordinary rounds' numbers on. Where a creation has nothing optional in it, the ordinary rounds are the
+ones the same seed draws without series; where it has, the turn that begins a series leaves the
+optional parts out rather than drawing which to send, and the ordinary requests after it draw
+different numbers.

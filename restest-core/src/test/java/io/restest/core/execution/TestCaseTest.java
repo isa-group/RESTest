@@ -172,6 +172,17 @@ class TestCaseTest {
     }
 
     @Test
+    @DisplayName("the first step of a series follows nothing, so it has no reason to expect a "
+            + "refusal")
+    void a_first_step_cannot_expect_a_refusal() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> TestCase.stepOf(GET_PET, List.of(), Optional.empty(),
+                        Intent.REFUSAL_EXPECTED, SequenceStep.first("readAfterDelete",
+                                "create a pet to read after deleting it")))
+                .withMessageContaining("names neither");
+    }
+
+    @Test
     @DisplayName("a changed test case cannot claim to be believed in, nor to be awkward throughout")
     void a_changed_test_case_claims_neither_acceptance_nor_pushing() {
         Mutation change = new Mutation(InteractionId.generate(), "dropRequired",

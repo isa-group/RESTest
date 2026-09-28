@@ -245,8 +245,10 @@ final class RunLoop {
                 } finally {
                     try {
                         // Before the slot is given back, so that the next step of a series is
-                        // waiting by the time the loop has room to send it; and whatever the
-                        // announcement did, so that no series is left waiting for ever.
+                        // waiting by the time the loop next decides what to send - which comes
+                        // after it sends whatever it had already decided on and was waiting for
+                        // room to send; and whatever the announcement did, so that no series is
+                        // left waiting for ever.
                         if (testCase.sequence().isPresent()) {
                             scheduler.heard(testCase, Optional.ofNullable(interaction));
                         }

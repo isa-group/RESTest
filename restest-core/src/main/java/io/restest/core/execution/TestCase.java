@@ -184,7 +184,10 @@ public record TestCase(
      */
     private static void rejectAnIntentThatCannotBeTrue(Intent intent, Optional<Mutation> mutation,
             Optional<SequenceStep> sequence) {
-        if (intent == Intent.REFUSAL_EXPECTED && mutation.isEmpty() && sequence.isEmpty()) {
+        // A step names what came before it only from its second on: the first follows nothing.
+        boolean namesWhatCameBefore = sequence.filter(step -> !step.follows().isEmpty())
+                .isPresent();
+        if (intent == Intent.REFUSAL_EXPECTED && mutation.isEmpty() && !namesWhatCameBefore) {
             throw new IllegalArgumentException("a test case expecting to be refused says what it "
                     + "broke, or what came before it, and this one names neither");
         }

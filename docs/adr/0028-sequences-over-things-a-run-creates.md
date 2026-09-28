@@ -114,9 +114,9 @@ DELETE.
 
 | Series (its switch) | The question | Steps after the creation | What they expect |
 |---|---|---|---|
-| `readAfterDelete` | Is a deleted thing gone for whoever reads it? | read it; delete it; read it again; read each address under it | every read after the deletion: a refusal |
+| `readAfterDelete` | Is a deleted thing gone for whoever reads it? | read it; delete it; read it again; read each address under it | every read after the deletion: a refusal, unless the deletion was answered 202 |
 | `deleteTwice` | Is DELETE idempotent? | delete it; delete it again | nothing in particular: 404 and 2XX are both right, a server error is not |
-| `writeUnderDeleted` | Can something still be written under a thing that no longer exists? | delete it; one addition, change or deletion under its address, drawn | a refusal; for a deletion under it, nothing in particular |
+| `writeUnderDeleted` | Can something still be written under a thing that no longer exists? | delete it; one addition, change or deletion under its address, drawn | a refusal, unless the deletion was answered 202; for a deletion under it, nothing in particular |
 | `putTwice` | Is PUT idempotent, and did it replace the whole thing? | replace it; read it; the same replacement again; read it again | nothing in particular - the reads are there to be compared |
 | `safeGet` | Does reading change anything? | read it; read it with some optional parameters; ask for its headers; read the list it joins; read it again | nothing in particular - the first and last read are there to be compared |
 | `createTwice` | Does creating the same thing twice break anything? | the same creation again | nothing in particular: a duplicate may be refused or made, but not fail |
@@ -127,8 +127,10 @@ A step whose answer the question needs ends the series when that answer is not a
 - the first read of `readAfterDelete` and `safeGet`, without which there is nothing to compare.
 
 So a creation refused makes nothing to ask about, and a deletion refused deletes nothing. A step
-that only adds an observation - one of the reads under the address - is left out when it cannot be
-built.
+that only adds an observation - one of the reads under the address, or a read in `putTwice` - is
+left out when it cannot be built, and the series goes on to its next step. That includes a step
+whose operation declares the thing's gap in a form the identifier does not fit: another operation
+at the same address may declare it differently, and the question can still be asked.
 
 Against the row as written:
 - `deleteThenUse` became three questions (`readAfterDelete`, `deleteTwice`, `writeUnderDeleted`),
@@ -145,10 +147,18 @@ For every `POST`, `Creations` reads where the thing it makes lives, and what han
 - **Its own address, by prefix:** the creation's address with one more gap. `/owners/{ownerId}` for
   `POST /owners`, with gaps matched by position whatever they are called.
 - **Its own address, by kind:** any address about the same kind of thing, behind a gap named the way
-  identifiers are. `/pets/{petId}` for `POST /owners/{ownerId}/pets`, with the kind read by the rules
-  of ADR-0021's M9.2 amendment.
+  identifiers are. `/pets/{petId}` for `POST /owners/{ownerId}/pets`. The kind is spelt by the rules
+  of ADR-0021's M9.2 amendment, but read more strictly than the memory reads it, because a series
+  deletes what it finds there: from the fixed part before the gap, and from the gap's own name only
+  when nothing fixed comes before it. `{invitation_id}` names an invitation, but
+  `/user/repository_invitations/{invitation_id}` holds repository invitations, not the invitations
+  GitHub's `POST /orgs/{org}/invitations` makes.
 - **The addresses under it:** those that carry on past one of its own.
 - **The list it joins:** the read at the creation's own address.
+
+A `POST` whose address ends in a gap makes nothing with an address of its own, so it can only be
+sent twice. Petstore's `POST /pet/{petId}` changes the pet its address names, which the run did not
+make; taken as a creation, its series would read and delete that pet.
 
 A series asks each method at the first address that has it, preferring one address that has
 everything the question needs. pet-clinic deletes a pet only at `/pets/{petId}`, and that is where
@@ -157,25 +167,43 @@ limited to reads and creations never has a deletion sent for it.
 
 ### 5. The identifier: the body first, then `Location`, never a guess
 
-The thing's identifier is read from the creation's reply. The reply is unwrapped as the memory of
-observed values unwraps one: an object, a list's elements, or what a wrapper with no identifier
-holds. Then three rules are tried in turn:
+The thing's identifier is read from the creation's reply: the reply itself when it is one object,
+and what a wrapper with no identifier holds - but not a list's elements, which the memory of
+observed values does read. A creation that answers with a list may be listing things that were
+there before it: GitHub's `POST .../protection/restrictions/teams` answers with the teams it gave
+access, and the first of them is no team of the run's. Then three rules are tried in turn:
 1. a property named like one of the gaps the thing's own addresses have;
 2. one called `id` or `_id`;
 3. the kind of thing followed by id.
 
 A property only written like an identifier - `ownerId` inside a pet - is some other thing's, and is
-not taken. When the body carries none that fits, the `Location` header is read. The end of its
-address is matched against the thing's own, because pet-clinic answers a creation under
-`/petclinic/api` with `/api/owners/895`. Every candidate must fit the gap it goes into: the kind of
-value, the declared form, the closed list, and whether an address can carry it.
+not taken. Nor is a value the creation was sent in its own address: a reply that hands back the
+owner a pet was made under would otherwise offer the owner's `id` as the pet's. When the body carries
+none that fits, the `Location` header is read. The end of its address is matched against the thing's
+own, because pet-clinic answers a creation under `/petclinic/api` with `/api/owners/895`, and each
+part of it is unescaped once the parts are told apart, so `a%2Fb` is one word.
+
+Every candidate must fit the gap it goes into: the kind of value, the declared form, the closed
+list, and whether an address can carry it. An address writes a number and a word alike, so a word is
+read as a number where a number is wanted, and a number is written as a word where a word is:
+BigOven's review is read at an integer `{reviewId}` and deleted at a string one.
+
+How much of a reply is read is not the memory's setting. A series reads its creation's reply
+whenever the engine kept all of it, so a run that switches the memory off, by any of its limits at
+zero, still sends its series. No value read out of a reply is sent longer, written out, than the text
+it came from: `{"id":1e2147483647}` is a dozen characters, and written out it would be two thousand
+million, more than the machine writing it has room for.
 
 Declared `links` are not read. They are row 4.3, and nearly no document writes them.
 
 The gaps before the thing's own are sent what the creation was sent, so a pet is read under the
-owner it was created under. So is a body's own identifier property, where a step sends a body that
-declares one and does not mark it read-only. Every identifier a series uses is one it made, or one
-it was given along with what it made.
+owner it was created under. A body's own identifier property, where a step sends a body that
+declares one and does not mark it read-only, is sent the thing's identifier. Every identifier a
+series uses is one the API gave back for what the series made - or, for a thing its creation named
+itself, the name it was given, as a kafka topic is named. That last case is the one a reply cannot
+settle: when a creation's body carries an identifier the memory supplied, as petstore's `POST /pet`
+may, the API may have replaced a pet rather than made one, and the series is about the pet that
+`POST` wrote.
 
 ### 6. The unit of work, and interference
 
@@ -189,6 +217,10 @@ These are the two decisions ADR-0013 left to M4, and they are now taken.
   that decides builds the next step when it next asks what to do.
 - **Ordering.** The next step of a series goes before the ordinary turn, and never during the
   opening lap, which starts none.
+- **A bound on what waits.** A step waits for its answer inside the generator, which keeps at most
+  twice the requests a run may keep awaiting an answer: those in flight, and as many answered and not
+  yet read. Beyond it the oldest is forgotten and its series ends. No run reaches it; it is there for
+  a generator asked for requests by something that never hands the answers back.
 - **Interference is accepted, not prevented.** An ordinary request may come across a series' thing
   by chance. Nothing the competition scores depends on attributing an answer, and 4.5's stateful
   oracles are the ones that will have to decide what they need.
@@ -236,8 +268,11 @@ Nothing records the series as a whole: its steps, and the exchanges each names, 
 keeps ADR-0005's reasoning against an identifier that could drift from the edges it summarises.
 
 Intents stay true. A refusal is expected only of a read, an addition or a change sent after the API
-accepted the deletion of what it asks about. A replacement or a second deletion after it, which may
-correctly succeed, expects nothing in particular, and so does everything else.
+said it had deleted what it asks about, with a success other than `202 Accepted`: that one promises
+a deletion without saying it is done, and the thing may rightly be there a moment later. A
+replacement or a second deletion after it, which may correctly succeed, expects nothing in
+particular, and so does everything else. A first step never expects a refusal, since it follows
+nothing, and `TestCase` refuses one that says it does.
 
 The maintainer decided that **verdicts are recorded and not judged** in v2.0. The oracles that would
 read these steps - faults 113, 117 and 118 of the catalogue, and one for a read that changes the
@@ -267,9 +302,11 @@ sixty seconds, the six switches off against on.*
   its JSON, so the store's layout does not change. A run stored before reads back with none.
 - **ADR-0023 is amended** for `sends: sequences` and the shipped plan's four strategies; ADR-0025
   for the `sequences` group it named; ADR-0026 for the scheduler handing on a series' next step.
-- **The console counts the steps of series by the kind of series**, and how many were begun. It
-  interprets none of them, since what each step is for is the tool's business and the stored run
-  says it.
+- **The console counts the steps of series by the kind of series**, and how many began. A creation
+  the API refused made nothing to ask about, so it is no step of a series and is counted apart. The
+  line interprets none of the steps, since what each is for is the tool's business and the stored
+  run says it. A fault found by a step says which step of which series it was, because the command
+  printed with it sends that step alone, without the steps that made it fail.
 - **3.2 and 4.5 have what they need** to judge a stored run offline: which series, which step, what
   came before, what was expected.
 - **The mutation strategy's fallback is now exactly nominal's** (§8), which it was meant to be.

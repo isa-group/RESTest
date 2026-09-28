@@ -42,6 +42,16 @@ final class TheCorpus {
         return new SwaggerSpecificationParser().parse(document.toString());
     }
 
+    /** One of the documents the community wrote, read the way a run reads it. */
+    static ApiModel community(String api) {
+        Path document = specifications().resolve("community").resolve(api)
+                .resolve("openapi.yaml");
+        if (!Files.isRegularFile(document)) {
+            throw new IllegalArgumentException("the community corpus has no " + api);
+        }
+        return new SwaggerSpecificationParser().parse(document.toString());
+    }
+
     /** Every document of the corpus, without the deliberately broken ones kept beside it. */
     static List<Path> all() {
         try (Stream<Path> tree = Files.walk(specifications())) {

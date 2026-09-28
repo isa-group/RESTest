@@ -182,7 +182,7 @@ public final class RandomTestCaseGenerator {
 
     /**
      * The series a creation may start, or {@code null} when the plan has no way of building
-     * requests that sends them, or every series is switched off.
+     * requests that sends them, every series is switched off, or no creation can start one.
      */
     private final Sequences sequences;
 
@@ -365,31 +365,40 @@ public final class RandomTestCaseGenerator {
         // and never handed anywhere else, so wrapping it keeps document order without a second copy.
         this.untestable = Collections.unmodifiableMap(cannot);
 
-        // Series only where the plan sends them and some are switched on. Their numbers come from
-        // copies of the seed split after the one the likeliest request draws on: one for choosing
-        // which series a creation starts, one for the steps after it. A split of the generator's
-        // own source would move it on, and a second copy split first would give the likeliest
-        // request's own numbers over again.
+        // Series only where the plan sends them, some are switched on, and some creation can start
+        // one. Their numbers come from copies of the seed split after the one the likeliest request
+        // draws on: one for choosing which series a creation starts, one for the steps after it. A
+        // split of the generator's own source would move it on, and a second copy split first
+        // would give the likeliest request's own numbers over again.
+        Sequences series = null;
+        Map<String, ValueProvider> later = Map.of();
         if (this.strategies.stream().anyMatch(Strategy::sendsSequences)
                 && settings.sequences().anyOn()) {
             SplittableRandom root = new SplittableRandom(seed);
             root.split();
             RandomGenerator shapes = root.split();
             RandomGenerator steps = root.split();
-            Map<String, ValueProvider> later = new LinkedHashMap<>();
+            Map<String, ValueProvider> byStrategy = new LinkedHashMap<>();
             for (Campaign.PlannedStrategy planned : campaign.strategies()) {
                 if (planned.sendsSequences()) {
-                    later.put(planned.name(), valuesFor(planned, dictionaries, model, steps,
+                    byStrategy.put(planned.name(), valuesFor(planned, dictionaries, model, steps,
                             observed, settings.generation()));
                 }
             }
-            this.laterSteps = Collections.unmodifiableMap(later);
-            this.sequences = new Sequences(model, Creations.among(this.testable),
-                    settings.sequences(), settings.memory(), shapes, steps, this::fillForASeries);
-        } else {
-            this.laterSteps = Map.of();
-            this.sequences = null;
+            // Every request a run may keep awaiting an answer, and as many again answered and not
+            // yet read: the most steps that can be waiting at once.
+            int mostAwaited = (int) Math.min(Integer.MAX_VALUE, 2L
+                    * settings.schedule().workAheadFactor() * settings.engine().maxConcurrency());
+            Sequences possible = new Sequences(model, Creations.among(this.testable),
+                    settings.sequences(), Math.max(1, mostAwaited), shapes, steps,
+                    this::fillForASeries);
+            if (possible.startsAny()) {
+                series = possible;
+                later = Collections.unmodifiableMap(byStrategy);
+            }
         }
+        this.sequences = series;
+        this.laterSteps = later;
     }
 
     /**
@@ -461,29 +470,13 @@ public final class RandomTestCaseGenerator {
      * is subscribed.
      *
      * <p>Empty for every other plan, and it being empty rather than a listener that does nothing is
-     * the point: a run whose plan says nothing that depends on the API's replies does not watch them
-     * at all, and stays repeatable from its starting number.
+     * the point: a run whose plan remembers nothing the API replied does not watch the replies at
+     * all. Whether it is repeatable from its starting number is a separate question - see
+     * {@link #dependsOnTheApisAnswers()} - since a series needs no memory to depend on them.
      *
      * @return what to subscribe, in the order to subscribe it, or nothing when this plan has no
      *     part that remembers what the API answered
      */
-    /**
-     * Whether what this run sends depends on what the API answers, so that starting it again from
-     * the same number gets a similar run rather than the same one.
-     *
-     * <p>It does whenever something listens to the replies - see {@link #whatListensToTheRun()} -
-     * and whenever the plan sends series, whose later requests are built from their earlier
-     * answers, and only once those answers are in.
-     */
-    public boolean dependsOnTheApisAnswers() {
-        return !whatListensToTheRun().isEmpty() || sequences != null;
-    }
-
-    /** The series a creation may start, when this run sends any. */
-    Optional<Sequences> sequences() {
-        return Optional.ofNullable(sequences);
-    }
-
     public List<RunListener> whatListensToTheRun() {
         List<RunListener> listening = new ArrayList<>(2);
         if (observed != null) {
@@ -493,6 +486,26 @@ public final class RandomTestCaseGenerator {
             listening.add(accepted);
         }
         return List.copyOf(listening);
+    }
+
+    /**
+     * Whether what this run sends depends on what the API answers, so that starting it again from
+     * the same number gets a similar run rather than the same one.
+     *
+     * <p>It does whenever something listens to the replies - see {@link #whatListensToTheRun()} -
+     * and whenever a creation can start a series, whose later requests are built from their
+     * earlier answers, and only once those answers are in.
+     */
+    public boolean dependsOnTheApisAnswers() {
+        return !whatListensToTheRun().isEmpty() || sequences != null;
+    }
+
+    /**
+     * The series a creation may start: nothing when the plan sends none, every series is switched
+     * off, or no creation of the run can start one.
+     */
+    Optional<Sequences> sequences() {
+        return Optional.ofNullable(sequences);
     }
 
     /** The plan this run is following. */

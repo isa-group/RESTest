@@ -18,12 +18,19 @@ package io.restest.report;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.execution.Intent;
+import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.SequenceStep;
+import io.restest.core.execution.TestCase;
 import io.restest.core.model.OperationId;
+import io.restest.core.oracle.Finding;
+import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.ReportSettings;
 import java.io.Flushable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -420,32 +427,67 @@ class ConsoleReportTest {
     }
 
     @Test
-    @DisplayName("steps of series are counted by the kind of series, with how many were begun")
+    @DisplayName("steps of series are counted by the kind of series, with how many began and how "
+            + "many creations meant to begin one were not accepted")
     void steps_of_series_are_counted_by_kind() {
-        io.restest.core.execution.InteractionId creation =
-                io.restest.core.execution.InteractionId.generate();
-        List<io.restest.core.execution.TestCase> sent = List.of(
-                io.restest.core.execution.TestCase.stepOf(OperationId.of("addPet"), List.of(),
-                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
-                        io.restest.core.execution.SequenceStep.first("readAfterDelete",
-                                "create a thing to read after deleting it")),
-                io.restest.core.execution.TestCase.stepOf(OperationId.of("deletePet"), List.of(),
-                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
-                        new io.restest.core.execution.SequenceStep("readAfterDelete", 3,
-                                List.of(creation), "delete it")),
-                io.restest.core.execution.TestCase.stepOf(OperationId.of("addPet"), List.of(),
-                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
-                        io.restest.core.execution.SequenceStep.first("createTwice",
-                                "create a thing, to send the same creation again")),
-                io.restest.core.execution.TestCase.of(OperationId.of("listPets"), List.of()));
-        for (io.restest.core.execution.TestCase each : sent) {
+        InteractionId creation = InteractionId.generate();
+        TestCase refused = step("addPet", SequenceStep.first("deleteTwice",
+                "create a thing to delete twice"));
+        List<TestCase> accepted = List.of(
+                step("addPet", SequenceStep.first("readAfterDelete",
+                        "create a thing to read after deleting it")),
+                step("deletePet", new SequenceStep("readAfterDelete", 3, List.of(creation),
+                        "delete it")),
+                step("addPet", SequenceStep.first("createTwice",
+                        "create a thing, to send the same creation again")),
+                TestCase.of(OperationId.of("listPets"), List.of()));
+        for (TestCase each : accepted) {
             report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(each, 200)));
         }
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(refused, 400)));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
         assertThat(screen.toString())
+                .describedAs("a creation the API refused made nothing to ask about, so it is no "
+                        + "step of a series, and is only said to have been refused")
                 .contains("  3 of them were steps of 2 series about a thing the run created: "
-                        + "readAfterDelete 2, createTwice 1");
+                        + "readAfterDelete 2, createTwice 1; 1 creation(s) meant to begin one "
+                        + "were not accepted");
+    }
+
+    @Test
+    @DisplayName("a run whose every creation meant to begin a series was refused says that none "
+            + "began")
+    void no_series_began() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(step("addPet",
+                SequenceStep.first("createTwice", "create a thing, to send the same creation "
+                        + "again")), 400)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("  1 creation(s) meant to begin a series about a thing the run created "
+                        + "were not accepted, so no series began")
+                .doesNotContain("steps of");
+    }
+
+    @Test
+    @DisplayName("a fault found by a step of a series says which step it was, and that the command "
+            + "sends that step alone")
+    void a_fault_found_by_a_step_says_which_step() {
+        TestCase readAgain = TestCase.stepOf(OperationId.of("getPet"), List.of(), Optional.empty(),
+                Intent.REFUSAL_EXPECTED, new SequenceStep("readAfterDelete", 4,
+                        List.of(InteractionId.generate(), InteractionId.generate()),
+                        "read it again: the API said it deleted it, so it should be gone"));
+
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Finding.of(WfcFault.HTTP_STATUS_500,
+                Runs.answering(readAgain, 500), "the API answered 500")));
+
+        assertThat(screen.toString())
+                .describedAs("the command on its own reads a thing nobody deleted, and would not "
+                        + "answer the same")
+                .contains("      step 4 of a readAfterDelete series: read it again: the API said "
+                        + "it deleted it, so it should be gone. The command below sends this step "
+                        + "alone, without the ones before it\n      curl ");
     }
 
     @Test
@@ -514,6 +556,11 @@ class ConsoleReportTest {
                 "  ids.yaml could not be read: while parsing",
                 "   in 'reader', line 1",
                 "          ^");
+    }
+
+    private static TestCase step(String operation, SequenceStep step) {
+        return TestCase.stepOf(OperationId.of(operation), List.of(), Optional.empty(),
+                Intent.UNKNOWN, step);
     }
 
     private static RunEvent.OperationSkipped skipped(String operation, String reason) {

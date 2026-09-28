@@ -43,12 +43,20 @@ import java.util.Optional;
  *       whatever they are called, so {@code /owners/{id}/pets/{petId}} is where
  *       {@code POST /owners/{ownerId}/pets} puts a pet;</li>
  *   <li>it may also have an address elsewhere, about the same kind of thing, behind a gap named the
- *       way identifiers are: {@code /pets/{petId}} is a pet's own address too. The kind is read the
- *       way the memory of what the API returned reads it - the fixed part before the gap, or the
- *       gap's own name - with plural and singular spelt alike;</li>
+ *       way identifiers are: {@code /pets/{petId}} is a pet's own address too. The kind is spelt the
+ *       way the memory of what the API returned spells it, plural and singular alike, but read more
+ *       strictly than the memory reads it, since a series deletes what it finds there: from the
+ *       fixed part before the gap, and from the gap's own name only when nothing fixed comes before
+ *       it. So {@code /user/repository_invitations/{invitation_id}} is about repository
+ *       invitations, not about the invitations {@code POST /orgs/{org}/invitations} makes;</li>
  *   <li>an operation <b>under</b> the thing is one whose address carries on past one of its own
  *       addresses: {@code POST /owners/{ownerId}/pets} is under an owner.</li>
  * </ul>
+ *
+ * <p>A {@code POST} whose address ends in a gap, such as {@code POST /pet/{petId}}, is taken to make
+ * nothing with an address of its own. The gap already names a thing that exists - the request
+ * changes it, or does something to it - and what it answers with is that thing, which the run did
+ * not make.
  *
  * <p>Only operations the run can attempt are considered, on either side, so an operation a plan set
  * aside is never sent as part of a series. {@link Sequences} decides what to send about the things
@@ -95,6 +103,9 @@ final class Creations {
 
     private static Creation creationOf(Operation creation, List<Operation> operations) {
         List<String> theirs = partsOf(creation.path());
+        if (!theirs.isEmpty() && gapNamed(theirs.get(theirs.size() - 1)).isPresent()) {
+            return new Creation(creation, List.of(), List.of(), Optional.empty());
+        }
         List<Address> own = new ArrayList<>();
         // Its address with one more gap first: that is where the creation says the thing goes,
         // and the gaps before it are the ones the creation itself was sent.
@@ -175,7 +186,8 @@ final class Creations {
             }
             Optional<String> last = gapNamed(parts.get(parts.size() - 1));
             if (last.isEmpty() || !ObservedValues.looksLikeAnIdentifier(last.get())
-                    || !kindsOfThingFor(operation.path(), last.get()).contains(kind)) {
+                    || !kindOfThingFor(operation.path(), last.get()).filter(kind::equals)
+                            .isPresent()) {
                 continue;
             }
             byPath.computeIfAbsent(operation.path(), ignored -> new EnumMap<>(HttpMethod.class))
@@ -189,15 +201,13 @@ final class Creations {
     }
 
     /**
-     * The kinds of thing whose identifier goes in a gap: the one the fixed part before it names,
-     * and the one the gap's own name names, in that order.
+     * The kind of thing whose identifier goes in a gap: the one the fixed part before it names, and
+     * only when nothing fixed comes before it, the one the gap's own name names. The fixed part
+     * wins because it is the address's own word for what it holds; a gap's name is often shorter.
      */
-    private static List<String> kindsOfThingFor(String path, String gap) {
-        List<String> kinds = new ArrayList<>();
-        ObservedValues.kindOfThingBefore(path, gap).ifPresent(kinds::add);
-        ObservedValues.kindOfThingInTheName(gap).filter(kind -> !kinds.contains(kind))
-                .ifPresent(kinds::add);
-        return kinds;
+    private static Optional<String> kindOfThingFor(String path, String gap) {
+        return ObservedValues.kindOfThingBefore(path, gap)
+                .or(() -> ObservedValues.kindOfThingInTheName(gap));
     }
 
     /**

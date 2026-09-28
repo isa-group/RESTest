@@ -47,6 +47,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -376,37 +379,60 @@ class RunLoopTest {
     }
 
     @Test
-    @DisplayName("a step of a series goes out only once the answer to the step before it is in")
+    @DisplayName("a step of a series goes out only once the answer to the step before it is in, "
+            + "and soon after it")
     void a_series_waits_for_each_answer() {
         engine.takes(request -> Duration.ofMillis(30));
         engine.repliesWith(testCase -> "{\"id\": 7}");
         Campaign onlySeries = new Campaign(List.of(new Campaign.PlannedStrategy("sequences", 100,
                 List.of(new Campaign.Entry.Single(new Campaign.Source.Builtin(
                         Campaign.Builtin.RANDOM))), false, true)), WhichOperations.everything());
+        // Reading around a pet: create it, read it, read the list, read it again - four steps,
+        // each of which has to wait for the one before.
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260914L,
                 List.of(), onlySeries, Settings.defaults().withSequences(
-                        new SequenceSettings(false, false, false, false, false, true)));
+                        new SequenceSettings(false, false, false, false, true, false)));
 
+        long deadline;
         try (EventStream events = new EventStream()) {
+            deadline = System.nanoTime() + BUDGET.toNanos();
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
                     PATIENT, engine, events);
         }
 
-        List<Map.Entry<TestCase, Long>> seconds = engine.stepsSentAt.entrySet().stream()
-                .filter(sent -> sent.getKey().sequence().orElseThrow().step() == 2)
-                .toList();
-        assertThat(seconds)
-                .describedAs("every creation the API accepted was sent a second time")
-                .isNotEmpty();
-        assertThat(seconds).allSatisfy(sent -> {
-            InteractionId first = sent.getKey().sequence().orElseThrow().follows().get(0);
-            assertThat(engine.answeredAt.get(first))
-                    .describedAs("the creation it repeats had been answered before it went out")
-                    .isNotNull()
-                    .isLessThanOrEqualTo(sent.getValue());
-        });
+        // Each series by its creation's exchange, which every later step names first.
+        Map<InteractionId, List<TestCase>> bySeries = new HashMap<>();
+        engine.stepsSentAt.keySet().forEach(step -> bySeries.computeIfAbsent(
+                step.sequence().orElseThrow().step() == 1
+                        ? engine.exchangeOf.get(step)
+                        : step.sequence().orElseThrow().follows().get(0),
+                ignored -> new ArrayList<>()).add(step));
+        assertThat(bySeries.values())
+                .describedAs("series went further than their creation")
+                .anySatisfy(series -> assertThat(series).hasSizeGreaterThan(2));
+        for (List<TestCase> series : bySeries.values()) {
+            series.sort(Comparator.comparingInt(step -> step.sequence().orElseThrow().step()));
+            for (int at = 1; at < series.size(); at++) {
+                TestCase before = series.get(at - 1);
+                TestCase after = series.get(at);
+                assertThat(engine.answeredAt.get(before))
+                        .describedAs("step %d was answered before step %d went out",
+                                before.sequence().orElseThrow().step(),
+                                after.sequence().orElseThrow().step())
+                        .isNotNull()
+                        .isLessThanOrEqualTo(engine.stepsSentAt.get(after));
+            }
+            TestCase creation = series.get(0);
+            Long created = engine.answeredAt.get(creation);
+            if (created != null && created < deadline - Duration.ofMillis(300).toNanos()) {
+                assertThat(series)
+                        .describedAs("a creation answered well before the deadline was followed "
+                                + "by the next step of its series")
+                        .hasSizeGreaterThan(1);
+            }
+        }
     }
 
     @Test
@@ -535,9 +561,13 @@ class RunLoopTest {
         private final Map<String, Long> firstSent = new ConcurrentHashMap<>();
         private final Map<String, Long> firstAnswered = new ConcurrentHashMap<>();
 
-        /** When each step of a series was asked for, and each exchange answered, by that clock. */
+        /**
+         * When each step of a series was asked for and answered, by that clock, and the exchange
+         * each became.
+         */
         private final Map<TestCase, Long> stepsSentAt = new ConcurrentHashMap<>();
-        private final Map<InteractionId, Long> answeredAt = new ConcurrentHashMap<>();
+        private final Map<TestCase, Long> answeredAt = new ConcurrentHashMap<>();
+        private final Map<TestCase, InteractionId> exchangeOf = new ConcurrentHashMap<>();
 
         private volatile Function<HttpRequestRecord, Duration> howLong =
                 request -> Duration.ofMillis(1);
@@ -573,7 +603,10 @@ class RunLoopTest {
                 inFlight.decrementAndGet();
                 firstAnswered.putIfAbsent(operation, System.nanoTime());
                 Interaction replied = reply(testCase, request);
-                answeredAt.put(replied.id(), System.nanoTime());
+                if (testCase.sequence().isPresent()) {
+                    answeredAt.put(testCase, System.nanoTime());
+                    exchangeOf.put(testCase, replied.id());
+                }
                 answer.complete(replied);
             }, howLong.apply(request).toMillis(), TimeUnit.MILLISECONDS);
             return answer;

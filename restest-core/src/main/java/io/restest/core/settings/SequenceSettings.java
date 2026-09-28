@@ -65,7 +65,7 @@ public record SequenceSettings(
                 || createTwice;
     }
 
-    /** These settings with every series switched off, so that none is ever sent. */
+    /** Every series switched off, so that none is ever sent. */
     public static SequenceSettings noneSent() {
         return new SequenceSettings(false, false, false, false, false, false);
     }

@@ -159,6 +159,43 @@ class CreationsTest {
     }
 
     @Test
+    @DisplayName("a POST whose address ends in a gap does something to a thing that exists, so it "
+            + "makes nothing with an address of its own")
+    void a_post_to_a_thing_makes_nothing() {
+        ApiModel petstore = TheCorpus.community("Petstore");
+        Creations among = Creations.among(petstore.operations());
+
+        Creations.Creation update = among.of(operation(petstore, HttpMethod.POST, "/pet/{petId}"))
+                .orElseThrow();
+
+        assertThat(update.own())
+                .describedAs("the pet it answers with is the one its address named, which the run "
+                        + "did not make")
+                .isEmpty();
+        assertThat(update.under()).isEmpty();
+        assertThat(update.list()).isEmpty();
+        assertThat(among.of(operation(petstore, HttpMethod.POST, "/pet")).orElseThrow().own())
+                .extracting(Creations.Address::path)
+                .containsExactly("/pet/{petId}");
+    }
+
+    @Test
+    @DisplayName("an address elsewhere is about the same kind of thing when the word before its gap "
+            + "says so, whatever the gap is called")
+    void the_word_before_the_gap_names_the_kind() {
+        ApiModel github = TheCorpus.community("GitHub");
+
+        Creations.Creation invitations = Creations.among(github.operations())
+                .of(operation(github, HttpMethod.POST, "/orgs/{org}/invitations")).orElseThrow();
+
+        assertThat(invitations.own()).extracting(Creations.Address::path)
+                .describedAs("{invitation_id} names an invitation, but repository_invitations "
+                        + "holds another kind of thing")
+                .contains("/orgs/{org}/invitations/{invitation_id}")
+                .doesNotContain("/user/repository_invitations/{invitation_id}");
+    }
+
+    @Test
     @DisplayName("an operation that is not a creation makes nothing")
     void a_read_makes_nothing() {
         assertThat(Creations.among(PET_CLINIC.operations())
