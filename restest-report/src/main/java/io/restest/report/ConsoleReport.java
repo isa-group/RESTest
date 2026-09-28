@@ -93,6 +93,15 @@ public final class ConsoleReport implements RunListener {
     /** How many of those broke something the description states, expecting to be refused. */
     private long changedAgainstTheDescription;
 
+    /**
+     * How many steps of series about a thing the run created were sent, by the kind of series, in
+     * the order the kinds were first heard of.
+     */
+    private final Map<String, Long> stepsByKindOfSeries = new java.util.LinkedHashMap<>();
+
+    /** How many series were begun: how many of those steps were creations. */
+    private long seriesBegun;
+
     /** How many faults to print in full before the screen stops being the right place for them. */
     private final int faultsShown;
 
@@ -206,6 +215,12 @@ public final class ConsoleReport implements RunListener {
                         changedAgainstTheDescription++;
                     }
                 }
+                sent.sequence().ifPresent(step -> {
+                    stepsByKindOfSeries.merge(step.shape(), 1L, Long::sum);
+                    if (step.step() == 1) {
+                        seriesBegun++;
+                    }
+                });
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
                 serverErrors.note(completed.interaction());
@@ -386,6 +401,16 @@ public final class ConsoleReport implements RunListener {
             write("  " + changed + " of them changed one thing in a request the API had accepted, "
                     + changedAgainstTheDescription + " of them breaking what the description "
                     + "states");
+        }
+        if (!stepsByKindOfSeries.isEmpty()) {
+            // By the kind of series rather than by what each step expected, which is the report's
+            // to count and not to interpret: what each step of each kind is for is the tool's
+            // business, and the stored run says it step by step.
+            long steps = stepsByKindOfSeries.values().stream().mapToLong(Long::longValue).sum();
+            write("  " + steps + " of them were steps of " + seriesBegun + " series about a thing "
+                    + "the run created: " + stepsByKindOfSeries.entrySet().stream()
+                            .map(kind -> kind.getKey() + " " + kind.getValue())
+                            .collect(java.util.stream.Collectors.joining(", ")));
         }
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "

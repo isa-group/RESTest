@@ -420,6 +420,45 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("steps of series are counted by the kind of series, with how many were begun")
+    void steps_of_series_are_counted_by_kind() {
+        io.restest.core.execution.InteractionId creation =
+                io.restest.core.execution.InteractionId.generate();
+        List<io.restest.core.execution.TestCase> sent = List.of(
+                io.restest.core.execution.TestCase.stepOf(OperationId.of("addPet"), List.of(),
+                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
+                        io.restest.core.execution.SequenceStep.first("readAfterDelete",
+                                "create a thing to read after deleting it")),
+                io.restest.core.execution.TestCase.stepOf(OperationId.of("deletePet"), List.of(),
+                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
+                        new io.restest.core.execution.SequenceStep("readAfterDelete", 3,
+                                List.of(creation), "delete it")),
+                io.restest.core.execution.TestCase.stepOf(OperationId.of("addPet"), List.of(),
+                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
+                        io.restest.core.execution.SequenceStep.first("createTwice",
+                                "create a thing, to send the same creation again")),
+                io.restest.core.execution.TestCase.of(OperationId.of("listPets"), List.of()));
+        for (io.restest.core.execution.TestCase each : sent) {
+            report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.answering(each, 200)));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("  3 of them were steps of 2 series about a thing the run created: "
+                        + "readAfterDelete 2, createTwice 1");
+    }
+
+    @Test
+    @DisplayName("a run that sends no series says nothing about series")
+    void no_series_no_line() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString()).doesNotContain("series");
+    }
+
+    @Test
     @DisplayName("a run that could try every operation says nothing about any it could not")
     void a_run_that_skipped_nothing_says_nothing_about_skipping() {
         report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
