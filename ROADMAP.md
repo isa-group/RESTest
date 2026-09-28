@@ -42,7 +42,7 @@ nothing in them is an increment of its own.
 | M9 | Reach — every operation the API will answer, answered early | all but 9.3, measured and not merged, and 9.4, set aside before it was built | 2 / 4 |
 | M10 | Break — more distinct server failures | all | 0 / 3 |
 | M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
-| M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 0 / 6 |
+| M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 1 / 6 |
 | M12 | Closing v2.0 | all | 0 / 5 |
 | M7 | Packaging and distribution | 7.2a only | 0 / 4 |
 | M3 | Oracles, faults and reporting | none; 3.1b's generator half moved to 10.1, 3.7 to 12.1 | 0 / 6 |
@@ -109,8 +109,8 @@ row of M8 names the rows written *while* it runs.
    overnight in the meantime.
 2. **2.9**, **9.1**, **9.2**, **9.3**, **9.4** — reach; 9.3 was measured and not merged, and 9.4
    set aside on recorded runs before it was built. Each row is measured on a restarted
-   containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measures the
-   milestone as a whole, overnight, on the five.
+   containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measured the
+   milestone as a whole on 27-28 September, on sixteen APIs.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
 4. **12.1**, **7.2a**, **12.2** — the command line frozen, the image, the documentation. Fixes from
    8.4 and 8.5 land here, behind a switch when they change behaviour.
@@ -686,7 +686,7 @@ answer, and each row below names what is written while it runs.
 | # | Increment | What it enables |
 |---|---|---|
 | 8.3 ▶ | **The baseline is an ablation over where values come from.** The tip of `v2` after 2.5b, twenty minutes per run, one run, three plans: **declared and invented** — enumerations, samples and defaults from the document, plus invented values, and nothing with a memory; **plus observed** — the plan RESTest ships, which adds what the API itself has returned; **plus dictionaries** — the shipped plan with a hand-written list of values per API passed with `--dictionary`. The first two on the eleven APIs of the 2026 edition, the third on the 2027 five, since a dictionary has to be written per API. Every variant is a plan file or a command-line flag in the harness repository; nothing here changes. About nine hours, overnight. **Runs alongside 11.1**. *Its dictionaries numbers are not a measurement of dictionaries: on 27 September every one of the files was found to have been refused whole, over an operation written with nothing under it, and the runs measured the shipped plan under the dictionaries' names. The reader now takes such an operation as empty and the report says which lists a run read and refused (ADR-0020, amendment M8.3); whether the third plan is run again before the freeze is the maintainer's call* | What each source is worth is known before any lever is built on top of it, and the third plan gives the ceiling: how good the tool is when somebody who knows the API hands it the values — which the competition will not do |
-| 8.4 ▶ | **Screening M9.** The 2027 five, twenty minutes each, one run: the full tool, then each M9 switch off in turn. About ten hours, overnight once M9 is closed, which 9.4's record does. **Runs alongside 10.1.** A lever that does not move its measurement is switched off in the shipped settings and stays in the code | What each reach lever is worth is known before the break levers are built on top of it, and a lever that costs more than it earns is found before the dress rehearsal |
+| 8.4 ✅ [#335](https://github.com/isa-group/RESTest/pull/335) | **Screening M9.** Twenty minutes each, one run: the full tool, then each M9 switch off in turn. A lever that does not move its measurement is switched off in the shipped settings and stays in the code. **As run**, on 27–28 September at `76534ebd`: on sixteen APIs rather than the five - every one the benchmark carries except genome-nexus, which does not start on Apple Silicon - at the maintainer's request; six variants - the tool as shipped, 9.1, 9.2 and 2.9 each switched off, 9.2's order turned back, and **the dictionaries 8.3 never measured**, because RESTest refused all of 8.3's files unread. [Results](https://github.com/isa-group/restgym-restest2/blob/main/results/20260927-085159/README.md). Whether 2.9 is switched off, as the rule says, is left to the maintainer (see the notes) | What each reach lever is worth: **9.1** on every measure (without it 10 fewer operations covered, and less area under both curves on 13 APIs of 16); **9.2** on gestao-hospital's first minute (5 operations at 10 seconds without it, 15–17 in every other variant) and little elsewhere; **9.2's order** and **2.9** nothing measurable. **A dictionary** is the largest effect: branch coverage +4.6 points on average, better on 11 APIs and worse on 1 |
 | 8.5 ▶ | **Screening M10.** The same shape for the M10 switches, counting distinct 5XX messages and branch coverage. About eight hours, overnight after 10.3 merges. **Runs alongside 12.1 and 12.2** | The same, for the break levers |
 | 8.6 ▶ 🛑 | **The dress rehearsal.** The competition's protocol exactly: the five known APIs, one hour, five runs, eight cores and sixteen gigabytes, the benchmark-compliant image from the harness repository, built from the frozen commit on top of 7.2a's image — the artefact 12.4 submits — started at noon on 6 October. Twenty-five hours. **Runs alongside 12.3 only** — nothing that changes behaviour is written while it runs. 🛑 Its results are read on 8 October; the only change they may cause is a fix for a run that failed outright, re-measured on that API alone for one hour before the tag | The number the tool will post in the competition is known, with its variance, before the tool is submitted — and the image the competition receives is one that has already run for twenty-five hours |
 | 8.1 ⏭ | **The field**, after submission, at the 2026 edition's own scale so that its published table is the comparison. RESTest 2.0 on the eleven APIs the 2026 edition ran on, one hour, five runs: fifty-five hours. The 2026 report gives every other tool's numbers on those APIs at that budget, so they are not re-run here; RESTest 1.x alone is re-run on the same machine, three runs, as the calibration point between the organisers' hardware and ours — about thirty-three hours. 12–25 October | The table that goes in the paper: RESTest 2.0 beside the whole 2026 field on the APIs and budget that field was measured on, with the hardware difference bounded by a tool that appears in both columns |
@@ -720,6 +720,53 @@ number. The area under the curve is decided in the first minutes of an hour and 
 plateaus early, so twenty minutes per run keeps a whole ablation to one night, which is what lets
 development continue at the same pace. The hour is for the campaigns that are compared with
 somebody else's — 8.6 and 8.1.
+
+**8.4 — what the screening asks of the maintainer.** The numbers are in the
+[harness repository](https://github.com/isa-group/restgym-restest2/blob/main/results/20260927-085159/README.md); these follow from them, and none is decided here.
+
+- **2.9 by the row's own rule.** It moved nothing, which its row predicted: of the sixteen APIs only
+  blog has several operations with more than one optional parameter. The rule says it is switched
+  off in the shipped settings. The case for keeping it on is the one it was built on - 232
+  operations of the wider corpus have four or more optional parameters, and the five undisclosed
+  APIs may be among the ones that do - and that 8.4 measured no cost.
+- **9.2's order stays** unless the maintainer wants otherwise: name first leads at ten seconds on 6
+  APIs and trails at sixty on 7.
+- **What a dictionary is worth, when a capable writer has time.** +4.6 branch points, most of it on
+  three APIs whose inputs are their domain - scs +37.7 (a calculator's operation names, day and
+  month names), languagetool +17.6, ncs +11.3; of the other thirteen, 8 better, 4 unchanged and
+  gestao-hospital down 6.5, as it is in every variant. Nine more operations, among them both
+  logins and two actuator endpoints that answer only for names that exist. The files were written
+  by a large model from each document - name, type, format and description first, public knowledge
+  of the application last - with no time limit and no running API consulted. That is the ceiling
+  ADR-0024 §5's third plan asks for; it is not what a small model could write inside the hour, and
+  whether the competition's entry tries that is a decision for the harness repository.
+- **Not proposed: moving the budget to the break strategy once coverage stops growing.** Operations
+  covered is at 95% of its final value after five minutes and branch coverage at 91% after one, so
+  the last fifteen minutes of twenty add little reach. Acting on that is 2.10b's shares as stretches
+  of time, after v2.0, and at its most useful it is scheduling by feedback, which is deferred.
+
+**8.4 — where the runs stop, and three ideas that are not rows yet.** About thirty of the
+operations no variant covered are out of reach as the APIs stand: blog's lists and reads all fail
+on the server ("could not extract ResultSet"), user-management documents Spring's `/error` under six
+methods, kafka-rest-proxy's ACLs need an authoriser the benchmark does not configure,
+project-tracking-system answers 405 to two documented methods, and flight-search's two lists insist
+on a body RESTest's HTTP client refuses to put on a `GET`. Three ideas came out of reading the rest;
+none has the evidence a row needs, and each would have to be measured on the priority corpus, not on
+the APIs it was noticed on.
+
+- *Values an API accepted, offered again.* The dictionary run covered user-management's and
+  flight-search's logins by offering the same few usernames and passwords to registration and
+  login. Without a dictionary no registration gets far enough to be remembered: flight-search
+  accepted one in 437, without the `email` its login is keyed on, and user-management none, its
+  password rules and required fields refusing the rest. Close to 4.2's resource pool, after v2.0.
+- *Optional body properties by number.* A body's optional properties are still decided one coin
+  each. On blog's `POST /api/posts` that is not all that stops it: half the requests carry no body
+  at all, and of the 1,430 that do, 551 fail on `tags` sent as the text the document declares, 148
+  with the same message without `tags`, and 731 on required fields and lengths the document does
+  not declare - so the one case read argues nothing either way.
+- *Digits for open text.* project-tracking-system answers "For input string" 20,614 times, spread
+  over some 24 operations most of which already answer 2XX; the four that never do take a
+  `{commitDate}`, which digits would not fix.
 
 **8.6 — the one campaign nothing is allowed to interrupt.** Twenty-five hours on the machine the
 tool is built on, started with two working days left. If it slips a day, the submission slips to the
