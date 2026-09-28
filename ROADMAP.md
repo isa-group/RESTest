@@ -754,7 +754,8 @@ methods, kafka-rest-proxy's ACLs need an authoriser the benchmark does not confi
 project-tracking-system answers 405 to two documented methods, and flight-search's two lists insist
 on a body RESTest's HTTP client refuses to put on a `GET`. Three ideas came out of reading the rest;
 none has the evidence a row needs, and each would have to be measured on the priority corpus, not on
-the APIs it was noticed on.
+the APIs it was noticed on. **Left for a version after 2.0**, the maintainer decided on 28
+September; they are kept here so that 2.1's plan starts from them.
 
 - *Values an API accepted, offered again.* The dictionary run covered user-management's and
   flight-search's logins by offering the same few usernames and passwords to registration and
