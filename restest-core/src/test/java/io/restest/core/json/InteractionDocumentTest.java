@@ -29,6 +29,7 @@ import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.execution.Mutation;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
+import io.restest.core.execution.SequenceStep;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.ValueOrigin;
@@ -176,6 +177,27 @@ class InteractionDocumentTest {
     }
 
     @Test
+    @DisplayName("where a step stood in its series, and the exchanges it followed, survive")
+    void a_step_of_a_series_survives() {
+        InteractionId creation = InteractionId.generate();
+        InteractionId deletion = InteractionId.generate();
+        SequenceStep step = new SequenceStep("readAfterDelete", 4, List.of(creation, deletion),
+                "read the pet the API said it deleted; it should be gone");
+        TestCase read = TestCase.stepOf(OperationId.of("GET /pets/{petId}"), List.of(),
+                Optional.empty(), Intent.REFUSAL_EXPECTED, step);
+        Interaction original = Interaction.answered(read, request(),
+                HttpResponseRecord.of(404), Instant.EPOCH, Duration.ofMillis(5));
+
+        Interaction back = InteractionDocument.toInteraction(InteractionDocument.of(original));
+
+        assertThat(back).isEqualTo(original);
+        assertThat(back.testCase().sequence()).contains(step);
+        assertThat(JsonText.write(InteractionDocument.of(original)))
+                .contains("\"sequence\":{\"shape\":\"readAfterDelete\",\"step\":4,\"follows\":[\""
+                        + creation.value() + "\",\"" + deletion.value() + "\"]");
+    }
+
+    @Test
     @DisplayName("every intent is written in a word of its own and read back as itself")
     void every_intent_survives() {
         for (Intent intent : List.of(Intent.ACCEPTABLE, Intent.UNKNOWN, Intent.PUSHING)) {
@@ -209,6 +231,9 @@ class InteractionDocumentTest {
                 .describedAs("every request built then expected nothing in particular")
                 .isEqualTo(Intent.UNKNOWN);
         assertThat(older.testCase().mutation()).isEmpty();
+        assertThat(older.testCase().sequence())
+                .describedAs("and every request built then stood alone")
+                .isEmpty();
     }
 
     @Test

@@ -85,6 +85,29 @@ final class Interactions {
     }
 
     /**
+     * A read sent as the fourth step of a series built around a thing the run created, after the
+     * API said it had deleted it: it names the creation and the deletion it follows, and expects to
+     * be turned away.
+     */
+    static Interaction aStepOfASeries() {
+        io.restest.core.execution.InteractionId creation =
+                io.restest.core.execution.InteractionId.of("the-creation");
+        io.restest.core.execution.InteractionId deletion =
+                io.restest.core.execution.InteractionId.of("the-deletion");
+        TestCase read = TestCase.stepOf(OperationId.of("GET /widgets/{widgetId}"),
+                List.of(ParameterValue.of("widgetId", ParameterLocation.PATH, JsonValue.of(12L),
+                        new ValueOrigin.Derived(creation,
+                                "the 'id' of what POST /widgets created, earlier in this series"))),
+                Optional.empty(), io.restest.core.execution.Intent.REFUSAL_EXPECTED,
+                new io.restest.core.execution.SequenceStep("readAfterDelete", 4,
+                        List.of(creation, deletion),
+                        "read the widget the API said it deleted; it should be gone"));
+        return Interaction.answered(read,
+                HttpRequestRecord.of(HttpMethod.GET, "http://localhost:8080/widgets/12"),
+                HttpResponseRecord.of(404), NOON, Duration.ofMillis(3));
+    }
+
+    /**
      * Everything a single interaction can carry at once: repeated headers, a body that was sent, a
      * reply that was truncated, parameter values from all three kinds of source, and a change made
      * to a request the API had accepted.
@@ -111,7 +134,8 @@ final class Interactions {
                 Optional.of(new io.restest.core.execution.Mutation(
                         io.restest.core.execution.InteractionId.of("accepted-one"),
                         "dropRequired", ParameterLocation.QUERY, "limit",
-                        "left out the required query parameter 'limit'")));
+                        "left out the required query parameter 'limit'")),
+                Optional.empty());
 
         HttpRequestRecord request = new HttpRequestRecord(HttpMethod.POST,
                 "http://localhost:8080/widgets?verbose=true",

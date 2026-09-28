@@ -45,14 +45,16 @@ import java.util.Set;
  * <p>A "stateful" step - one that depends on an earlier request, such as reading back something just
  * created - is not a different kind of test case. It is simply one whose parameter values or body
  * carry a {@link ValueOrigin.Derived} origin instead of a {@link ValueOrigin.Generated} or
- * {@link ValueOrigin.Declared} one - see {@link ValueOrigin}. A whole sequence of dependent steps is
- * just a chain of such derived values across several test cases and interactions, not something this
- * type needs to represent as a group.
+ * {@link ValueOrigin.Declared} one - see {@link ValueOrigin}. When it is one step of a short series a
+ * run built around a thing it created itself - create it, delete it, read it again - it also says
+ * which series and which step, and names the earlier exchanges it follows - see {@link
+ * SequenceStep}. The series itself is those steps and the exchanges they name, not something this
+ * type holds as a group.
  *
  * <p>Every test case also says what its builder expected - see {@link Intent} - and, when it was
  * made by changing one thing in a request the API had already accepted, what that one thing was -
- * see {@link Mutation}. Those two travel with the values because they are facts about how the
- * request was built, and nothing that sees only the request on the wire could work them out.
+ * see {@link Mutation}. Those travel with the values because they are facts about how the request
+ * was built, and nothing that sees only the request on the wire could work them out.
  *
  * @param id this test case's identity, stable across generation, execution and storage
  * @param operation which operation this attempts to invoke
@@ -62,6 +64,8 @@ import java.util.Set;
  * @param intent what was expected of the API when this was built
  * @param mutation the one thing changed in an accepted request to make this one, absent when it
  *     was built from nothing
+ * @param sequence where this stands in a series of requests built around a thing the run created
+ *     itself, absent when it stands alone
  */
 public record TestCase(
         TestCaseId id,
@@ -69,7 +73,8 @@ public record TestCase(
         List<ParameterValue> parameterValues,
         Optional<BodyValue> body,
         Intent intent,
-        Optional<Mutation> mutation) {
+        Optional<Mutation> mutation,
+        Optional<SequenceStep> sequence) {
 
     public TestCase {
         Objects.requireNonNull(id, "id");
@@ -78,9 +83,10 @@ public record TestCase(
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(intent, "intent");
         Objects.requireNonNull(mutation, "mutation");
+        Objects.requireNonNull(sequence, "sequence");
         parameterValues = List.copyOf(parameterValues);
         rejectDuplicateParameterValues(parameterValues);
-        rejectAnIntentThatCannotBeTrue(intent, mutation);
+        rejectAnIntentThatCannotBeTrue(intent, mutation, sequence);
     }
 
     /** A fresh test case for the given operation, with the given parameter values and no body. */
@@ -101,14 +107,14 @@ public record TestCase(
      * @param operation which operation it attempts
      * @param parameterValues the value chosen for each parameter it supplies
      * @param body the body chosen, if any
-     * @param intent what was expected; not {@link Intent#REFUSAL_EXPECTED}, which is only ever the
-     *     intent of a request made by changing one that was accepted
+     * @param intent what was expected; not {@link Intent#REFUSAL_EXPECTED}, which needs a reason
+     *     the test case names: a change made to an accepted request, or a step of a series
      * @return the test case
      */
     public static TestCase of(OperationId operation, List<ParameterValue> parameterValues,
             Optional<BodyValue> body, Intent intent) {
         return new TestCase(TestCaseId.generate(), operation, parameterValues, body, intent,
-                Optional.empty());
+                Optional.empty(), Optional.empty());
     }
 
     /**
@@ -125,7 +131,25 @@ public record TestCase(
     public static TestCase changed(OperationId operation, List<ParameterValue> parameterValues,
             Optional<BodyValue> body, Intent intent, Mutation mutation) {
         return new TestCase(TestCaseId.generate(), operation, parameterValues, body, intent,
-                Optional.of(Objects.requireNonNull(mutation, "mutation")));
+                Optional.of(Objects.requireNonNull(mutation, "mutation")), Optional.empty());
+    }
+
+    /**
+     * A fresh test case that is one step of a series a run built around a thing it created itself.
+     *
+     * @param operation which operation it attempts
+     * @param parameterValues the values it supplies, the identifier of the thing among them
+     * @param body the body it sends, if any
+     * @param intent {@link Intent#REFUSAL_EXPECTED} when what came before in the series means the
+     *     API should turn it away - the thing it asks about was deleted - and {@link Intent#UNKNOWN}
+     *     otherwise
+     * @param step where it stands in the series, and what came before it
+     * @return the test case
+     */
+    public static TestCase stepOf(OperationId operation, List<ParameterValue> parameterValues,
+            Optional<BodyValue> body, Intent intent, SequenceStep step) {
+        return new TestCase(TestCaseId.generate(), operation, parameterValues, body, intent,
+                Optional.empty(), Optional.of(Objects.requireNonNull(step, "step")));
     }
 
     /**
@@ -147,24 +171,37 @@ public record TestCase(
     }
 
     /**
-     * Two intents only make sense beside a change, and two only without one.
+     * Expecting a refusal needs a reason the test case names, and two intents are never true of a
+     * request that was changed or that is a step of a series.
      *
-     * <p>Expecting a refusal is expecting it <em>because</em> of something that was broken, and a
-     * test case that says so without saying what was broken states an expectation nobody could
-     * check. The other way round, a request made by changing an accepted one is never built from
-     * values somebody believes in throughout, nor from values that are all awkward at once: one
-     * thing in it is different from a request that worked, and that is all it claims.
+     * <p>Expecting a refusal is expecting it <em>because</em> of something - a thing that was
+     * broken, or a thing the series deleted just before - and a test case that says so without
+     * naming the reason states an expectation nobody could check. The other way round, a request
+     * made by changing an accepted one, or built around a thing the run created, is never built
+     * from values somebody believes in throughout, nor from values that are all awkward at once.
+     * And a request is either a change to an accepted one or a step of a series, not both: each of
+     * those says what it is about, and the two would say different things.
      */
-    private static void rejectAnIntentThatCannotBeTrue(Intent intent, Optional<Mutation> mutation) {
-        if (intent == Intent.REFUSAL_EXPECTED && mutation.isEmpty()) {
+    private static void rejectAnIntentThatCannotBeTrue(Intent intent, Optional<Mutation> mutation,
+            Optional<SequenceStep> sequence) {
+        if (intent == Intent.REFUSAL_EXPECTED && mutation.isEmpty() && sequence.isEmpty()) {
             throw new IllegalArgumentException("a test case expecting to be refused says what it "
-                    + "broke, and this one names no change");
+                    + "broke, or what came before it, and this one names neither");
+        }
+        if (mutation.isPresent() && sequence.isPresent()) {
+            throw new IllegalArgumentException("a test case is either a change made to an accepted "
+                    + "request or a step of a series, not both");
         }
         if (mutation.isPresent()
                 && (intent == Intent.ACCEPTABLE || intent == Intent.PUSHING)) {
             throw new IllegalArgumentException("a test case made by changing one thing in an "
                     + "accepted request either expects a refusal or expects nothing in particular, "
                     + "not " + intent);
+        }
+        if (sequence.isPresent()
+                && (intent == Intent.ACCEPTABLE || intent == Intent.PUSHING)) {
+            throw new IllegalArgumentException("a step of a series either expects a refusal or "
+                    + "expects nothing in particular, not " + intent);
         }
     }
 
