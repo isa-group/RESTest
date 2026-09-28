@@ -245,13 +245,19 @@ public final class InteractionDocument {
         document.put("mediaType", JsonValue.of(body.mediaType()));
         document.put("value", body.value());
         document.put("origin", of(body.origin()));
+        body.sentAs().ifPresent(text -> document.put("sentAs", JsonValue.of(text)));
         return JsonValue.object(document);
     }
 
+    /**
+     * A body read back. One sent as its value written out, which is every body stored before a body
+     * could be sent as anything else, has no {@code sentAs}.
+     */
     private static BodyValue toBodyValue(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the body that was sent");
         return new BodyValue(string(document, "mediaType"), member(document, "value"),
-                toOrigin(member(document, "origin")));
+                toOrigin(member(document, "origin")),
+                document.member("sentAs").map(text -> text(text, "sentAs")));
     }
 
     /**

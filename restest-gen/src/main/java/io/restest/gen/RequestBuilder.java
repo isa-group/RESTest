@@ -386,9 +386,14 @@ public final class RequestBuilder {
      * <p>A form body is a query string that happens to be in the body rather than in the URL, so it
      * is written by the same rules and with the same limits - including what happens to a value with
      * something nested inside it, which no form encoding agrees on.
+     *
+     * <p>A body that says exactly what text it is sent as is sent as that text, whatever its media
+     * type: it was broken on purpose - cut off, emptied, put under a media type it does not match -
+     * and writing its value out instead would send the request it was made from.
      */
     private static Payload written(BodyValue body) {
-        String text = isForm(body.mediaType()) ? asForm(body.value()) : JsonText.write(body.value());
+        String text = body.sentAs().orElseGet(() -> isForm(body.mediaType())
+                ? asForm(body.value()) : JsonText.write(body.value()));
         return Payload.of(text.getBytes(StandardCharsets.UTF_8), body.mediaType());
     }
 

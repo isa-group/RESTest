@@ -293,3 +293,68 @@ seeds.
   and changing one thing in it would say less than changing one thing in a request built to work.
 - **Keeping the switches in `generation.*`.** No amendment, and a group of thirty numbers about two
   different things.
+
+## Amendment (M10.2)
+
+**Date:** 2026-09-28
+
+Row 10.2 adds what §4 left out: changes to the **body as a whole**. An API reads a body and turns it
+into something its code can use before any of that code runs, and the reading is code too - a JSON
+reader, a binder, a check on the media type - with failures of its own that no change to one value
+inside a well-formed body reaches. Seven operators join the eleven, in the same two families, drawn
+the same way (§5), switched the same way (§6): eight more settings, seventy in all.
+
+| Family | Operator | Goes to | What is sent |
+|---|---|---|---|
+| violations | `wrongRoot` | the body | another kind than the declared root, which the shape does not accept: the accepted body inside a list, or the first item of a list; a word, a number, `true` |
+| | `emptyBody` | a required body | no bytes at all, under the body's JSON media type |
+| | `notJson` | the body | the accepted body's text cut off halfway, or the words `this is not JSON`; a cut that still reads as JSON is not sent |
+| | `wrongContentType` | the body | the accepted body's own text under `text/plain`, `application/xml` or `application/x-www-form-urlencoded`, whichever the operation neither offers nor covers with a range |
+| | `beyondItsWidth` | any number | past what the format it names holds: one past an `int32`'s or an `int64`'s edges, ten times a `float`'s or a `double`'s |
+| probes | `deepNesting` | a body that is an object allowing undeclared members | one more member, holding `mutation.nestingDepth` lists one inside another, ten thousand by default |
+| | `extremeNumber` | a number nothing bounds | the largest and smallest its format holds, or where it names none, the edges of `int32`, `int64`, `float` and `double` and just past each, and one past sixty-four unsigned bits; whole numbers only where whole numbers are declared |
+
+Three questions had more than one defensible answer, and the maintainer settled them on 28 September
+before any code was written.
+
+- **Where the far too deep value goes.** Replacing the whole body with lists ten thousand deep breaks
+  what the document states, so it would be a violation; but a JSON reader bound to a class - Jackson,
+  Gson, which is what every API the benchmark runs uses, since it measures coverage with a JVM agent -
+  stops at the first bracket with the same complaint `wrongRoot` already earns. A member nobody
+  declared is skipped by such a reader, and skipping walks the whole value, which is where a reader
+  gives up at its depth limit: a thousand levels for Jackson, two hundred and fifty-five for Gson.
+  **Chosen: the extra member.** The document allows members it does not declare and states no depth,
+  so it is a probe, and ships off with the others; where `additionalProperties` is `false` or a shape
+  of its own, or where the object already has as many members as it may, it is not sent at all.
+- **One operator for the edges of numbers, or two.** A number past what its declared format holds
+  breaks the document; the largest number an `int32` holds does not, and neither does anything at all
+  where the document names no format. **Chosen: two**, split by §3's rule - `beyondItsWidth` a
+  violation, `extremeNumber` a probe - so that every recorded intent stays true. A stated bound, a
+  closed list or a multiple rules the probe out; a format whose edges the tool does not know
+  (`uint8`, `decimal`) rules out both.
+- **An empty body where the body may be left out.** No bytes under a JSON media type is read by the
+  common readers as no body, and for an optional body the document allows none. **Chosen: only where
+  the body is required**, a violation; an optional body sent empty would be the nearest thing to a
+  request ordinary generation already sends, and saying it expects a refusal would be false. In the
+  five APIs of the 2027 edition that is 34 of the 47 request bodies, and none of kafka-rest-proxy's 12.
+
+**A body can say what text it is sent as.** `BodyValue` gains `sentAs`, the exact text that travels
+when it is not the value written out; `value` keeps the accepted body it was made from, so a stored
+run shows both. `emptyBody`, `notJson`, `deepNesting` and `wrongContentType` set it. A value ten
+thousand levels deep is never built: the writer every value goes through refuses nesting past a
+thousand, and everything that compares two values would walk it a level at a time, so the text is
+put together from the accepted body's own. `wrongContentType` sets it too, because under a form's
+media type the same value written out afresh would travel as the fields of a form - a different
+body. The text travels inside the test case's JSON, so, as in §2, **the store's layout does not
+change**, and a run stored before reads back with no `sentAs`.
+
+**The body as a whole is a place of its own.** §4's "the body's root is not a place" stays true of
+the eleven: the root is offered only to the five operators that change the body as a whole, and to
+the two number operators when a whole body is one number. A body sent as the fields of a form is
+still left alone by all eighteen, for §4's reason.
+
+**Not sent, and why:** `null` as a whole body, which the common readers take for no body, the
+failure `emptyBody` already reaches; a body sent as nothing where it may be left out (above); the
+far too deep value replacing the whole body (above); and any of the seven in a body sent as the
+fields of a form, which cannot be nested, cut short as JSON is, or say `null`, and which the tool
+builds only where JSON is not offered.

@@ -22,6 +22,7 @@ import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.ValueRequest;
+import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
@@ -34,6 +35,7 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
+import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
@@ -64,14 +66,22 @@ import java.util.random.RandomGenerator;
  * refuses it, which is right; it accepts it, which says the check is missing; or it fails, which is
  * a fault in the code that handles it.
  *
- * <p>The thing changed is one value in the request: a parameter, or one property inside a JSON body,
- * however deep. There are eleven kinds of change, and they come in two families. The first breaks
- * something the API's documentation states - a required value left out, a number one past the
- * largest allowed, a word where a number is declared, a value that is not on the list of accepted
- * ones - so the API is expected to refuse it, and the request says so. The second goes where the
- * documentation says nothing - ten thousand characters where no longest length is given, an empty
- * word where nothing says a word may not be empty - so nobody can say in advance which answer is
- * right, and the request says that instead. Each kind, and each family, can be switched off.
+ * <p>The thing changed is one value in the request - a parameter, or one property inside a JSON
+ * body, however deep - or the body as a whole. There are eighteen kinds of change, and they come in
+ * two families. The first breaks something the API's documentation states - a required value left
+ * out, a number one past the largest allowed, a word where a number is declared, a body that is not
+ * JSON where JSON is what the API takes - so the API is expected to refuse it, and the request says
+ * so. The second goes where the documentation says nothing - ten thousand characters where no
+ * longest length is given, an empty word where nothing says a word may not be empty, a member nested
+ * ten thousand levels deep in a body that allows members nobody declared - so nobody can say in
+ * advance which answer is right, and the request says that instead. Each kind, and each family, can
+ * be switched off.
+ *
+ * <p>The changes to a body as a whole are aimed at what an API does before any of its own code runs:
+ * reading the body and turning it into something its code can use. That reading is code too, and it
+ * fails in its own ways - on a list where an object belongs, on no bytes at all, on text cut off
+ * halfway, on a media type it was never told about, on nesting deeper than it is willing to follow,
+ * on a number too large for the kind of number it was told to expect.
  *
  * <p>Which kind of change, and where, is chosen by chance: first a kind among those that have
  * somewhere to go in this request, then one of the places it can go. The requests to change come
@@ -82,8 +92,8 @@ import java.util.random.RandomGenerator;
  * path is never left out or emptied, since the address would then be a different one. A header the
  * client that sends requests writes for itself - {@code Content-Type}, {@code Accept} and a few
  * others - is never left out or moved, since the client would put it back. A body sent as the
- * fields of a web form is left alone, since a form cannot say {@code null}. And a body's root is left
- * as it is: changing the shape of a whole body is a different kind of test.
+ * fields of a web form is left alone, since a form cannot say {@code null}. And the changes that go
+ * to one value never go to the body as a whole, which has changes of its own.
  */
 final class Mutations {
 
@@ -118,6 +128,38 @@ final class Mutations {
 
     /** How much of a value a description quotes before it stops. */
     private static final int QUOTED_AT_MOST = 40;
+
+    /** What is sent as a body that is not JSON and was never going to be. */
+    private static final String PLAINLY_NOT_JSON = "this is not JSON";
+
+    /**
+     * The media types a body is sent under when it is sent under the wrong one: text, a structured
+     * kind the API may try to read, and the fields of a form - three different ways for an API to
+     * be told it has been handed something it did not ask for.
+     */
+    private static final List<String> OTHER_MEDIA_TYPES = List.of("text/plain", "application/xml",
+            "application/x-www-form-urlencoded");
+
+    /** The name of the member a far too deeply nested value is added under, when it is free. */
+    private static final String NESTED = "nested";
+
+    /**
+     * The formats that name how large a number may be, with the largest and smallest each holds,
+     * written the shortest way that reads back as exactly that number.
+     */
+    private static final Map<String, Width> WIDTHS = Map.of(
+            "int32", Width.whole("an int32", Integer.MIN_VALUE, Integer.MAX_VALUE),
+            "int64", Width.whole("an int64", Long.MIN_VALUE, Long.MAX_VALUE),
+            "float", Width.fractional("a float", Float.toString(Float.MAX_VALUE),
+                    Float.toString(Float.MIN_VALUE)),
+            "double", Width.fractional("a double", Double.toString(Double.MAX_VALUE),
+                    Double.toString(Double.MIN_VALUE)));
+
+    /** The widths a number whose document names none may be read into, narrowest first. */
+    private static final List<String> COMMON_WIDTHS = List.of("int32", "int64", "float", "double");
+
+    /** One more than the largest whole number sixty-four bits hold even without a sign. */
+    private static final BigDecimal PAST_SIXTY_FOUR_BITS = new BigDecimal("18446744073709551616");
 
     private final ApiModel model;
     private final MutationSettings settings;
@@ -211,7 +253,10 @@ final class Mutations {
 
     // --- where a change can go -------------------------------------------------------------------
 
-    /** Every value in a request that a change could be made to. */
+    /**
+     * Every value in a request that a change could be made to, and the body as a whole, which is
+     * where the changes to a body as a whole go and no other change does.
+     */
     private List<Place> placesIn(Operation operation, TestCase testCase) {
         List<Place> places = new ArrayList<>();
         for (ParameterValue given : testCase.parameterValues()) {
@@ -221,11 +266,16 @@ final class Mutations {
                             declared.required())));
         }
         testCase.body()
-                .filter(body -> !RequestBuilder.isForm(body.mediaType()))
-                .ifPresent(body -> operation.requestBody()
-                        .flatMap(declared -> declared.schemaFor(body.mediaType()))
-                        .ifPresent(schema -> inside(body.value(), schema, List.of(),
-                                ValueRequest.THE_BODY, 0, places)));
+                .filter(body -> !RequestBuilder.isForm(body.mediaType())
+                        && body.sentAs().isEmpty())
+                .ifPresent(body -> operation.requestBody().ifPresent(declared ->
+                        declared.schemaFor(body.mediaType()).ifPresent(schema -> {
+                            places.add(new Place(ParameterLocation.BODY, ValueRequest.THE_BODY,
+                                    List.of(), schema, resolved(schema), body.value(),
+                                    declared.required()));
+                            inside(body.value(), schema, List.of(), ValueRequest.THE_BODY, 0,
+                                    places);
+                        })));
         return places;
     }
 
@@ -270,7 +320,10 @@ final class Mutations {
 
     /** Whether a kind of change has somewhere to go at this place. Cheap: nothing is built. */
     private boolean applies(Operator operator, Place place, Operation operation) {
-        if (!operator.equals(Operator.DROP_REQUIRED) && !understood(place.shape())) {
+        if (!operator.goesTo(place)) {
+            return false;
+        }
+        if (operator.judgesTheShape() && !understood(place.shape())) {
             return false;
         }
         return switch (operator) {
@@ -292,6 +345,14 @@ final class Mutations {
             case OVERSIZE -> statedMost(place).filter(most -> most < oversized(place)).isPresent();
             case OVERSIZE_WITH_NO_LIMIT -> canBeOversizedWithNoLimit(place);
             case EMPTY_WITH_NO_RULE -> canBeEmptied(place) && !emptyIsForbidden(place);
+            case WRONG_ROOT -> !rootsItIsNot(place).isEmpty();
+            case EMPTY_BODY -> place.required();
+            case NOT_JSON -> true;
+            case WRONG_CONTENT_TYPE -> !otherMediaTypes(operation).isEmpty();
+            case BEYOND_ITS_WIDTH -> place.value() instanceof JsonValue.JsonNumber
+                    && widthNamed(place).isPresent();
+            case DEEP_NESTING -> allowsAnotherMember(place);
+            case EXTREME_NUMBER -> !extremes(place).isEmpty();
         };
     }
 
@@ -344,6 +405,41 @@ final class Mutations {
             case EMPTY_WITH_NO_RULE -> emptyOfItsKind(place).map(with -> new Edit.Replace(with,
                     "sent " + emptiness(with) + " for " + place.described()
                             + ", which nothing says may not be empty"));
+            case WRONG_ROOT -> {
+                List<JsonValue> roots = rootsItIsNot(place);
+                JsonValue with = roots.get(random.nextInt(roots.size()));
+                yield Optional.of(new Edit.Replace(with, "sent " + quoted(with) + " as the body, "
+                        + "declared as " + kindOf(place.shape())));
+            }
+            case EMPTY_BODY -> Optional.of(new Edit.Rewrite("", "sent a body of no bytes at all, "
+                    + "where a body is required"));
+            case NOT_JSON -> {
+                List<Edit.Rewrite> ways = notJson(place);
+                yield ways.isEmpty()
+                        ? Optional.empty() : Optional.of(ways.get(random.nextInt(ways.size())));
+            }
+            case WRONG_CONTENT_TYPE -> {
+                List<String> others = otherMediaTypes(operation);
+                String chosen = others.get(random.nextInt(others.size()));
+                yield Optional.of(new Edit.Relabel(chosen, "sent the body as it was under the "
+                        + "media type " + chosen + ", which the description does not offer for it"));
+            }
+            case BEYOND_ITS_WIDTH -> {
+                Width width = widthNamed(place).orElseThrow();
+                List<Extreme> beyond = width.beyond();
+                Extreme chosen = beyond.get(random.nextInt(beyond.size()));
+                yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
+                        + chosen.value().toPlainString() + " for " + place.described() + ", "
+                        + chosen.what()));
+            }
+            case DEEP_NESTING -> Optional.of(nestedFarTooDeep(place));
+            case EXTREME_NUMBER -> {
+                List<Extreme> extremes = extremes(place);
+                Extreme chosen = extremes.get(random.nextInt(extremes.size()));
+                yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
+                        + chosen.value().toPlainString() + " for " + place.described() + ", "
+                        + chosen.what() + ", which nothing in the description rules out"));
+            }
         };
     }
 
@@ -355,16 +451,23 @@ final class Mutations {
         Optional<BodyValue> body = base.body();
         if (place.inTheBody()) {
             BodyValue was = body.orElseThrow();
-            JsonValue changed = switch (edit) {
-                case Edit.Replace replace -> Shapes.replaced(was.value(), place.steps(),
-                        replace.with());
-                case Edit.Remove ignored -> Shapes.removed(was.value(), place.steps());
-                case Edit.Move ignored -> was.value();
+            BodyValue changed = switch (edit) {
+                case Edit.Replace replace -> new BodyValue(was.mediaType(),
+                        Shapes.replaced(was.value(), place.steps(), replace.with()), was.origin());
+                case Edit.Remove ignored -> new BodyValue(was.mediaType(),
+                        Shapes.removed(was.value(), place.steps()), was.origin());
+                case Edit.Move ignored -> was;
+                case Edit.Rewrite rewrite -> was.withTextSent(was.mediaType(), rewrite.text());
+                // The text the accepted body was sent as, so that the media type changes and
+                // nothing else does: written out afresh under a form's media type, the same value
+                // would travel as the fields of a form, which is a different body.
+                case Edit.Relabel relabel -> was.withTextSent(relabel.mediaType(),
+                        JsonText.write(was.value()));
             };
-            if (changed.equals(was.value())) {
+            if (changed.equals(was)) {
                 return Optional.empty();
             }
-            body = Optional.of(new BodyValue(was.mediaType(), changed, was.origin()));
+            body = Optional.of(changed);
         } else {
             int at = indexOf(values, place);
             ParameterValue was = values.get(at);
@@ -380,6 +483,10 @@ final class Mutations {
                 case Edit.Remove ignored -> values.remove(at);
                 case Edit.Move move -> values.set(at, ParameterValue.of(was.name(), move.to(),
                         was.value(), was.origin()));
+                case Edit.Rewrite ignored -> throw new IllegalStateException("only a body is "
+                        + "sent as text of its own");
+                case Edit.Relabel ignored -> throw new IllegalStateException("only a body has "
+                        + "a media type");
             }
         }
         Mutation mutation = new Mutation(accepted.from(), operator.written(), place.location(),
@@ -782,6 +889,186 @@ final class Mutations {
         return place.shape() instanceof ArraySchema ? items(howMany) : characters(howMany);
     }
 
+    // --- the body as a whole ----------------------------------------------------------------------
+
+    /**
+     * Bodies of other kinds than the one declared, which the declared shape does not accept: the
+     * accepted body inside a list, where it is not one - the mix-up between one thing and several -
+     * or the first of its items, where it is; and a word, a number or {@code true}. Never
+     * {@code null}, which an API reads as no body at all.
+     */
+    private List<JsonValue> rootsItIsNot(Place place) {
+        List<JsonValue> candidates = new ArrayList<>();
+        if (place.value() instanceof JsonValue.JsonArray list) {
+            candidates.add(list.elements().isEmpty()
+                    ? JsonValue.object(Map.of()) : list.elements().get(0));
+        } else {
+            candidates.add(JsonValue.array(List.of(place.value())));
+        }
+        candidates.addAll(List.of(JsonValue.of(NEITHER_A_NUMBER_NOR_A_YES_OR_NO), JsonValue.of(1),
+                JsonValue.TRUE));
+        List<JsonValue> others = new ArrayList<>();
+        for (JsonValue candidate : candidates) {
+            if (!sameKind(candidate, place.value()) && !others.contains(candidate)
+                    && !Shapes.couldSatisfy(model, candidate, place.declared(), hops())) {
+                others.add(candidate);
+            }
+        }
+        return others;
+    }
+
+    /**
+     * The ways of sending the accepted body as text that is not JSON: cut off halfway, which is how
+     * a body arrives when whatever sent it stopped early, or plain words. A way whose result still
+     * reads as JSON - half of {@code 12} is {@code 1} - is not one.
+     */
+    private static List<Edit.Rewrite> notJson(Place place) {
+        List<Edit.Rewrite> ways = new ArrayList<>();
+        String whole = JsonText.write(place.value());
+        int length = whole.codePointCount(0, whole.length());
+        if (length >= 2) {
+            String half = whole.substring(0, whole.offsetByCodePoints(0, length / 2));
+            if (!isJson(half)) {
+                ways.add(new Edit.Rewrite(half, "sent the body cut off after " + characters(
+                        length / 2) + " of its " + length + ", which is not JSON"));
+            }
+        }
+        ways.add(new Edit.Rewrite(PLAINLY_NOT_JSON, "sent the words '" + PLAINLY_NOT_JSON
+                + "' as the body, which is not JSON"));
+        return ways;
+    }
+
+    private static boolean isJson(String text) {
+        try {
+            JsonText.checkOneValue(text);
+            return true;
+        } catch (JsonException notJson) {
+            return false;
+        }
+    }
+
+    /**
+     * The media types this body could be sent under that the operation does not take: not one it
+     * offers, not one a range it offers covers, and none at all where the document declares a
+     * {@code Content-Type} of its own, which would be sent in place of the one changed.
+     */
+    private static List<String> otherMediaTypes(Operation operation) {
+        boolean declaresItsOwn = operation.parameters(ParameterLocation.HEADER).stream()
+                .anyMatch(header -> header.name().equalsIgnoreCase("Content-Type"));
+        if (declaresItsOwn || operation.requestBody().isEmpty()) {
+            return List.of();
+        }
+        List<String> offered = operation.requestBody().orElseThrow().mediaTypes().stream()
+                .map(Mutations::withoutParameters)
+                .toList();
+        List<String> others = new ArrayList<>();
+        for (String candidate : OTHER_MEDIA_TYPES) {
+            String kind = candidate.substring(0, candidate.indexOf('/'));
+            boolean taken = offered.contains(candidate) || offered.contains("*/*")
+                    || offered.contains(kind + "/*");
+            if (!taken) {
+                others.add(candidate);
+            }
+        }
+        return others;
+    }
+
+    private static String withoutParameters(String mediaType) {
+        int parameters = mediaType.indexOf(';');
+        return (parameters < 0 ? mediaType : mediaType.substring(0, parameters)).strip()
+                .toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Whether this is a body that is an object allowing members it does not declare - which is
+     * what a document says when it says nothing about them - with room for one more.
+     */
+    private static boolean allowsAnotherMember(Place place) {
+        return place.shape() instanceof ObjectSchema object
+                && place.value() instanceof JsonValue.JsonObject thing
+                && object.additionalProperties().map(AnySchema.class::isInstance).orElse(true)
+                && object.maxProperties().filter(most -> thing.members().size() >= most).isEmpty();
+    }
+
+    /**
+     * The accepted body with one more member, holding lists nested {@code nestingDepth} levels
+     * deep. Written as text, never built as a value: a value that deep would be refused by the
+     * very writer that writes values, and would be walked a level at a time by everything that
+     * compares one.
+     */
+    private Edit.Rewrite nestedFarTooDeep(Place place) {
+        JsonValue.JsonObject thing = (JsonValue.JsonObject) place.value();
+        ObjectSchema object = (ObjectSchema) place.shape();
+        String name = NESTED;
+        for (int suffix = 2; thing.members().containsKey(name)
+                || object.properties().containsKey(name); suffix++) {
+            name = NESTED + suffix;
+        }
+        int depth = settings.nestingDepth();
+        String written = JsonText.write(thing);
+        StringBuilder text = new StringBuilder(written.length() + name.length() + 2 * depth + 4);
+        text.append(written, 0, written.length() - 1);
+        if (!thing.members().isEmpty()) {
+            text.append(',');
+        }
+        text.append(JsonText.write(JsonValue.of(name))).append(':');
+        text.repeat('[', depth).repeat(']', depth).append('}');
+        return new Edit.Rewrite(text.toString(), "added a member '" + name + "' to the body, "
+                + "holding lists nested " + depth + " levels deep, which the description does "
+                + "not declare");
+    }
+
+    // --- the edges of a kind of number -----------------------------------------------------------
+
+    /** The kind of number this place's format names, when it names one whose edges are known. */
+    private static Optional<Width> widthNamed(Place place) {
+        return place.shape() instanceof NumberSchema number
+                ? number.format().map(format -> WIDTHS.get(format.toLowerCase(Locale.ROOT)))
+                : Optional.empty();
+    }
+
+    /**
+     * The numbers at the edges of the kinds of number this place could be read into, where nothing
+     * the document states rules them out: no bound, no closed list, no multiple. The edges of the
+     * kind its format names; or where it names none, the edges of every common kind and just past
+     * each - the numbers at which code that reads a number into a fixed number of bits stops
+     * agreeing with the document, which set no such limit. Only whole numbers where whole numbers
+     * are declared, and nothing where the format is one whose edges are not known here.
+     */
+    private List<Extreme> extremes(Place place) {
+        if (!(place.shape() instanceof NumberSchema number)
+                || !(place.value() instanceof JsonValue.JsonNumber)
+                || number.minimum().isPresent() || number.exclusiveMinimum().isPresent()
+                || number.maximum().isPresent() || number.exclusiveMaximum().isPresent()
+                || number.multipleOf().isPresent() || !acceptedList(place).isEmpty()) {
+            return List.of();
+        }
+        List<Extreme> extremes = new ArrayList<>();
+        if (number.format().isPresent()) {
+            Optional<Width> named = widthNamed(place);
+            if (named.isEmpty()) {
+                return List.of();
+            }
+            extremes.addAll(named.orElseThrow().edges());
+        } else {
+            for (String common : COMMON_WIDTHS) {
+                extremes.addAll(WIDTHS.get(common).edges());
+                extremes.addAll(WIDTHS.get(common).beyond());
+            }
+            extremes.add(new Extreme(PAST_SIXTY_FOUR_BITS, "one past the largest whole number "
+                    + "sixty-four bits hold without a sign"));
+        }
+        List<Extreme> fitting = new ArrayList<>();
+        for (Extreme extreme : extremes) {
+            boolean whole = extreme.value().stripTrailingZeros().scale() <= 0;
+            if ((whole || number.kind() == NumberKind.NUMBER)
+                    && !JsonValue.of(extreme.value()).equals(place.value())) {
+                fitting.add(extreme);
+            }
+        }
+        return fitting;
+    }
+
     // --- building --------------------------------------------------------------------------------
 
     /**
@@ -866,8 +1153,16 @@ final class Mutations {
             return location == ParameterLocation.BODY;
         }
 
+        /** Whether this is the body as a whole rather than one value in it. */
+        boolean isTheBody() {
+            return inTheBody() && steps.isEmpty();
+        }
+
         /** This place in words. */
         String described() {
+            if (isTheBody()) {
+                return "the body";
+            }
             return switch (location) {
                 case QUERY -> "query parameter '" + path + "'";
                 case HEADER -> "header '" + path + "'";
@@ -894,32 +1189,109 @@ final class Mutations {
         /** Sends the same value somewhere else. */
         record Move(ParameterLocation to, String description) implements Edit {
         }
+
+        /** Sends the body as this exact text instead of its value written out. */
+        record Rewrite(String text, String description) implements Edit {
+        }
+
+        /** Sends the body as it was, under another media type. */
+        record Relabel(String mediaType, String description) implements Edit {
+        }
     }
 
     /**
-     * The kinds of change, each with the name a person switches it off by and the family it
-     * belongs to.
+     * A kind of number a format names, and the numbers at its edges.
+     *
+     * @param named how a description names it: "an int32"
+     * @param smallest the most negative number it holds
+     * @param largest the largest
+     * @param nearestToNothing for a kind with fractions, the smallest number above nothing it holds
+     * @param whole whether it holds whole numbers only
+     */
+    private record Width(String named, BigDecimal smallest, BigDecimal largest,
+            Optional<BigDecimal> nearestToNothing, boolean whole) {
+
+        static Width whole(String named, long smallest, long largest) {
+            return new Width(named, BigDecimal.valueOf(smallest), BigDecimal.valueOf(largest),
+                    Optional.empty(), true);
+        }
+
+        static Width fractional(String named, String largest, String nearestToNothing) {
+            BigDecimal most = new BigDecimal(largest);
+            return new Width(named, most.negate(), most,
+                    Optional.of(new BigDecimal(nearestToNothing)), false);
+        }
+
+        /** Its largest and smallest, and for a kind with fractions, the nearest it gets to nothing. */
+        List<Extreme> edges() {
+            List<Extreme> edges = new ArrayList<>(List.of(
+                    new Extreme(largest, "the largest " + named + " can hold"),
+                    new Extreme(smallest, "the smallest " + named + " can hold")));
+            nearestToNothing.ifPresent(nearest -> edges.add(new Extreme(nearest,
+                    "the nearest to nothing " + named + " can hold")));
+            return edges;
+        }
+
+        /**
+         * Past its largest and past its smallest: by one for whole numbers, and ten times over for
+         * the others, since one more than the largest a float can hold is, to a float, the same
+         * number.
+         */
+        List<Extreme> beyond() {
+            return whole
+                    ? List.of(new Extreme(largest.add(BigDecimal.ONE), "one past the largest "
+                                    + named + " can hold"),
+                            new Extreme(smallest.subtract(BigDecimal.ONE), "one past the smallest "
+                                    + named + " can hold"))
+                    : List.of(new Extreme(largest.scaleByPowerOfTen(1), "ten times the largest "
+                                    + named + " can hold"),
+                            new Extreme(smallest.scaleByPowerOfTen(1), "ten times the smallest "
+                                    + named + " can hold"));
+        }
+    }
+
+    /**
+     * A number at an edge, and which edge it is in words.
+     *
+     * @param value the number
+     * @param what the edge: "the largest an int32 can hold"
+     */
+    private record Extreme(BigDecimal value, String what) {
+    }
+
+    /**
+     * The kinds of change, each with the name a person switches it off by, the family it belongs
+     * to, and where in a request it goes.
      */
     enum Operator {
 
-        DROP_REQUIRED("dropRequired", true),
-        WRONG_LOCATION("wrongLocation", true),
-        WRONG_TYPE("wrongType", true),
-        OUTSIDE_A_BOUND("outsideABound", true),
-        BREAK_AN_ENUMERATION("breakAnEnumeration", true),
-        BREAK_A_PATTERN("breakAPattern", true),
-        SEND_NULL("sendNull", true),
-        SEND_EMPTY("sendEmpty", true),
-        OVERSIZE("oversize", true),
-        OVERSIZE_WITH_NO_LIMIT("oversizeWithNoLimit", false),
-        EMPTY_WITH_NO_RULE("emptyWithNoRule", false);
+        DROP_REQUIRED("dropRequired", true, Reach.ONE_VALUE),
+        WRONG_LOCATION("wrongLocation", true, Reach.ONE_VALUE),
+        WRONG_TYPE("wrongType", true, Reach.ONE_VALUE),
+        OUTSIDE_A_BOUND("outsideABound", true, Reach.ONE_VALUE),
+        BREAK_AN_ENUMERATION("breakAnEnumeration", true, Reach.ONE_VALUE),
+        BREAK_A_PATTERN("breakAPattern", true, Reach.ONE_VALUE),
+        SEND_NULL("sendNull", true, Reach.ONE_VALUE),
+        SEND_EMPTY("sendEmpty", true, Reach.ONE_VALUE),
+        OVERSIZE("oversize", true, Reach.ONE_VALUE),
+        OVERSIZE_WITH_NO_LIMIT("oversizeWithNoLimit", false, Reach.ONE_VALUE),
+        EMPTY_WITH_NO_RULE("emptyWithNoRule", false, Reach.ONE_VALUE),
+        WRONG_ROOT("wrongRoot", true, Reach.THE_WHOLE_BODY),
+        EMPTY_BODY("emptyBody", true, Reach.THE_WHOLE_BODY),
+        NOT_JSON("notJson", true, Reach.THE_WHOLE_BODY),
+        WRONG_CONTENT_TYPE("wrongContentType", true, Reach.THE_WHOLE_BODY),
+        BEYOND_ITS_WIDTH("beyondItsWidth", true, Reach.ANY_NUMBER),
+        DEEP_NESTING("deepNesting", false, Reach.THE_WHOLE_BODY),
+        EXTREME_NUMBER("extremeNumber", false, Reach.ANY_NUMBER);
 
         private final String written;
         private final boolean breaksTheDocument;
+        private final Reach reach;
 
-        Operator(String written, boolean breaksTheDocument) {
+        Operator(String written, boolean breaksTheDocument, Reach reach) {
             this.written = written;
             this.breaksTheDocument = breaksTheDocument;
+            this.reach = reach;
         }
 
         /** Its name, as a setting, and as a change records what kind it was. */
@@ -937,6 +1309,28 @@ final class Mutations {
             return breaksTheDocument ? Intent.REFUSAL_EXPECTED : Intent.UNKNOWN;
         }
 
+        /** Whether it may go to this place at all, before asking whether it has anything to do. */
+        boolean goesTo(Place place) {
+            return switch (reach) {
+                case ONE_VALUE -> !place.isTheBody();
+                case THE_WHOLE_BODY -> place.isTheBody();
+                case ANY_NUMBER -> true;
+            };
+        }
+
+        /**
+         * Whether what it sends is judged against the shape the document gives the place, so that
+         * a shape nobody could read leaves it nothing to judge by. Leaving a value out, and sending
+         * a body that is no JSON at all or under the wrong media type, break a rule that has
+         * nothing to do with the shape.
+         */
+        boolean judgesTheShape() {
+            return switch (this) {
+                case DROP_REQUIRED, EMPTY_BODY, NOT_JSON, WRONG_CONTENT_TYPE -> false;
+                default -> true;
+            };
+        }
+
         /** Whether it and its family are both switched on. */
         boolean isOn(MutationSettings settings) {
             boolean family = breaksTheDocument ? settings.violations() : settings.probes();
@@ -952,7 +1346,27 @@ final class Mutations {
                 case OVERSIZE -> settings.oversize();
                 case OVERSIZE_WITH_NO_LIMIT -> settings.oversizeWithNoLimit();
                 case EMPTY_WITH_NO_RULE -> settings.emptyWithNoRule();
+                case WRONG_ROOT -> settings.wrongRoot();
+                case EMPTY_BODY -> settings.emptyBody();
+                case NOT_JSON -> settings.notJson();
+                case WRONG_CONTENT_TYPE -> settings.wrongContentType();
+                case BEYOND_ITS_WIDTH -> settings.beyondItsWidth();
+                case DEEP_NESTING -> settings.deepNesting();
+                case EXTREME_NUMBER -> settings.extremeNumber();
             };
         }
+    }
+
+    /** Where in a request a kind of change goes. */
+    private enum Reach {
+
+        /** One value - a parameter, or one property inside a body - and never the body as a whole. */
+        ONE_VALUE,
+
+        /** The body as a whole, and nothing inside it. */
+        THE_WHOLE_BODY,
+
+        /** A number, wherever it is: a parameter, inside a body, or a body that is one number. */
+        ANY_NUMBER
     }
 }

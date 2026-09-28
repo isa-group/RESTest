@@ -37,6 +37,13 @@ class MutationSettingsTest {
         assertThat(defaults.acceptedKept()).isEqualTo(16);
         assertThat(defaults.oversizedLength()).isEqualTo(10_000);
         assertThat(defaults.oversizedItems()).isEqualTo(1_000);
+        assertThat(defaults.nestingDepth()).isEqualTo(10_000);
+        assertThat(defaults.wrongRoot() && defaults.emptyBody() && defaults.notJson()
+                && defaults.wrongContentType() && defaults.beyondItsWidth()
+                && defaults.deepNesting() && defaults.extremeNumber())
+                .describedAs("the changes to a body as a whole each have a switch of their own, "
+                        + "on, and are made or not by their family's")
+                .isTrue();
     }
 
     @Test
@@ -58,11 +65,16 @@ class MutationSettingsTest {
     }
 
     @Test
-    @DisplayName("keeping none of the accepted requests, or oversizing to nothing, is refused")
+    @DisplayName("keeping none of the accepted requests, oversizing to nothing, or nesting no "
+            + "levels deep, is refused")
     void sizes_are_at_least_one() {
         assertThatIllegalArgumentException().isThrownBy(() -> new MutationSettings(true, true,
-                true, true, true, true, true, true, true, true, true, true, true, 0, 1, 1))
+                true, true, true, true, true, true, true, true, true, true, true,
+                true, true, true, true, true, true, true, 0, 1, 1, 1))
                 .withMessageContaining("acceptedKept");
+        assertThatExceptionOfType(SettingsException.class)
+                .isThrownBy(() -> Settings.from(Map.of("mutation.nestingDepth", "0")))
+                .withMessageContaining("nestingDepth");
         assertThatExceptionOfType(SettingsException.class)
                 .isThrownBy(() -> Settings.from(Map.of("mutation.oversizedLength", "0")))
                 .withMessageContaining("mutation")

@@ -36,6 +36,28 @@ class BodyValueTest {
     }
 
     @Test
+    @DisplayName("a body is sent as its value written out unless it says otherwise")
+    void a_body_is_sent_as_its_value_by_default() {
+        assertThat(new BodyValue("application/json", JsonValue.of("x"), ValueOrigin.DECLARED)
+                .sentAs()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a body sent as exact text keeps the content it was made from, and may be sent "
+            + "under another media type")
+    void a_body_can_be_sent_as_exact_text() {
+        BodyValue made = new BodyValue("application/json", JsonValue.of("x"),
+                ValueOrigin.DECLARED);
+
+        BodyValue sent = made.withTextSent("text/plain", "");
+
+        assertThat(sent.sentAs()).contains("");
+        assertThat(sent.mediaType()).isEqualTo("text/plain");
+        assertThat(sent.value()).isEqualTo(made.value());
+        assertThat(sent.origin()).isEqualTo(made.origin());
+    }
+
+    @Test
     @DisplayName("a body value must have a media type")
     void a_media_type_is_required() {
         assertThatIllegalArgumentException().isThrownBy(

@@ -254,6 +254,42 @@ class InteractionDocumentTest {
     }
 
     @Test
+    @DisplayName("a body sent as exact text keeps that text, down to a body of no bytes at all")
+    void a_body_sent_as_exact_text_survives() {
+        BodyValue made = new BodyValue("application/json",
+                JsonValue.object(Map.of("name", JsonValue.of("Rex"))),
+                new ValueOrigin.Generated("random"));
+        for (String text : List.of("{\"name\":\"Re", "")) {
+            TestCase testCase = TestCase.of(OperationId.of("POST /pets"), List.of(),
+                    made.withTextSent("application/json", text));
+            Interaction original = Interaction.answered(testCase, request(),
+                    HttpResponseRecord.of(400), Instant.EPOCH, Duration.ofMillis(5));
+
+            Interaction read = InteractionDocument.toInteraction(InteractionDocument.of(original));
+
+            assertThat(read.testCase().body()).contains(testCase.body().orElseThrow());
+            assertThat(read.testCase().body().orElseThrow().sentAs()).contains(text);
+        }
+    }
+
+    @Test
+    @DisplayName("a body sent as its value written out stores no text of its own, as every body "
+            + "stored before could not")
+    void a_body_sent_as_its_value_stores_no_text() {
+        TestCase testCase = TestCase.of(OperationId.of("POST /pets"), List.of(),
+                new BodyValue("application/json", JsonValue.object(Map.of()),
+                        ValueOrigin.DECLARED));
+        Interaction original = Interaction.answered(testCase, request(),
+                HttpResponseRecord.of(201), Instant.EPOCH, Duration.ofMillis(5));
+
+        JsonValue.JsonObject written = (JsonValue.JsonObject) InteractionDocument.of(original);
+
+        assertThat(member(member(written, "testCase"), "body").member("sentAs")).isEmpty();
+        assertThat(InteractionDocument.toInteraction(written).testCase().body().orElseThrow()
+                .sentAs()).isEmpty();
+    }
+
+    @Test
     @DisplayName("a body that reads as text is written as that text, so a person can read it")
     void a_text_body_is_written_as_text() {
         JsonValue.JsonObject written = (JsonValue.JsonObject) InteractionDocument.of(answered());

@@ -166,12 +166,28 @@ mutation:
   oversizeWithNoLimit: true   # default
   # send an empty word, list or object where nothing forbids one; a probe
   emptyWithNoRule: true       # default
+  # send the whole body as another kind of thing, such as a list where an object is declared
+  wrongRoot: true             # default
+  # send a body of no bytes at all where the description requires one
+  emptyBody: true             # default
+  # send a body that is not JSON: the accepted one cut off halfway, or plain words
+  notJson: true               # default
+  # send the accepted body under a media type the description does not offer
+  wrongContentType: true      # default
+  # send a number past what its declared format holds, such as 2147483648 for int32
+  beyondItsWidth: true        # default
+  # add an undeclared member nested nestingDepth lists deep to a body that allows one; a probe
+  deepNesting: true           # default
+  # send the largest or smallest number a common width holds, where nothing rules it out; a probe
+  extremeNumber: true         # default
   # how many of each operation's accepted requests are kept to be changed, newest first
   acceptedKept: 16            # default
   # how many characters an oversized word has
   oversizedLength: 10000      # default
   # how many items an oversized list has
   oversizedItems: 1000        # default
+  # how many lists deep the member deepNesting adds is
+  nestingDepth: 10000         # default
 
 memory:
   # how many values the run remembers under any one name, and things of any one kind. 0 remembers none
@@ -335,6 +351,12 @@ unless you turn them on: measured against five APIs, a minute each, they found n
 violations had not, and on one API they cost a third of the requests. With both off, such a strategy
 builds its requests the ordinary way.
 
+Seven of the kinds, from `wrongRoot` to `extremeNumber`, break the body as a whole rather than one
+value in it — its kind, its bytes, its media type, how deep it goes — or push a number to the edge of
+what a kind of number can hold. They aim at the code that reads a body before the API's own code
+runs, and they belong to the same two families by the same rule: `deepNesting` and `extremeNumber`
+are probes, the other five violations.
+
 | Setting | Default | What it does |
 |---|---|---|
 | `violations` | `true` | whether accepted requests are changed in ways the description forbids |
@@ -350,9 +372,17 @@ builds its requests the ordinary way.
 | `oversize` | `true` | send a word or list far longer than the longest the description allows |
 | `oversizeWithNoLimit` | `true` | the same where the description states no longest length; a probe |
 | `emptyWithNoRule` | `true` | send an empty word, list or object where nothing forbids one; a probe |
+| `wrongRoot` | `true` | send the whole body as another kind of thing, such as a list where an object is declared |
+| `emptyBody` | `true` | send a body of no bytes at all where the description requires one |
+| `notJson` | `true` | send a body that is not JSON: the accepted one cut off halfway, or plain words |
+| `wrongContentType` | `true` | send the accepted body under a media type the description does not offer |
+| `beyondItsWidth` | `true` | send a number past what its declared format holds, such as 2147483648 for int32 |
+| `deepNesting` | `true` | add an undeclared member nested nestingDepth lists deep to a body that allows one; a probe |
+| `extremeNumber` | `true` | send the largest or smallest number a common width holds, where nothing rules it out; a probe |
 | `acceptedKept` | `16` | how many of each operation's accepted requests are kept to be changed, newest first |
 | `oversizedLength` | `10000` | how many characters an oversized word has |
 | `oversizedItems` | `1000` | how many items an oversized list has |
+| `nestingDepth` | `10000` | how many lists deep the member deepNesting adds is |
 
 ### `memory.*`
 

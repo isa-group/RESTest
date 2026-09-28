@@ -221,8 +221,8 @@ what it accepted can be changed, the request is built from them the ordinary way
 carries gives its `mutation` strategy the same sources as `nominal`, so that its fallback requests
 are exactly the ones `nominal` would build.
 
-What is changed is one value — a parameter, or one property inside a JSON body, however deep — and
-how is one of eleven kinds, in two families:
+What is changed is one value — a parameter, or one property inside a JSON body, however deep — or
+the JSON body as a whole, and how is one of eighteen kinds, in two families:
 
 | Family | The kind of change | What is sent |
 |---|---|---|
@@ -235,8 +235,15 @@ how is one of eleven kinds, in two families:
 | | `sendNull` | `null` for a body property that may not be null |
 | | `sendEmpty` | an empty word, list or object where the description forbids one |
 | | `oversize` | a word of ten thousand characters, or a list of a thousand items, where the description states a smaller most |
+| | `wrongRoot` | the whole body as another kind of thing: the accepted object inside a list, a word, a number, `true` |
+| | `emptyBody` | a body of no bytes at all, where the description says a body is required |
+| | `notJson` | a body that is not JSON: the accepted one cut off halfway, or plain words |
+| | `wrongContentType` | the accepted body, unchanged, under `text/plain`, `application/xml` or a form's media type, whichever the operation does not take |
+| | `beyondItsWidth` | a number past what its format holds: `2147483648` where the description says `int32` |
 | probes | `oversizeWithNoLimit` | the same where the description states no most at all |
 | | `emptyWithNoRule` | an empty word, list or object where nothing forbids one |
+| | `deepNesting` | a member the description does not declare, holding lists nested ten thousand deep, added to a body that allows such members |
+| | `extremeNumber` | the largest or smallest number an `int32`, `int64`, `float` or `double` holds, or just past it, where nothing in the description rules it out |
 
 A **violation** breaks something the description states, so the request records that it expects
 to be refused. A **probe** goes where the description says nothing, so either answer may be right,
@@ -247,7 +254,9 @@ which accepted request, so a stored run can put the two side by side.
 Some things are never changed, because the change would not be the one recorded: a value in the
 path is never left out or emptied, since the address would then be a different one; a header the
 client writes itself, such as `Content-Type`, is never left out or moved, since it would be put
-back; and a body sent as the fields of a web form, which cannot say `null`, is left alone.
+back; and a body sent as the fields of a web form, which cannot say `null`, is left alone. A change
+to one value never goes to the body as a whole, and a change to the body as a whole never goes
+inside it.
 
 Which kinds of change are made, and how large an oversized value is, are **settings**, not part of
 the plan, because they are about how the tool behaves rather than about the API: every kind, and

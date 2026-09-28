@@ -16,6 +16,7 @@
 package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.Intent;
@@ -24,6 +25,8 @@ import io.restest.core.execution.Mutation;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.ValueOrigin;
+import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
@@ -34,6 +37,7 @@ import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
@@ -133,8 +137,33 @@ class MutationsTest {
                     Map.of("application/x-www-form-urlencoded", PET)))
             .withId(OperationId.of("addPetByForm"));
 
+    /** Numbers of every kind a format names, and one that names none. */
+    private static final ObjectSchema READING = ObjectSchema.of(properties(
+            "count", number(NumberKind.INTEGER, "int32"),
+            "total", number(NumberKind.INTEGER, null),
+            "ratio", number(NumberKind.NUMBER, "double"),
+            "weight", number(NumberKind.NUMBER, "float"),
+            "level", new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER, Optional.empty(),
+                    Optional.empty(), Optional.of(BigDecimal.TEN), Optional.empty(),
+                    Optional.empty(), Optional.of("int32")),
+            "grade", new NumberSchema(SchemaMetadata.none().withEnumeration(List.of(
+                    JsonValue.of(1), JsonValue.of(2))), NumberKind.INTEGER, Optional.empty(),
+                    Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                    Optional.empty()),
+            "step", new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER, Optional.empty(),
+                    Optional.empty(), Optional.empty(), Optional.empty(),
+                    Optional.of(BigDecimal.valueOf(5)), Optional.empty()),
+            "byte", number(NumberKind.INTEGER, "uint8")), Set.of("count"));
+
+    /** An operation whose body may be left out, full of numbers, with one more in the query. */
+    private static final Operation ADD_READING = Operation.of(HttpMethod.POST, "/readings",
+                    List.of(Parameter.of("since", ParameterLocation.QUERY, true,
+                            number(NumberKind.INTEGER, "int64"))))
+            .withRequestBody(RequestBodyModel.json(READING, false))
+            .withId(OperationId.of("addReading"));
+
     private static final ApiModel API = ApiModel.of("Pets", "1.0",
-            List.of(FIND_PETS, ADD_PET, ADD_PET_BY_FORM));
+            List.of(FIND_PETS, ADD_PET, ADD_PET_BY_FORM, ADD_READING));
 
     private static final AcceptedRequests.Accepted FOUND = new AcceptedRequests.Accepted(
             TestCase.of(FIND_PETS.id(), List.of(
@@ -161,6 +190,18 @@ class MutationsTest {
     private static final AcceptedRequests.Accepted ADDED = new AcceptedRequests.Accepted(
             TestCase.of(ADD_PET.id(), List.of(), new BodyValue("application/json", REX,
                     new ValueOrigin.Generated("random"))),
+            InteractionId.generate());
+
+    private static final AcceptedRequests.Accepted READ = new AcceptedRequests.Accepted(
+            TestCase.of(ADD_READING.id(), List.of(value("since", ParameterLocation.QUERY,
+                            JsonValue.of(100))),
+                    new BodyValue("application/json", JsonValue.object(members(
+                            "count", JsonValue.of(3), "total", JsonValue.of(40),
+                            "ratio", JsonValue.of(new BigDecimal("0.5")),
+                            "weight", JsonValue.of(new BigDecimal("1.5")),
+                            "level", JsonValue.of(4), "grade", JsonValue.of(2),
+                            "step", JsonValue.of(10), "byte", JsonValue.of(7))),
+                            new ValueOrigin.Generated("random"))),
             InteractionId.generate());
 
     @Nested
@@ -469,6 +510,323 @@ class MutationsTest {
     }
 
     @Nested
+    @DisplayName("the body as a whole")
+    class TheWholeBody {
+
+        @Test
+        @DisplayName("a body of another kind than declared, never one the shape accepts")
+        void a_root_of_the_wrong_kind() {
+            List<TestCase> changed = changes("wrongRoot", ADD_PET, ADDED);
+
+            assertThat(changed).isNotEmpty().allSatisfy(each -> {
+                assertBodyAsAWhole(each, Intent.REFUSAL_EXPECTED);
+                JsonValue sent = each.body().orElseThrow().value();
+                assertThat(sent).isNotInstanceOf(JsonValue.JsonObject.class);
+                assertThat(Shapes.couldSatisfy(API, sent, PET, 8)).isFalse();
+                assertThat(each.body().orElseThrow().sentAs()).isEmpty();
+                assertThat(each.mutation().orElseThrow().description()).endsWith("the body, "
+                        + "declared as an object");
+            });
+            assertThat(changed).extracting(each -> each.body().orElseThrow().value())
+                    .describedAs("one thing where several are expected, and the other way round")
+                    .contains(JsonValue.array(List.of(REX)), JsonValue.of("abc"), JsonValue.TRUE);
+            ArraySchema pets = new ArraySchema(SchemaMetadata.none(), PET, Optional.empty(),
+                    Optional.empty(), false);
+            Operation addPets = Operation.of(HttpMethod.POST, "/pets/many")
+                    .withRequestBody(RequestBodyModel.json(pets, true))
+                    .withId(OperationId.of("addPets"));
+            assertThat(changesIn(addPets, bodied(addPets, JsonValue.array(List.of(REX))),
+                    "wrongRoot"))
+                    .extracting(each -> each.body().orElseThrow().value())
+                    .contains(REX)
+                    .doesNotContain(JsonValue.array(List.of(REX)));
+        }
+
+        @Test
+        @DisplayName("no bytes at all where a body is required, and never where it may be left out")
+        void an_empty_body_only_where_one_is_required() {
+            List<TestCase> changed = changes("emptyBody", ADD_PET, ADDED);
+
+            assertThat(changed).isNotEmpty().allSatisfy(each -> {
+                assertBodyAsAWhole(each, Intent.REFUSAL_EXPECTED);
+                BodyValue body = each.body().orElseThrow();
+                assertThat(body.sentAs()).contains("");
+                assertThat(body.mediaType()).isEqualTo("application/json");
+                assertThat(body.value()).describedAs("what the empty body was made from")
+                        .isEqualTo(REX);
+            });
+            assertThat(changes("emptyBody", ADD_READING, READ)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("text that is not JSON: the accepted body cut off halfway, or plain words")
+        void text_that_is_not_json() {
+            List<TestCase> changed = changes("notJson", ADD_PET, ADDED);
+            String accepted = JsonText.write(REX);
+
+            assertThat(changed).isNotEmpty().allSatisfy(each -> {
+                assertBodyAsAWhole(each, Intent.REFUSAL_EXPECTED);
+                String sent = each.body().orElseThrow().sentAs().orElseThrow();
+                assertThatExceptionOfType(JsonException.class)
+                        .isThrownBy(() -> JsonText.checkOneValue(sent));
+                assertThat(sent.equals("this is not JSON")
+                        || accepted.startsWith(sent) && sent.length() == accepted.length() / 2)
+                        .describedAs(sent).isTrue();
+            });
+            assertThat(changed).extracting(each -> each.body().orElseThrow().sentAs()
+                            .orElseThrow())
+                    .contains("this is not JSON", accepted.substring(0, accepted.length() / 2));
+            Operation addCount = Operation.of(HttpMethod.POST, "/count")
+                    .withRequestBody(RequestBodyModel.json(NumberSchema.of(NumberKind.INTEGER),
+                            true))
+                    .withId(OperationId.of("addCount"));
+            assertThat(changesIn(addCount, bodied(addCount, JsonValue.of(12)), "notJson"))
+                    .extracting(each -> each.body().orElseThrow().sentAs().orElseThrow())
+                    .describedAs("half of 12 is 1, which is JSON, so it is not sent as though "
+                            + "it were not")
+                    .containsOnly("this is not JSON");
+        }
+
+        @Test
+        @DisplayName("the accepted body unchanged, under a media type the operation does not take")
+        void under_the_wrong_media_type() {
+            List<TestCase> changed = changes("wrongContentType", ADD_PET, ADDED);
+
+            assertThat(changed).isNotEmpty().allSatisfy(each -> {
+                assertBodyAsAWhole(each, Intent.REFUSAL_EXPECTED);
+                assertThat(each.body().orElseThrow().sentAs()).contains(JsonText.write(REX));
+            });
+            assertThat(changed).extracting(each -> each.body().orElseThrow().mediaType())
+                    .containsOnly("text/plain", "application/xml",
+                            "application/x-www-form-urlencoded");
+
+            Operation ranges = Operation.of(HttpMethod.POST, "/pets/ranges")
+                    .withRequestBody(RequestBodyModel.ofShapes(true, Map.of(
+                            "application/json", PET, "text/*", PET,
+                            "application/x-www-form-urlencoded; charset=utf-8", PET)))
+                    .withId(OperationId.of("addPetInRanges"));
+            assertThat(changesIn(ranges, bodied(ranges, REX), "wrongContentType"))
+                    .extracting(each -> each.body().orElseThrow().mediaType())
+                    .describedAs("never one the operation offers, nor one a range it offers "
+                            + "covers")
+                    .containsOnly("application/xml");
+            Operation anything = Operation.of(HttpMethod.POST, "/pets/anything")
+                    .withRequestBody(RequestBodyModel.ofShapes(true, Map.of(
+                            "application/json", PET, "*/*", PET)))
+                    .withId(OperationId.of("addPetAsAnything"));
+            assertThat(changesIn(anything, bodied(anything, REX), "wrongContentType")).isEmpty();
+            Operation ownHeader = Operation.of(HttpMethod.POST, "/pets/own",
+                            List.of(Parameter.of("content-type", ParameterLocation.HEADER, false,
+                                    StringSchema.of())))
+                    .withRequestBody(RequestBodyModel.json(PET, true))
+                    .withId(OperationId.of("addPetWithItsOwnHeader"));
+            assertThat(changesIn(ownHeader, bodied(ownHeader, REX), "wrongContentType"))
+                    .describedAs("a Content-Type the document declares itself would be sent in "
+                            + "place of the one changed")
+                    .isEmpty();
+        }
+
+        @Test
+        @DisplayName("a member nobody declared, nested far deeper than the shape, as a probe")
+        void a_member_nested_far_too_deep() {
+            Map<String, String> given = onlyTheSwitch("deepNesting");
+            given.put("mutation.nestingDepth", "50");
+            TestCase changed = new Mutations(API, Settings.from(given).mutation(),
+                    GenerationSettings.defaults(), new SplittableRandom(1))
+                    .changeOneThingIn(ADD_PET, ADDED).orElseThrow();
+
+            assertBodyAsAWhole(changed, Intent.UNKNOWN);
+            JsonValue.JsonObject sent = (JsonValue.JsonObject) JsonText.read(
+                    changed.body().orElseThrow().sentAs().orElseThrow());
+            assertThat(sent.members()).containsAllEntriesOf(
+                    ((JsonValue.JsonObject) REX).members());
+            JsonValue nested = sent.members().get("nested");
+            int depth = 0;
+            while (nested instanceof JsonValue.JsonArray list) {
+                depth++;
+                nested = list.elements().isEmpty() ? null : list.elements().get(0);
+            }
+            assertThat(depth).isEqualTo(50);
+            assertThat(changed.mutation().orElseThrow().description())
+                    .contains("'nested'", "50 levels deep");
+
+            String byDefault = changes("deepNesting", ADD_PET, ADDED).get(0).body().orElseThrow()
+                    .sentAs().orElseThrow();
+            assertThat(byDefault).endsWith("]".repeat(10_000) + "}")
+                    .contains("\"nested\":" + "[".repeat(10_000));
+        }
+
+        @Test
+        @DisplayName("never where the shape forbids a member it does not declare, and never under "
+                + "a name already taken")
+        void only_where_another_member_is_allowed() {
+            ObjectSchema closed = new ObjectSchema(SchemaMetadata.none(), properties("a",
+                    StringSchema.of()), Set.of(), Optional.of(NothingSchema.of()),
+                    Optional.empty(), Optional.empty());
+            ObjectSchema wordsOnly = new ObjectSchema(SchemaMetadata.none(), properties("a",
+                    StringSchema.of()), Set.of(), Optional.of(StringSchema.of()),
+                    Optional.empty(), Optional.empty());
+            ObjectSchema full = new ObjectSchema(SchemaMetadata.none(), properties("a",
+                    StringSchema.of()), Set.of(), Optional.empty(), Optional.empty(),
+                    Optional.of(1));
+            ObjectSchema open = ObjectSchema.of(properties("nested", StringSchema.of()),
+                    Set.of());
+            JsonValue one = JsonValue.object(Map.of("a", JsonValue.of("x")));
+            for (ObjectSchema refusing : List.of(closed, wordsOnly, full)) {
+                Operation add = Operation.of(HttpMethod.POST, "/a")
+                        .withRequestBody(RequestBodyModel.json(refusing, true))
+                        .withId(OperationId.of("addA"));
+                assertThat(changesIn(add, bodied(add, one), "deepNesting")).isEmpty();
+            }
+            Operation add = Operation.of(HttpMethod.POST, "/n")
+                    .withRequestBody(RequestBodyModel.json(open, true))
+                    .withId(OperationId.of("addN"));
+            assertThat(changesIn(add, bodied(add, JsonValue.object(Map.of())), "deepNesting"))
+                    .isNotEmpty()
+                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().description())
+                            .contains("'nested2'"));
+        }
+
+        @Test
+        @DisplayName("none of the changes to one value is ever made to the body as a whole")
+        void the_body_as_a_whole_is_for_its_own_changes() {
+            StringSchema shortWord = new StringSchema(SchemaMetadata.none(), Optional.of(1),
+                    Optional.of(3), Optional.empty(), Optional.empty());
+            Operation addWord = Operation.of(HttpMethod.POST, "/word")
+                    .withRequestBody(RequestBodyModel.json(shortWord, true))
+                    .withId(OperationId.of("addWord"));
+            for (Mutations.Operator operator : Mutations.Operator.values()) {
+                List<TestCase> changed = new ArrayList<>(changesIn(addWord,
+                        bodied(addWord, JsonValue.of("ab")), operator.written()));
+                changed.addAll(changesIn(ADD_PET, ADDED, operator.written()));
+                boolean asAWhole = changed.stream().anyMatch(each -> each.mutation()
+                        .orElseThrow().path().equals("body"));
+                assertThat(asAWhole).describedAs(operator.written())
+                        .isEqualTo(List.of("wrongRoot", "emptyBody", "notJson",
+                                "wrongContentType", "deepNesting").contains(operator.written()));
+            }
+        }
+
+        private void assertBodyAsAWhole(TestCase changed, Intent intent) {
+            Mutation mutation = changed.mutation().orElseThrow();
+            assertThat(changed.intent()).isEqualTo(intent);
+            assertThat(mutation.location()).isEqualTo(ParameterLocation.BODY);
+            assertThat(mutation.path()).isEqualTo("body");
+            assertThat(mutation.of()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("the edges of a kind of number")
+    class TheEdgesOfANumber {
+
+        @Test
+        @DisplayName("past what the kind of number its format names can hold, as a violation, in "
+                + "a body or a parameter")
+        void beyond_its_width() {
+            List<TestCase> changed = changes("beyondItsWidth", ADD_READING, READ);
+
+            assertThat(changed).allSatisfy(each -> assertThat(each.intent())
+                    .isEqualTo(Intent.REFUSAL_EXPECTED));
+            assertThat(sentAt(changed, "body.count")).containsOnly(
+                    new BigDecimal("2147483648"), new BigDecimal("-2147483649"));
+            assertThat(sentAt(changed, "body.level"))
+                    .describedAs("a stated most does not stop it: past the width is past that too")
+                    .contains(new BigDecimal("2147483648"));
+            assertThat(sentAt(changed, "body.ratio")).containsOnly(
+                    new BigDecimal("1.7976931348623157E309"),
+                    new BigDecimal("-1.7976931348623157E309"));
+            assertThat(sentAt(changed, "body.weight")).containsOnly(
+                    new BigDecimal("3.4028235E39"), new BigDecimal("-3.4028235E39"));
+            assertThat(sentAt(changed, "since")).containsOnly(
+                    new BigDecimal("9223372036854775808"), new BigDecimal("-9223372036854775809"));
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
+                    .describedAs("no format, or one whose edges are not known, names no width")
+                    .doesNotContain("body.total", "body.byte");
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().description())
+                    .contains("sent 2147483648 for body.count, one past the largest an int32 "
+                            + "can hold");
+        }
+
+        @Test
+        @DisplayName("a body that is one number is a number like any other")
+        void a_body_that_is_one_number() {
+            Operation addCount = Operation.of(HttpMethod.POST, "/count")
+                    .withRequestBody(RequestBodyModel.json(number(NumberKind.INTEGER, "int32"),
+                            true))
+                    .withId(OperationId.of("addCount"));
+
+            assertThat(changesIn(addCount, bodied(addCount, JsonValue.of(12)), "beyondItsWidth"))
+                    .isNotEmpty()
+                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().path())
+                            .isEqualTo("body"));
+        }
+
+        @Test
+        @DisplayName("the edges of every kind of number where nothing rules them out, as a probe")
+        void the_edges_where_nothing_rules_them_out() {
+            List<TestCase> changed = changes("extremeNumber", ADD_READING, READ);
+
+            assertThat(changed).allSatisfy(each -> assertThat(each.intent())
+                    .isEqualTo(Intent.UNKNOWN));
+            assertThat(sentAt(changed, "body.count")).containsOnly(
+                    new BigDecimal("2147483647"), new BigDecimal("-2147483648"));
+            assertThat(sentAt(changed, "body.ratio")).containsOnly(
+                    new BigDecimal("1.7976931348623157E308"),
+                    new BigDecimal("-1.7976931348623157E308"), new BigDecimal("4.9E-324"));
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
+                    .contains("body.total", "since");
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
+                    .describedAs("a bound, a closed list, a multiple or a width not known here "
+                            + "rules the edges out")
+                    .doesNotContain("body.level", "body.grade", "body.step", "body.byte");
+        }
+
+        @Test
+        @DisplayName("where no width is named, the edges of every common width and just past "
+                + "them, only whole numbers where whole numbers are declared")
+        void every_width_where_none_is_named() {
+            Operation addCount = Operation.of(HttpMethod.POST, "/count")
+                    .withRequestBody(RequestBodyModel.json(number(NumberKind.INTEGER, null),
+                            true))
+                    .withId(OperationId.of("addCount"));
+            ApiModel api = ApiModel.of("Count", "1.0", List.of(addCount));
+            AcceptedRequests.Accepted twelve = bodied(addCount, JsonValue.of(12));
+            List<BigDecimal> sent = new ArrayList<>();
+            for (long seed = 0; seed < DRAWS; seed++) {
+                new Mutations(api, Settings.from(onlyTheSwitch("extremeNumber")).mutation(),
+                        GenerationSettings.defaults(), new SplittableRandom(seed))
+                        .changeOneThingIn(addCount, twelve).ifPresent(changed -> sent.add(
+                                ((JsonValue.JsonNumber) changed.body().orElseThrow().value())
+                                        .value()));
+            }
+
+            assertThat(sent).contains(new BigDecimal("2147483647"), new BigDecimal("2147483648"),
+                    new BigDecimal("-2147483649"), new BigDecimal("9223372036854775808"),
+                    new BigDecimal("18446744073709551616"), new BigDecimal("3.4028235E38"),
+                    new BigDecimal("1.7976931348623157E309"));
+            assertThat(sent).allSatisfy(each -> assertThat(each.stripTrailingZeros().scale())
+                    .isLessThanOrEqualTo(0));
+        }
+
+        private List<BigDecimal> sentAt(List<TestCase> changed, String path) {
+            List<BigDecimal> sent = new ArrayList<>();
+            for (TestCase each : changed) {
+                Mutation mutation = each.mutation().orElseThrow();
+                if (!mutation.path().equals(path)) {
+                    continue;
+                }
+                JsonValue value = mutation.location() == ParameterLocation.BODY
+                        ? ((JsonValue.JsonObject) each.body().orElseThrow().value()).members()
+                                .get(path.substring("body.".length()))
+                        : each.parameterValue(path, mutation.location()).orElseThrow().value();
+                sent.add(((JsonValue.JsonNumber) value).value());
+            }
+            return sent;
+        }
+    }
+
+    @Nested
     @DisplayName("the families and what is never touched")
     class Families {
 
@@ -483,7 +841,7 @@ class MutationsTest {
                     .isNotEmpty()
                     .allSatisfy(each -> assertThat(each.intent()).isEqualTo(Intent.UNKNOWN))
                     .extracting(each -> each.mutation().orElseThrow().operator())
-                    .containsOnly("oversizeWithNoLimit", "emptyWithNoRule");
+                    .containsOnly("oversizeWithNoLimit", "emptyWithNoRule", "deepNesting");
             assertThat(draw(Settings.from(violationsOnly).mutation(), ADD_PET, ADDED))
                     .isNotEmpty()
                     .allSatisfy(each -> assertThat(each.intent())
@@ -514,13 +872,15 @@ class MutationsTest {
         void everything_on() {
             List<TestCase> changed = new ArrayList<>(draw(BOTH_FAMILIES, ADD_PET, ADDED));
             changed.addAll(draw(BOTH_FAMILIES, FIND_PETS, FOUND));
+            changed.addAll(draw(BOTH_FAMILIES, ADD_READING, READ));
 
             assertThat(changed).extracting(each -> each.mutation().orElseThrow().operator())
                     .containsAll(java.util.Arrays.stream(Mutations.Operator.values())
                             .map(Mutations.Operator::written).toList());
             assertThat(changed).allSatisfy(each -> {
-                TestCase base = each.operation().equals(ADD_PET.id())
-                        ? ADDED.testCase() : FOUND.testCase();
+                TestCase base = each.operation().equals(ADD_PET.id()) ? ADDED.testCase()
+                        : each.operation().equals(ADD_READING.id()) ? READ.testCase()
+                        : FOUND.testCase();
                 assertThat(each.parameterValues().equals(base.parameterValues())
                         && each.body().equals(base.body()))
                         .describedAs("a change that changes nothing is not a change")
@@ -780,6 +1140,17 @@ class MutationsTest {
     }
 
     // --- helpers ---------------------------------------------------------------------------------
+
+    private static AcceptedRequests.Accepted bodied(Operation operation, JsonValue body) {
+        return new AcceptedRequests.Accepted(TestCase.of(operation.id(), List.of(),
+                new BodyValue("application/json", body, new ValueOrigin.Generated("random"))),
+                InteractionId.generate());
+    }
+
+    private static NumberSchema number(NumberKind kind, String format) {
+        return new NumberSchema(SchemaMetadata.none(), kind, Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.ofNullable(format));
+    }
 
     private static AcceptedRequests.Accepted accepted(Operation operation,
             ParameterValue... values) {
