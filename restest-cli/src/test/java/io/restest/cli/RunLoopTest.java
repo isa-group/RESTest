@@ -26,6 +26,7 @@ import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
@@ -35,8 +36,12 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SequenceSettings;
+import io.restest.core.settings.Settings;
+import io.restest.gen.Campaign;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.Scheduler;
+import io.restest.gen.WhichOperations;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -371,6 +376,40 @@ class RunLoopTest {
     }
 
     @Test
+    @DisplayName("a step of a series goes out only once the answer to the step before it is in")
+    void a_series_waits_for_each_answer() {
+        engine.takes(request -> Duration.ofMillis(30));
+        engine.repliesWith(testCase -> "{\"id\": 7}");
+        Campaign onlySeries = new Campaign(List.of(new Campaign.PlannedStrategy("sequences", 100,
+                List.of(new Campaign.Entry.Single(new Campaign.Source.Builtin(
+                        Campaign.Builtin.RANDOM))), false, true)), WhichOperations.everything());
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260914L,
+                List.of(), onlySeries, Settings.defaults().withSequences(
+                        new SequenceSettings(false, false, false, false, false, true)));
+
+        try (EventStream events = new EventStream()) {
+            Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
+            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                    PATIENT, engine, events);
+        }
+
+        List<Map.Entry<TestCase, Long>> seconds = engine.stepsSentAt.entrySet().stream()
+                .filter(sent -> sent.getKey().sequence().orElseThrow().step() == 2)
+                .toList();
+        assertThat(seconds)
+                .describedAs("every creation the API accepted was sent a second time")
+                .isNotEmpty();
+        assertThat(seconds).allSatisfy(sent -> {
+            InteractionId first = sent.getKey().sequence().orElseThrow().follows().get(0);
+            assertThat(engine.answeredAt.get(first))
+                    .describedAs("the creation it repeats had been answered before it went out")
+                    .isNotNull()
+                    .isLessThanOrEqualTo(sent.getValue());
+        });
+    }
+
+    @Test
     @DisplayName("a request the API never answers holds the first round up for one wait, no longer")
     void a_request_never_answered_holds_the_first_round_up_for_one_wait_at_most() {
         // The first request of the round - the list of pets - never comes back within the run.
@@ -496,6 +535,10 @@ class RunLoopTest {
         private final Map<String, Long> firstSent = new ConcurrentHashMap<>();
         private final Map<String, Long> firstAnswered = new ConcurrentHashMap<>();
 
+        /** When each step of a series was asked for, and each exchange answered, by that clock. */
+        private final Map<TestCase, Long> stepsSentAt = new ConcurrentHashMap<>();
+        private final Map<InteractionId, Long> answeredAt = new ConcurrentHashMap<>();
+
         private volatile Function<HttpRequestRecord, Duration> howLong =
                 request -> Duration.ofMillis(1);
         private volatile Function<TestCase, String> replyBody = testCase -> "[]";
@@ -522,11 +565,16 @@ class RunLoopTest {
             sent.incrementAndGet();
             String operation = testCase.operation().value();
             firstSent.putIfAbsent(operation, System.nanoTime());
+            if (testCase.sequence().isPresent()) {
+                stepsSentAt.put(testCase, System.nanoTime());
+            }
             CompletableFuture<Interaction> answer = new CompletableFuture<>();
             later.schedule(() -> {
                 inFlight.decrementAndGet();
                 firstAnswered.putIfAbsent(operation, System.nanoTime());
-                answer.complete(reply(testCase, request));
+                Interaction replied = reply(testCase, request);
+                answeredAt.put(replied.id(), System.nanoTime());
+                answer.complete(replied);
             }, howLong.apply(request).toMillis(), TimeUnit.MILLISECONDS);
             return answer;
         }
