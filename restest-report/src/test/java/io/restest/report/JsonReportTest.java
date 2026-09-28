@@ -161,6 +161,49 @@ class JsonReportTest {
     }
 
     @Test
+    @DisplayName("the report names every list of values the run held, with where it came from, and "
+            + "every one it could not read, with the reason")
+    void the_lists_read_and_refused_are_named() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(new RunEvent.DictionaryRead(WHEN, "fuzzing", "built in"));
+        report.on(new RunEvent.DictionaryRead(WHEN, "petshop-ids", "dictionaries/ids.yaml"));
+        report.on(new RunEvent.DictionaryRefused(WHEN, "dictionaries/broken.yaml",
+                "dictionaries/broken.yaml could not be read: unclosed list"));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+
+        JsonValue.JsonObject dictionaries =
+                object((JsonValue.JsonObject) report.document().orElseThrow(), "dictionaries");
+
+        List<JsonValue.JsonObject> read = array(dictionaries, "read").elements().stream()
+                .map(JsonValue.JsonObject.class::cast).toList();
+        assertThat(read).extracting(each -> text(each, "name"))
+                .containsExactly("fuzzing", "petshop-ids");
+        assertThat(read).extracting(each -> text(each, "from"))
+                .describedAs("by file as well as by name, since a name can be shared and a file "
+                        + "is what whoever ran it knows")
+                .containsExactly("built in", "dictionaries/ids.yaml");
+        assertThat(read.get(0).members().keySet()).containsExactly("name", "from");
+        List<JsonValue.JsonObject> refused = array(dictionaries, "refused").elements().stream()
+                .map(JsonValue.JsonObject.class::cast).toList();
+        assertThat(refused).singleElement().satisfies(each -> {
+            assertThat(text(each, "from")).isEqualTo("dictionaries/broken.yaml");
+            assertThat(text(each, "reason")).contains("unclosed list");
+            assertThat(each.members().keySet()).containsExactly("from", "reason");
+        });
+        assertThat(dictionaries.members().keySet()).containsExactly("read", "refused");
+    }
+
+    @Test
+    @DisplayName("a run that was handed nothing it could not read says so with an empty list")
+    void a_run_that_refused_no_list_writes_an_empty_list() {
+        JsonValue.JsonObject dictionaries =
+                object(run(JsonReport.inMemory(fixedClock())), "dictionaries");
+
+        assertThat(array(dictionaries, "refused").elements()).isEmpty();
+    }
+
+    @Test
     @DisplayName("how much of the run was spent waiting for the API is in the report")
     void the_engine_statistics_are_reported() {
         JsonValue.JsonObject engine = object(run(JsonReport.inMemory(fixedClock())), "engine");

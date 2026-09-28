@@ -80,14 +80,28 @@ public final class Dictionaries {
      * @param fromTheUser the ones somebody handed over, which is a different question from which
      *     ones there are: a message about a file nobody wrote is a message nobody can act on
      * @param problems what went wrong, in the words a person should read, empty when nothing did
+     * @param refused the places named that gave the run no list at all, each also among the
+     *     problems: the ones that cost a whole file rather than some entries in one
+     * @param read where each list the run holds came from, in the same order as
+     *     {@link #dictionaries()}
      */
     public record Found(Optional<Dictionary> shipped, List<Dictionary> fromTheUser,
-            List<String> problems) {
+            List<String> problems, List<Refused> refused, List<Read> read) {
 
         public Found {
             Objects.requireNonNull(shipped, "shipped");
             fromTheUser = List.copyOf(Objects.requireNonNull(fromTheUser, "fromTheUser"));
             problems = List.copyOf(Objects.requireNonNull(problems, "problems"));
+            refused = List.copyOf(Objects.requireNonNull(refused, "refused"));
+            read = List.copyOf(Objects.requireNonNull(read, "read"));
+            // Checked rather than trusted, so that where a list came from cannot come to disagree
+            // with which lists there are.
+            List<String> held = new ArrayList<>(shipped.map(Dictionary::name).stream().toList());
+            fromTheUser.forEach(dictionary -> held.add(dictionary.name()));
+            if (!held.equals(read.stream().map(Read::name).toList())) {
+                throw new IllegalArgumentException("where each list came from must name the lists "
+                        + "the run holds, in order: " + held + " against " + read);
+            }
         }
 
         /**
@@ -109,6 +123,34 @@ public final class Dictionaries {
         public java.util.Set<String> namesFromTheUser() {
             return fromTheUser.stream().map(Dictionary::name)
                     .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        }
+    }
+
+    /**
+     * A list the run holds, and where it was read from.
+     *
+     * @param name what the list is called
+     * @param from the file it was read from, or the list RESTest carries
+     */
+    public record Read(String name, String from) {
+
+        public Read {
+            Objects.requireNonNull(name, "name");
+            Objects.requireNonNull(from, "from");
+        }
+    }
+
+    /**
+     * A place that was named for a list of values and gave the run nothing.
+     *
+     * @param from the file or directory, as it was named, or the list RESTest carries
+     * @param reason why, in the words a person should read
+     */
+    public record Refused(String from, String reason) {
+
+        public Refused {
+            Objects.requireNonNull(from, "from");
+            Objects.requireNonNull(reason, "reason");
         }
     }
 
@@ -162,14 +204,18 @@ public final class Dictionaries {
         Objects.requireNonNull(locations, "locations");
         Objects.requireNonNull(model, "model");
         List<String> problems = new ArrayList<>();
+        List<Refused> refused = new ArrayList<>();
+        List<Read> readFrom = new ArrayList<>();
         Optional<Dictionary> carried;
         try {
             carried = Optional.of(shipped());
+            readFrom.add(new Read(carried.get().name(), SHIPPED_DESCRIPTION));
         } catch (IOException | JsonException beyondHelp) {
             carried = Optional.empty();
-            problems.add("RESTest's own list of values to push with could not be read, so nothing "
-                    + "will be pushed at the API. This is a fault in this build of the tool, not in "
-                    + "anything you did: " + beyondHelp.getMessage());
+            refuse(new Refused(SHIPPED_DESCRIPTION, "RESTest's own list of values to push with "
+                    + "could not be read, so nothing will be pushed at the API. This is a fault in "
+                    + "this build of the tool, not in anything you did: "
+                    + beyondHelp.getMessage()), problems, refused);
         }
 
         List<Dictionary> fromTheUser = new ArrayList<>();
@@ -178,11 +224,18 @@ public final class Dictionaries {
         // values, and two files would quietly become one.
         List<ReadFromAFile> read = new ArrayList<>();
         for (Path location : locations) {
-            for (Path file : filesUnder(location, problems)) {
-                read(file, problems).ifPresent(dictionary -> {
+            for (Path file : filesUnder(location, problems, refused)) {
+                read(file, problems, refused).ifPresent(dictionary -> {
+                    if (dictionary instanceof ValueDictionary values && values.holdsNoValues()) {
+                        // Read, and held, but it will never answer anything: said, because it
+                        // otherwise looks exactly like a file that was used.
+                        problems.add(file + " holds no values at all, so it adds nothing to the "
+                                + "run");
+                    }
                     Dictionary named = underTheNamesTheRunPrints(dictionary, model, file, problems);
                     fromTheUser.add(named);
                     read.add(new ReadFromAFile(named, file));
+                    readFrom.add(new Read(named.name(), file.toString()));
                 });
             }
         }
@@ -193,7 +246,13 @@ public final class Dictionaries {
                 reportEntriesNothingWouldUse(held.dictionary(), model, held.file(), givenAWholeBody,
                         problems));
         reportNamesUsedTwice(fromTheUser, problems);
-        return new Found(carried, fromTheUser, problems);
+        return new Found(carried, fromTheUser, problems, refused, readFrom);
+    }
+
+    /** Notes a place that gave nothing, both as a problem to print and as a refusal to report. */
+    private static void refuse(Refused refusal, List<String> problems, List<Refused> refused) {
+        problems.add(refusal.reason());
+        refused.add(refusal);
     }
 
     /**
@@ -221,13 +280,15 @@ public final class Dictionaries {
         }
     }
 
-    private static Optional<Dictionary> read(Path file, List<String> problems) {
+    private static Optional<Dictionary> read(Path file, List<String> problems,
+            List<Refused> refused) {
         try {
             return Optional.of(DictionaryDocument.read(Files.readString(file), file.toString()));
         } catch (IOException unreadable) {
-            problems.add(file + " could not be read: " + unreadable.getMessage());
+            refuse(new Refused(file.toString(), file + " could not be read: "
+                    + unreadable.getMessage()), problems, refused);
         } catch (JsonException notADictionary) {
-            problems.add(notADictionary.getMessage());
+            refuse(new Refused(file.toString(), notADictionary.getMessage()), problems, refused);
         }
         return Optional.empty();
     }
@@ -242,7 +303,8 @@ public final class Dictionaries {
      * The files to read at one place the user named: the file itself, or every dictionary in a
      * directory.
      */
-    private static List<Path> filesUnder(Path location, List<String> problems) {
+    private static List<Path> filesUnder(Path location, List<String> problems,
+            List<Refused> refused) {
         if (Files.isDirectory(location)) {
             try (Stream<Path> inIt = Files.list(location)) {
                 List<Path> files = inIt
@@ -251,16 +313,21 @@ public final class Dictionaries {
                         .sorted()
                         .toList();
                 if (files.isEmpty()) {
-                    problems.add(location + " holds no .yaml, .yml or .json dictionary");
+                    refuse(new Refused(location.toString(),
+                            location + " holds no .yaml, .yml or .json dictionary"),
+                            problems, refused);
                 }
                 return files;
             } catch (IOException | UncheckedIOException unreadable) {
-                problems.add(location + " could not be listed: " + unreadable.getMessage());
+                refuse(new Refused(location.toString(),
+                        location + " could not be listed: " + unreadable.getMessage()),
+                        problems, refused);
                 return List.of();
             }
         }
         if (!Files.isReadable(location)) {
-            problems.add("there is no dictionary at " + location);
+            refuse(new Refused(location.toString(), "there is no dictionary at " + location),
+                    problems, refused);
             return List.of();
         }
         return List.of(location);
@@ -383,6 +450,9 @@ public final class Dictionaries {
                 unreadable.add(issue.operation().orElseThrow().value()));
 
         Map<String, List<String>> byReason = new java.util.LinkedHashMap<>();
+        // Operations written with nothing under them, which the count of entries cannot see: an
+        // empty block for an operation the API does not have is still a stale name worth saying.
+        List<String> emptyAndMissing = new ArrayList<>();
         int entries = 0;
         for (Map.Entry<String, Map<String, List<JsonValue>>> named
                 : values.entriesByOperation().entrySet()) {
@@ -395,6 +465,9 @@ public final class Dictionaries {
                 // would contradict the run, which names it among the operations it could not test.
                 String why = unreadable.contains(named.getKey())
                         ? UNREADABLE_OPERATION : NO_SUCH_OPERATION;
+                if (named.getValue().isEmpty() && why.equals(NO_SUCH_OPERATION)) {
+                    emptyAndMissing.add(named.getKey());
+                }
                 named.getValue().keySet().forEach(place ->
                         byReason.computeIfAbsent(why, ignored -> new ArrayList<>())
                                 .add(place + " in " + named.getKey()));
@@ -410,6 +483,13 @@ public final class Dictionaries {
                         byReason.computeIfAbsent(why, ignored -> new ArrayList<>())
                                 .add(place + " in " + named.getKey()));
             }
+        }
+        if (!emptyAndMissing.isEmpty()) {
+            problems.add(file + ": " + emptyAndMissing.size() + " operation(s) written with "
+                    + "nothing under them are not in this API ("
+                    + String.join(", ", emptyAndMissing.subList(0,
+                            Math.min(NAMED_IN_FULL, emptyAndMissing.size())))
+                    + (emptyAndMissing.size() > NAMED_IN_FULL ? ", …)" : ")"));
         }
         if (byReason.isEmpty()) {
             return;

@@ -429,6 +429,54 @@ class ConsoleReportTest {
         assertThat(screen.toString()).doesNotContain("could not be tested");
     }
 
+    @Test
+    @DisplayName("a list of values that could not be read is said again at the very end, after what "
+            + "could not be tested, even of a run that sent nothing")
+    void the_summary_repeats_the_lists_that_could_not_be_read() {
+        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(new RunEvent.DictionaryRead(Instant.EPOCH, "fuzzing", "built in"));
+        report.on(new RunEvent.DictionaryRefused(Instant.EPOCH, "ids.yaml",
+                "ids.yaml: what is written under 'GET /oops' is not an object"));
+        report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString().lines().toList()).endsWith(
+                "1 operation could not be tested:",
+                "  uploadPhoto: its body can only be sent as multipart/form-data",
+                "1 list of values could not be read, so none of its values were sent:",
+                "  ids.yaml: what is written under 'GET /oops' is not an object");
+    }
+
+    @Test
+    @DisplayName("every list that could not be read is named, and a list that was read is not "
+            + "remarked upon")
+    void every_list_that_could_not_be_read_is_named() {
+        report.on(new RunEvent.DictionaryRead(Instant.EPOCH, "petshop-ids", "ids.yaml"));
+        report.on(new RunEvent.DictionaryRefused(Instant.EPOCH, "a.yaml", "a.yaml: first"));
+        report.on(new RunEvent.DictionaryRefused(Instant.EPOCH, "b.yaml", "b.yaml: second"));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString().lines().toList())
+                .endsWith("2 lists of values could not be read, so none of their values were sent:",
+                        "  a.yaml: first",
+                        "  b.yaml: second")
+                .noneMatch(line -> line.contains("petshop-ids"));
+    }
+
+    @Test
+    @DisplayName("a reason that runs to several lines, as the YAML reader's do, is indented line by "
+            + "line")
+    void a_reason_on_several_lines_stays_indented() {
+        report.on(new RunEvent.DictionaryRefused(Instant.EPOCH, "ids.yaml",
+                "ids.yaml could not be read: while parsing\n in 'reader', line 1\n        ^"));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString().lines().toList()).endsWith(
+                "  ids.yaml could not be read: while parsing",
+                "   in 'reader', line 1",
+                "          ^");
+    }
+
     private static RunEvent.OperationSkipped skipped(String operation, String reason) {
         return new RunEvent.OperationSkipped(Instant.EPOCH, OperationId.of(operation), reason);
     }

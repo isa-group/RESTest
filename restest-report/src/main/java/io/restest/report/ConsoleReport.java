@@ -55,7 +55,8 @@ import java.util.Set;
  * codes is worth a glance even when nothing was found wrong: a run where almost everything came back
  * refused is a run whose requests were the problem, not the API. Last come the operations the run
  * said it would not try - the first few by name, with the reason - because finding nothing wrong
- * says nothing about them.
+ * says nothing about them, and then any list of values that was handed over and could not be read,
+ * because a run made without it is not the run somebody asked for.
  *
  * <p>It writes wherever it is told to write, rather than to the screen directly, so a test can read
  * back exactly what a person would have seen. While a run lasts it is the only thing writing there:
@@ -97,6 +98,9 @@ public final class ConsoleReport implements RunListener {
 
     /** The operations the run said it would not try, in the order it said so. */
     private final List<RunEvent.OperationSkipped> skipped = new ArrayList<>();
+
+    /** The lists of values that were handed over and could not be read, in the order said. */
+    private final List<RunEvent.DictionaryRefused> refusedDictionaries = new ArrayList<>();
 
     /** How many of those to name before only counting the rest. */
     private final int skippedShown;
@@ -181,6 +185,14 @@ public final class ConsoleReport implements RunListener {
                 // Said with the summary rather than as heard: the list qualifies the verdict, so it
                 // is printed beside it.
                 skipped.add(skip);
+            }
+            case RunEvent.DictionaryRead ignored -> {
+                // Nothing to say about a list that was read: it is what was asked for.
+            }
+            case RunEvent.DictionaryRefused refused -> {
+                // Said as the run starts by whoever read the file, and said again here with the
+                // summary, because the first time is one line among many and easy to miss.
+                refusedDictionaries.add(refused);
             }
             case RunEvent.InteractionCompleted completed -> {
                 attempts++;
@@ -289,6 +301,27 @@ public final class ConsoleReport implements RunListener {
         // After the verdict, because it qualifies it: "no faults found" says nothing about an
         // operation that was never tried. Said whether or not anything was sent at all.
         nameWhatWasSkipped();
+        nameTheListsThatCouldNotBeRead();
+    }
+
+    /**
+     * The lists of values that were handed over and never used, because they could not be read.
+     *
+     * <p>Every one of them, since there are only ever as many as somebody named. A run that lost one
+     * is a run made without the values somebody meant it to have - which looks, from its results
+     * alone, exactly like a run made with them that found they did not help.
+     */
+    private void nameTheListsThatCouldNotBeRead() {
+        if (refusedDictionaries.isEmpty()) {
+            return;
+        }
+        write(refusedDictionaries.size() + (refusedDictionaries.size() == 1
+                ? " list of values could not be read, so none of its values were sent:"
+                : " lists of values could not be read, so none of their values were sent:"));
+        // Indented line by line: a reason quoting the YAML reader runs to several lines, with a
+        // marker under the column it stopped at, and only the first would otherwise be indented.
+        refusedDictionaries.forEach(refused -> refused.reason().lines()
+                .forEach(line -> write("  " + line)));
     }
 
     /**

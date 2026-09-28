@@ -368,14 +368,15 @@ final class RunCommand implements Callable<Integer> {
                 err.println("restest: " + cannotStart.getMessage());
                 return ExitCode.NOTHING_TO_TEST;
             }
-            return testing(model, generator, testable, address, directory, startedAt, engine,
-                    configuration, out, err);
+            return testing(model, generator, found, testable, address, directory, startedAt,
+                    engine, configuration, out, err);
         }
     }
 
-    private int testing(ApiModel model, RandomTestCaseGenerator generator, List<Operation> testable,
-            String address, Path directory, Instant startedAt, HttpEngine engine,
-            SettingsInEffect configuration, PrintWriter out, PrintWriter err) {
+    private int testing(ApiModel model, RandomTestCaseGenerator generator,
+            Dictionaries.Found found, List<Operation> testable, String address, Path directory,
+            Instant startedAt, HttpEngine engine, SettingsInEffect configuration, PrintWriter out,
+            PrintWriter err) {
         Settings settings = configuration.settings();
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
@@ -433,6 +434,15 @@ final class RunCommand implements Callable<Integer> {
                     // Inside this block so that an announcement going wrong still leaves the
                     // summary and the report.
                     Instant said = Instant.now();
+                    // Which lists of values the run holds, and which it was handed and could not
+                    // read: said on the screen as the files were read, and said again here so that
+                    // both reports carry it beside the verdict. A run made without a list somebody
+                    // meant it to have finishes like any other, and nothing else would tell them.
+                    found.read().forEach(read -> drained.publish(
+                            new RunEvent.DictionaryRead(said, read.name(), read.from())));
+                    found.refused().forEach(refused -> drained.publish(
+                            new RunEvent.DictionaryRefused(said, refused.from(),
+                                    refused.reason())));
                     model.unreadableOperations().forEach(issue -> drained.publish(
                             new RunEvent.OperationSkipped(said, issue.operation().orElseThrow(),
                                     whyNot(issue))));

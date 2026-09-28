@@ -1,6 +1,6 @@
 # ADR-0020: A dictionary is a named list of values with one key, and the plan decides what each list is for
 
-**Status:** Accepted, amended at M2.7c, M2.4 and M2.10a
+**Status:** Accepted, amended at M2.7c, M2.4, M2.10a and M8.3
 **Date:** 2026-09-18
 
 ## Context
@@ -552,3 +552,69 @@ keying and hard-wired. A plan names sources instead, so:
 `--fuzzing` adjusts them rather than being the source of the number. §5's distinction between a
 share and a weight is untouched and is exactly what the format is built on: a share divides the
 run's time between strategies, a weight divides one value between the sources that offered one.
+
+## Amendment (M8.3)
+
+**Date:** 2026-09-27
+
+**An operation with nothing under it is an empty operation, and a run says in its report which
+lists it read and which it refused.** Found when 8.3's dictionaries campaigns turned out to have
+measured the shipped tool under the dictionaries' names.
+
+### What happened
+
+All eleven dictionary files in the harness repository had at least one operation written like this:
+
+```yaml
+values:
+  GET /oops:
+    # nothing to fill: every place is settled by the document
+```
+
+YAML reads a key with only a comment under it as `null`, not as an empty object. The reader wanted an
+object there, so each file was refused whole, with `the parameters of 'GET /oops' is not an object`.
+The run went on without it, as §1 and the format page promise, and the refusal was one line on the
+standard error of each run. Nothing else — not the summary, not `report.json` — said a list was
+missing, and a run made without the list finishes exactly like a run made with one that did not
+help. The campaign scored the tool with its shipped plan under each dictionary's name.
+
+### Decision
+
+1. **`null` where a set of entries belongs reads as empty**: under `values`, and under an operation
+   in a file keyed by `operationAndParameter`. Nothing else could have been meant there, since a
+   value only ever appears inside a list, and it is the natural way to write "nothing here" in YAML.
+   `values: {}` and `GET /oops: {}` were already accepted, so this makes the two spellings agree.
+2. **`null` where a list of values belongs is still refused**, and the refusal now says how to write
+   what was probably meant: `[]` for no values, `[null]` to send null. There the two readings are
+   both plausible — `any:` in a file keyed by type could mean either — and guessing would be wrong
+   about half the time without anybody being told.
+3. **A file that cannot be read is still refused whole, and it still never ends the run.** Half-reading
+   a file is what §1 and the section on the file refuse, and nothing here argues for it: the
+   problem was never that the file was refused but that nobody could see it had been.
+4. **A run says which lists it holds and which it refused, in both reports.** Two events,
+   `DictionaryRead` and `DictionaryRefused`, are published beside the operations the run will skip.
+   The summary on the screen repeats every refusal after the list of skipped operations, and
+   `report.json` carries a `dictionaries` object: `read`, one `{name, from}` for every list the run
+   holds — RESTest's own included — and `refused`, one `{from, reason}` for every file or directory
+   named that gave the run nothing, and for RESTest's own list should this build fail to read it. A
+   harness that means to run with a file checks that it is under `read` and that `refused` is empty.
+   *Held* is deliberately not *drawn on*: which lists each kind of request asks is the plan's
+   business, and a run told `--fuzzing 0` holds the list RESTest carries and never asks it. Saying
+   which lists the plan will draw on is a larger question and is left for 2.1; what this settles is
+   the failure 8.3 met, a file that was never read.
+5. **Two quiet cases are said.** A file that is read and holds not one value is named as adding
+   nothing, and an operation written with nothing under it that the API does not have is named as
+   stale — the count of unused entries could not see either, since neither has any entries.
+
+### Alternatives considered
+
+- **Refusing a run whose dictionary cannot be read.** It would have caught 8.3 on the first night.
+  It also turns a typo in advice into no run at all, which is the opposite of principle 2, and a
+  harness that wants that strictness can have it by reading `refused`. Not taken.
+- **Skipping only the operation that cannot be read, keeping the rest of the file.** Kinder, and
+  it would have saved 8.3 as well. It is a larger change to a published format a week before the
+  freeze, it reopens §1's argument against half-read files, and with refusals now in the report it
+  buys little. Left for 2.1 if a real file ever needs it.
+- **A switch.** ADR-0025 asks for one on every behaviour lever. This is not one: it decides whether
+  a file is read, not how a request is made, and there is no experiment in which refusing an empty
+  operation is the variant worth measuring.
