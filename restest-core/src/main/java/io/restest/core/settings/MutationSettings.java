@@ -74,13 +74,14 @@ package io.restest.core.settings;
  *     documentation names can hold: 2147483648 where it says {@code int32}
  * @param deepNesting add a member the documentation does not declare, holding lists nested
  *     {@code nestingDepth} levels deep, to a body that allows members it does not declare
- * @param extremeNumber send the largest or smallest number a common kind of number can hold, or
- *     one past it, where nothing in the documentation rules it out
+ * @param extremeNumber send the largest or smallest number a common kind of number can hold, the
+ *     one nearest to nothing, or just past them, where nothing in the documentation rules it out
  * @param acceptedKept how many of the requests each operation accepted are kept to be changed; the
  *     most recent ones, since an older one may refer to something deleted since
  * @param oversizedLength how many characters an oversized word has
  * @param oversizedItems how many items an oversized list has
- * @param nestingDepth how many levels deep a member added by {@code deepNesting} is nested
+ * @param nestingDepth how many levels deep a member added by {@code deepNesting} is nested, at
+ *     most a million
  */
 public record MutationSettings(
         boolean violations,
@@ -114,6 +115,11 @@ public record MutationSettings(
     // for the experiment that measures them over a longer run. Ten thousand levels is past the
     // depth the common JSON readers stop at - a thousand, two hundred and fifty-five - and past the
     // depth at which a reader that calls itself for every level runs out of room.
+    // A safeguard, not a tuning number: two characters a level, so a million levels is a body of
+    // two megabytes, sent again every time the change is drawn, and much beyond it the text stops
+    // fitting in memory at all.
+    private static final int DEEPEST = 1_000_000;
+
     private static final MutationSettings DEFAULTS = new MutationSettings(
             true, false,
             true, true, true, true, true, true, true, true, true,
@@ -127,6 +133,10 @@ public record MutationSettings(
         atLeastOne(oversizedLength, "oversizedLength");
         atLeastOne(oversizedItems, "oversizedItems");
         atLeastOne(nestingDepth, "nestingDepth");
+        if (nestingDepth > DEEPEST) {
+            throw new IllegalArgumentException("nestingDepth must be at most " + DEEPEST + ": "
+                    + nestingDepth);
+        }
     }
 
     /**

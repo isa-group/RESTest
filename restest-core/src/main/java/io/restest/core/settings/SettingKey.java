@@ -274,8 +274,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "add an undeclared member nested nestingDepth lists deep to a body that allows "
                             + "one; a probe"),
             key("mutation", "extremeNumber", SettingKind.YES_OR_NO,
-                    "send the largest or smallest number a common width holds, where nothing rules "
-                            + "it out; a probe"),
+                    "send the edges of what a common width of number holds, or just past them, "
+                            + "where nothing rules them out; a probe"),
             key("mutation", "acceptedKept", SettingKind.WHOLE_NUMBER,
                     "how many of each operation's accepted requests are kept to be changed, newest first"),
             key("mutation", "oversizedLength", SettingKind.WHOLE_NUMBER,
@@ -283,7 +283,7 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("mutation", "oversizedItems", SettingKind.WHOLE_NUMBER,
                     "how many items an oversized list has"),
             key("mutation", "nestingDepth", SettingKind.WHOLE_NUMBER,
-                    "how many lists deep the member deepNesting adds is"),
+                    "how many lists deep the member deepNesting adds is, at most a million"),
 
             key("memory", "mostValuesUnderOneName", SettingKind.WHOLE_NUMBER,
                     "how many values the run remembers under any one name, and things of any "

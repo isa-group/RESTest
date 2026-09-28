@@ -273,6 +273,29 @@ class InteractionDocumentTest {
     }
 
     @Test
+    @DisplayName("a body sent under another media type keeps both, and the report keeps only as "
+            + "much of the text as of any body, saying how long it was")
+    void a_relabelled_body_survives_and_is_trimmed_like_a_body() {
+        BodyValue sent = new BodyValue("application/json",
+                JsonValue.object(Map.of("name", JsonValue.of("Rex"))),
+                new ValueOrigin.Generated("random")).withTextSent("text/plain", "[".repeat(40));
+        TestCase testCase = TestCase.of(OperationId.of("POST /pets"), List.of(), sent);
+        Interaction original = Interaction.answered(testCase, request(),
+                HttpResponseRecord.of(415), Instant.EPOCH, Duration.ofMillis(5));
+
+        Interaction whole = InteractionDocument.toInteraction(InteractionDocument.of(original));
+        JsonValue.JsonObject trimmed = member(member((JsonValue.JsonObject) InteractionDocument.of(
+                original, 10), "testCase"), "body");
+
+        assertThat(whole.testCase().body()).contains(sent);
+        assertThat(trimmed.member("sentAs")).contains(JsonValue.of("[".repeat(10)));
+        assertThat(trimmed.member("sentAsBytes")).contains(JsonValue.of(40));
+        assertThat(member(member((JsonValue.JsonObject) InteractionDocument.of(original, 100),
+                "testCase"), "body").member("sentAsBytes"))
+                .describedAs("nothing to say when nothing was cut").isEmpty();
+    }
+
+    @Test
     @DisplayName("a body sent as its value written out stores no text of its own, as every body "
             + "stored before could not")
     void a_body_sent_as_its_value_stores_no_text() {

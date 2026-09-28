@@ -36,7 +36,9 @@ import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.ArraySchema;
+import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
@@ -692,7 +694,11 @@ class MutationsTest {
             ObjectSchema open = ObjectSchema.of(properties("nested", StringSchema.of()),
                     Set.of());
             JsonValue one = JsonValue.object(Map.of("a", JsonValue.of("x")));
-            for (ObjectSchema refusing : List.of(closed, wordsOnly, full)) {
+            ObjectSchema listed = new ObjectSchema(SchemaMetadata.none(), properties("a",
+                    StringSchema.of()), Set.of(), Optional.of(new AnySchema(SchemaMetadata.none()
+                    .withEnumeration(List.of(JsonValue.of("x"), JsonValue.of("y"))))),
+                    Optional.empty(), Optional.empty());
+            for (ObjectSchema refusing : List.of(closed, wordsOnly, full, listed)) {
                 Operation add = Operation.of(HttpMethod.POST, "/a")
                         .withRequestBody(RequestBodyModel.json(refusing, true))
                         .withId(OperationId.of("addA"));
@@ -744,6 +750,75 @@ class MutationsTest {
             }
         }
 
+        @Test
+        @DisplayName("where the top of the body is a choice, never a kind one of its shapes accepts")
+        void a_choice_at_the_top() {
+            ArraySchema pets = new ArraySchema(SchemaMetadata.none(), PET, Optional.empty(),
+                    Optional.empty(), false);
+            Operation addOneOrMany = Operation.of(HttpMethod.POST, "/pets/one-or-many")
+                    .withRequestBody(RequestBodyModel.json(ChoiceSchema.of(List.of(PET, pets)),
+                            true))
+                    .withId(OperationId.of("addOneOrMany"));
+
+            List<TestCase> changed = changesIn(addOneOrMany, bodied(addOneOrMany, REX),
+                    "wrongRoot");
+
+            assertThat(changed).isNotEmpty()
+                    .extracting(each -> each.body().orElseThrow().value())
+                    .doesNotContain(JsonValue.array(List.of(REX)));
+            assertThat(changed).allSatisfy(each -> assertThat(each.mutation().orElseThrow()
+                    .description()).endsWith("declared as one of several shapes"));
+        }
+
+        @Test
+        @DisplayName("a body whose shape is a name pointing nowhere, or round in a circle, still "
+                + "gets the changes that need no shape, and nothing hangs")
+        void a_body_nobody_could_read_the_shape_of() {
+            Operation addLost = Operation.of(HttpMethod.POST, "/lost")
+                    .withRequestBody(RequestBodyModel.json(SchemaReference.to("Missing"), true))
+                    .withId(OperationId.of("addLost"));
+            Operation addRound = Operation.of(HttpMethod.POST, "/round")
+                    .withRequestBody(RequestBodyModel.json(SchemaReference.to("A"), true))
+                    .withId(OperationId.of("addRound"));
+            ApiModel odd = ApiModel.of("Odd", "1.0", List.of(addLost, addRound))
+                    .withSchemas(Map.of("A", SchemaReference.to("B"),
+                            "B", SchemaReference.to("A")));
+
+            for (Operation operation : List.of(addLost, addRound)) {
+                AcceptedRequests.Accepted accepted = bodied(operation, REX);
+                List<String> made = new ArrayList<>();
+                for (long seed = 0; seed < 60; seed++) {
+                    new Mutations(odd, BOTH_FAMILIES, GenerationSettings.defaults(),
+                            new SplittableRandom(seed))
+                            .changeOneThingIn(operation, accepted)
+                            .ifPresent(each -> made.add(each.mutation().orElseThrow().operator()));
+                }
+                assertThat(made).describedAs(operation.path())
+                        .containsOnly("emptyBody", "notJson", "wrongContentType")
+                        .contains("emptyBody", "notJson", "wrongContentType");
+            }
+        }
+
+        @Test
+        @DisplayName("text is cut between characters, never through one")
+        void cut_between_characters() {
+            Operation addWord = Operation.of(HttpMethod.POST, "/word")
+                    .withRequestBody(RequestBodyModel.json(StringSchema.of(), true))
+                    .withId(OperationId.of("addWord"));
+            String faces = "\uD83D\uDE00\uD83D\uDE01\uD83D\uDE02\uD83D\uDE03";
+
+            List<String> cut = changesIn(addWord, bodied(addWord, JsonValue.of(faces)), "notJson")
+                    .stream().map(each -> each.body().orElseThrow().sentAs().orElseThrow())
+                    .filter(text -> !text.equals("this is not JSON"))
+                    .toList();
+
+            assertThat(cut).isNotEmpty().allSatisfy(text -> {
+                assertThat(Character.isHighSurrogate(text.charAt(text.length() - 1)))
+                        .describedAs("half a character is not text").isFalse();
+                assertThat(text.codePointCount(0, text.length())).isEqualTo(3);
+            });
+        }
+
         private void assertBodyAsAWhole(TestCase changed, Intent intent) {
             Mutation mutation = changed.mutation().orElseThrow();
             assertThat(changed.intent()).isEqualTo(intent);
@@ -783,6 +858,52 @@ class MutationsTest {
             assertThat(changed).extracting(each -> each.mutation().orElseThrow().description())
                     .contains("sent 2147483648 for body.count, one past the largest an int32 "
                             + "can hold");
+        }
+
+        @Test
+        @DisplayName("never a header the client writes its own value into, which no change would "
+                + "reach")
+        void never_a_header_the_client_writes_over() {
+            StringSchema json = new StringSchema(SchemaMetadata.none().withEnumeration(List.of(
+                    JsonValue.of("application/json"))), Optional.empty(), Optional.empty(),
+                    Optional.empty(), Optional.empty());
+            Operation upload = Operation.of(HttpMethod.PUT, "/blobs",
+                            List.of(Parameter.of("Content-Length", ParameterLocation.HEADER, true,
+                                            number(NumberKind.INTEGER, "int64")),
+                                    Parameter.of("Content-Type", ParameterLocation.HEADER, true,
+                                            json)))
+                    .withRequestBody(RequestBodyModel.json(READING, true))
+                    .withId(OperationId.of("upload"));
+            AcceptedRequests.Accepted sent = new AcceptedRequests.Accepted(TestCase.of(
+                    upload.id(), List.of(
+                            value("Content-Length", ParameterLocation.HEADER, JsonValue.of(80)),
+                            value("Content-Type", ParameterLocation.HEADER,
+                                    JsonValue.of("application/json"))),
+                    READ.testCase().body().orElseThrow()), InteractionId.generate());
+
+            for (Mutations.Operator operator : Mutations.Operator.values()) {
+                assertThat(changesIn(upload, sent, operator.written()))
+                        .extracting(each -> each.mutation().orElseThrow().location())
+                        .describedAs(operator.written())
+                        .doesNotContain(ParameterLocation.HEADER);
+            }
+        }
+
+        @Test
+        @DisplayName("not past a width where the document's own bound lets that number through")
+        void not_where_the_document_lets_it_through() {
+            NumberSchema unsigned = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                    Optional.empty(), Optional.empty(), Optional.of(new BigDecimal("4294967295")),
+                    Optional.empty(), Optional.empty(), Optional.of("int32"));
+            Operation addCount = Operation.of(HttpMethod.POST, "/count")
+                    .withRequestBody(RequestBodyModel.json(unsigned, true))
+                    .withId(OperationId.of("addCount"));
+
+            assertThat(changesIn(addCount, bodied(addCount, JsonValue.of(12)), "beyondItsWidth"))
+                    .isNotEmpty()
+                    .extracting(each -> ((JsonValue.JsonNumber) each.body().orElseThrow().value())
+                            .value())
+                    .containsOnly(new BigDecimal("-2147483649"));
         }
 
         @Test

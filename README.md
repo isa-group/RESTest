@@ -133,16 +133,16 @@ sends none of them.
 
 Another fifth take a request the API has already accepted and send it again with exactly one thing
 changed: something it requires left out, a number one past the largest it allows, a word where it
-wants a number, a value off the closed list it states — or the body broken as a whole: no bytes at
-all, JSON cut off halfway, a list where an object belongs, the right body under the wrong media
-type, a number too large for the kind of number the document names. An API checks what it is sent
+wants a number, a value off the closed list it states, a number too large for the kind of number the
+document names — or the body broken as a whole: no bytes at all, JSON cut off halfway, a list where
+an object belongs, the right body under the wrong media type. An API checks what it is sent
 before acting on it, and a request with many things wrong is turned away by the first check; one
 with a single thing wrong gets past every check but that one, which is where the failures a correct
 request never reaches tend to be. The summary says how many requests were changed this way, and how
 many of them broke something the document states. Every kind of change can be switched off, and
 [docs/settings.md](docs/settings.md#mutation) lists them. The changes the document does not rule
 on — ten thousand characters where no limit is stated, an empty word where nothing forbids one, a
-member nested ten thousand levels deep —
+member nested ten thousand levels deep, the largest number a 32-bit integer holds —
 are off unless you add `--set mutation.probes=true`: measured on five APIs they found nothing the
 others had not. The other way round, the values *you* know are good — real identifiers, the
 surnames the API actually holds — go in a YAML file next to the specification and are handed over

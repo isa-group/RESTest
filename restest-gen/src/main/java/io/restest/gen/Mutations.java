@@ -28,6 +28,7 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
@@ -104,6 +105,14 @@ final class Mutations {
     private static final Set<String> WRITTEN_BY_THE_CLIENT = Set.of("accept", "accept-encoding",
             "connection", "content-length", "content-type", "cookie", "host", "transfer-encoding",
             "user-agent");
+
+    /**
+     * The headers whose value the client that sends requests decides for itself whatever it is
+     * given, in lower case: how long the body is, what it is, and how it is cut up. Changing the
+     * value chosen for one of them changes nothing on the wire.
+     */
+    private static final Set<String> WRITTEN_OVER_BY_THE_CLIENT = Set.of("content-length",
+            "content-type", "transfer-encoding");
 
     /** The kinds of word a document can name for which an empty word is never one. */
     private static final Set<String> NEVER_EMPTY = Set.of("date-time", "date", "time", "duration",
@@ -320,7 +329,7 @@ final class Mutations {
 
     /** Whether a kind of change has somewhere to go at this place. Cheap: nothing is built. */
     private boolean applies(Operator operator, Place place, Operation operation) {
-        if (!operator.goesTo(place)) {
+        if (!operator.goesTo(place) || writtenOverByTheClient(place)) {
             return false;
         }
         if (operator.judgesTheShape() && !understood(place.shape())) {
@@ -349,8 +358,7 @@ final class Mutations {
             case EMPTY_BODY -> place.required();
             case NOT_JSON -> true;
             case WRONG_CONTENT_TYPE -> !otherMediaTypes(operation).isEmpty();
-            case BEYOND_ITS_WIDTH -> place.value() instanceof JsonValue.JsonNumber
-                    && widthNamed(place).isPresent();
+            case BEYOND_ITS_WIDTH -> !beyondItsWidth(place).isEmpty();
             case DEEP_NESTING -> allowsAnotherMember(place);
             case EXTREME_NUMBER -> !extremes(place).isEmpty();
         };
@@ -425,8 +433,7 @@ final class Mutations {
                         + "media type " + chosen + ", which the description does not offer for it"));
             }
             case BEYOND_ITS_WIDTH -> {
-                Width width = widthNamed(place).orElseThrow();
-                List<Extreme> beyond = width.beyond();
+                List<Extreme> beyond = beyondItsWidth(place);
                 Extreme chosen = beyond.get(random.nextInt(beyond.size()));
                 yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
                         + chosen.value().toPlainString() + " for " + place.described() + ", "
@@ -553,6 +560,15 @@ final class Mutations {
         return WRITTEN_BY_THE_CLIENT.contains(header.toLowerCase(Locale.ROOT));
     }
 
+    /**
+     * Whether this is a header the client that sends requests writes its own value into, whatever
+     * value was chosen for it, so that no change to it would reach the API.
+     */
+    private static boolean writtenOverByTheClient(Place place) {
+        return place.location() == ParameterLocation.HEADER
+                && WRITTEN_OVER_BY_THE_CLIENT.contains(place.path().toLowerCase(Locale.ROOT));
+    }
+
     private static String where(ParameterLocation location) {
         return switch (location) {
             case QUERY -> "the query string";
@@ -593,6 +609,7 @@ final class Mutations {
             case BooleanSchema ignored -> "true or false";
             case ArraySchema ignored -> "a list";
             case ObjectSchema ignored -> "an object";
+            case ChoiceSchema ignored -> "one of several shapes";
             default -> "something else";
         };
     }
@@ -949,8 +966,10 @@ final class Mutations {
 
     /**
      * The media types this body could be sent under that the operation does not take: not one it
-     * offers, not one a range it offers covers, and none at all where the document declares a
-     * {@code Content-Type} of its own, which would be sent in place of the one changed.
+     * offers, and not one a range it offers covers. None at all where the document declares a
+     * {@code Content-Type} of its own: the request would then carry two answers to what its body
+     * is, the one chosen for that header and the one changed, and which of them reaches the API
+     * would be the client's to decide rather than the change's.
      */
     private static List<String> otherMediaTypes(Operation operation) {
         boolean declaresItsOwn = operation.parameters(ParameterLocation.HEADER).stream()
@@ -958,35 +977,23 @@ final class Mutations {
         if (declaresItsOwn || operation.requestBody().isEmpty()) {
             return List.of();
         }
-        List<String> offered = operation.requestBody().orElseThrow().mediaTypes().stream()
-                .map(Mutations::withoutParameters)
+        RequestBodyModel body = operation.requestBody().orElseThrow();
+        return OTHER_MEDIA_TYPES.stream()
+                .filter(candidate -> body.contentFor(candidate).isEmpty())
                 .toList();
-        List<String> others = new ArrayList<>();
-        for (String candidate : OTHER_MEDIA_TYPES) {
-            String kind = candidate.substring(0, candidate.indexOf('/'));
-            boolean taken = offered.contains(candidate) || offered.contains("*/*")
-                    || offered.contains(kind + "/*");
-            if (!taken) {
-                others.add(candidate);
-            }
-        }
-        return others;
-    }
-
-    private static String withoutParameters(String mediaType) {
-        int parameters = mediaType.indexOf(';');
-        return (parameters < 0 ? mediaType : mediaType.substring(0, parameters)).strip()
-                .toLowerCase(Locale.ROOT);
     }
 
     /**
-     * Whether this is a body that is an object allowing members it does not declare - which is
-     * what a document says when it says nothing about them - with room for one more.
+     * Whether this is a body that is an object allowing members it does not declare, whatever they
+     * hold - which is what a document says when it says nothing about them - with room for one
+     * more. A document that says what such a member may hold, even only a closed list of values,
+     * has ruled on it.
      */
     private static boolean allowsAnotherMember(Place place) {
         return place.shape() instanceof ObjectSchema object
                 && place.value() instanceof JsonValue.JsonObject thing
-                && object.additionalProperties().map(AnySchema.class::isInstance).orElse(true)
+                && object.additionalProperties().map(extra -> extra instanceof AnySchema
+                        && extra.metadata().enumeration().isEmpty()).orElse(true)
                 && object.maxProperties().filter(most -> thing.members().size() >= most).isEmpty();
     }
 
@@ -1006,7 +1013,7 @@ final class Mutations {
         }
         int depth = settings.nestingDepth();
         String written = JsonText.write(thing);
-        StringBuilder text = new StringBuilder(written.length() + name.length() + 2 * depth + 4);
+        StringBuilder text = new StringBuilder();
         text.append(written, 0, written.length() - 1);
         if (!thing.members().isEmpty()) {
             text.append(',');
@@ -1019,6 +1026,42 @@ final class Mutations {
     }
 
     // --- the edges of a kind of number -----------------------------------------------------------
+
+    /**
+     * The numbers past what the kind of number this place's format names can hold - except one
+     * the document itself lets through anyway, with a bound past that kind's edge or a closed list
+     * naming it, since a document that contradicts itself has not forbidden that number.
+     */
+    private List<Extreme> beyondItsWidth(Place place) {
+        if (!(place.shape() instanceof NumberSchema number)
+                || !(place.value() instanceof JsonValue.JsonNumber)) {
+            return List.of();
+        }
+        List<Extreme> beyond = new ArrayList<>();
+        widthNamed(place).ifPresent(width -> {
+            for (Extreme extreme : width.beyond()) {
+                if (!letThrough(number, acceptedList(place), extreme.value())) {
+                    beyond.add(extreme);
+                }
+            }
+        });
+        return beyond;
+    }
+
+    /** Whether the document's own bounds, on the side of this number, or its closed list admit it. */
+    private static boolean letThrough(NumberSchema number, List<JsonValue> listed, BigDecimal value) {
+        if (listed.contains(JsonValue.of(value))) {
+            return true;
+        }
+        if (value.signum() > 0) {
+            return number.maximum().filter(most -> value.compareTo(most) <= 0).isPresent()
+                    || number.exclusiveMaximum().filter(bound -> value.compareTo(bound) < 0)
+                            .isPresent();
+        }
+        return number.minimum().filter(least -> value.compareTo(least) >= 0).isPresent()
+                || number.exclusiveMinimum().filter(bound -> value.compareTo(bound) > 0)
+                        .isPresent();
+    }
 
     /** The kind of number this place's format names, when it names one whose edges are known. */
     private static Optional<Width> widthNamed(Place place) {

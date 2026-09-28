@@ -65,7 +65,8 @@ import java.util.StringJoiner;
  * <p>It also writes the body, for the operations that take one, and says what the request is willing
  * to receive back. A body travels either as JSON or as the fields of a web form, which are the two
  * ways nearly every API in the world accepts one; which of the two, and which exact media type to
- * declare, is read off the document. And every request carries an {@code Accept} header naming the
+ * declare, is read off the document. A body broken on purpose - cut off halfway, or with nothing in
+ * it - says the exact text it travels as instead, and that text is what is sent. And every request carries an {@code Accept} header naming the
  * media types the operation's own successful responses declare, so that an API serving more than one
  * - a versioned one, say - is not left guessing what this client can read; where they declare none,
  * the header says the client will take anything.

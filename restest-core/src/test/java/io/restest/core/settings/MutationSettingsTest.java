@@ -76,6 +76,13 @@ class MutationSettingsTest {
                 .isThrownBy(() -> Settings.from(Map.of("mutation.nestingDepth", "0")))
                 .withMessageContaining("nestingDepth");
         assertThatExceptionOfType(SettingsException.class)
+                .describedAs("a depth whose text could not be built is refused before the run, "
+                        + "not met halfway through it")
+                .isThrownBy(() -> Settings.from(Map.of("mutation.nestingDepth", "2000000000")))
+                .withMessageContaining("at most");
+        assertThat(Settings.from(Map.of("mutation.nestingDepth", "1000000")).mutation()
+                .nestingDepth()).isEqualTo(1_000_000);
+        assertThatExceptionOfType(SettingsException.class)
                 .isThrownBy(() -> Settings.from(Map.of("mutation.oversizedLength", "0")))
                 .withMessageContaining("mutation")
                 .withMessageContaining("oversizedLength");
