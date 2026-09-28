@@ -417,6 +417,36 @@ class RequestBuilderTest {
     }
 
     @Test
+    @DisplayName("a body that says what text it is sent as is sent as exactly that, down to no "
+            + "bytes at all, with the media type it names")
+    void a_body_is_sent_as_its_exact_text() {
+        Operation operation = Operation.of(HttpMethod.POST, "/features")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
+        BodyValue made = new BodyValue("application/json",
+                JsonValue.object(Map.of("name", JsonValue.of("Rex"))),
+                new ValueOrigin.Generated("test"));
+
+        HttpRequestRecord cut = RequestBuilder.build(operation, TestCase.of(operation.id(),
+                List.of(), made.withTextSent("application/json", "{\"name\":")), BASE);
+        HttpRequestRecord empty = RequestBuilder.build(operation, TestCase.of(operation.id(),
+                List.of(), made.withTextSent("application/json", "")), BASE);
+        HttpRequestRecord relabelled = RequestBuilder.build(operation, TestCase.of(operation.id(),
+                List.of(), made.withTextSent("application/x-www-form-urlencoded",
+                        "{\"name\":\"Rex\"}")), BASE);
+
+        assertThat(new String(cut.body().orElseThrow().content(), StandardCharsets.UTF_8))
+                .isEqualTo("{\"name\":");
+        assertThat(empty.body().orElseThrow().content()).isEmpty();
+        assertThat(empty.headerValues("Content-Type")).containsExactly("application/json");
+        assertThat(new String(relabelled.body().orElseThrow().content(), StandardCharsets.UTF_8))
+                .describedAs("the text is sent as it is, not written out as the fields of a form "
+                        + "because the media type says form")
+                .isEqualTo("{\"name\":\"Rex\"}");
+        assertThat(relabelled.headerValues("Content-Type"))
+                .containsExactly("application/x-www-form-urlencoded");
+    }
+
+    @Test
     @DisplayName("a body that is not an object cannot be written as a web form")
     void a_form_body_has_to_be_an_object() {
         Operation operation = Operation.of(HttpMethod.POST, "/features")

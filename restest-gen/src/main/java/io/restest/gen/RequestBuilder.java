@@ -65,7 +65,8 @@ import java.util.StringJoiner;
  * <p>It also writes the body, for the operations that take one, and says what the request is willing
  * to receive back. A body travels either as JSON or as the fields of a web form, which are the two
  * ways nearly every API in the world accepts one; which of the two, and which exact media type to
- * declare, is read off the document. And every request carries an {@code Accept} header naming the
+ * declare, is read off the document. A body broken on purpose - cut off halfway, or with nothing in
+ * it - says the exact text it travels as instead, and that text is what is sent. And every request carries an {@code Accept} header naming the
  * media types the operation's own successful responses declare, so that an API serving more than one
  * - a versioned one, say - is not left guessing what this client can read; where they declare none,
  * the header says the client will take anything.
@@ -386,9 +387,14 @@ public final class RequestBuilder {
      * <p>A form body is a query string that happens to be in the body rather than in the URL, so it
      * is written by the same rules and with the same limits - including what happens to a value with
      * something nested inside it, which no form encoding agrees on.
+     *
+     * <p>A body that says exactly what text it is sent as is sent as that text, whatever its media
+     * type: it was broken on purpose - cut off, emptied, put under a media type it does not match -
+     * and writing its value out instead would send the request it was made from.
      */
     private static Payload written(BodyValue body) {
-        String text = isForm(body.mediaType()) ? asForm(body.value()) : JsonText.write(body.value());
+        String text = body.sentAs().orElseGet(() -> isForm(body.mediaType())
+                ? asForm(body.value()) : JsonText.write(body.value()));
         return Payload.of(text.getBytes(StandardCharsets.UTF_8), body.mediaType());
     }
 

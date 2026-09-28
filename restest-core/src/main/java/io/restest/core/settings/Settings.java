@@ -175,11 +175,20 @@ public record Settings(
                 typed.yesOrNo("mutation.oversizeWithNoLimit",
                         DEFAULTS.mutation.oversizeWithNoLimit()),
                 typed.yesOrNo("mutation.emptyWithNoRule", DEFAULTS.mutation.emptyWithNoRule()),
+                typed.yesOrNo("mutation.wrongRoot", DEFAULTS.mutation.wrongRoot()),
+                typed.yesOrNo("mutation.emptyBody", DEFAULTS.mutation.emptyBody()),
+                typed.yesOrNo("mutation.notJson", DEFAULTS.mutation.notJson()),
+                typed.yesOrNo("mutation.wrongContentType",
+                        DEFAULTS.mutation.wrongContentType()),
+                typed.yesOrNo("mutation.beyondItsWidth", DEFAULTS.mutation.beyondItsWidth()),
+                typed.yesOrNo("mutation.deepNesting", DEFAULTS.mutation.deepNesting()),
+                typed.yesOrNo("mutation.extremeNumber", DEFAULTS.mutation.extremeNumber()),
                 typed.wholeNumber("mutation.acceptedKept", DEFAULTS.mutation.acceptedKept()),
                 typed.wholeNumber("mutation.oversizedLength",
                         DEFAULTS.mutation.oversizedLength()),
                 typed.wholeNumber("mutation.oversizedItems",
-                        DEFAULTS.mutation.oversizedItems())));
+                        DEFAULTS.mutation.oversizedItems()),
+                typed.wholeNumber("mutation.nestingDepth", DEFAULTS.mutation.nestingDepth())));
         MemorySettings memory = group("memory", () -> new MemorySettings(
                 typed.wholeNumber("memory.mostValuesUnderOneName",
                         DEFAULTS.memory.mostValuesUnderOneName()),
@@ -289,9 +298,17 @@ public record Settings(
             case "mutation.oversize" -> String.valueOf(mutation.oversize());
             case "mutation.oversizeWithNoLimit" -> String.valueOf(mutation.oversizeWithNoLimit());
             case "mutation.emptyWithNoRule" -> String.valueOf(mutation.emptyWithNoRule());
+            case "mutation.wrongRoot" -> String.valueOf(mutation.wrongRoot());
+            case "mutation.emptyBody" -> String.valueOf(mutation.emptyBody());
+            case "mutation.notJson" -> String.valueOf(mutation.notJson());
+            case "mutation.wrongContentType" -> String.valueOf(mutation.wrongContentType());
+            case "mutation.beyondItsWidth" -> String.valueOf(mutation.beyondItsWidth());
+            case "mutation.deepNesting" -> String.valueOf(mutation.deepNesting());
+            case "mutation.extremeNumber" -> String.valueOf(mutation.extremeNumber());
             case "mutation.acceptedKept" -> String.valueOf(mutation.acceptedKept());
             case "mutation.oversizedLength" -> String.valueOf(mutation.oversizedLength());
             case "mutation.oversizedItems" -> String.valueOf(mutation.oversizedItems());
+            case "mutation.nestingDepth" -> String.valueOf(mutation.nestingDepth());
 
             case "memory.mostValuesUnderOneName" ->
                     String.valueOf(memory.mostValuesUnderOneName());

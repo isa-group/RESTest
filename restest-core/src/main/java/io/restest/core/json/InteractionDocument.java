@@ -110,7 +110,7 @@ public final class InteractionDocument {
         document.put("id", JsonValue.of(interaction.id().value()));
         document.put("sentAt", JsonValue.of(interaction.sentAt().toString()));
         document.put("elapsed", JsonValue.of(interaction.elapsed().toString()));
-        document.put("testCase", of(interaction.testCase()));
+        document.put("testCase", of(interaction.testCase(), mostBodyBytes));
         document.put("request", of(interaction.request(), mostBodyBytes));
         document.put("outcome", of(interaction.outcome(), mostBodyBytes));
         return JsonValue.object(document);
@@ -146,13 +146,13 @@ public final class InteractionDocument {
 
     // --- the test case -------------------------------------------------------------------------
 
-    private static JsonValue of(TestCase testCase) {
+    private static JsonValue of(TestCase testCase, long mostBodyBytes) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         document.put("id", JsonValue.of(testCase.id().value()));
         document.put("operation", JsonValue.of(testCase.operation().value()));
         document.put("parameters", JsonValue.array(
                 testCase.parameterValues().stream().map(InteractionDocument::of).toList()));
-        testCase.body().ifPresent(body -> document.put("body", of(body)));
+        testCase.body().ifPresent(body -> document.put("body", of(body, mostBodyBytes)));
         document.put("intent", JsonValue.of(written(testCase.intent())));
         testCase.mutation().ifPresent(mutation -> document.put("mutation", of(mutation)));
         return JsonValue.object(document);
@@ -240,18 +240,37 @@ public final class InteractionDocument {
                 toOrigin(member(document, "origin")));
     }
 
-    private static JsonValue of(BodyValue body) {
+    /**
+     * A body as it was chosen. The exact text it was sent as, when it has one, is kept only as far
+     * as the other bodies are, for the same reason and in the same way - it is the text the request
+     * carried, and can be as long - and says how long the whole of it was when it is cut.
+     */
+    private static JsonValue of(BodyValue body, long mostBodyBytes) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         document.put("mediaType", JsonValue.of(body.mediaType()));
         document.put("value", body.value());
         document.put("origin", of(body.origin()));
+        body.sentAs().ifPresent(text -> {
+            Payload whole = Payload.of(text.getBytes(StandardCharsets.UTF_8), body.mediaType());
+            Payload kept = trimmed(whole, mostBodyBytes);
+            document.put("sentAs", JsonValue.of(new String(kept.content(),
+                    StandardCharsets.UTF_8)));
+            if (kept != whole) {
+                document.put("sentAsBytes", JsonValue.of(whole.size()));
+            }
+        });
         return JsonValue.object(document);
     }
 
+    /**
+     * A body read back. One sent as its value written out, which is every body stored before a body
+     * could be sent as anything else, has no {@code sentAs}.
+     */
     private static BodyValue toBodyValue(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the body that was sent");
         return new BodyValue(string(document, "mediaType"), member(document, "value"),
-                toOrigin(member(document, "origin")));
+                toOrigin(member(document, "origin")),
+                document.member("sentAs").map(text -> text(text, "sentAs")));
     }
 
     /**

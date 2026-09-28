@@ -293,3 +293,110 @@ seeds.
   and changing one thing in it would say less than changing one thing in a request built to work.
 - **Keeping the switches in `generation.*`.** No amendment, and a group of thirty numbers about two
   different things.
+
+## Amendment (M10.2)
+
+**Date:** 2026-09-28
+
+Row 10.2 adds what §4 left out: changes to the **body as a whole**. An API reads a body and turns it
+into something its code can use before any of that code runs, and the reading is code too - a JSON
+reader, a binder, a check on the media type - with failures of its own that no change to one value
+inside a well-formed body reaches. Seven operators join the eleven, in the same two families, drawn
+the same way (§5), switched the same way (§6): eight more settings, seventy in all.
+
+| Family | Operator | Goes to | What is sent |
+|---|---|---|---|
+| violations | `wrongRoot` | the body | another kind than the declared root, which the shape does not accept: the accepted body inside a list, or the first item of a list; a word, a number, `true` |
+| | `emptyBody` | a required body | no bytes at all, under the body's JSON media type |
+| | `notJson` | the body | the accepted body's text cut off halfway, or the words `this is not JSON`; a cut that still reads as JSON is not sent |
+| | `wrongContentType` | the body | the accepted body's own text under `text/plain`, `application/xml` or `application/x-www-form-urlencoded`, whichever the operation neither offers nor covers with a range |
+| | `beyondItsWidth` | any number | past what the format it names holds: one past an `int32`'s or an `int64`'s edges, ten times a `float`'s or a `double`'s |
+| probes | `deepNesting` | a body that is an object allowing undeclared members | one more member, holding `mutation.nestingDepth` lists one inside another, ten thousand by default |
+| | `extremeNumber` | a number nothing bounds | the largest and smallest its format holds, or where it names none, the edges of `int32`, `int64`, `float` and `double` and just past each, and one past sixty-four unsigned bits; whole numbers only where whole numbers are declared |
+
+Three questions had more than one defensible answer, and the maintainer settled them on 28 September
+before any code was written.
+
+- **Where the far too deep value goes.** Replacing the whole body with lists ten thousand deep breaks
+  what the document states, so it would be a violation; but a JSON reader bound to a class - Jackson,
+  Gson, which is what every API the benchmark runs uses, since it measures coverage with a JVM agent -
+  stops at the first bracket with the same complaint `wrongRoot` already earns. A member nobody
+  declared is skipped by such a reader, and skipping walks the whole value, which is where a reader
+  gives up at its depth limit: a thousand levels for Jackson, two hundred and fifty-five for Gson.
+  **Chosen: the extra member.** The document allows members it does not declare and states no depth,
+  so it is a probe, and ships off with the others; where `additionalProperties` is `false` or a shape
+  of its own, or where the object already has as many members as it may, it is not sent at all.
+- **One operator for the edges of numbers, or two.** A number past what its declared format holds
+  breaks the document; the largest number an `int32` holds does not, and neither does anything at all
+  where the document names no format. **Chosen: two**, split by §3's rule - `beyondItsWidth` a
+  violation, `extremeNumber` a probe - so that every recorded intent stays true. A stated bound, a
+  closed list or a multiple rules the probe out; a format whose edges the tool does not know
+  (`uint8`, `decimal`) rules out both.
+- **An empty body where the body may be left out.** No bytes under a JSON media type is read by the
+  common readers as no body, and for an optional body the document allows none. **Chosen: only where
+  the body is required**, a violation; an optional body sent empty would be the nearest thing to a
+  request ordinary generation already sends, and saying it expects a refusal would be false. In the
+  five APIs of the 2027 edition that is 34 of the 47 request bodies, and none of kafka-rest-proxy's 12.
+
+**A body can say what text it is sent as.** `BodyValue` gains `sentAs`, the exact text that travels
+when it is not the value written out; `value` keeps the accepted body it was made from, so a stored
+run shows both. `emptyBody`, `notJson`, `deepNesting` and `wrongContentType` set it. A value ten
+thousand levels deep is never built: the writer every value goes through refuses nesting past a
+thousand, and everything that compares two values would walk it a level at a time, so the text is
+put together from the accepted body's own. `wrongContentType` sets it too, because under a form's
+media type the same value written out afresh would travel as the fields of a form - a different
+body. The text travels inside the test case's JSON, so, as in §2, **the store's layout does not
+change**, and a run stored before reads back with no `sentAs`.
+
+**The body as a whole is a place of its own.** §4's "the body's root is not a place" stays true of
+the eleven: the root is offered only to the five operators that change the body as a whole, and to
+the two number operators when a whole body is one number. A body sent as the fields of a form is
+still left alone by all eighteen, for §4's reason.
+
+**Measured** the way §Measurement measured the eleven: the five APIs of the 2027 edition from the
+benchmark's own images, each restarted before every run with a fresh results directory; five seeds,
+sixty seconds, the shipped plan; three arms rotated seed by seed - the seven **off**, which is the
+tool as 10.1 shipped it, the five **violations** on, which is the default this amendment ships, and
+the two probes on as well, with the eleven's two probes still off. On 28 September, with no other
+measurement or build running, from the commit this amendment lands with. Means over five seeds:
+
+| API | Distinct 5XX by message: off / violations / +probes | By exception kind | Branches covered | Operations 2XX |
+|---|---|---|---|---|
+| pet-clinic | 214.0 / **279.4** / 281.2 | 60.8 / **71.8** / 71.6 | 152.4 / 153.2 / 152.0 | 32.8 / 33.0 / 33.0 |
+| kafka-rest-proxy | 7.0 / 7.6 / 7.6 | 7.0 / 7.6 / 7.6 | 849.6 / **861.8** / 859.4 | 35.6 / 35.0 / 35.2 |
+| notebook-manager | 4 / 4 / 4 | 4 / 4 / 4 | 16 / 16 / 16 | 5 / 5 / 5 |
+| gestao-hospital | 3 / 3 / 3 | 1 / 1 / 1 | 35.4 / 36.6 / 36.4 | 15.0 / 15.2 / 15.4 |
+| flight-search | 0 / 0 / 0 | 0 / 0 / 0 | 40 / 40 / 40 | 19.6 / 20.2 / 20.4 |
+
+- **pet-clinic** gains a third more distinct server failures by message and a sixth more by
+  exception kind, better on every seed by either count - its lowest seed with the violations on,
+  270 and 68, beats its highest with them off, 221 and 62 - and the area under the curve by kind
+  rises from 53.7 to 61.2. Every one of the five violations earns a 500 nearly every time it is
+  sent. By kind the gain is one new exception, `HttpMediaTypeNotSupportedException`, on fifteen
+  operations, which `wrongContentType` reaches; the rest are new messages of the kind 10.1 already
+  reached, `HttpMessageNotReadableException` - a body missing, JSON cut off, a list for an object,
+  a number too large for an `int` - which are distinct failures of the reading code by the
+  benchmark's count and one kind by the stricter one.
+- **kafka-rest-proxy** answers every broken body with a 400, as it should, and so gains no server
+  failure, but covers twelve more branches, better on every seed: the code that reads and refuses a
+  body, which no request had reached.
+- **The other three do not move.** notebook-manager's failures come with an empty body, so there is
+  no message to tell a new one apart by; gestao-hospital's and flight-search's are not in the code
+  that reads a body. gestao-hospital covered fewer operations in every arm than in the measurement of
+  the eleven that morning - its `POST /v1/hospitais/` never answered 2XX - and the build of 10.1,
+  run again that afternoon on one seed, did the same, so what changed is the API's surroundings
+  rather than the tool; the three arms here ran under the same conditions as one another.
+- **Nothing is lost**: operations answered 2XX, the number of requests, idle time (1.2-1.6%) and the
+  (operation, status) pairs answering 5XX are unchanged. The share of requests changed stays where
+  it was - 11.4% on pet-clinic, 6.0% on kafka-rest-proxy. What the strategy falls back on is
+  operations it has nothing to change in whatever it is allowed - on pet-clinic, six deletions,
+  which are never kept, and six lists that carry nothing - and none of them takes a body.
+- **The two probes add nothing over the violations** by exception kind on any API, and so they ship
+  off with the eleven's; `deepNesting` earns pet-clinic's depth limit on every body it is sent in,
+  as a message of a kind already reached.
+
+**Not sent, and why:** `null` as a whole body, which the common readers take for no body, the
+failure `emptyBody` already reaches; a body sent as nothing where it may be left out (above); the
+far too deep value replacing the whole body (above); and any of the seven in a body sent as the
+fields of a form, which cannot be nested, cut short as JSON is, or say `null`, and which the tool
+builds only where JSON is not offered.

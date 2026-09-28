@@ -258,12 +258,32 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "the same where the description states no longest length; a probe"),
             key("mutation", "emptyWithNoRule", SettingKind.YES_OR_NO,
                     "send an empty word, list or object where nothing forbids one; a probe"),
+            key("mutation", "wrongRoot", SettingKind.YES_OR_NO,
+                    "send the whole body as another kind of thing, such as a list where an object "
+                            + "is declared"),
+            key("mutation", "emptyBody", SettingKind.YES_OR_NO,
+                    "send a body of no bytes at all where the description requires one"),
+            key("mutation", "notJson", SettingKind.YES_OR_NO,
+                    "send a body that is not JSON: the accepted one cut off halfway, or plain words"),
+            key("mutation", "wrongContentType", SettingKind.YES_OR_NO,
+                    "send the accepted body under a media type the description does not offer"),
+            key("mutation", "beyondItsWidth", SettingKind.YES_OR_NO,
+                    "send a number past what its declared format holds, such as 2147483648 for "
+                            + "int32"),
+            key("mutation", "deepNesting", SettingKind.YES_OR_NO,
+                    "add an undeclared member nested nestingDepth lists deep to a body that allows "
+                            + "one; a probe"),
+            key("mutation", "extremeNumber", SettingKind.YES_OR_NO,
+                    "send the edges of what a common width of number holds, or just past them, "
+                            + "where nothing rules them out; a probe"),
             key("mutation", "acceptedKept", SettingKind.WHOLE_NUMBER,
                     "how many of each operation's accepted requests are kept to be changed, newest first"),
             key("mutation", "oversizedLength", SettingKind.WHOLE_NUMBER,
                     "how many characters an oversized word has"),
             key("mutation", "oversizedItems", SettingKind.WHOLE_NUMBER,
                     "how many items an oversized list has"),
+            key("mutation", "nestingDepth", SettingKind.WHOLE_NUMBER,
+                    "how many lists deep the member deepNesting adds is, at most a million"),
 
             key("memory", "mostValuesUnderOneName", SettingKind.WHOLE_NUMBER,
                     "how many values the run remembers under any one name, and things of any "
