@@ -353,6 +353,48 @@ the eleven: the root is offered only to the five operators that change the body 
 the two number operators when a whole body is one number. A body sent as the fields of a form is
 still left alone by all eighteen, for §4's reason.
 
+**Measured** the way §Measurement measured the eleven: the five APIs of the 2027 edition from the
+benchmark's own images, each restarted before every run with a fresh results directory; five seeds,
+sixty seconds, the shipped plan; three arms rotated seed by seed - the seven **off**, which is the
+tool as 10.1 shipped it, the five **violations** on, which is the default this amendment ships, and
+the two probes on as well, with the eleven's two probes still off. On 28 September, with no other
+measurement or build running, from the commit this amendment lands with. Means over five seeds:
+
+| API | Distinct 5XX by message: off / violations / +probes | By exception kind | Branches covered | Operations 2XX |
+|---|---|---|---|---|
+| pet-clinic | 214.0 / **279.4** / 281.2 | 60.8 / **71.8** / 71.6 | 152.4 / 153.2 / 152.0 | 32.8 / 33.0 / 33.0 |
+| kafka-rest-proxy | 7.0 / 7.6 / 7.6 | 7.0 / 7.6 / 7.6 | 849.6 / **861.8** / 859.4 | 35.6 / 35.0 / 35.2 |
+| notebook-manager | 4 / 4 / 4 | 4 / 4 / 4 | 16 / 16 / 16 | 5 / 5 / 5 |
+| gestao-hospital | 3 / 3 / 3 | 1 / 1 / 1 | 35.4 / 36.6 / 36.4 | 15.0 / 15.2 / 15.4 |
+| flight-search | 0 / 0 / 0 | 0 / 0 / 0 | 40 / 40 / 40 | 19.6 / 20.2 / 20.4 |
+
+- **pet-clinic** gains a third more distinct server failures by message and a sixth more by
+  exception kind, better on every seed by either count - its lowest seed with the violations on,
+  270 and 68, beats its highest with them off, 221 and 62 - and the area under the curve by kind
+  rises from 53.7 to 61.2. Every one of the five violations earns a 500 nearly every time it is
+  sent. By kind the gain is one new exception, `HttpMediaTypeNotSupportedException`, on fifteen
+  operations, which `wrongContentType` reaches; the rest are new messages of the kind 10.1 already
+  reached, `HttpMessageNotReadableException` - a body missing, JSON cut off, a list for an object,
+  a number too large for an `int` - which are distinct failures of the reading code by the
+  benchmark's count and one kind by the stricter one.
+- **kafka-rest-proxy** answers every broken body with a 400, as it should, and so gains no server
+  failure, but covers twelve more branches, better on every seed: the code that reads and refuses a
+  body, which no request had reached.
+- **The other three do not move.** notebook-manager's failures come with an empty body, so there is
+  no message to tell a new one apart by; gestao-hospital's and flight-search's are not in the code
+  that reads a body. gestao-hospital covered fewer operations in every arm than in the measurement of
+  the eleven that morning - its `POST /v1/hospitais/` never answered 2XX - and the build of 10.1,
+  run again that afternoon on one seed, did the same, so what changed is the API's surroundings
+  rather than the tool; the three arms here ran under the same conditions as one another.
+- **Nothing is lost**: operations answered 2XX, the number of requests, idle time (1.2-1.6%) and the
+  (operation, status) pairs answering 5XX are unchanged. The share of requests changed stays where
+  it was - 11.4% on pet-clinic, 6.0% on kafka-rest-proxy. What the strategy falls back on is
+  operations it has nothing to change in whatever it is allowed - on pet-clinic, six deletions,
+  which are never kept, and six lists that carry nothing - and none of them takes a body.
+- **The two probes add nothing over the violations** by exception kind on any API, and so they ship
+  off with the eleven's; `deepNesting` earns pet-clinic's depth limit on every body it is sent in,
+  as a message of a kind already reached.
+
 **Not sent, and why:** `null` as a whole body, which the common readers take for no body, the
 failure `emptyBody` already reaches; a body sent as nothing where it may be left out (above); the
 far too deep value replacing the whole body (above); and any of the seven in a body sent as the
