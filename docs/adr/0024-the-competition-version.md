@@ -77,7 +77,7 @@ Four milestones are added to the roadmap and taken before anything else:
 |---|---|---|
 | M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations whose recent answers all say *this will never work as asked* — 9.4 names the codes, and they are a setting. *9.3 was measured and not merged, and 9.4 set aside before it was built* | Operations covered, coverage, and the area under both |
 | M10 Break | Mutations of requests the API accepted; bodies of the wrong shape; sequences over real resources — delete then read, create twice | Unique server failures and the error branches of the API |
-| M11 Settings | One place for every number decided during development, layered from defaults, a file, the environment and the command line; every lever with a switch (ADR-0025) | None directly. It is what makes the ablation a campaign rather than a branch per variant |
+| M11 Settings | One place for every number decided during development, layered from defaults, a file, the environment and the command line; every lever with a switch (ADR-0025). *API keys were added as 11.3 by the maintainer on 29 September: sent where the document says, handed over by the person running the tool* | None directly. It is what makes the ablation a campaign rather than a branch per variant. *11.3 moves nothing on the five known APIs, which the benchmark's proxy signs in; it is there in case the undisclosed five hand the tool a key* |
 | M12 Closing | The list in §1 | None. It is what makes the submission a release |
 
 Two increments already on the roadmap are taken with them — 2.9 (optional parameters drawn by
@@ -92,10 +92,10 @@ JSON (3.5); offline re-checking (3.3); per-operation oracle configuration (3.4);
 proper with its synonym table and its measurement against word vectors (the rest of 4.1 and 4.2);
 the lifecycle model and Arazzo (the rest of 4.4, 4.6); IDL, the solver and constraint-based
 generation, whole (M5); live constraint and flow sources (6.1); the overhead regression test (6.2);
-authentication inferred from the document (2.6); the external value provider (2.8); the dictionary
-writer and cache (2.7b); Maven Central, Homebrew, SDKMAN, jbang and the native binary (7.1, 7.2b,
-7.3). Each keeps its row and its number, and `restest-idl` ships in v2.0 as the module descriptor it
-is today.
+authentication inferred from the document (2.6) — *all but API keys, which the maintainer added to
+v2.0 as 11.3 on 29 September*; the external value provider (2.8); the dictionary writer and cache
+(2.7b); Maven Central, Homebrew, SDKMAN, jbang and the native binary (7.1, 7.2b, 7.3). Each keeps
+its row and its number, and `restest-idl` ships in v2.0 as the module descriptor it is today.
 
 ### 4. What the competition does not change
 

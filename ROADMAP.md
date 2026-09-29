@@ -8,8 +8,8 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
-still read true, and the milestones were numbered before the plan was turned round. 73 increments in
-13 milestones: 34 delivered, 2 measured and not merged, 9 more in v2.0, 28 after it.
+still read true, and the milestones were numbered before the plan was turned round. 78 increments in
+14 milestones: 34 delivered, 2 measured and not merged, 10 more in v2.0, 32 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -41,10 +41,11 @@ nothing in them is an increment of its own.
 | M2 | Specification fidelity and input generation | 2.10b came back from 9.1 for 2.1; four rows wait | 10 / 14 |
 | M9 | Reach — every operation the API will answer, answered early | all but 9.3, measured and not merged, and 9.4, set aside before it was built | 2 / 4 |
 | M10 | Break — more distinct server failures | all | 3 / 3 ✅ |
-| M11 | Settings — every number somebody decided, somewhere one can change it | all | 1 / 2 |
+| M11 | Settings and API keys — every number somebody decided, somewhere one can change it; and the key an API asks for, sent where its document says | all | 1 / 3 |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 2 / 6 |
 | M12 | Closing v2.0 | all | 0 / 5 |
 | M7 | Packaging and distribution | 7.2a only | 0 / 4 |
+| M13 | Safeguards — an API that refuses the run, asks it to slow down or stops answering is not flooded | none | 0 / 4 |
 | M3 | Oracles, faults and reporting | none; 3.1b's generator half moved to 10.1, 3.7 to 12.1 | 0 / 6 |
 | M4 | Stateful testing | none; the narrow version of 4.1 moved to 9.2 and 4.4's sequence operators to 10.3; the narrow versions of 4.2 and 4.4 were tried at 9.3, measured and not merged | 0 / 6 |
 | M5 | IDL and constraint-based generation | none | 0 / 5 |
@@ -72,6 +73,15 @@ the shipped default can be changed in a line if the organisers say the badge rea
 and 8.6 records the container's CPU and memory alongside its results so the question can be
 answered with a number. Asking the organisers which reading holds is on the maintainer.
 
+A second thing the call promises without saying how: every tool is handed the document, the address
+and "any required authentication material (e.g., API keys)". The benchmark shows one way. Where one
+of the five known APIs needs signing in — flight-search wants a bearer token, gestao-hospital a
+session cookie — a script the benchmark runs in its own proxy registers a user, signs in, and adds
+the credential to every request on its way through, so the tool is handed nothing and needs
+nothing. Whether the five undisclosed APIs are signed in the same way, or hand the tool a key, is
+not known; **11.3** is there for the second case, and asking the organisers which it is is on the
+maintainer too.
+
 Two things follow for the plan. **Nothing that only improves the tool's verdicts is in v2.0** — the
 WFC oracles of M3, the stateful oracles of 4.5, the constraint oracles of 5.5 — because the benchmark
 judges the replies itself and our judgement of them changes no score. And **the five undisclosed APIs
@@ -98,7 +108,9 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 Seventeen days from acceptance to submission. M0–M2 delivered twenty-five increments in twelve
 days, so the twenty-one ▶ rows fit the calendar with the campaigns running while the code is written,
 and with nothing added. **An increment that grows is split, and the half that moves no measurement
-goes to 2.1 — never the other way round.**
+goes to 2.1 — never the other way round.** *One row was added since: 11.3, API keys, by the
+maintainer on 29 September, a week before the freeze. Its notes say why it is in v2.0 and how it is
+kept small.*
 
 ## The order of work
 
@@ -112,13 +124,15 @@ row of M8 names the rows written *while* it runs.
    containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measured the
    milestone as a whole on 27-28 September, on sixteen APIs.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
-4. **12.1**, **7.2a**, **12.2** — the command line frozen, the image, the documentation. Fixes from
+4. **11.3**, **12.1**, **7.2a**, **12.2** — API keys, the command line frozen, the image, the
+   documentation. 11.3 goes first because it adds to the command line that 12.1 freezes. Fixes from
    8.4 and 8.5 land here, behind a switch when they change behaviour.
 5. **Freeze**, then **8.6** 🛑 for twenty-five hours, during which only **12.3** — the manual — is
    worked on, because it changes no behaviour.
 6. **12.4** 🛑 tag and submit. **12.5** 🛑 `master` replaced.
-7. After submission: **8.1**, **8.2** 🛑 for the paper, and the ⏭ rows in the order M3, M4, M5, M6,
-   M7 unless the results say otherwise.
+7. After submission: **8.1**, **8.2** 🛑 for the paper, and the ⏭ rows in the order M13, M3, M4,
+   M5, M6, M7 unless the results say otherwise. M13 comes first because from the day it is tagged,
+   v2.0 can be pointed at anybody's API.
 
 Three things were asked of the maintainer at the replan rather than at the row, and **all three
 were approved on 22 September 2026**: **9.4** takes the narrow version of the first of ADR-0017's
@@ -170,7 +184,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.4 ✅ [#316](https://github.com/isa-group/RESTest/pull/316) | What a document says about the **characters** of a value, read where what it says about its length already is (ADR-0022). The kind it names — `date-time`, `date`, `email`, `uuid`, `uri`, `ipv4` and the thirteen others, nineteen in all — built from the platform's own parsers rather than looked up in a list, so every value is different and every value is correct; and the spelling it states as a `pattern` built by a library, with every candidate held against the rule again before it is sent and the length the same shape demands honoured alongside it. **No format dictionary is shipped**, which reverses that much of ADR-0013 §1 and ADR-0020 §5: a list sees only its key, while a shape states its kind, its spelling and its lengths at once and all three have to hold together | A date parameter gets a date instead of a random word, and an operation is no longer refused before anything worth testing happens: 225 places across the corpus name a kind of value, 25 of them in the priority corpus, and the 10 spelling rules in pet-clinic are satisfied rather than broken |
 | 2.5a ✅ [#313](https://github.com/isa-group/RESTest/pull/313) | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
 | 2.5b ✅ [#318](https://github.com/isa-group/RESTest/pull/318) | The memory of what the API has returned (ADR-0021 §6): one listener on the event stream filling the two dictionaries the format already has — one value under its own name, a whole resource under the name of its shape — and `observed`, the word a plan names to draw on them. A resource is cut down to what the operation accepts - `readOnly` gone, what the operation never declared gone, what nobody could send gone - and has **one value in it replaced by a different one** before it goes back, because an unchanged copy asks a POST for a duplicate; where nothing in it can be varied it goes as it came and the run records that. Keyed by the name and not by the way down to it, which answers ADR-0021's open question on a measurement rather than on RESTler's example. **Brings forward the runtime resource pool of 4.2**, and is the first source in the tool whose runs are reproduced by replay rather than from the seed | A request stops inventing what the API has already shown it. In the shipped plan, measured on two containerised APIs restarted before every run with the plans alternating seed by seed: 27.8 of pet-clinic's operations answered 2XX without it and 31.6 with it, better on every one of five seeds, and 5.6 against 6.8 on gestão-hospital. Counting replies rather than operations it is better on all ten runs. It needs time to fill: against the pet shop the smoke gate starts, a ten-second run earns 9% fewer 2XX replies with it and a sixty-second run 27% more. 89% of the 2,125 values inside the corpus's request bodies carry a name some reply of the same API also carries |
-| 2.6 ⏭ | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
+| 2.6 → [11.3](#m11--settings-and-api-keys), rest ⏭ | Authentication inferred from `securitySchemes`. **API keys went to 11.3.** Still here: a bearer token, and a user name with a password, handed over the way 11.3 hands over a key; OAuth2 client credentials; a sign-in the tool performs itself — register, log in, and carry the token or cookie that comes back, which is what the benchmark's proxy does for flight-search and gestao-hospital; refreshing what expires; and several credentials at once — several users, which the access-control oracles on the deferred list would need, or several keys taken in turn, as RESTest 1.x did. The sign-in and the several users are what the authentication file of Web Fuzzing Commons describes, and four related tools already read it. 11.3's notes say how all of these fit behind the door it builds | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
 | 2.7b ⏭ | Dictionary writer and disk cache. **Not taken in its numbered place:** it waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8. Skip it and go on to 2.8 | Good values computed once are kept, rather than worked out again every run |
 | 2.7c ✅ [#315](https://github.com/isa-group/RESTest/pull/315) | **A dictionary reaches inside a request body** (ADR-0020, amended): a place is named by the way down to it — `body.owner.email`, `body.tags[].label` — and the same ordered list of sources that fills a parameter now fills every piece of a body. An operation answers to its `operationId` **or** to `GET /pets/{petId}`, so a file can be written from the specification with no reasoning about which. Every entry that could never be used is named when the file is read, before a request is sent. **Taken out of order, before 2.5b**, which is built on the keyings this fixes | About half of what anybody writes in a dictionary stops being ignored: of the 553 places the priority corpus has, a list could fill 247 and now fills 435 — 415 of them end to end — while the other 118 are ones the document settles by itself, which the run now says out loud. A file generated from an OpenAPI document — the way most of them will be — is checked against that document before any API is touched |
@@ -556,8 +570,9 @@ would have measured one API where it moves a few percent of the requests, with M
 away. The maintainer chose to record it instead.
 
 What would reopen it: an API where whole operations answer 401, 405 or 501 to every request while
-others answer. The competition's own authentication material, which 12.1's `--header` hands over,
-removes the likeliest source of 401 before this row could.
+others answer. The competition's own authentication material — which the benchmark's proxy applies
+to the known APIs, and which 11.3's keys and 12.1's `--header` hand over wherever it comes to the
+tool instead — removes the likeliest source of 401 before this row could.
 
 **9.4 — what is not taken, still.** The reward-shaped version - go where it breaks - stays with
 the deferred list, and so do questions 2 and 3.
@@ -694,15 +709,18 @@ gestao-hospital accepted 4 of 2,255 creations, since its hospital creation stopp
 The three that delete reached nothing new here, and are kept for the question the related tools ask
 most, at 3-4% of the requests.
 
-## M11 — Settings
+## M11 — Settings and API keys
 
 *Goal: every number somebody decided has one place it can be changed, and an experiment can switch
-a behaviour off without touching the code or the plan.* [ADR-0025](docs/adr/0025-settings.md).
+a behaviour off without touching the code or the plan.* [ADR-0025](docs/adr/0025-settings.md). *And,
+since 29 September: an API that asks for a key is handed one, sent where its document says, and the
+key is never written into anything the run leaves behind.*
 
 | # | Increment | What it enables |
 |---|---|---|
 | 11.1 ✅ [#320](https://github.com/isa-group/RESTest/pull/320) | **The settings.** One immutable `Settings` in `restest-core`, built from typed records per concern — `EngineSettings` already exists and is the model — assembled once in the command-line module from four layers in this order: the defaults in code, a file given with `--settings`, environment variables named `RESTEST_<GROUP>_<KEY>`, and `--set group.key=value` repeated. `restest run --print-settings` prints the effective values with the origin of each, the way `--print-campaign` prints the plan. Unknown keys are refused with the nearest known one; the effective settings and their origins go into `report.json`, so a run says how it was configured. An architecture test forbids reading the environment or system properties anywhere but `restest-cli`. **First tranche moved from constants:** the concurrency range and its slowdown factor, the retained response bytes, the work-ahead factor and the straggler grace; the depths, lengths, item counts, null rate and attempt counts of invented values; the sizes of the memory of observed values; the bounds of the JSON report; the document size and fetch timeout. **Thirty-nine settings in six groups**; `store` and `sequences` are not created because nothing fills them yet. Two things the building settled: where the engine starts is worked out from the concurrency range in force rather than fixed, so `--set engine.maxConcurrency=1` works as one line; and the pair deciding the room an unbounded number is invented in was found to be misnamed - the second is a width above the first, not a ceiling - and is now `generation.roomAboveIt` | The eighty-odd numbers that were decided during development — how many requests in flight, how long a string, how deep a body, how much of a reply is kept — stop being recompile-only. A person running against a fragile API turns the concurrency down in one line; an experiment turns a behaviour off in one environment variable; and neither touches the plan, which is about the API rather than about the tool |
 | 11.2 ▶ | **Every lever a switch, and the list of them.** From 11.1 on, every row of M9 and M10 ships with a boolean under `schedule.*`, `generation.*` or `sequences.*` that turns it off, and a documented page lists the switches, what each one turns off, and which plan variants complete the picture (the memory of observed values is a *source*, so its ablation is a plan without the `observed` line). A test checks that every switch the page names exists and every switch that exists is named | An ablation is a campaign with one line changed, and the paper's Table of what each idea is worth can be produced by a script rather than by a branch per variant |
+| 11.3 ▶ | **API keys** — the narrow version of 2.6, added by the maintainer on 29 September. **Where** a key goes is read from the document when it says: a security scheme of type `apiKey` names a header, a query parameter or a cookie, and the `security` requirements, at the root and on each operation, say which operations ask for it — `security: []` asks for none, and where the document offers alternatives, one the run holds every key for is taken. A scheme the document declares and asks for nowhere, as two of the corpus's eight do, has its key sent on every operation that does not say `security: []`. **What** the key is always comes from the person running the tool, because no document carries one and OpenAPI has no field that could. So there are two ways in, one option for both: a key under the name of the scheme it answers, or on its own where the document declares only one; and, for a document that needs a key and declares none, a key with the place it goes — a header, a query parameter or a cookie, and its name — sent on every operation. The same can be given in an environment variable, so that a key need not sit in a shell's history; the spelling of both is the ADR's. The key is added as the request leaves, the way the `User-Agent` is, so no test case carries its value. A parameter or form field the document declares under the key's name — LanguageTool's `apiKey`, a form field on three operations and a query parameter on the fourth; the Petstore's `api_key` header — is filled with the key wherever it is declared, and counts as supplied: nothing is invented for it and no mutation picks it, so what a test case records about its changes stays true. **Every appearance of the key is masked in everything the run writes** — the console, `report.json` and its `curl` commands, the store, a reply that repeats it back. A run whose document asks for a key it was not given says so before its first request, naming the option that would give it. An ADR of its own records the choices and amends the two records they depart from: ADR-0005, which left the masking of secrets to 3.5, and ADR-0006, whose store keeps every request whole. ADR-0024 carries a note of the row since it was added. **Not taken**: the rest of 2.6, and sending a request without its key to see whether the API notices, which is one of the security oracles on the deferred list | An API that wants a key stops answering 401 to everything: the key is handed over once and sent where the API expects it, on the operations that ask for it. For the competition it is insurance — the call promises tools "any required authentication material (e.g., API keys)", and nothing says the five undisclosed APIs will be signed in by the benchmark's proxy the way the known ones are |
 
 ### Notes
 
@@ -720,13 +738,105 @@ says it is. The rule for moving one is that a reasonable user or a reasonable ex
 a different value. The first tranche is the ones the ablation needs plus the sizes; the rest move
 when the code around them is next touched, never in a sweep.
 
+**11.3 — why it is in M11, and why a key is not a setting.** The maintainer put it here. M11 is
+the milestone still open before the command line freezes, and it is where a run is told things that
+do not come from the API's document. A key is one of those, but it is not a setting, by the test
+[`docs/settings.md`](docs/settings.md) gives — *would it mean the same thing for a different API on
+the same machine?* — and it is not part of a plan either: a plan is written once for an API and
+means the same on every machine, where a key belongs to one deployment and to one person.
+Treating it as a setting would also be the surest way to leak it, because every setting is printed
+by `--print-settings` and recorded in `report.json` with where it came from. So a key has a way in
+of its own beside the settings — the command line or the environment, as a setting can be — with
+none of their recording.
+
+**11.3 — with the document, or handed over apart? Both, and the corpus says why.** The maintainer
+asked which. The document says *where* a key goes and never *what* it is: OpenAPI's security scheme
+has a place and a name and no field for a value, and the Petstore's `special-key` is a sentence in
+its description. Nor can the document be relied on for the *where*:
+
+- eight of the corpus's 46 documents declare an API key, four in a header and four in the query,
+  and two of those eight ask for it on no operation at all;
+- two carry a key as an ordinary parameter, LanguageTool instead of a scheme and the Petstore beside
+  one;
+- of the seven APIs that RESTest 1.x's own configurations reached with a key, three documents do not
+  declare it;
+- none of the five priority documents declares a key, and flight-search declares a bearer token and
+  asks for it nowhere, since the benchmark's proxy supplies it.
+
+Hence one way in that reads the place from the document, and one where the person says it.
+
+**11.3 — what the related tools do.** Surveyed on 29 September, from each tool's documentation and
+source: Schemathesis, EvoMaster, RESTler, CATS, RestTestGen, WuppieFuzz, AutoRestTest, ARAT-RL and
+RESTest 1.x.
+
+- **The value always comes from outside the document** — a flag, a configuration file that reads
+  environment variables, a script whose output is the credential, or a sign-in the tool performs —
+  because OpenAPI has nowhere to hold it. ARAT-RL has no authentication at all.
+- **Only Schemathesis reads the document to place a key.** Its configuration names a credential
+  after a security scheme, takes the place and the name from the scheme, and sends it only to the
+  operations whose `security` the scheme satisfies. Every other tool sends the same credentials on
+  every request — RESTest 1.x too, whose configuration never read the document's schemes.
+  RestTestGen lets a credential take the place of a parameter of the same name, which is what 11.3
+  does for a key a document declares as an ordinary parameter.
+- **Elsewhere, the schemes feed oracles.** Schemathesis and CATS send requests without their
+  credentials and expect a refusal, EvoMaster reports a 401 from an API that declares no scheme, and
+  CATS checks that every path declares one. That is the kind of security oracle 11.3 leaves on the
+  deferred list.
+- **Several credentials usually means several users**, to reach more operations or to check who may
+  do what: EvoMaster, RESTler, Schemathesis. Only RESTest 1.x rotated several keys of one user, one
+  per test case.
+- **Masking is uneven.** RESTler replaces token values in its logs by default, and Schemathesis
+  masks values by the names of the headers and keys that carry them. CATS, where masking is still
+  switched on by hand in the released version, writes a name in place of each value in a replay, so
+  that the value is read from an environment variable. EvoMaster and RestTestGen write credentials
+  into the tests they generate.
+
+What 11.3 takes from that: the place from the document, as Schemathesis does, and the person's
+word where the document is silent, as every tool does; and masking that is always on, of every
+value the run was handed rather than of names that look secret, because the tool knows which values
+those are — with a `curl` command naming what to fill in, the way CATS's replays do.
+
+**11.3 — the door the other mechanisms come through.** A document names each way of signing in as a
+*security scheme* with a type. 11.3 hands a credential over under a scheme's name and lets the type
+decide how it travels, so a bearer token and a user name with a password — a scheme of type `http`,
+with `scheme: bearer` or `scheme: basic` — are one more type each: the same option, masked the same
+way, chosen for an operation by the same reading of its requirements. The command line learns no
+second vocabulary for them. What does not fit through that door is a credential the tool has to
+*obtain*. OAuth2's client credentials and a sign-in the tool performs itself send requests of their
+own before the ones that need them, charged to the budget like the opening lap, since ADR-0017
+refuses a preparation phase off the clock; and what they obtain expires and has to be fetched again.
+That, and several credentials at once, is why the rest of 2.6 stays a row of its own, after v2.0.
+When it comes, it has a format to read rather than one to invent: the authentication file of Web
+Fuzzing Commons — the project whose fault catalogue the tool already uses — describes users, fixed
+headers and sign-ins, and EvoMaster, Schemathesis, CATS and WuppieFuzz read it. Open formats in, as
+the eighth design principle asks.
+
+**11.3 — kept small, and how it is checked.** A week before the freeze, the row takes only what a
+key needs: one key per scheme, nothing refreshed, nothing rotated. None of the priority APIs asks
+the tool for a key, so no measurement of the priority corpus can move, and the check the freeze asks
+for is that nothing else does: with no key given, every test case becomes the request it became
+before the row. That a key reaches the API is shown against a stub that refuses a request without
+it, in the smoke gate; that it reaches nothing the run writes, by a test that searches every file a
+run leaves behind for it. And since nothing changes unless a key is given, the row has no switch of
+its own: ADR-0025 asks one of every lever, and a key handed over is an instruction rather than a
+lever.
+
+**11.3 — what the benchmark's proxy records is not the tool's to mask.** The proxy keeps every
+request as it passed through, after its own sign-in script has added what it adds. A key handed to
+the tool in the competition is therefore in the organisers' recording of the run, whatever the tool
+masks. And the recordings of the harness repository's own campaigns, which 8.2 publishes as raw
+data, already hold the credentials the proxy adds for the known APIs: 17,112 of the 19,100 requests
+recorded in one twenty-minute run of flight-search carry its bearer token. They are throwaway
+credentials for containers that no longer exist, but worth knowing about before the data is made
+public. The tool can promise only what it writes itself.
+
 ## M12 — Closing v2.0
 
 *Goal: a version somebody can install, run, understand and cite, and that replaces `master`.*
 
 | # | Increment | What it enables |
 |---|---|---|
-| 12.1 ▶ | **The command line frozen** (ADR-0015 amended). `restest version`; `--header name:value`, repeatable, for authentication material handed over out of band — the competition hands tools "any required authentication material", and a header is the shape most of it takes; `--settings`, `--set` and `--print-settings` from 11.1; **Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not** (3.7, moved here — the third of the answers ADR-0015 lists is the one taken); `--help` complete and in plain words for every option; the exit codes as a table in the documentation. After this row, a change to the command line is a 2.x decision | The surface a user, a script and the benchmark adapter all depend on is complete and stops moving; and a run stopped early stops costing everything it had found |
+| 12.1 ▶ | **The command line frozen** (ADR-0015 amended). `restest version`; `--header name:value`, repeatable, for authentication material handed over out of band in a shape 11.3 does not read — a bearer token somebody already holds, a session cookie — and kept out of everything the run writes, the way 11.3 keeps a key; `--settings`, `--set` and `--print-settings` from 11.1, and the option for a key from 11.3; **Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not** (3.7, moved here — the third of the answers ADR-0015 lists is the one taken); `--help` complete and in plain words for every option; the exit codes as a table in the documentation. After this row, a change to the command line is a 2.x decision | The surface a user, a script and the benchmark adapter all depend on is complete and stops moving; and a run stopped early stops costing everything it had found |
 | 12.2 ▶ | **The documentation of a finished tool.** `README.md` as the front door: install, run, read a report, write a plan, write a dictionary, change a setting, the exit codes, the container image. `docs/` consolidated: the plan format, the dictionary format, the settings and their keys, the report's JSON shape, the fault catalogue as we render it. `CONTRIBUTING.md` and `docs/DESIGN.md` say what v2.0 is and what 2.x will be. Every command in every document run from a clean checkout before it is pasted | Somebody who has never seen the repository can install the tool and get a report in ten minutes, and can find out what any line of that report means without reading Java |
 | 12.3 ▶ 🛑 | **The user manual.** Written once, in Markdown under `docs/manual/`, and built to both HTML and PDF from that one source by a script in the repository, so that the format decision is about what is *published*, not about what is written. Chapters: what the tool is for, install, the first run, reading the report, plans, dictionaries, settings, the container image, the exit codes, troubleshooting, and a glossary. The one-source-two-outputs approach was approved on 22 September; 🛑 **which output is linked from the README and the release — HTML, PDF, or both — is the maintainer's decision, due 2 October** | A manual a person reads from the beginning, rather than documentation a person searches |
 | 12.4 ▶ 🛑 | **v2.0.0 tagged and submitted.** The tag is on the commit 8.6 measured. **What the competition receives is the harness repository** — the tool's source at that commit and the benchmark-compliant `Dockerfile` that wraps 7.2a's image in the loop the benchmark expects — made public and checked with the benchmark's own compliance tooling before the freeze, not after; 8.6 runs that image and no other, so the artefact submitted is the artefact rehearsed. The submission is made on 8 October. If 12.3 is not merged by then, `v2.0.0-rc.1` is tagged and submitted instead, `v2.0.0` follows when the manual lands, and a check in the pull request that lands it shows the two commits differ in documentation files only — approved on 22 September. 🛑 The tag itself is a supervision point | The competition receives exactly what is published, under exactly the version the paper will cite |
@@ -734,12 +844,13 @@ when the code around them is next touched, never in a sweep.
 
 ### Notes
 
-**12.1 — `--header` is a user's option, not a benchmark's.** 2.6 — authentication inferred from
-the document's `securitySchemes` — waits for 2.1, because the benchmark's proxy signs the tool in
-where an API needs it and nothing measured in 2027 needs the inference. A header a person can pass
-is different: it is the smallest honest answer to "my API wants a key", it is what every HTTP client
-offers, and it is how authentication material handed over out of band reaches the tool without the
-tool knowing what it is.
+**12.1 — `--header` is a user's option, not a benchmark's.** The benchmark's proxy signs the tool
+in where one of the known APIs needs it, 11.3 sends a key where an API's document says one goes,
+and the rest of 2.6 — a sign-in the tool performs, OAuth2 — waits for 2.1. A header a person can
+pass is different: it is the smallest honest answer to "my API wants a token I already have", it is
+what every HTTP client offers, and it is how authentication material 11.3 does not read reaches the
+tool without the tool knowing what it is. Because that is what it is for, what it hands over is
+treated as a secret, like a key.
 
 **12.3 — one source, two outputs.** Writing the manual twice would be the one way to make the
 format decision expensive, so it is not written twice. Markdown is the source; a script produces the
@@ -904,9 +1015,92 @@ from one remembered by luck.
 Nothing below is in the competition version, with one exception marked ▶: **7.2a**, the container
 image and release on tag, which the freeze needs and which sits in M7 because that is where its
 siblings are. The other rows keep their numbers and their notes — the notes are evidence and
-arguments that still hold — and are taken after 12.5 in the order M3, M4, M5, M6, M7, unless the
-results of 8.1 and 8.2 say otherwise. Rows marked → have had a narrow version
-taken into M9, M10 or M12; what the arrow leaves behind is still here, still numbered, still owed.
+arguments that still hold — and are taken after 12.5 in the order M13, M3, M4, M5, M6, M7, unless
+the results of 8.1 and 8.2 say otherwise. M13 was added on 29 September and is first for the reason
+the order of work gives. Rows marked → have had a narrow version taken into M9, M10 or M12; what the
+arrow leaves behind is still here, still numbered, still owed.
+
+## M13 — Safeguards
+
+*Goal: an API that refuses the run, asks it to slow down or stops answering is not flooded by it.*
+Added by the maintainer on 29 September 2026, for after v2.0: RESTest is a testing tool, and nothing
+in it should make it a convenient way to flood somebody's API. Every row lands with a switch and its
+numbers in the settings (ADR-0025), and before any of them is built it is replayed over the recorded
+runs, the way 9.4 was, to show it would not have fired on an API of either edition: a safeguard that
+stops a benchmark run early protects nobody, and costs the next competition a run.
+
+| # | Increment | What it enables |
+|---|---|---|
+| 13.1 ⏭ | **Stop when the API refuses the run's credentials.** A rule about the whole API, never about one operation: once every answer over a stretch of the run — the opening lap's, and after it the last *N* — is 401, or 401 and 403, and nothing in it was accepted, the run stops sending, says which credentials it held and that the API refused them, and writes what a run cut short writes (12.1). The stretch, whether 403 counts, and the switch are settings. Once the rest of 2.6 lets the tool sign itself in, the requests before the sign-in do not count | A mistyped or forgotten key is found out in seconds, rather than after an hour of requests the API refused one by one; and an API whose owner revoked a key stops receiving them |
+| 13.2 ⏭ | **Wait when told to wait.** A 429, or a 503 that carries `Retry-After`, pauses every request to the API for as long as the header says — in either of its forms, a number of seconds or a date — or, where there is no header, for a wait that doubles each time up to a ceiling; the engine then starts again from its fewest requests in flight and climbs as it already does. The `RateLimit` fields being drafted at the IETF are read where an API sends them. A run still told to wait after *K* pauses, or told to wait past the end of its budget, stops as 13.1 does. The time spent waiting is reported as idle time, with its cause. Most of the related tools send the request that was turned away again after the wait; whether this one does is the row's to decide | An API that asks the tool to slow down is obeyed. Today a 429 is an ordinary answer, and a quick one, so the engine's limiter reads it as room to send *more* |
+| 13.3 ⏭ | **A ceiling on the rate.** The most requests a second the run may send, beside the most it may have in flight, which exists already: a setting, off by default | A person testing somebody else's staging server can promise its owner a rate, in one line |
+| 13.4 ⏭ | **Stop when the API stops answering.** When every request over a stretch goes unanswered — refused, reset, timed out — the engine keeps one in flight until one is answered, and the run stops once the API has been silent for a stated time, saying when it went silent. The limiter already falls to one request in flight as unanswered requests pile up; what is new is stopping, and saying so | A run that brought an API down stops making it worse, and the report says at what moment the API went silent — which is a finding in itself when the run is what silenced it |
+
+### Notes
+
+**M13 — what v2.0 already does.** Four things, from M1 and M11. At most sixteen requests are ever
+in flight, a ceiling whose own documentation calls it the promise that the tool stays a test tool
+and does not turn into a load generator (`engine.maxConcurrency`). The limiter halves that number
+whenever a request goes unanswered, and sends fewer as answers slow down. A request names the tool
+in its `User-Agent`, `RESTest/2.0`, so that an API's owner can tell the traffic apart and refuse it
+(`engine.userAgent`) — unless the document declares that header as a parameter of its own, as
+BingWebSearch's does, when what goes is the value built for it. And every run ends when its budget
+does.
+
+**M13 — what the safeguards cannot do.** The tool is open source and every lever has a switch, so
+none of these stops somebody who means harm: one line of settings, or a fork, turns any of them
+off. What they do is make the default safe and turning one off deliberate — and visible, since
+`report.json` records every setting and where it came from. Whether the person running the tool is
+allowed to test the API is not something any tool can check, and none of these rows pretends to.
+
+**M13 — what the recordings say about the benchmark.** In the runs of the tool as shipped in 8.4
+and 8.5 — 27 runs of twenty minutes, sixteen APIs between them — no API answered 429 or 503 even
+once. Two answered 401: blog, to
+under 0.2% of its requests, and flight-search, which with 403 answered 13% of its requests that way,
+spread over operations that answer 400 and 404 to others (9.4's notes). So 13.2 has nothing to act
+on in the benchmark and is checked against a stub instead; and 13.1 has to be a rule about the whole
+API, because an operation that answers 401 to one request answers something else to the next.
+
+**13.1 — a stop, not a steer.** It stands next to 9.4, which was to take budget away from
+operations answering 401, and next to the first of ADR-0017's open questions, which asks whether a
+run may steer by what it has been answered. It does neither: it chooses nothing about what is sent,
+it only ends a run that can learn nothing more, and it was asked for by the maintainer on 29
+September for that reason.
+
+**13.1 — the API to replay it on first.** flight-search, one of the two known APIs the benchmark's
+proxy signs in, and the one that answers 401 and 403 most. The proxy signs in when the first request
+arrives, and while it does, nothing is answered; if the sign-in fails — an API not yet ready to take
+it, say — requests go out unsigned, and it is tried again on the next one. A stretch shorter than an
+API takes to become ready would stop a run the benchmark was about to sign in.
+
+**13.3 — why off, and why not by address.** A ceiling on by default would slow every run to protect
+the few pointed at somebody else's server. A default that switched on for any address other than
+the tool's own machine was considered and is not proposed: the benchmark's APIs run in containers
+of their own, so it would switch on in the competition too.
+
+**M13 — what the related tools do.** Surveyed on 29 September, from each tool's documentation and
+source: Schemathesis, EvoMaster, RESTler, CATS, RestTestGen, WuppieFuzz, AutoRestTest and ARAT-RL,
+with ZAP's API scan for comparison.
+
+- **A ceiling on the rate is common, and off by default.** Schemathesis has `--rate-limit`,
+  EvoMaster `--ratePerMinute` — documented as the way not to bombard an external service into
+  something equivalent to a denial of service — and ZAP a rate limit in its network options. CATS
+  alone keeps one on always, at 10,000 requests a minute.
+- **Waiting after a 429 is common; slowing down afterwards is not.** EvoMaster always waits for
+  `Retry-After`, or ten seconds without it, and sends the request again; RestTestGen and
+  AutoRestTest do the same a bounded number of times, and Schemathesis only when asked. RESTler
+  retries every five seconds without reading the header, WuppieFuzz only logs it, and CATS and
+  ARAT-RL do nothing. Every one of them returns to its old pace afterwards, none waits on a 503 by
+  default, and none reads the `RateLimit` fields, a draft that has not yet gone to the IESG.
+- **None stops when its credentials are refused.** Schemathesis warns after the run about an
+  operation 90% of whose requests answered 401 or 403, and CATS when half of all its tests did. Only
+  EvoMaster stops by itself, when connections are refused.
+- **Half name themselves** in the `User-Agent` — Schemathesis, RESTler, CATS and WuppieFuzz — while
+  ZAP presents itself as a browser. ZAP, like the load tester k6, asks in writing that only what one
+  has permission to test be tested; RESTler and CATS warn that a run can take a service down.
+
+So 13.3 is what Schemathesis, EvoMaster and CATS already have, 13.4 is what EvoMaster does by
+exiting, and 13.1 — and 13.2's slowing down after the wait — are what none of them does.
 
 ## M3 — Oracles, faults and reporting
 
