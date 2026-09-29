@@ -208,12 +208,14 @@ and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reason
 Fault reports use the WFC codes rather than a taxonomy of our own, for the same reason: a fault
 count is only meaningful next to somebody else's fault count.
 
-Every behaviour a run can do without — an opening lap, a mutation operator, a scheduling rule — has
-a switch in the settings ([ADR-0025](adr/0025-settings.md)), and a run records which switches it ran
-with. An ablation is therefore a campaign with one line changed rather than a branch per variant,
-and its results say what they measured. [The switches](switches.md) lists every one, with the
-files that turn off a whole increment or milestone at once and the plan without the memory of what
-the API returned, which is a source rather than a switch; a test holds that page to the tool.
+Every behaviour a run can do without that was added since the tool has had settings — an opening
+lap, a mutation operator, a series of requests — has a switch in them
+([ADR-0025](adr/0025-settings.md)), and a run records which switches it ran with. An ablation is
+therefore a file handed over with `--settings` or `--campaign` rather than a branch per variant, and
+its results say what they measured. [The switches](switches.md) lists every one, gives the files
+that turn off a whole increment or milestone at once and the plan without the memory of what the
+API returned, which is a source rather than a switch, and names the three older behaviours that
+have no switch yet. A test holds that page to the tool.
 
 ## Related tools
 

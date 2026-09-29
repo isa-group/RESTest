@@ -27,6 +27,8 @@ import io.restest.core.settings.SettingSource;
 import io.restest.core.settings.Settings;
 import io.restest.gen.Campaign;
 import io.restest.gen.Campaigns;
+import io.restest.gen.RandomTestCaseGenerator;
+import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,8 +66,11 @@ import org.junit.jupiter.api.io.TempDir;
  * every setting ({@link SettingKey}), against what the tool does when nobody says otherwise
  * ({@link Settings#defaults()}), against the command line reading each of the page's files
  * ({@link Restest}), and against the plan RESTest carries ({@link Campaigns#shipped()}), of which the
- * plan on the page is a copy with one source taken out. Nothing here has an opinion about what the
- * switches should be.
+ * plan on the page is a copy with one source taken out. The files are checked for what their
+ * labels promise as well: the file for a whole idea turns all of it off, the file for a milestone
+ * is the files for its parts together, and the file that gives a run its seed back leaves nothing a
+ * run would send depending on what the API answered, which {@link RandomTestCaseGenerator} is asked
+ * about a real document. Nothing here has an opinion about what the switches should be.
  */
 class DocumentedSwitchesTest {
 
@@ -72,15 +78,25 @@ class DocumentedSwitchesTest {
     private static final Pattern ROW = Pattern.compile(
             "^\\| `([a-z]+\\.[A-Za-z]+)` \\| `([^`]*)` \\| [^|]* \\| .* \\|$", Pattern.MULTILINE);
 
-    /** A block of YAML on the page, which is either a file of settings or a plan. */
-    private static final Pattern BLOCK = Pattern.compile("```yaml\\n(.*?)```", Pattern.DOTALL);
-
     /** A setting named anywhere on the page, in a sentence as much as in a table. */
     private static final Pattern NAMED = Pattern.compile(
             "\\b(" + String.join("|", SettingKey.groups()) + ")\\.([A-Za-z]+)\\b");
 
     /** What begins like the name of a setting and is not one: a file the page mentions. */
     private static final Set<String> FILE_NAMES = Set.of("report.json");
+
+    /** The label the page gives a file: the words in bold before it, up to a comma or a colon. */
+    private static final Pattern LABEL = Pattern.compile("^\\*\\*([^,:*]+)");
+
+    /** The heading the file that gives a run its seed back sits under. */
+    private static final String THE_SEED = "Getting the seed back";
+
+    /**
+     * A document whose creations can start every kind of series, so that a series left switched
+     * on shows: the pet clinic of the corpus the tool is measured on.
+     */
+    private static final String A_DOCUMENT_WITH_CREATIONS =
+            "restest-spec/src/test/resources/specifications/restleague-2027/pet-clinic/openapi.yaml";
 
     /** A group, and one setting inside it, as the command line prints them. */
     private static final Pattern PRINTED_GROUP = Pattern.compile("^([a-z]+):$");
@@ -240,10 +256,88 @@ class DocumentedSwitchesTest {
                 .describedAs("the plan on the page is no longer the one RESTest carries with the "
                         + "memory taken out. Print that plan with 'restest run --print-campaign', "
                         + "take out every 'source: observed', share its weight among the rest of "
-                        + "its group in the proportions they had, and paste the result back in")
+                        + "its group in the proportions they had, and paste the result back in - "
+                        + "and read again the sentences on the page that quote its shares and "
+                        + "weights")
                 .isEqualTo(withoutTheMemory(Campaigns.shipped()));
-        assertThat(onThePage.operations().narrowsAnything())
-                .describedAs("the plan RESTest carries touches every operation, and so does this")
+        assertThat(onThePage.operations())
+                .describedAs("the plan on the page touches other operations than the one RESTest "
+                        + "carries")
+                .isEqualTo(Campaigns.shipped().operations());
+    }
+
+    @Test
+    @DisplayName("the file for the series turns off every series the tool has, and nothing else")
+    void the_file_for_the_series_turns_off_every_series() {
+        assertThat(valuesIn(labelled("10.3")))
+                .describedAs("the file for 10.3 is supposed to turn off every series there is, so "
+                        + "that a run handed it sends none")
+                .isEqualTo(allOff(series()));
+    }
+
+    @Test
+    @DisplayName("the files for 10.1 and 10.2 turn off every kind of change between them, and no "
+            + "kind in both")
+    void the_files_for_the_changes_turn_off_every_kind_between_them() {
+        Map<String, String> oneValue = valuesIn(labelled("10.1"));
+        Map<String, String> theRest = valuesIn(labelled("10.2"));
+
+        assertThat(oneValue.keySet())
+                .describedAs("a kind of change came with one increment or the other, so it is in "
+                        + "one of the two files")
+                .doesNotContainAnyElementsOf(theRest.keySet());
+        Map<String, String> between = new TreeMap<>(oneValue);
+        between.putAll(theRest);
+        assertThat(between)
+                .describedAs("between them, the files for 10.1 and 10.2 are supposed to turn off "
+                        + "every kind of change the tool can make to an accepted request")
+                .isEqualTo(allOff(kindsOfChange()));
+    }
+
+    @Test
+    @DisplayName("the file for a milestone is the files for its increments put together")
+    void the_file_for_a_milestone_is_its_increments_together() {
+        assertThat(valuesIn(labelled("Reach")))
+                .describedAs("the file for reach is supposed to be the files for 2.9, 9.1 and 9.2")
+                .isEqualTo(together("2.9", "9.1", "9.2"));
+        Map<String, String> breaking = new TreeMap<>(valuesIn(labelled("10.3")));
+        breaking.put("mutation.violations", "false");
+        assertThat(valuesIn(labelled("Break")))
+                .describedAs("the file for break is supposed to turn off every change to an "
+                        + "accepted request and every series")
+                .isEqualTo(breaking);
+        assertThat(valuesIn(labelled("Both")))
+                .describedAs("the file for both is supposed to be the files for reach and break")
+                .isEqualTo(together("Reach", "Break"));
+    }
+
+    @Test
+    @DisplayName("the file for getting the seed back, handed over with the plan on the page, leaves "
+            + "nothing a run sends depending on what the API answered")
+    void the_file_for_the_seed_gives_it_back(@TempDir Path directory) throws IOException {
+        Path file = directory.resolve("plan.yaml");
+        Files.writeString(file, plans().get(0));
+        Campaign withoutTheMemory = Campaigns.gather(Optional.of(file),
+                ApiModel.of("the switches page", "1", List.of()), Set.of()).campaign();
+        ApiModel withCreations = new SwaggerSpecificationParser().parse(
+                RepositoryRoot.locate().resolve(A_DOCUMENT_WITH_CREATIONS).toString());
+
+        // Each half on its own is not enough, which is what makes the file worth checking: the
+        // series left on, or the changes left on, and the run still depends on the API.
+        assertThat(generator(withCreations, withoutTheMemory,
+                Settings.from(Map.of("mutation.violations", "false"))).dependsOnTheApisAnswers())
+                .describedAs("with the series on, a run of this document depends on what the API "
+                        + "answers; if it did not, this check would prove nothing")
+                .isTrue();
+        assertThat(generator(withCreations, withoutTheMemory, Settings.from(allOff(series())))
+                .dependsOnTheApisAnswers())
+                .describedAs("with the changes on, a run of this document depends on what the API "
+                        + "answers; if it did not, this check would prove nothing")
+                .isTrue();
+        assertThat(generator(withCreations, withoutTheMemory, Settings.from(valuesIn(fileUnder(
+                THE_SEED)))).dependsOnTheApisAnswers())
+                .describedAs("handed the page's plan and its file for getting the seed back, a run "
+                        + "still depends on what the API answers, so the seed does not repeat it")
                 .isFalse();
     }
 
@@ -263,19 +357,109 @@ class DocumentedSwitchesTest {
                 .toList();
     }
 
+    /** A block of YAML on the page, with the label before it, if any, and the heading above it. */
+    private record Block(String text, String label, String heading) {
+    }
+
     /** Every block of YAML on the page, as it is written there. */
-    private static List<String> blocks() {
-        return BLOCK.matcher(page).results().map(found -> found.group(1)).toList();
+    private static List<Block> blocks() {
+        List<Block> found = new ArrayList<>();
+        String heading = "";
+        String label = "";
+        StringBuilder inside = null;
+        for (String line : page.lines().toList()) {
+            if (inside != null) {
+                if (line.equals("```")) {
+                    found.add(new Block(inside.toString(), label, heading));
+                    inside = null;
+                    label = "";
+                } else {
+                    inside.append(line).append('\n');
+                }
+            } else if (line.equals("```yaml")) {
+                inside = new StringBuilder();
+            } else if (line.startsWith("## ")) {
+                heading = line.substring("## ".length()).trim();
+                label = "";
+            } else {
+                Matcher labelled = LABEL.matcher(line);
+                if (labelled.find()) {
+                    label = labelled.group(1).trim();
+                }
+            }
+        }
+        return found;
     }
 
     /** The blocks that are files of settings: every one that is not a plan. */
     private static List<String> filesOfSettings() {
-        return blocks().stream().filter(block -> !isAPlan(block)).toList();
+        return blocks().stream().map(Block::text).filter(block -> !isAPlan(block)).toList();
     }
 
     /** The blocks that are plans, told apart by the strategies only a plan has. */
     private static List<String> plans() {
-        return blocks().stream().filter(DocumentedSwitchesTest::isAPlan).toList();
+        return blocks().stream().map(Block::text).filter(DocumentedSwitchesTest::isAPlan).toList();
+    }
+
+    /** The one file of settings on the page with this label in bold before it. */
+    private static String labelled(String label) {
+        List<String> found = blocks().stream()
+                .filter(block -> block.label().equals(label) && !isAPlan(block.text()))
+                .map(Block::text)
+                .toList();
+        assertThat(found)
+                .describedAs("the page is supposed to have one file labelled '%s'", label)
+                .hasSize(1);
+        return found.get(0);
+    }
+
+    /** The one file of settings on the page under this heading. */
+    private static String fileUnder(String heading) {
+        List<String> found = blocks().stream()
+                .filter(block -> block.heading().equals(heading) && !isAPlan(block.text()))
+                .map(Block::text)
+                .toList();
+        assertThat(found)
+                .describedAs("the page is supposed to have one file under '%s'", heading)
+                .hasSize(1);
+        return found.get(0);
+    }
+
+    /** What the files with these labels give, put together. */
+    private static Map<String, String> together(String... labels) {
+        Map<String, String> values = new TreeMap<>();
+        for (String label : labels) {
+            values.putAll(valuesIn(labelled(label)));
+        }
+        return values;
+    }
+
+    /** Every series there is, which is every switch in its group. */
+    private static List<SettingKey> series() {
+        return switches().stream().filter(key -> key.group().equals("sequences")).toList();
+    }
+
+    /**
+     * Every kind of change that can be made to an accepted request: every switch in its group but
+     * the one that switches them all off.
+     */
+    private static List<SettingKey> kindsOfChange() {
+        return switches().stream()
+                .filter(key -> key.group().equals("mutation") && !key.name().equals("violations"))
+                .toList();
+    }
+
+    /** These switches, all off, the way a file of settings gives them. */
+    private static Map<String, String> allOff(List<SettingKey> keys) {
+        Map<String, String> values = new TreeMap<>();
+        keys.forEach(key -> values.put(key.fullName(), "false"));
+        return values;
+    }
+
+    /** A generator for this document, following this plan with these settings. */
+    private static RandomTestCaseGenerator generator(ApiModel model, Campaign plan,
+            Settings settings) {
+        return new RandomTestCaseGenerator(model, 7L, List.of(), plan, settings);
     }
 
     private static boolean isAPlan(String block) {

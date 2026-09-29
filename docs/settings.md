@@ -357,7 +357,7 @@ Five of the kinds, from `wrongRoot` to `beyondItsWidth`, break the body as a who
 value in it — its kind, its bytes, its media type — or push a number past what its declared format
 can hold. They aim at the code that reads a body before the API's own code runs. [The
 switches](switches.md#switching-off-everything-one-increment-added) has the files that turn off, at
-once, the nine kinds that change one value or the five that change the body as a whole.
+once, the nine kinds that change one value or these last five.
 
 | Setting | Default | What it does |
 |---|---|---|

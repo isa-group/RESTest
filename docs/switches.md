@@ -1,10 +1,12 @@
 # The switches
 
 A switch is a setting that is `true` or `false` and turns off one thing RESTest does. Every
-behaviour a run can do without has one, for two reasons. Somebody whose API dislikes one of them can
-turn it off in a line. And what each one is worth can be measured by running the same tool twice,
-once with it and once without, rather than by building two versions of the tool. A comparison of
-that kind is called an *ablation*, and this page is written for whoever is planning one.
+behaviour added since RESTest has had settings comes with one, and the few older ones that do not
+are [named at the end](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
+dislikes one of them can turn it off in a line. And what each one is worth can be measured by
+running the same tool twice, once with it and once without, rather than by building two versions of
+the tool. A comparison of that kind is called an *ablation*, and this page is written for whoever is
+planning one.
 
 ```bash
 restest run api.yaml --url http://localhost:9966 --set schedule.openingLap=false
@@ -20,8 +22,9 @@ are the increments of [the roadmap](../ROADMAP.md) that added it. The page ends 
 do without that is not a switch at all, because it belongs to the plan.
 
 A test keeps the page and the tool in step. Every switch there is appears here, every switch named
-here exists, every file below is one the tool accepts, and the plan below is the one RESTest ships
-with one thing taken out. The decision behind all of it is [ADR-0025](adr/0025-settings.md).
+here exists, every file below is one the tool accepts and does what its label says, and the plan
+below is the one RESTest ships with one thing taken out. The decision behind all of it is
+[ADR-0025](adr/0025-settings.md).
 
 ## Every switch
 
@@ -84,7 +87,9 @@ would.
 What the screenings measured, each of them twenty minutes an API and one run per variant. **8.4**
 ran on 27–28 September 2026 at `76534ebd`, on sixteen APIs. **8.5** ran on 28–29 September at
 `6afcaec3`, on the eleven APIs of the 2026 edition of the competition, counting unique server
-failures with erc20 left out. The tables themselves are in [the roadmap](../ROADMAP.md#m8--evaluation).
+failures with erc20 left out. The headline numbers are also in rows 8.4 and 8.5 of
+[the roadmap](../ROADMAP.md#m8--evaluation), and the full tables are in the evaluation harness's own
+repository.
 
 | Increment | Leaving it on costs | What it was found to be worth |
 |---|---|---|
@@ -93,7 +98,7 @@ failures with erc20 left out. The tables themselves are in [the roadmap](../ROAD
 | 9.2's order | Nothing | 8.4: nothing measurable |
 | 2.9, optional parameters by number | Nothing | 8.4: nothing measurable, as the increment predicted, since few of the APIs measured have more than one optional parameter anywhere. Left on by the maintainer's decision, for the 232 operations of the wider corpus that have four or more |
 | 10.1, one value changed | Its part of the fifth of the run given to the strategy that changes accepted requests; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) | 8.5: 108 unique server failures without it and 147 with it. It also gives branch coverage its early lead, 17.9% at ten seconds against 15.2% |
-| 10.2, the body as a whole | Its part of the same fifth, and the seed | 8.5: 113 unique server failures without it and 147 with it |
+| 10.2, bodies of the wrong shape | Its part of the same fifth, and the seed | 8.5: 113 unique server failures without it and 147 with it |
 | 10.3, series | The tenth of the run given to the strategy that sends series, whose later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed | 8.5: 144 unique server failures without them and 147 with them, which is nothing measurable. Left on by the maintainer's decision |
 | All of 10.1, 10.2 and 10.3 | All of the above | 8.5: 71 unique server failures without them and 147 with them |
 
@@ -106,8 +111,8 @@ missing: whatever it leaves out keeps its default. Save one and hand it over:
 restest run api.yaml --url http://localhost:9966 --settings without-series.yaml
 ```
 
-Files combine the way settings always do. Two of them can be written as one, and `--set` wins over
-a file.
+Only one file can be handed over with `--settings`. To combine two, put their lines in one file, the
+way the files for a whole milestone below do. `--set` wins over the file.
 
 **9.1, the opening lap**
 
@@ -137,7 +142,7 @@ generation:
   optionalParametersBySize: false
 ```
 
-**10.1, one value changed.** The body as a whole, 10.2, is still changed.
+**10.1, one value changed.** 10.2's changes are still made.
 
 ```yaml
 mutation:
@@ -152,7 +157,8 @@ mutation:
   oversize: false
 ```
 
-**10.2, the body changed as a whole.** One value, 10.1, is still changed.
+**10.2, bodies of the wrong shape, and numbers too wide for their format.** 10.1's changes are still
+made.
 
 ```yaml
 mutation:
@@ -246,9 +252,9 @@ silenced would say something about the run that is not true.
 `source: observed` is what lets a run send an identifier the API itself handed back, rather than one
 it invented. It is in three of the shipped plan's four strategies, each time inside a group whose
 weights add up to a hundred. Taking it out means dividing its weight among the others in the
-proportions they already had, so 15, 20, 40 and 5 out of 80 become 19, 25, 50 and 6 out of 100.
-This is the plan RESTest ships with the memory taken out that way. The test that checks this page
-holds it to the shipped plan, so that it changes whenever that plan does:
+proportions they already had, as nearly as whole numbers allow: in the plan RESTest ships today, 15,
+20, 40 and 5 become 19, 25, 50 and 6. This is that plan with the memory taken out that way. The test
+that checks this page holds it to the shipped plan, so that it changes whenever that plan does:
 
 ```yaml
 version: 1
@@ -307,10 +313,9 @@ strategies:
 ```
 
 Hand it over with `--campaign`. It takes 9.2 away too, since a gap filled from the things of its
-kind is filled from the same memory. 8.3 measured the difference on the five APIs of the 2027
-edition, twenty minutes each, at `da17d2ba`: 65 operations answered 2XX without the memory, against
-100 with it. Nearly all of the difference is on kafka-rest-proxy, whose operations need an
-identifier that only the API itself can supply.
+kind is filled from the same memory. What the memory is worth was measured when it was added, at
+2.5b, against a containerised pet-clinic restarted before every run: 27.8 of its operations answered
+2XX without it and 31.6 with it, better on every one of five seeds.
 
 A plan written for an earlier version of RESTest leaves out whatever strategies came after it. A
 plan without the memory written before 10.1, for example, has no strategy that changes accepted
@@ -326,7 +331,9 @@ in `--dictionary <file>`, and the plan does not change.
 ### Values nobody sensible would send
 
 `--fuzzing 0` leaves out the strategy that pushes at the API and gives its quarter of the run to the
-others, in proportion to their shares. `--fuzzing 40` gives it more.
+others, in proportion to their shares. `--fuzzing 40` gives it more. It cannot be combined with
+`--campaign`, because a plan states every share itself: with the plan above, change the pushing
+strategy's share there instead.
 
 ### What the document writes down
 
@@ -338,8 +345,10 @@ values the API will take.
 ### How much of the run each strategy gets
 
 That is the plan's `share:`, out of a hundred. A strategy switched off by its switches keeps its
-share and builds it the ordinary way. Taking the strategy out of the plan gives its share to the
-others instead, which is a different run from the one its switches give.
+share and builds it the ordinary way. Taking the strategy out of the plan instead means giving its
+share to the others by hand, since the shares have to add up to a hundred, and the run that gives
+is not always the one its switches give. For the series it is: given to `nominal`, whose sources it
+has, their tenth builds the same requests, one for one.
 
 ## Getting the seed back
 
@@ -361,9 +370,21 @@ sequences:
   createTwice: false
 ```
 
-The run says which it is, under its first line. While any of the three is on, it prints
-`what it sends depends on the API's own replies, so the seed alone does not repeat this run`. Once
-all three are off, that line is gone.
+The run says which it is, under the line that gives its seed. While any of the three is on, it
+prints `what it sends depends on the API's own replies, so the seed alone does not repeat this run`.
+Once all three are off, that line is gone.
+
+## What has no switch yet
+
+Three behaviours are older than the settings and have no switch. They are given one when the code
+around them is next changed, and until then the tool always does them:
+
+- where an operation wants a whole thing of a shape the API has returned, one it returned is sent
+  back with one value in it changed. This is part of the memory, so the plan without the memory
+  goes without it too;
+- the `Accept` header asks for JSON first, and for anything else after it;
+- of the lists of values handed over, the ones written for one particular place are asked before
+  the ones written for a whole kind of value.
 
 ## Where a run says which switches it had
 

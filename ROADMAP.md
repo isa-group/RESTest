@@ -750,8 +750,9 @@ setting has silenced says something about the run that is not true. Three older 
 switch — a whole thing the API returned reused with one value changed (2.5b), the preference for
 JSON an `Accept` header states, and the lists for one place asked before the ones for a kind of
 value — and move when their code is next touched. The plan without the memory that 8.3 ran, in the
-harness repository, predates M10 and has neither of its strategies, so 8.2 takes the page's plan
-rather than reusing it.
+harness repository, predates M10 and has neither of its strategies, so reused as it is it would
+switch M10 off along with the memory; which plan 8.2's sources axis runs is for the maintainer to
+settle at 8.2.
 
 **11.3 — why it is in M11, and why a key is not a setting.** The maintainer put it here. M11 is
 the milestone still open before the command line freezes, and it is where a run is told things that

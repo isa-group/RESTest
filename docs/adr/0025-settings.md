@@ -372,6 +372,12 @@ switch, because it belongs to the plan. `DocumentedSwitchesTest` holds the page 
 - every setting named anywhere on the page exists;
 - every file on it is one the command line reads, and a run handed it uses every value in it;
 - every switch that is on by default is turned off by one of those files;
+- each file does what its label says: the file for 10.3 turns off every series, the files for 10.1
+  and 10.2 between them every kind of change and none twice, and a milestone's file is its
+  increments' files put together;
+- the file for getting the seed back, handed over with the plan on the page, leaves a run of the
+  pet clinic with nothing it sends depending on what the API answered, while leaving either the
+  changes or the series on would not;
 - the plan on it is the shipped plan with the memory taken out.
 
 **A switch is a setting that is true or false.** Twenty-six of the seventy are. The test takes the
@@ -381,13 +387,15 @@ later is on the page or the build fails. One of the twenty-six is not a lever:
 could do without. The page says so in a table of its own, rather than the test making an exception.
 
 **No increment gets a switch of its own.** Three of M10's increments take several lines to switch
-off whole: the nine changes to one value of 10.1, the five changes to the body as a whole of 10.2,
-and the six series of 10.3. `mutation.violations` switches off 10.1 and 10.2 together, and the
-M10.3 amendment gave the series no switch for the group because the plan's strategy is one. A
+off whole: the nine changes to one value of 10.1, the five of 10.2 (bodies of the wrong shape, and
+numbers too wide for their format), and the six series of 10.3. `mutation.violations` switches off
+10.1 and 10.2 together, and the M10.3 amendment gave the series no switch for the group because the
+plan's strategy is one. A
 switch per increment was considered and, on 29 September, not taken by the maintainer. It would
 have meant three more settings for 12.1 to freeze, and every kind of change answering to three
 switches rather than two. The page carries those files instead, which is what the screening of 8.5
-had written by hand, and the test makes sure each file still switches off what it says.
+had written by hand, and the test checks that each of those files switches off what its label
+says.
 
 **Taking the memory out stays a matter for the plan, and the page shows how.** §4 says that
 switching off the memory of observed values is a plan without the `observed` line, not a setting.
@@ -405,6 +413,8 @@ the proportions they already had, and the test compares it with the shipped plan
 when that plan does. The comment on `MemorySettings` used to offer zero as the way an experiment
 switches the memory off, and said, wrongly, that any of its five limits at zero would do it. It now
 says what zero does for each limit, and that the plan is where the memory is taken away.
+[ADR-0028](0028-sequences-over-things-a-run-creates.md), which repeated the claim, gains a note
+correcting it.
 
 **Three places were wrong about what gives the seed back.** The README, the campaign file's page and
 the shipped plan's own comment said that taking `observed` out gives a run back its seed, and the
