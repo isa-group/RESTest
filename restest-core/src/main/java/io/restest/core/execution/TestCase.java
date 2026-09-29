@@ -124,7 +124,7 @@ public record TestCase(
      * @param parameterValues the values it supplies, all but the changed one as they were
      * @param body the body it sends, if any
      * @param intent {@link Intent#REFUSAL_EXPECTED} when the change breaks what the documentation
-     *     says, {@link Intent#UNKNOWN} when the documentation does not rule on it
+     *     says, {@link Intent#UNKNOWN} when nothing in particular is expected of it
      * @param mutation what was changed, and in which accepted request
      * @return the test case
      */

@@ -411,8 +411,8 @@ class ConsoleReportTest {
                         java.util.Optional.empty(),
                         io.restest.core.execution.Intent.REFUSAL_EXPECTED, change),
                 io.restest.core.execution.TestCase.changed(OperationId.of("listPets"), List.of(),
-                        java.util.Optional.empty(),
-                        io.restest.core.execution.Intent.REFUSAL_EXPECTED, change));
+                        java.util.Optional.empty(), io.restest.core.execution.Intent.UNKNOWN,
+                        change));
         for (io.restest.core.execution.TestCase each : sent) {
             report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
                     Runs.answering(each, 400)));
@@ -422,8 +422,9 @@ class ConsoleReportTest {
         assertThat(screen.toString())
                 .contains("  1 of them were pushing at the API with values nobody sensible would "
                         + "send, which accounts for some of the 4 refusals above")
-                .contains("  2 of them changed one thing in a request the API had accepted, "
-                        + "breaking what the description states");
+                .describedAs("every changed request is counted, whatever it expected")
+                .contains("  2 of them changed one thing in a request the API had accepted"
+                        + System.lineSeparator());
     }
 
     @Test

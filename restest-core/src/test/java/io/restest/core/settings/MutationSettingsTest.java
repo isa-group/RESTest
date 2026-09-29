@@ -62,7 +62,8 @@ class MutationSettingsTest {
                 "deepNesting", "extremeNumber", "nestingDepth"}) {
             assertThatExceptionOfType(SettingsException.class)
                     .describedAs("mutation.%s", gone)
-                    .isThrownBy(() -> Settings.from(Map.of("mutation." + gone, "true")));
+                    .isThrownBy(() -> Settings.from(Map.of("mutation." + gone, "true")))
+                    .withMessageContaining("there is no setting called");
         }
     }
 

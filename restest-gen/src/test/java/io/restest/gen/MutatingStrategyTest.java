@@ -103,7 +103,7 @@ class MutatingStrategyTest {
             TestCase changed = generator.generate(LIST_PETS).orElseThrow();
             assertThat(changed.mutation()).isPresent();
             assertThat(changed.mutation().orElseThrow().of()).isEqualTo(accepted.id());
-            assertThat(changed.intent()).isIn(Intent.REFUSAL_EXPECTED, Intent.UNKNOWN);
+            assertThat(changed.intent()).isEqualTo(Intent.REFUSAL_EXPECTED);
         }
         assertThat(generator.generate(ADD_PET).orElseThrow().mutation())
                 .describedAs("an operation the API has accepted nothing for is built the "
@@ -112,9 +112,9 @@ class MutatingStrategyTest {
     }
 
     @Test
-    @DisplayName("with both families off nothing listens for accepted requests, and nothing is "
+    @DisplayName("with every change off nothing listens for accepted requests, and nothing is "
             + "changed")
-    void both_families_off() {
+    void every_change_off() {
         Settings off = Settings.defaults().withMutation(
                 Settings.defaults().mutation().withNothingChanged());
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(API, SEED, List.of(),
@@ -127,8 +127,9 @@ class MutatingStrategyTest {
     }
 
     @Test
-    @DisplayName("every kind of change switched off is the same as both families off")
-    void every_kind_off_is_the_same_as_both_families_off() {
+    @DisplayName("every kind of change switched off one by one is the same as all of them switched "
+            + "off at once")
+    void every_kind_off_is_the_same_as_every_change_off() {
         Map<String, String> everyKindOff = new java.util.HashMap<>();
         for (Mutations.Operator operator : Mutations.Operator.values()) {
             everyKindOff.put("mutation." + operator.written(), "false");

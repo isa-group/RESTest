@@ -413,17 +413,29 @@ and configuration nobody will use.
 - **What becomes of this record:**
   - §3's two families become one. Every change breaks something the document states, and every
     changed request expects to be refused.
+  - §5's "every kind of change switched off" is `violations` off, or every operator off.
   - §6's `violations` is the one switch for all fourteen kinds.
   - §2's four intents stay as they are: `UNKNOWN` is still what most requests expect, a step of a
     series among them.
-- **A settings file that names a removed key is refused**, like any name that is not a setting. A
-  plan written for the probes fails at once rather than quietly running without them.
+  - The Consequences' "some of what fuzzing finds, a probe finds too" no longer holds. No change
+    now sends an empty word where nothing forbids one, and the test that shows fuzzing finding
+    that bug switches the changes off only so that its two runs differ in the list alone.
+  - The console no longer splits changed requests by what each expected: every one expects a
+    refusal.
+- **A key that is gone is refused where settings are named explicitly.** A settings file or a
+  `--set` that names one stops the run before it starts, like any name that is not a setting. An
+  environment variable that names one is ignored, as every unknown `RESTEST_` variable is: the
+  environment carries other programs' variables too.
 
 **The evidence** is row 8.5's screening: the eleven APIs of the 2026 edition, twenty minutes each,
-one run per variant, with the probes switched on against the tool as shipped.
+one run per variant, with the probes switched on against the tool as shipped. They cost more than
+they give.
 - **Unique server failures:** 146 with them and 147 without, erc20 left out. They gained 9 on
-  pet-clinic and lost 13 on person-controller.
-- **Branch coverage:** 23.8% against 23.2%, better on 5 APIs, worse on none.
+  pet-clinic and 1 each on blog, features-service and market, and lost 13 on person-controller,
+  whose requests they slowed.
+- **Branch coverage:** 23.8% against 23.2%, better on 5 APIs, worse on none. Most of it is 2.4
+  points on each of gestao-hospital and features-service, where three of the four other variants
+  gained as well: the shipped run's coverage there was low, rather than the probes' high.
 - **What they cost person-controller**, which answers them with enormous bodies:
   - it sent 41,000 requests, against 102,000-123,000 in every other variant;
   - its recording grew to 29 GB, against 1-1.5 GB for any other run, and took the benchmark's

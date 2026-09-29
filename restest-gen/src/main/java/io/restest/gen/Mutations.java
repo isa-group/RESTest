@@ -177,9 +177,10 @@ final class Mutations {
     }
 
     /**
-     * Whether these settings leave any kind of change to make: at least one switched on, with its
-     * family. With none, a strategy that changes accepted requests builds every request the ordinary
-     * way, and nothing needs to listen for accepted requests at all.
+     * Whether these settings leave any kind of change to make: at least one switched on, and
+     * changes to accepted requests switched on at all. With none, a strategy that changes accepted
+     * requests builds every request the ordinary way, and nothing needs to listen for accepted
+     * requests at all.
      *
      * @param settings the switches
      * @return whether any kind of change is switched on
@@ -464,7 +465,8 @@ final class Mutations {
         }
         Mutation mutation = new Mutation(accepted.from(), operator.written(), place.location(),
                 place.path(), edit.description());
-        return Optional.of(TestCase.changed(operation.id(), values, body, operator.intent(),
+        // A refusal, since every change breaks what the document states.
+        return Optional.of(TestCase.changed(operation.id(), values, body, Intent.REFUSAL_EXPECTED,
                 mutation));
     }
 
@@ -1147,7 +1149,7 @@ final class Mutations {
      * A number at an edge, and which edge it is in words.
      *
      * @param value the number
-     * @param what the edge: "the largest an int32 can hold"
+     * @param what the edge: "one past the largest an int32 can hold"
      */
     private record Extreme(BigDecimal value, String what) {
     }
@@ -1186,14 +1188,6 @@ final class Mutations {
             return written;
         }
 
-        /**
-         * What a request it makes expects of the API: a refusal, since every change breaks what
-         * the document states.
-         */
-        Intent intent() {
-            return Intent.REFUSAL_EXPECTED;
-        }
-
         /** Whether it may go to this place at all, before asking whether it has anything to do. */
         boolean goesTo(Place place) {
             return switch (reach) {
@@ -1216,7 +1210,7 @@ final class Mutations {
             };
         }
 
-        /** Whether it is switched on, and changes as a whole are too. */
+        /** Whether it is switched on, and changes to accepted requests are switched on at all. */
         boolean isOn(MutationSettings settings) {
             return settings.violations() && switch (this) {
                 case DROP_REQUIRED -> settings.dropRequired();

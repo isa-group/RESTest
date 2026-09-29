@@ -298,7 +298,7 @@ public final class RandomTestCaseGenerator {
                 settings.generation());
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
         // Only when the plan has a way of building requests that changes accepted ones, and the
-        // settings leave at least one kind of change switched on, with its family. Otherwise
+        // settings leave at least one kind of change switched on. Otherwise
         // nothing listens for accepted requests, and such a strategy builds its requests exactly as
         // an ordinary one with the same sources would, drawing the same numbers.
         this.accepted = this.strategies.stream().anyMatch(Strategy::mutatesAccepted)

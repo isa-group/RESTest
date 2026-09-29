@@ -344,3 +344,16 @@ place, and 10.2's shape operators join the same group. Sixty-two settings in all
 `writeUnderDeleted`, `putTwice`, `safeGet` and `createTwice`. They are all on. It has no switch for
 the group as a whole, because the plan's strategy that sends series is that switch. §1's
 `sequences.pairs` was 9.3's, and 9.3 was not merged. Seventy-six settings in eight groups.
+
+## Amendment (M8.5)
+
+**Date:** 2026-09-29
+
+**Six mutation settings are removed with the probes they switched**:
+- `mutation.probes`;
+- `mutation.oversizeWithNoLimit`, `mutation.emptyWithNoRule`, `mutation.deepNesting` and
+  `mutation.extremeNumber`;
+- `mutation.nestingDepth`.
+
+[ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s M8.5 amendment says why. Seventy
+settings in eight groups.

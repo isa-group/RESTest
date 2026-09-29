@@ -412,8 +412,7 @@ public final class ConsoleReport implements RunListener {
                             : ""));
         }
         if (changed > 0) {
-            write("  " + changed + " of them changed one thing in a request the API had accepted, "
-                    + "breaking what the description states");
+            write("  " + changed + " of them changed one thing in a request the API had accepted");
         }
         if (seriesBegun > 0) {
             // By the kind of series rather than by what each step expected, which is the report's
