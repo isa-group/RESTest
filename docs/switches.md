@@ -2,7 +2,7 @@
 
 A switch is a setting that is `true` or `false` and turns off one thing RESTest does. Every
 behaviour added since RESTest has had settings comes with one, and the few older ones that do not
-are [named at the end](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
+are [named further down](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
 dislikes one of them can turn it off in a line. And what each one is worth can be measured by
 running the same tool twice, once with it and once without, rather than by building two versions of
 the tool. A comparison of that kind is called an *ablation*, and this page is written for whoever is
@@ -18,8 +18,8 @@ Switches are settings, so they are given the ways any setting is — in a file n
 This page lists every switch, says what turning it off does to a run, what leaving it on costs and
 what it was found to be worth. It gives, ready to save and hand over, the files that turn off
 everything one increment added, or a whole milestone. The numbers beside each switch — 9.1, 10.2 —
-are the increments of [the roadmap](../ROADMAP.md) that added it. The page ends with what a run can
-do without that is not a switch at all, because it belongs to the plan.
+are the increments of [the roadmap](../ROADMAP.md) that added it. After the files, the page says
+what a run can do without that is not a switch at all, because it belongs to the plan.
 
 A test keeps the page and the tool in step. Every switch there is appears here, every switch named
 here exists, every file below is one the tool accepts and does what its label says, and the plan
@@ -332,8 +332,9 @@ in `--dictionary <file>`, and the plan does not change.
 
 `--fuzzing 0` leaves out the strategy that pushes at the API and gives its quarter of the run to the
 others, in proportion to their shares. `--fuzzing 40` gives it more. It cannot be combined with
-`--campaign`, because a plan states every share itself: with the plan above, change the pushing
-strategy's share there instead.
+`--campaign`, because a plan states every share itself. With the plan above, change the shares
+there instead, so that they still add up to a hundred; to push at the API not at all, leave the
+pushing strategy out and share its quarter among the others.
 
 ### What the document writes down
 

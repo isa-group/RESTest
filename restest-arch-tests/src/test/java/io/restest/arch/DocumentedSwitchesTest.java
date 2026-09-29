@@ -74,9 +74,15 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class DocumentedSwitchesTest {
 
-    /** One row of the page's tables of switches: the switch, what it is by default, and the rest. */
+    /**
+     * One row of the page's tables of switches: the switch, what it is by default, the increment it
+     * came with, and the rest.
+     */
     private static final Pattern ROW = Pattern.compile(
-            "^\\| `([a-z]+\\.[A-Za-z]+)` \\| `([^`]*)` \\| [^|]* \\| .* \\|$", Pattern.MULTILINE);
+            "^\\| `([a-z]+\\.[A-Za-z]+)` \\| `([^`]*)` \\| ([^|]*) \\| .* \\|$", Pattern.MULTILINE);
+
+    /** A label that is the number of one increment, such as 10.2. */
+    private static final Pattern AN_INCREMENT = Pattern.compile("\\d+\\.\\d+");
 
     /** A setting named anywhere on the page, in a sentence as much as in a table. */
     private static final Pattern NAMED = Pattern.compile(
@@ -295,6 +301,25 @@ class DocumentedSwitchesTest {
     }
 
     @Test
+    @DisplayName("a file for one increment turns off only switches the page says came with it")
+    void a_file_for_an_increment_turns_off_only_what_it_added() {
+        Map<String, String> cameWith = new LinkedHashMap<>();
+        rows().forEach(row -> cameWith.put(row.name(), row.cameWith()));
+
+        List<Block> forOneIncrement = blocks().stream()
+                .filter(block -> AN_INCREMENT.matcher(block.label()).matches())
+                .toList();
+        assertThat(forOneIncrement).isNotEmpty();
+        assertThat(forOneIncrement).allSatisfy(block ->
+                assertThat(valuesIn(block.text()).keySet()).allSatisfy(name ->
+                        assertThat(cameWith.get(name))
+                                .describedAs("the file for %s turns off %s, which the page's table "
+                                        + "says came with %s", block.label(), name,
+                                        cameWith.get(name))
+                                .isEqualTo(block.label())));
+    }
+
+    @Test
     @DisplayName("the file for a milestone is the files for its increments put together")
     void the_file_for_a_milestone_is_its_increments_together() {
         assertThat(valuesIn(labelled("Reach")))
@@ -322,8 +347,18 @@ class DocumentedSwitchesTest {
         ApiModel withCreations = new SwaggerSpecificationParser().parse(
                 RepositoryRoot.locate().resolve(A_DOCUMENT_WITH_CREATIONS).toString());
 
-        // Each half on its own is not enough, which is what makes the file worth checking: the
-        // series left on, or the changes left on, and the run still depends on the API.
+        // First by what it says, since a series the pet clinic cannot start would never show below:
+        // every change to an accepted request off, and every series there is.
+        Map<String, String> everythingThatListens = new TreeMap<>(allOff(series()));
+        everythingThatListens.put("mutation.violations", "false");
+        assertThat(valuesIn(fileUnder(THE_SEED)))
+                .describedAs("the file for getting the seed back is supposed to turn off every "
+                        + "change to an accepted request and every series")
+                .isEqualTo(everythingThatListens);
+
+        // Then by what a run does with it. Each half on its own is not enough, which is what makes
+        // the file worth checking: the series left on, or the changes left on, and the run still
+        // depends on the API.
         assertThat(generator(withCreations, withoutTheMemory,
                 Settings.from(Map.of("mutation.violations", "false"))).dependsOnTheApisAnswers())
                 .describedAs("with the series on, a run of this document depends on what the API "
@@ -348,12 +383,12 @@ class DocumentedSwitchesTest {
     }
 
     /** One switch as the page lists it. */
-    private record Row(String name, String byDefault) {
+    private record Row(String name, String byDefault, String cameWith) {
     }
 
     private static List<Row> rows() {
         return ROW.matcher(page).results()
-                .map(found -> new Row(found.group(1), found.group(2)))
+                .map(found -> new Row(found.group(1), found.group(2), found.group(3).trim()))
                 .toList();
     }
 

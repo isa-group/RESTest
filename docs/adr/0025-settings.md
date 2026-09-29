@@ -365,19 +365,21 @@ settings in eight groups.
 **The page §4 promised is [`docs/switches.md`](../switches.md).** It lists every switch with what
 turning it off does, what leaving it on costs and what the screenings of 8.4 and 8.5 found it
 worth. It carries, ready for `--settings`, the files that turn off everything one increment added,
-and each milestone's levers at once. And it ends with what a run can do without that is not a
-switch, because it belongs to the plan. `DocumentedSwitchesTest` holds the page to the tool:
+and each milestone's levers at once. And it says what a run can do without that is not a switch,
+because it belongs to the plan. `DocumentedSwitchesTest` holds the page to the tool:
 - every switch is on the page, and every switch on the page exists;
 - each is said to be on or off as it is by default;
 - every setting named anywhere on the page exists;
 - every file on it is one the command line reads, and a run handed it uses every value in it;
 - every switch that is on by default is turned off by one of those files;
-- each file does what its label says: the file for 10.3 turns off every series, the files for 10.1
-  and 10.2 between them every kind of change and none twice, and a milestone's file is its
-  increments' files put together;
-- the file for getting the seed back, handed over with the plan on the page, leaves a run of the
-  pet clinic with nothing it sends depending on what the API answered, while leaving either the
-  changes or the series on would not;
+- each file does what its label says. The file for 10.3 turns off every series, the files for 10.1
+  and 10.2 between them every kind of change and none twice, and a file for one increment only
+  switches the table says came with it. The file for reach is its three increments' files put
+  together, the file for break is the series' file with every change off, and the file for both is
+  those two together;
+- the file for getting the seed back turns off every change and every series. Handed over with the
+  plan on the page, it leaves a run of the pet clinic with nothing it sends depending on what the
+  API answered, where leaving either the changes or the series on would not;
 - the plan on it is the shipped plan with the memory taken out.
 
 **A switch is a setting that is true or false.** Twenty-six of the seventy are. The test takes the
