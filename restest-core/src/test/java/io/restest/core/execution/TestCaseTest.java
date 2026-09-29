@@ -158,7 +158,7 @@ class TestCaseTest {
         assertThat(changed.mutation()).contains(change);
         assertThat(TestCase.changed(GET_PET, List.of(), Optional.empty(), Intent.UNKNOWN, change)
                 .intent())
-                .describedAs("a change the document does not rule on expects nothing")
+                .describedAs("a change may still be recorded as expecting nothing in particular")
                 .isEqualTo(Intent.UNKNOWN);
     }
 

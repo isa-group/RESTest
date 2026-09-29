@@ -50,7 +50,10 @@ import org.junit.jupiter.api.io.TempDir;
  * reaches the code that breaks.
  *
  * <p>The same command, against the same API, with the same number to start from, finds the server
- * error with that change switched on and misses it with it off.
+ * error with that change switched on and misses it with it off. Every other change to an accepted
+ * request is switched off in both runs. Which change is made is drawn by chance, and two seconds on
+ * a slow machine change only a handful of requests - three, once, on a Windows runner - among which
+ * the one that finds the fault need not be. With the others off, every change made is that one.
  */
 class BodiesOfTheWrongShapeTest {
 
@@ -76,6 +79,11 @@ class BodiesOfTheWrongShapeTest {
 
     /** How long this stand-in takes to answer, in milliseconds, for the reason the fuzzing test gives. */
     private static final int ANSWERS_IN = 20;
+
+    /** Every change made to an accepted request but the one this test is about. */
+    private static final List<String> THE_OTHER_CHANGES = List.of("dropRequired", "wrongLocation",
+            "wrongType", "outsideABound", "breakAnEnumeration", "breakAPattern", "sendNull",
+            "sendEmpty", "oversize", "wrongRoot", "notJson", "wrongContentType", "beyondItsWidth");
 
     private static WireMockServer api;
 
@@ -130,6 +138,9 @@ class BodiesOfTheWrongShapeTest {
                 "--budget", "2s",
                 "--seed", "20260928",
                 "--out", out.toString()));
+        for (String other : THE_OTHER_CHANGES) {
+            arguments.addAll(List.of("--set", "mutation." + other + "=false"));
+        }
         arguments.addAll(List.of(extra));
         StringWriter screen = new StringWriter();
         try (PrintWriter writer = new PrintWriter(screen, true)) {

@@ -165,7 +165,6 @@ public record Settings(
                         DEFAULTS.generation.writableBodyAttempts())));
         MutationSettings mutation = group("mutation", () -> new MutationSettings(
                 typed.yesOrNo("mutation.violations", DEFAULTS.mutation.violations()),
-                typed.yesOrNo("mutation.probes", DEFAULTS.mutation.probes()),
                 typed.yesOrNo("mutation.dropRequired", DEFAULTS.mutation.dropRequired()),
                 typed.yesOrNo("mutation.wrongLocation", DEFAULTS.mutation.wrongLocation()),
                 typed.yesOrNo("mutation.wrongType", DEFAULTS.mutation.wrongType()),
@@ -176,23 +175,17 @@ public record Settings(
                 typed.yesOrNo("mutation.sendNull", DEFAULTS.mutation.sendNull()),
                 typed.yesOrNo("mutation.sendEmpty", DEFAULTS.mutation.sendEmpty()),
                 typed.yesOrNo("mutation.oversize", DEFAULTS.mutation.oversize()),
-                typed.yesOrNo("mutation.oversizeWithNoLimit",
-                        DEFAULTS.mutation.oversizeWithNoLimit()),
-                typed.yesOrNo("mutation.emptyWithNoRule", DEFAULTS.mutation.emptyWithNoRule()),
                 typed.yesOrNo("mutation.wrongRoot", DEFAULTS.mutation.wrongRoot()),
                 typed.yesOrNo("mutation.emptyBody", DEFAULTS.mutation.emptyBody()),
                 typed.yesOrNo("mutation.notJson", DEFAULTS.mutation.notJson()),
                 typed.yesOrNo("mutation.wrongContentType",
                         DEFAULTS.mutation.wrongContentType()),
                 typed.yesOrNo("mutation.beyondItsWidth", DEFAULTS.mutation.beyondItsWidth()),
-                typed.yesOrNo("mutation.deepNesting", DEFAULTS.mutation.deepNesting()),
-                typed.yesOrNo("mutation.extremeNumber", DEFAULTS.mutation.extremeNumber()),
                 typed.wholeNumber("mutation.acceptedKept", DEFAULTS.mutation.acceptedKept()),
                 typed.wholeNumber("mutation.oversizedLength",
                         DEFAULTS.mutation.oversizedLength()),
                 typed.wholeNumber("mutation.oversizedItems",
-                        DEFAULTS.mutation.oversizedItems()),
-                typed.wholeNumber("mutation.nestingDepth", DEFAULTS.mutation.nestingDepth())));
+                        DEFAULTS.mutation.oversizedItems())));
         SequenceSettings sequences = group("sequences", () -> new SequenceSettings(
                 typed.yesOrNo("sequences.readAfterDelete", DEFAULTS.sequences.readAfterDelete()),
                 typed.yesOrNo("sequences.deleteTwice", DEFAULTS.sequences.deleteTwice()),
@@ -299,7 +292,6 @@ public record Settings(
                     String.valueOf(generation.writableBodyAttempts());
 
             case "mutation.violations" -> String.valueOf(mutation.violations());
-            case "mutation.probes" -> String.valueOf(mutation.probes());
             case "mutation.dropRequired" -> String.valueOf(mutation.dropRequired());
             case "mutation.wrongLocation" -> String.valueOf(mutation.wrongLocation());
             case "mutation.wrongType" -> String.valueOf(mutation.wrongType());
@@ -309,19 +301,14 @@ public record Settings(
             case "mutation.sendNull" -> String.valueOf(mutation.sendNull());
             case "mutation.sendEmpty" -> String.valueOf(mutation.sendEmpty());
             case "mutation.oversize" -> String.valueOf(mutation.oversize());
-            case "mutation.oversizeWithNoLimit" -> String.valueOf(mutation.oversizeWithNoLimit());
-            case "mutation.emptyWithNoRule" -> String.valueOf(mutation.emptyWithNoRule());
             case "mutation.wrongRoot" -> String.valueOf(mutation.wrongRoot());
             case "mutation.emptyBody" -> String.valueOf(mutation.emptyBody());
             case "mutation.notJson" -> String.valueOf(mutation.notJson());
             case "mutation.wrongContentType" -> String.valueOf(mutation.wrongContentType());
             case "mutation.beyondItsWidth" -> String.valueOf(mutation.beyondItsWidth());
-            case "mutation.deepNesting" -> String.valueOf(mutation.deepNesting());
-            case "mutation.extremeNumber" -> String.valueOf(mutation.extremeNumber());
             case "mutation.acceptedKept" -> String.valueOf(mutation.acceptedKept());
             case "mutation.oversizedLength" -> String.valueOf(mutation.oversizedLength());
             case "mutation.oversizedItems" -> String.valueOf(mutation.oversizedItems());
-            case "mutation.nestingDepth" -> String.valueOf(mutation.nestingDepth());
 
             case "sequences.readAfterDelete" -> String.valueOf(sequences.readAfterDelete());
             case "sequences.deleteTwice" -> String.valueOf(sequences.deleteTwice());

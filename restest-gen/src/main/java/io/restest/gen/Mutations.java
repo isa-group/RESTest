@@ -36,7 +36,6 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
-import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
@@ -68,21 +67,17 @@ import java.util.random.RandomGenerator;
  * a fault in the code that handles it.
  *
  * <p>The thing changed is one value in the request - a parameter, or one property inside a JSON
- * body, however deep - or the body as a whole. There are eighteen kinds of change, and they come in
- * two families. The first breaks something the API's documentation states - a required value left
- * out, a number one past the largest allowed, a word where a number is declared, a body that is not
- * JSON where JSON is what the API takes - so the API is expected to refuse it, and the request says
- * so. The second goes where the documentation says nothing - ten thousand characters where no
- * longest length is given, an empty word where nothing says a word may not be empty, a member nested
- * ten thousand levels deep in a body that allows members nobody declared - so nobody can say in
- * advance which answer is right, and the request says that instead. Each kind, and each family, can
- * be switched off.
+ * body, however deep - or the body as a whole. There are fourteen kinds of change, and every one
+ * breaks something the API's documentation states - a required value left out, a number one past
+ * the largest allowed, a word where a number is declared, a body that is not JSON where JSON is what
+ * the API takes - so the API is expected to refuse it, and the request says so. Each kind can be
+ * switched off, and so can all of them at once.
  *
  * <p>The changes to a body as a whole are aimed at what an API does before any of its own code runs:
  * reading the body and turning it into something its code can use. That reading is code too, and it
  * fails in its own ways - on a list where an object belongs, on no bytes at all, on text cut off
- * halfway, on a media type it was never told about, on nesting deeper than it is willing to follow,
- * on a number too large for the kind of number it was told to expect.
+ * halfway, on a media type it was never told about, on a number too large for the kind of number it
+ * was told to expect.
  *
  * <p>Which kind of change, and where, is chosen by chance: first a kind among those that have
  * somewhere to go in this request, then one of the places it can go. The requests to change come
@@ -149,9 +144,6 @@ final class Mutations {
     private static final List<String> OTHER_MEDIA_TYPES = List.of("text/plain", "application/xml",
             "application/x-www-form-urlencoded");
 
-    /** The name of the member a far too deeply nested value is added under, when it is free. */
-    private static final String NESTED = "nested";
-
     /**
      * The formats that name how large a number may be, with the largest and smallest each holds,
      * written the shortest way that reads back as exactly that number.
@@ -159,16 +151,8 @@ final class Mutations {
     private static final Map<String, Width> WIDTHS = Map.of(
             "int32", Width.whole("an int32", Integer.MIN_VALUE, Integer.MAX_VALUE),
             "int64", Width.whole("an int64", Long.MIN_VALUE, Long.MAX_VALUE),
-            "float", Width.fractional("a float", Float.toString(Float.MAX_VALUE),
-                    Float.toString(Float.MIN_VALUE)),
-            "double", Width.fractional("a double", Double.toString(Double.MAX_VALUE),
-                    Double.toString(Double.MIN_VALUE)));
-
-    /** The widths a number whose document names none may be read into, narrowest first. */
-    private static final List<String> COMMON_WIDTHS = List.of("int32", "int64", "float", "double");
-
-    /** One more than the largest whole number sixty-four bits hold even without a sign. */
-    private static final BigDecimal PAST_SIXTY_FOUR_BITS = new BigDecimal("18446744073709551616");
+            "float", Width.fractional("a float", Float.toString(Float.MAX_VALUE)),
+            "double", Width.fractional("a double", Double.toString(Double.MAX_VALUE)));
 
     private final ApiModel model;
     private final MutationSettings settings;
@@ -193,9 +177,10 @@ final class Mutations {
     }
 
     /**
-     * Whether these settings leave any kind of change to make: at least one switched on, with its
-     * family. With none, a strategy that changes accepted requests builds every request the ordinary
-     * way, and nothing needs to listen for accepted requests at all.
+     * Whether these settings leave any kind of change to make: at least one switched on, and
+     * changes to accepted requests switched on at all. With none, a strategy that changes accepted
+     * requests builds every request the ordinary way, and nothing needs to listen for accepted
+     * requests at all.
      *
      * @param settings the switches
      * @return whether any kind of change is switched on
@@ -352,15 +337,11 @@ final class Mutations {
                     && !mayBeNull(place);
             case SEND_EMPTY -> canBeEmptied(place) && emptyIsForbidden(place);
             case OVERSIZE -> statedMost(place).filter(most -> most < oversized(place)).isPresent();
-            case OVERSIZE_WITH_NO_LIMIT -> canBeOversizedWithNoLimit(place);
-            case EMPTY_WITH_NO_RULE -> canBeEmptied(place) && !emptyIsForbidden(place);
             case WRONG_ROOT -> !rootsItIsNot(place).isEmpty();
             case EMPTY_BODY -> place.required();
             case NOT_JSON -> true;
             case WRONG_CONTENT_TYPE -> !otherMediaTypes(operation).isEmpty();
             case BEYOND_ITS_WIDTH -> !beyondItsWidth(place).isEmpty();
-            case DEEP_NESTING -> allowsAnotherMember(place);
-            case EXTREME_NUMBER -> !extremes(place).isEmpty();
         };
     }
 
@@ -407,12 +388,6 @@ final class Mutations {
             case OVERSIZE -> Optional.of(new Edit.Replace(oversizedValue(place), "sent "
                     + size(place, oversized(place)) + " for " + place.described()
                     + ", where the most allowed is " + statedMost(place).orElseThrow()));
-            case OVERSIZE_WITH_NO_LIMIT -> Optional.of(new Edit.Replace(oversizedValue(place),
-                    "sent " + size(place, oversized(place)) + " for " + place.described()
-                            + ", which states no most"));
-            case EMPTY_WITH_NO_RULE -> emptyOfItsKind(place).map(with -> new Edit.Replace(with,
-                    "sent " + emptiness(with) + " for " + place.described()
-                            + ", which nothing says may not be empty"));
             case WRONG_ROOT -> {
                 List<JsonValue> roots = rootsItIsNot(place);
                 JsonValue with = roots.get(random.nextInt(roots.size()));
@@ -438,14 +413,6 @@ final class Mutations {
                 yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
                         + chosen.value().toPlainString() + " for " + place.described() + ", "
                         + chosen.what()));
-            }
-            case DEEP_NESTING -> Optional.of(nestedFarTooDeep(place));
-            case EXTREME_NUMBER -> {
-                List<Extreme> extremes = extremes(place);
-                Extreme chosen = extremes.get(random.nextInt(extremes.size()));
-                yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
-                        + chosen.value().toPlainString() + " for " + place.described() + ", "
-                        + chosen.what() + ", which nothing in the description rules out"));
             }
         };
     }
@@ -498,7 +465,8 @@ final class Mutations {
         }
         Mutation mutation = new Mutation(accepted.from(), operator.written(), place.location(),
                 place.path(), edit.description());
-        return Optional.of(TestCase.changed(operation.id(), values, body, operator.intent(),
+        // A refusal, since every change breaks what the document states.
+        return Optional.of(TestCase.changed(operation.id(), values, body, Intent.REFUSAL_EXPECTED,
                 mutation));
     }
 
@@ -868,25 +836,6 @@ final class Mutations {
         };
     }
 
-    /**
-     * Whether this place can be made far too long where the document says nothing about how long
-     * it may be. A word only when nothing else about it is stated either - no pattern, no named
-     * kind, no closed list - since ten thousand characters would break those, and then the document
-     * would have ruled after all; a list only when its items need not differ, for the same reason,
-     * and when it has items to repeat.
-     */
-    private static boolean canBeOversizedWithNoLimit(Place place) {
-        return switch (place.shape()) {
-            case StringSchema text when place.value() instanceof JsonValue.JsonString ->
-                    text.maxLength().isEmpty() && text.pattern().isEmpty()
-                            && text.format().isEmpty() && acceptedList(place).isEmpty();
-            case ArraySchema list when place.value() instanceof JsonValue.JsonArray elements ->
-                    list.maxItems().isEmpty() && !list.uniqueItems()
-                            && !elements.elements().isEmpty();
-            default -> false;
-        };
-    }
-
     /** How long an oversized value at this place is: characters for a word, items for a list. */
     private int oversized(Place place) {
         return place.shape() instanceof ArraySchema
@@ -983,48 +932,6 @@ final class Mutations {
                 .toList();
     }
 
-    /**
-     * Whether this is a body that is an object allowing members it does not declare, whatever they
-     * hold - which is what a document says when it says nothing about them - with room for one
-     * more. A document that says what such a member may hold, even only a closed list of values,
-     * has ruled on it.
-     */
-    private static boolean allowsAnotherMember(Place place) {
-        return place.shape() instanceof ObjectSchema object
-                && place.value() instanceof JsonValue.JsonObject thing
-                && object.additionalProperties().map(extra -> extra instanceof AnySchema
-                        && extra.metadata().enumeration().isEmpty()).orElse(true)
-                && object.maxProperties().filter(most -> thing.members().size() >= most).isEmpty();
-    }
-
-    /**
-     * The accepted body with one more member, holding lists nested {@code nestingDepth} levels
-     * deep. Written as text, never built as a value: a value that deep would be refused by the
-     * very writer that writes values, and would be walked a level at a time by everything that
-     * compares one.
-     */
-    private Edit.Rewrite nestedFarTooDeep(Place place) {
-        JsonValue.JsonObject thing = (JsonValue.JsonObject) place.value();
-        ObjectSchema object = (ObjectSchema) place.shape();
-        String name = NESTED;
-        for (int suffix = 2; thing.members().containsKey(name)
-                || object.properties().containsKey(name); suffix++) {
-            name = NESTED + suffix;
-        }
-        int depth = settings.nestingDepth();
-        String written = JsonText.write(thing);
-        StringBuilder text = new StringBuilder();
-        text.append(written, 0, written.length() - 1);
-        if (!thing.members().isEmpty()) {
-            text.append(',');
-        }
-        text.append(JsonText.write(JsonValue.of(name))).append(':');
-        text.repeat('[', depth).repeat(']', depth).append('}');
-        return new Edit.Rewrite(text.toString(), "added a member '" + name + "' to the body, "
-                + "holding lists nested " + depth + " levels deep, which the description does "
-                + "not declare");
-    }
-
     // --- the edges of a kind of number -----------------------------------------------------------
 
     /**
@@ -1068,48 +975,6 @@ final class Mutations {
         return place.shape() instanceof NumberSchema number
                 ? number.format().map(format -> WIDTHS.get(format.toLowerCase(Locale.ROOT)))
                 : Optional.empty();
-    }
-
-    /**
-     * The numbers at the edges of the kinds of number this place could be read into, where nothing
-     * the document states rules them out: no bound, no closed list, no multiple. The edges of the
-     * kind its format names; or where it names none, the edges of every common kind and just past
-     * each - the numbers at which code that reads a number into a fixed number of bits stops
-     * agreeing with the document, which set no such limit. Only whole numbers where whole numbers
-     * are declared, and nothing where the format is one whose edges are not known here.
-     */
-    private List<Extreme> extremes(Place place) {
-        if (!(place.shape() instanceof NumberSchema number)
-                || !(place.value() instanceof JsonValue.JsonNumber)
-                || number.minimum().isPresent() || number.exclusiveMinimum().isPresent()
-                || number.maximum().isPresent() || number.exclusiveMaximum().isPresent()
-                || number.multipleOf().isPresent() || !acceptedList(place).isEmpty()) {
-            return List.of();
-        }
-        List<Extreme> extremes = new ArrayList<>();
-        if (number.format().isPresent()) {
-            Optional<Width> named = widthNamed(place);
-            if (named.isEmpty()) {
-                return List.of();
-            }
-            extremes.addAll(named.orElseThrow().edges());
-        } else {
-            for (String common : COMMON_WIDTHS) {
-                extremes.addAll(WIDTHS.get(common).edges());
-                extremes.addAll(WIDTHS.get(common).beyond());
-            }
-            extremes.add(new Extreme(PAST_SIXTY_FOUR_BITS, "one past the largest whole number "
-                    + "sixty-four bits hold without a sign"));
-        }
-        List<Extreme> fitting = new ArrayList<>();
-        for (Extreme extreme : extremes) {
-            boolean whole = extreme.value().stripTrailingZeros().scale() <= 0;
-            if ((whole || number.kind() == NumberKind.NUMBER)
-                    && !JsonValue.of(extreme.value()).equals(place.value())) {
-                fitting.add(extreme);
-            }
-        }
-        return fitting;
     }
 
     // --- building --------------------------------------------------------------------------------
@@ -1248,31 +1113,18 @@ final class Mutations {
      * @param named how a description names it: "an int32"
      * @param smallest the most negative number it holds
      * @param largest the largest
-     * @param nearestToNothing for a kind with fractions, the smallest number above nothing it holds
      * @param whole whether it holds whole numbers only
      */
-    private record Width(String named, BigDecimal smallest, BigDecimal largest,
-            Optional<BigDecimal> nearestToNothing, boolean whole) {
+    private record Width(String named, BigDecimal smallest, BigDecimal largest, boolean whole) {
 
         static Width whole(String named, long smallest, long largest) {
             return new Width(named, BigDecimal.valueOf(smallest), BigDecimal.valueOf(largest),
-                    Optional.empty(), true);
+                    true);
         }
 
-        static Width fractional(String named, String largest, String nearestToNothing) {
+        static Width fractional(String named, String largest) {
             BigDecimal most = new BigDecimal(largest);
-            return new Width(named, most.negate(), most,
-                    Optional.of(new BigDecimal(nearestToNothing)), false);
-        }
-
-        /** Its largest and smallest, and for a kind with fractions, the nearest it gets to nothing. */
-        List<Extreme> edges() {
-            List<Extreme> edges = new ArrayList<>(List.of(
-                    new Extreme(largest, "the largest " + named + " can hold"),
-                    new Extreme(smallest, "the smallest " + named + " can hold")));
-            nearestToNothing.ifPresent(nearest -> edges.add(new Extreme(nearest,
-                    "the nearest to nothing " + named + " can hold")));
-            return edges;
+            return new Width(named, most.negate(), most, false);
         }
 
         /**
@@ -1297,59 +1149,43 @@ final class Mutations {
      * A number at an edge, and which edge it is in words.
      *
      * @param value the number
-     * @param what the edge: "the largest an int32 can hold"
+     * @param what the edge: "one past the largest an int32 can hold"
      */
     private record Extreme(BigDecimal value, String what) {
     }
 
     /**
-     * The kinds of change, each with the name a person switches it off by, the family it belongs
-     * to, and where in a request it goes.
+     * The kinds of change, each with the name a person switches it off by, and where in a request
+     * it goes.
      */
     enum Operator {
 
-        DROP_REQUIRED("dropRequired", true, Reach.ONE_VALUE),
-        WRONG_LOCATION("wrongLocation", true, Reach.ONE_VALUE),
-        WRONG_TYPE("wrongType", true, Reach.ONE_VALUE),
-        OUTSIDE_A_BOUND("outsideABound", true, Reach.ONE_VALUE),
-        BREAK_AN_ENUMERATION("breakAnEnumeration", true, Reach.ONE_VALUE),
-        BREAK_A_PATTERN("breakAPattern", true, Reach.ONE_VALUE),
-        SEND_NULL("sendNull", true, Reach.ONE_VALUE),
-        SEND_EMPTY("sendEmpty", true, Reach.ONE_VALUE),
-        OVERSIZE("oversize", true, Reach.ONE_VALUE),
-        OVERSIZE_WITH_NO_LIMIT("oversizeWithNoLimit", false, Reach.ONE_VALUE),
-        EMPTY_WITH_NO_RULE("emptyWithNoRule", false, Reach.ONE_VALUE),
-        WRONG_ROOT("wrongRoot", true, Reach.THE_WHOLE_BODY),
-        EMPTY_BODY("emptyBody", true, Reach.THE_WHOLE_BODY),
-        NOT_JSON("notJson", true, Reach.THE_WHOLE_BODY),
-        WRONG_CONTENT_TYPE("wrongContentType", true, Reach.THE_WHOLE_BODY),
-        BEYOND_ITS_WIDTH("beyondItsWidth", true, Reach.ANY_NUMBER),
-        DEEP_NESTING("deepNesting", false, Reach.THE_WHOLE_BODY),
-        EXTREME_NUMBER("extremeNumber", false, Reach.ANY_NUMBER);
+        DROP_REQUIRED("dropRequired", Reach.ONE_VALUE),
+        WRONG_LOCATION("wrongLocation", Reach.ONE_VALUE),
+        WRONG_TYPE("wrongType", Reach.ONE_VALUE),
+        OUTSIDE_A_BOUND("outsideABound", Reach.ONE_VALUE),
+        BREAK_AN_ENUMERATION("breakAnEnumeration", Reach.ONE_VALUE),
+        BREAK_A_PATTERN("breakAPattern", Reach.ONE_VALUE),
+        SEND_NULL("sendNull", Reach.ONE_VALUE),
+        SEND_EMPTY("sendEmpty", Reach.ONE_VALUE),
+        OVERSIZE("oversize", Reach.ONE_VALUE),
+        WRONG_ROOT("wrongRoot", Reach.THE_WHOLE_BODY),
+        EMPTY_BODY("emptyBody", Reach.THE_WHOLE_BODY),
+        NOT_JSON("notJson", Reach.THE_WHOLE_BODY),
+        WRONG_CONTENT_TYPE("wrongContentType", Reach.THE_WHOLE_BODY),
+        BEYOND_ITS_WIDTH("beyondItsWidth", Reach.ANY_NUMBER);
 
         private final String written;
-        private final boolean breaksTheDocument;
         private final Reach reach;
 
-        Operator(String written, boolean breaksTheDocument, Reach reach) {
+        Operator(String written, Reach reach) {
             this.written = written;
-            this.breaksTheDocument = breaksTheDocument;
             this.reach = reach;
         }
 
         /** Its name, as a setting, and as a change records what kind it was. */
         String written() {
             return written;
-        }
-
-        /** Whether what it sends is something the document rules out. */
-        boolean breaksTheDocument() {
-            return breaksTheDocument;
-        }
-
-        /** What a request it makes expects of the API. */
-        Intent intent() {
-            return breaksTheDocument ? Intent.REFUSAL_EXPECTED : Intent.UNKNOWN;
         }
 
         /** Whether it may go to this place at all, before asking whether it has anything to do. */
@@ -1374,10 +1210,9 @@ final class Mutations {
             };
         }
 
-        /** Whether it and its family are both switched on. */
+        /** Whether it is switched on, and changes to accepted requests are switched on at all. */
         boolean isOn(MutationSettings settings) {
-            boolean family = breaksTheDocument ? settings.violations() : settings.probes();
-            return family && switch (this) {
+            return settings.violations() && switch (this) {
                 case DROP_REQUIRED -> settings.dropRequired();
                 case WRONG_LOCATION -> settings.wrongLocation();
                 case WRONG_TYPE -> settings.wrongType();
@@ -1387,15 +1222,11 @@ final class Mutations {
                 case SEND_NULL -> settings.sendNull();
                 case SEND_EMPTY -> settings.sendEmpty();
                 case OVERSIZE -> settings.oversize();
-                case OVERSIZE_WITH_NO_LIMIT -> settings.oversizeWithNoLimit();
-                case EMPTY_WITH_NO_RULE -> settings.emptyWithNoRule();
                 case WRONG_ROOT -> settings.wrongRoot();
                 case EMPTY_BODY -> settings.emptyBody();
                 case NOT_JSON -> settings.notJson();
                 case WRONG_CONTENT_TYPE -> settings.wrongContentType();
                 case BEYOND_ITS_WIDTH -> settings.beyondItsWidth();
-                case DEEP_NESTING -> settings.deepNesting();
-                case EXTREME_NUMBER -> settings.extremeNumber();
             };
         }
     }

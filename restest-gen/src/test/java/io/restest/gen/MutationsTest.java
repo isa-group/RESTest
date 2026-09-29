@@ -36,10 +36,8 @@ import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.ArraySchema;
-import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ChoiceSchema;
-import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
@@ -75,9 +73,8 @@ class MutationsTest {
 
     private static final int DRAWS = 200;
 
-    /** Every kind of change, the probes included, which a run leaves off unless told. */
-    private static final MutationSettings BOTH_FAMILIES =
-            Settings.from(Map.of("mutation.probes", "true")).mutation();
+    /** Every kind of change, as a run makes them unless told otherwise. */
+    private static final MutationSettings EVERY_CHANGE = MutationSettings.defaults();
 
     private static final NumberSchema LIMIT = new NumberSchema(SchemaMetadata.none(),
             NumberKind.INTEGER, Optional.of(BigDecimal.ONE), Optional.empty(),
@@ -439,24 +436,6 @@ class MutationsTest {
                     .isEqualTo(Intent.REFUSAL_EXPECTED));
         }
 
-        @Test
-        @DisplayName("an empty value where nothing forbids one is a probe, which expects nothing")
-        void empty_where_nothing_forbids_it() {
-            List<TestCase> changed = changes("emptyWithNoRule", FIND_PETS, FOUND);
-
-            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
-                    .contains("q", "X-Trace", "session")
-                    .doesNotContain("ownerId", "limit", "status");
-            assertThat(changed).allSatisfy(each -> {
-                assertThat(each.intent()).isEqualTo(Intent.UNKNOWN);
-                assertThat(each.mutation().orElseThrow().description())
-                        .contains("nothing says may not be empty");
-            });
-            assertThat(changes("emptyWithNoRule", ADD_PET, ADDED))
-                    .extracting(each -> each.mutation().orElseThrow().path())
-                    .contains("body.tag", "body.tags", "body.nickname")
-                    .doesNotContain("body.name", "body.owner.email");
-        }
     }
 
     @Nested
@@ -482,32 +461,26 @@ class MutationsTest {
         }
 
         @Test
-        @DisplayName("where no most is stated and nothing else would be broken, as a probe")
-        void where_no_most_is_stated() {
-            List<TestCase> changed = changes("oversizeWithNoLimit", ADD_PET, ADDED);
-
-            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
-                    .describedAs("not the name, which has a most, nor the e-mail address, which "
-                            + "ten thousand characters would stop being")
-                    .containsOnly("body.tag", "body.nickname", "body.tags[]");
-            assertThat(changed).allSatisfy(each -> assertThat(each.intent())
-                    .isEqualTo(Intent.UNKNOWN));
-        }
-
-        @Test
         @DisplayName("an oversized value is as long as the settings say")
         void as_long_as_the_settings_say() {
-            Map<String, String> given = onlyTheSwitch("oversizeWithNoLimit");
-            given.put("mutation.oversizedLength", "12");
-            Mutations mutations = new Mutations(API, Settings.from(given).mutation(),
-                    GenerationSettings.defaults(), new SplittableRandom(3));
+            Map<String, String> given = onlyTheSwitch("oversize");
+            given.put("mutation.oversizedLength", "40");
+            List<TestCase> names = new ArrayList<>();
+            for (long seed = 0; seed < DRAWS; seed++) {
+                new Mutations(API, Settings.from(given).mutation(), GenerationSettings.defaults(),
+                        new SplittableRandom(seed)).changeOneThingIn(ADD_PET, ADDED)
+                        .filter(changed -> changed.mutation().orElseThrow().path()
+                                .equals("body.name"))
+                        .ifPresent(names::add);
+            }
 
-            TestCase changed = mutations.changeOneThingIn(FIND_PETS, FOUND).orElseThrow();
-
-            Mutation mutation = changed.mutation().orElseThrow();
-            assertThat(((JsonValue.JsonString) changed.parameterValue(mutation.path(),
-                    mutation.location()).orElseThrow().value()).value()).hasSize(12);
-            assertThat(mutation.description()).contains("12 characters");
+            assertThat(names).describedAs("the name, whose most is thirty").isNotEmpty()
+                    .allSatisfy(changed -> {
+                        assertThat(((JsonValue.JsonString) at(changed, "body.name")).value())
+                                .hasSize(40);
+                        assertThat(changed.mutation().orElseThrow().description())
+                                .contains("40 characters");
+                    });
         }
     }
 
@@ -649,88 +622,6 @@ class MutationsTest {
         }
 
         @Test
-        @DisplayName("a member nobody declared, nested far deeper than the shape, as a probe")
-        void a_member_nested_far_too_deep() {
-            Map<String, String> given = onlyTheSwitch("deepNesting");
-            given.put("mutation.nestingDepth", "50");
-            TestCase changed = new Mutations(API, Settings.from(given).mutation(),
-                    GenerationSettings.defaults(), new SplittableRandom(1))
-                    .changeOneThingIn(ADD_PET, ADDED).orElseThrow();
-
-            assertBodyAsAWhole(changed, Intent.UNKNOWN);
-            JsonValue.JsonObject sent = (JsonValue.JsonObject) JsonText.read(
-                    changed.body().orElseThrow().sentAs().orElseThrow());
-            assertThat(sent.members()).containsAllEntriesOf(
-                    ((JsonValue.JsonObject) REX).members());
-            JsonValue nested = sent.members().get("nested");
-            int depth = 0;
-            while (nested instanceof JsonValue.JsonArray list) {
-                depth++;
-                nested = list.elements().isEmpty() ? null : list.elements().get(0);
-            }
-            assertThat(depth).isEqualTo(50);
-            assertThat(changed.mutation().orElseThrow().description())
-                    .contains("'nested'", "50 levels deep");
-
-            String byDefault = changes("deepNesting", ADD_PET, ADDED).get(0).body().orElseThrow()
-                    .sentAs().orElseThrow();
-            assertThat(byDefault).endsWith("]".repeat(10_000) + "}")
-                    .contains("\"nested\":" + "[".repeat(10_000));
-        }
-
-        @Test
-        @DisplayName("never where the shape forbids a member it does not declare, and never under "
-                + "a name already taken")
-        void only_where_another_member_is_allowed() {
-            ObjectSchema closed = new ObjectSchema(SchemaMetadata.none(), properties("a",
-                    StringSchema.of()), Set.of(), Optional.of(NothingSchema.of()),
-                    Optional.empty(), Optional.empty());
-            ObjectSchema wordsOnly = new ObjectSchema(SchemaMetadata.none(), properties("a",
-                    StringSchema.of()), Set.of(), Optional.of(StringSchema.of()),
-                    Optional.empty(), Optional.empty());
-            ObjectSchema full = new ObjectSchema(SchemaMetadata.none(), properties("a",
-                    StringSchema.of()), Set.of(), Optional.empty(), Optional.empty(),
-                    Optional.of(1));
-            ObjectSchema open = ObjectSchema.of(properties("nested", StringSchema.of()),
-                    Set.of());
-            JsonValue one = JsonValue.object(Map.of("a", JsonValue.of("x")));
-            ObjectSchema listed = new ObjectSchema(SchemaMetadata.none(), properties("a",
-                    StringSchema.of()), Set.of(), Optional.of(new AnySchema(SchemaMetadata.none()
-                    .withEnumeration(List.of(JsonValue.of("x"), JsonValue.of("y"))))),
-                    Optional.empty(), Optional.empty());
-            for (ObjectSchema refusing : List.of(closed, wordsOnly, full, listed)) {
-                Operation add = Operation.of(HttpMethod.POST, "/a")
-                        .withRequestBody(RequestBodyModel.json(refusing, true))
-                        .withId(OperationId.of("addA"));
-                assertThat(changesIn(add, bodied(add, one), "deepNesting")).isEmpty();
-            }
-            Operation add = Operation.of(HttpMethod.POST, "/n")
-                    .withRequestBody(RequestBodyModel.json(open, true))
-                    .withId(OperationId.of("addN"));
-            assertThat(changesIn(add, bodied(add, JsonValue.object(Map.of())), "deepNesting"))
-                    .isNotEmpty()
-                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().description())
-                            .contains("'nested2'"));
-            Operation twice = Operation.of(HttpMethod.POST, "/twice")
-                    .withRequestBody(RequestBodyModel.json(open, true))
-                    .withId(OperationId.of("addTwice"));
-            assertThat(changesIn(twice, bodied(twice, JsonValue.object(Map.of("nested2",
-                    JsonValue.of("x")))), "deepNesting"))
-                    .isNotEmpty()
-                    .allSatisfy(each -> assertThat(each.mutation().orElseThrow().description())
-                            .contains("'nested3'"));
-            ObjectSchema roomy = new ObjectSchema(SchemaMetadata.none(), properties("a",
-                    StringSchema.of()), Set.of(), Optional.empty(), Optional.empty(),
-                    Optional.of(5));
-            Operation addRoomy = Operation.of(HttpMethod.POST, "/roomy")
-                    .withRequestBody(RequestBodyModel.json(roomy, true))
-                    .withId(OperationId.of("addRoomy"));
-            assertThat(changesIn(addRoomy, bodied(addRoomy, one), "deepNesting"))
-                    .describedAs("a most number of members with room left under it")
-                    .isNotEmpty();
-        }
-
-        @Test
         @DisplayName("none of the changes to one value is ever made to the body as a whole")
         void the_body_as_a_whole_is_for_its_own_changes() {
             StringSchema shortWord = new StringSchema(SchemaMetadata.none(), Optional.of(1),
@@ -746,7 +637,7 @@ class MutationsTest {
                         .orElseThrow().path().equals("body"));
                 assertThat(asAWhole).describedAs(operator.written())
                         .isEqualTo(List.of("wrongRoot", "emptyBody", "notJson",
-                                "wrongContentType", "deepNesting").contains(operator.written()));
+                                "wrongContentType").contains(operator.written()));
             }
         }
 
@@ -788,7 +679,7 @@ class MutationsTest {
                 AcceptedRequests.Accepted accepted = bodied(operation, REX);
                 List<String> made = new ArrayList<>();
                 for (long seed = 0; seed < 60; seed++) {
-                    new Mutations(odd, BOTH_FAMILIES, GenerationSettings.defaults(),
+                    new Mutations(odd, EVERY_CHANGE, GenerationSettings.defaults(),
                             new SplittableRandom(seed))
                             .changeOneThingIn(operation, accepted)
                             .ifPresent(each -> made.add(each.mutation().orElseThrow().operator()));
@@ -923,53 +814,6 @@ class MutationsTest {
                     });
         }
 
-        @Test
-        @DisplayName("the edges of every kind of number where nothing rules them out, as a probe")
-        void the_edges_where_nothing_rules_them_out() {
-            List<TestCase> changed = changes("extremeNumber", ADD_READING, READ);
-
-            assertThat(changed).allSatisfy(each -> assertThat(each.intent())
-                    .isEqualTo(Intent.UNKNOWN));
-            assertThat(sentAt(changed, "body.count")).containsOnly(
-                    new BigDecimal("2147483647"), new BigDecimal("-2147483648"));
-            assertThat(sentAt(changed, "body.ratio")).containsOnly(
-                    new BigDecimal("1.7976931348623157E308"),
-                    new BigDecimal("-1.7976931348623157E308"), new BigDecimal("4.9E-324"));
-            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
-                    .contains("body.total", "since");
-            assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
-                    .describedAs("a bound, a closed list, a multiple or a width not known here "
-                            + "rules the edges out")
-                    .doesNotContain("body.level", "body.grade", "body.step", "body.byte");
-        }
-
-        @Test
-        @DisplayName("where no width is named, the edges of every common width and just past "
-                + "them, only whole numbers where whole numbers are declared")
-        void every_width_where_none_is_named() {
-            Operation addCount = Operation.of(HttpMethod.POST, "/count")
-                    .withRequestBody(RequestBodyModel.json(number(NumberKind.INTEGER, null),
-                            true))
-                    .withId(OperationId.of("addCount"));
-            ApiModel api = ApiModel.of("Count", "1.0", List.of(addCount));
-            AcceptedRequests.Accepted twelve = bodied(addCount, JsonValue.of(12));
-            List<BigDecimal> sent = new ArrayList<>();
-            for (long seed = 0; seed < DRAWS; seed++) {
-                new Mutations(api, Settings.from(onlyTheSwitch("extremeNumber")).mutation(),
-                        GenerationSettings.defaults(), new SplittableRandom(seed))
-                        .changeOneThingIn(addCount, twelve).ifPresent(changed -> sent.add(
-                                ((JsonValue.JsonNumber) changed.body().orElseThrow().value())
-                                        .value()));
-            }
-
-            assertThat(sent).contains(new BigDecimal("2147483647"), new BigDecimal("2147483648"),
-                    new BigDecimal("-2147483649"), new BigDecimal("9223372036854775808"),
-                    new BigDecimal("18446744073709551616"), new BigDecimal("3.4028235E38"),
-                    new BigDecimal("1.7976931348623157E309"));
-            assertThat(sent).allSatisfy(each -> assertThat(each.stripTrailingZeros().scale())
-                    .isLessThanOrEqualTo(0));
-        }
-
         private List<BigDecimal> sentAt(List<TestCase> changed, String path) {
             List<BigDecimal> sent = new ArrayList<>();
             for (TestCase each : changed) {
@@ -988,30 +832,12 @@ class MutationsTest {
     }
 
     @Nested
-    @DisplayName("the families and what is never touched")
-    class Families {
+    @DisplayName("switching changes off, and what is never touched")
+    class SwitchedOff {
 
         @Test
-        @DisplayName("with violations off only probes come out, and the other way round")
-        void each_family_switches_off_alone() {
-            Map<String, String> probesOnly = new HashMap<>(Map.of("mutation.violations", "false",
-                    "mutation.probes", "true"));
-            Map<String, String> violationsOnly = new HashMap<>(Map.of("mutation.probes", "false"));
-
-            assertThat(draw(Settings.from(probesOnly).mutation(), ADD_PET, ADDED))
-                    .isNotEmpty()
-                    .allSatisfy(each -> assertThat(each.intent()).isEqualTo(Intent.UNKNOWN))
-                    .extracting(each -> each.mutation().orElseThrow().operator())
-                    .containsOnly("oversizeWithNoLimit", "emptyWithNoRule", "deepNesting");
-            assertThat(draw(Settings.from(violationsOnly).mutation(), ADD_PET, ADDED))
-                    .isNotEmpty()
-                    .allSatisfy(each -> assertThat(each.intent())
-                            .isEqualTo(Intent.REFUSAL_EXPECTED));
-        }
-
-        @Test
-        @DisplayName("left as they are, the settings make every violation and no probe")
-        void by_default_no_probes() {
+        @DisplayName("left as they are, the settings make changes that each expect a refusal")
+        void by_default_each_expects_a_refusal() {
             assertThat(draw(MutationSettings.defaults(), ADD_PET, ADDED))
                     .isNotEmpty()
                     .allSatisfy(each -> assertThat(each.intent())
@@ -1019,8 +845,8 @@ class MutationsTest {
         }
 
         @Test
-        @DisplayName("with both off nothing is changed at all")
-        void both_off_changes_nothing() {
+        @DisplayName("with every change off nothing is changed at all")
+        void every_change_off_changes_nothing() {
             MutationSettings off = MutationSettings.defaults().withNothingChanged();
 
             assertThat(draw(off, ADD_PET, ADDED)).isEmpty();
@@ -1031,9 +857,9 @@ class MutationsTest {
         @DisplayName("every kind of change, all on, and every one of them is different from what "
                 + "was accepted and names it")
         void everything_on() {
-            List<TestCase> changed = new ArrayList<>(draw(BOTH_FAMILIES, ADD_PET, ADDED));
-            changed.addAll(draw(BOTH_FAMILIES, FIND_PETS, FOUND));
-            changed.addAll(draw(BOTH_FAMILIES, ADD_READING, READ));
+            List<TestCase> changed = new ArrayList<>(draw(EVERY_CHANGE, ADD_PET, ADDED));
+            changed.addAll(draw(EVERY_CHANGE, FIND_PETS, FOUND));
+            changed.addAll(draw(EVERY_CHANGE, ADD_READING, READ));
 
             assertThat(changed).extracting(each -> each.mutation().orElseThrow().operator())
                     .containsAll(java.util.Arrays.stream(Mutations.Operator.values())
@@ -1059,7 +885,7 @@ class MutationsTest {
                             new ValueOrigin.Generated("random"))),
                     InteractionId.generate());
 
-            assertThat(draw(BOTH_FAMILIES, ADD_PET_BY_FORM, byForm)).isEmpty();
+            assertThat(draw(EVERY_CHANGE, ADD_PET_BY_FORM, byForm)).isEmpty();
         }
     }
 
@@ -1088,7 +914,7 @@ class MutationsTest {
                     InteractionId.generate());
             List<TestCase> changed = new ArrayList<>();
             for (long seed = 0; seed < DRAWS; seed++) {
-                new Mutations(round, BOTH_FAMILIES, GenerationSettings.defaults(),
+                new Mutations(round, EVERY_CHANGE, GenerationSettings.defaults(),
                         new SplittableRandom(seed)).changeOneThingIn(addThing, accepted)
                         .ifPresent(changed::add);
             }
@@ -1244,7 +1070,7 @@ class MutationsTest {
                             members("tags", JsonValue.array(JsonValue.of("a"), JsonValue.of("b")))),
                             new ValueOrigin.Generated("random"))), InteractionId.generate());
 
-            for (String operator : List.of("outsideABound", "oversize", "oversizeWithNoLimit")) {
+            for (String operator : List.of("outsideABound", "oversize")) {
                 List<TestCase> changed = new ArrayList<>();
                 for (long seed = 0; seed < 20; seed++) {
                     new Mutations(api, Settings.from(onlyTheSwitch(operator)).mutation(),
@@ -1353,8 +1179,7 @@ class MutationsTest {
     }
 
     private static Map<String, String> onlyTheSwitch(String operator) {
-        Map<String, String> given = new HashMap<>(Map.of("mutation.violations", "true",
-                "mutation.probes", "true"));
+        Map<String, String> given = new HashMap<>(Map.of("mutation.violations", "true"));
         for (Mutations.Operator each : Mutations.Operator.values()) {
             given.put("mutation." + each.written(), String.valueOf(each.written().equals(operator)));
         }

@@ -30,8 +30,8 @@ import java.util.Objects;
  *
  * <p>This records which accepted request the change was made to, by the {@link InteractionId} of
  * the exchange that accepted it, and what the change was. The rest is in the test case itself:
- * comparing the two shows the change exactly, and {@link Intent} says whether the change broke
- * what the documentation says, or went somewhere the documentation does not rule on.
+ * comparing the two shows the change exactly, and {@link Intent} says what the change was expected
+ * to earn - a refusal, for one that breaks what the documentation says.
  *
  * @param of the exchange in which the API accepted the request this was made from
  * @param operator what kind of change it was, by the name a person switches it off with -

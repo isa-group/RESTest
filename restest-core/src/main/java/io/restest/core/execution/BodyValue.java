@@ -35,8 +35,8 @@ import java.util.Optional;
  * <p>{@code value} is the body's content, which is written out as JSON or as the fields of a web
  * form, depending on the media type, when the request is sent. Almost always that is the whole
  * story. The exception is a body sent on purpose as something no value can be written as - nothing
- * at all, JSON cut off halfway, a list inside a list ten thousand times over, or the right content
- * under the wrong media type - to see what an API does with a body it cannot read. Then {@code
+ * at all, JSON cut off halfway, or the right content under the wrong media type - to see what an
+ * API does with a body it cannot read. Then {@code
  * sentAs} holds the exact text that travels, and {@code value} the content it was made from, so that
  * both what was sent and what it started as can be read afterwards.
  *

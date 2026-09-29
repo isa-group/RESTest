@@ -400,3 +400,46 @@ failure `emptyBody` already reaches; a body sent as nothing where it may be left
 far too deep value replacing the whole body (above); and any of the seven in a body sent as the
 fields of a form, which cannot be nested, cut short as JSON is, or say `null`, and which the tool
 builds only where JSON is not offered.
+
+## Amendment (M8.5)
+
+**Date:** 2026-09-29
+
+**The probes are removed**, by the maintainer's decision on 29 September: they added complexity,
+and configuration nobody will use.
+- **What goes:** the four probes - `oversizeWithNoLimit`, `emptyWithNoRule`, `deepNesting` and
+  `extremeNumber` - their family's switch, `mutation.probes`, and `mutation.nestingDepth`, which only
+  `deepNesting` read. Six settings, seventy left.
+- **What becomes of this record:**
+  - §3's two families become one. Every change breaks something the document states, and every
+    changed request expects to be refused.
+  - §5's "every kind of change switched off" is `violations` off, or every operator off.
+  - §6's `violations` is the one switch for all fourteen kinds.
+  - §2's four intents stay as they are: `UNKNOWN` is still what most requests expect, a step of a
+    series among them.
+  - The Consequences' "some of what fuzzing finds, a probe finds too" no longer holds. No change
+    now sends an empty word where nothing forbids one, and the test that shows fuzzing finding
+    that bug switches the changes off only so that its two runs differ in the list alone.
+  - The console no longer splits changed requests by what each expected: every one expects a
+    refusal.
+- **A key that is gone is refused where settings are named explicitly.** A settings file or a
+  `--set` that names one stops the run before it starts, like any name that is not a setting. An
+  environment variable that names one is ignored, as every unknown `RESTEST_` variable is: the
+  environment carries other programs' variables too.
+
+**The evidence** is row 8.5's screening: the eleven APIs of the 2026 edition, twenty minutes each,
+one run per variant, with the probes switched on against the tool as shipped. They cost more than
+they give.
+- **Unique server failures:** 146 with them and 147 without, erc20 left out. They gained 9 on
+  pet-clinic and 1 each on blog, features-service and market, and lost 13 on person-controller,
+  whose requests they slowed.
+- **Branch coverage:** 23.8% against 23.2%, better on 5 APIs, worse on none. Most of it is 2.4
+  points on each of gestao-hospital and features-service, where three of the four other variants
+  gained as well: the shipped run's coverage there was low, rather than the probes' high.
+- **What they cost person-controller**, which answers them with enormous bodies:
+  - it sent 41,000 requests, against 102,000-123,000 in every other variant;
+  - its recording grew to 29 GB, against 1-1.5 GB for any other run, and took the benchmark's
+    analysis about three and a half hours.
+- **features-service** sent 28% fewer requests.
+- **Before that**, the sixty-second measurements of 10.1 and 10.2 had found nothing by exception kind
+  that the violations had not.

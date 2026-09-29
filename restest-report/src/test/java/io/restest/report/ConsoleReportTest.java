@@ -422,8 +422,9 @@ class ConsoleReportTest {
         assertThat(screen.toString())
                 .contains("  1 of them were pushing at the API with values nobody sensible would "
                         + "send, which accounts for some of the 4 refusals above")
-                .contains("  2 of them changed one thing in a request the API had accepted, 1 of "
-                        + "them breaking what the description states");
+                .describedAs("every changed request is counted, whatever it expected")
+                .contains("  2 of them changed one thing in a request the API had accepted"
+                        + System.lineSeparator());
     }
 
     @Test

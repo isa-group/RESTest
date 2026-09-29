@@ -90,9 +90,6 @@ public final class ConsoleReport implements RunListener {
     /** How many were made by changing one thing in a request the API had accepted. */
     private long changed;
 
-    /** How many of those broke something the description states, expecting to be refused. */
-    private long changedAgainstTheDescription;
-
     /**
      * How many steps of series about a thing the run created were sent, by the kind of series, in
      * the order the kinds were first heard of: every creation the API accepted, and every step
@@ -215,9 +212,6 @@ public final class ConsoleReport implements RunListener {
                 }
                 if (sent.mutation().isPresent()) {
                     changed++;
-                    if (sent.intent() == Intent.REFUSAL_EXPECTED) {
-                        changedAgainstTheDescription++;
-                    }
                 }
                 sent.sequence().ifPresent(step -> {
                     // A creation refused made nothing for a series to be about, so it is no step
@@ -418,12 +412,7 @@ public final class ConsoleReport implements RunListener {
                             : ""));
         }
         if (changed > 0) {
-            // Split by what each change expected, because only those that broke what the
-            // description states are refusals anybody predicted; the rest went where the
-            // description says nothing, and either answer to them is a fair one.
-            write("  " + changed + " of them changed one thing in a request the API had accepted, "
-                    + changedAgainstTheDescription + " of them breaking what the description "
-                    + "states");
+            write("  " + changed + " of them changed one thing in a request the API had accepted");
         }
         if (seriesBegun > 0) {
             // By the kind of series rather than by what each step expected, which is the report's
