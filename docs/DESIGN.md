@@ -317,17 +317,19 @@ black-box only; B+W = black-box and white-box modes both available. The last two
 
 Planned, numbered in [`ROADMAP.md`](../ROADMAP.md), and taken in order once v2.0 has shipped — no
 approval is needed to start them, unlike the table that follows. [ADR-0024](adr/0024-the-competition-version.md)
-says why each waited.
+says why each waited — all but M13, added on 29 September 2026 and taken first, whose reasons are
+in the roadmap.
 
 | Item | Roadmap rows |
 |---|---|
+| Safeguards: stop when the API refuses the run's credentials, wait when told to wait, a ceiling on the rate, stop when the API stops answering | M13 |
 | The WFC oracle catalogue, HTTP-semantics oracles, per-operation oracle configuration | 3.1, 3.2, 3.4 |
 | `CorpusOracle`, offline re-checking, the report formats beyond console and JSON | 3.3, 3.5, 3.6 |
 | The dependency graph over every property, with its synonym table and its measurement | rest of 4.1, 4.2 |
 | Declared links, the CRUD lifecycle model, stateful oracles, Arazzo | 4.3, rest of 4.4, 4.5, 4.6 |
 | IDL, the constraint solver, constraint-based generation and its oracles | M5 |
 | Live constraint and flow sources; the overhead regression test | M6 |
-| Authentication inferred from the document; the external value provider; the dictionary cache | 2.6, 2.8, 2.7b |
+| The rest of authentication — bearer tokens and user names with passwords handed over the way API keys are, OAuth2, a sign-in the tool performs itself, several credentials at once — since API keys ship in v2.0 as 11.3; the external value provider; the dictionary cache | rest of 2.6, 2.8, 2.7b |
 | Maven Central, package managers, the native binary | 7.1, 7.2b, 7.3 |
 
 ## Out of scope for v2.0
