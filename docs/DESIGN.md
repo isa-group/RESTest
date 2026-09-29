@@ -211,7 +211,9 @@ count is only meaningful next to somebody else's fault count.
 Every behaviour a run can do without — an opening lap, a mutation operator, a scheduling rule — has
 a switch in the settings ([ADR-0025](adr/0025-settings.md)), and a run records which switches it ran
 with. An ablation is therefore a campaign with one line changed rather than a branch per variant,
-and its results say what they measured.
+and its results say what they measured. [The switches](switches.md) lists every one, with the
+files that turn off a whole increment or milestone at once and the plan without the memory of what
+the API returned, which is a source rather than a switch; a test holds that page to the tool.
 
 ## Related tools
 

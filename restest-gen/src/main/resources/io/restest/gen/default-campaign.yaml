@@ -72,9 +72,11 @@ strategies:
           # to - it earns 27% more.
           #
           # This is the one source with a memory, and it costs the run one promise: what it sends
-          # depends on what the API answered, so --seed no longer repeats a run on its own. Take
-          # this line out and it does. What you have instead is --store, which keeps every request
-          # and reply of the run you actually had.
+          # depends on what the API answered, so --seed no longer repeats a run on its own. The
+          # series and the changes to accepted requests below cost the same promise. Take this line
+          # out of all three strategies that name it, switch the series and the changes off, and
+          # the seed repeats the run again. What you have instead is --store, which keeps every
+          # request and reply of the run you actually had.
           - source: observed
             weight: 20
 

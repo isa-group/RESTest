@@ -11,7 +11,10 @@ restest run --print-settings > settings.yaml
 restest run api.yaml --url http://localhost:9966 --settings settings.yaml
 ```
 
-The decisions behind all of this are in [ADR-0025](adr/0025-settings.md).
+The decisions behind all of this are in [ADR-0025](adr/0025-settings.md). The settings that are
+`true` or `false` and each turn off one thing the tool does are also listed on a page of their own,
+[the switches](switches.md), which says what turning each off does, what it was found to be worth,
+and gives the files that turn off a whole idea at once.
 
 ## Settings are not a plan
 
@@ -352,7 +355,9 @@ builds its requests the ordinary way.
 
 Five of the kinds, from `wrongRoot` to `beyondItsWidth`, break the body as a whole rather than one
 value in it — its kind, its bytes, its media type — or push a number past what its declared format
-can hold. They aim at the code that reads a body before the API's own code runs.
+can hold. They aim at the code that reads a body before the API's own code runs. [The
+switches](switches.md#switching-off-everything-one-increment-added) has the files that turn off, at
+once, the nine kinds that change one value or the five that change the body as a whole.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -381,7 +386,8 @@ Which series of requests a strategy whose plan says `sends: sequences` may send 
 created itself — see [the campaign file](campaign-format.md#series-of-requests-around-a-thing-the-run-created).
 Each series starts with that strategy's own creation, asks one question, and sends each of its steps
 once the answer to the one before has arrived, with the identifier the API gave the thing. With every
-series off, such a strategy builds its requests the ordinary way.
+series off, such a strategy builds its requests the ordinary way; [the
+switches](switches.md#switching-off-everything-one-increment-added) has that file.
 
 | Setting | Default | What it does |
 |---|---|---|

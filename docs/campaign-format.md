@@ -151,8 +151,12 @@ by giving it the same `--seed` again: what it sends depends on what the API answ
 answers differently on a different day. The same number gets you a similar run, not the same one.
 What you have instead is the record: `--store` keeps every request and reply of the run you actually
 had, so a surprising result can be examined rather than chased. Sending those stored requests again
-is a separate command and is not built yet. Take `observed` out of your plan and the seed means
-exactly what it always did.
+is a separate command and is not built yet. Two other things a run does cost the same promise,
+[changing a request that worked](#changing-one-thing-in-a-request-that-worked) and
+[series](#series-of-requests-around-a-thing-the-run-created), so the seed means exactly what it
+always did once `observed` is out of every strategy of your plan and both of those are switched
+off. [The switches](switches.md#getting-the-seed-back) shows the plan RESTest carries without
+`observed`, and the file of settings that switches the other two off.
 
 `observed` is a word, not a list: it is one of RESTest's own sources, so a file of your own called
 `observed` is a different thing entirely and is named with `dictionary: observed` as usual.
