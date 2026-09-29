@@ -357,3 +357,78 @@ the group as a whole, because the plan's strategy that sends series is that swit
 
 [ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s M8.5 amendment says why. Seventy
 settings in eight groups.
+
+## Amendment (M11.2)
+
+**Date:** 2026-09-29
+
+**The page §4 promised is [`docs/switches.md`](../switches.md).** It lists every switch with what
+turning it off does, what leaving it on costs and what the screenings of 8.4 and 8.5 found it
+worth. It carries, ready for `--settings`, the files that turn off everything one increment added,
+and each milestone's levers at once. And it says what a run can do without that is not a switch,
+because it belongs to the plan. `DocumentedSwitchesTest` holds the page to the tool:
+- every switch is on the page, and every switch on the page exists;
+- each is said to be on or off as it is by default;
+- every setting named anywhere on the page exists;
+- every file on it is one the command line reads, and a run handed it uses every value in it;
+- every switch that is on by default is turned off by one of those files;
+- each file does what its label says. The file for 10.3 turns off every series, the files for 10.1
+  and 10.2 between them every kind of change and none twice, and a file for one increment only
+  switches the table says came with it. The file for reach is its three increments' files put
+  together, the file for break is the series' file with every change off, and the file for both is
+  those two together;
+- the file for getting the seed back turns off every change and every series. Handed over with the
+  plan on the page, it leaves a run of the pet clinic with nothing it sends depending on what the
+  API answered, where leaving either the changes or the series on would not;
+- the plan on it is the shipped plan with the memory taken out.
+
+**A switch is a setting that is true or false.** Twenty-six of the seventy are. The test takes the
+kind of value as the definition rather than a list somebody keeps, so a yes-or-no setting added
+later is on the page or the build fails. One of the twenty-six is not a lever:
+`engine.followRedirects` decides what a redirection means rather than turning off something a run
+could do without. The page says so in a table of its own, rather than the test making an exception.
+
+**No increment gets a switch of its own.** Three of M10's increments take several lines to switch
+off whole: the nine changes to one value of 10.1, the five of 10.2 (bodies of the wrong shape, and
+numbers too wide for their format), and the six series of 10.3. `mutation.violations` switches off
+10.1 and 10.2 together, and the M10.3 amendment gave the series no switch for the group because the
+plan's strategy is one. A
+switch per increment was considered and, on 29 September, not taken by the maintainer. It would
+have meant three more settings for 12.1 to freeze, and every kind of change answering to three
+switches rather than two. The page carries those files instead, which is what the screening of 8.5
+had written by hand, and the test checks that each of those files switches off what its label
+says.
+
+**Taking the memory out stays a matter for the plan, and the page shows how.** §4 says that
+switching off the memory of observed values is a plan without the `observed` line, not a setting.
+Since M10 the shipped plan names that source in three strategies. Each time it sits in a group whose
+weights add up to a hundred, so taking it out means three lines removed and three groups divided
+again by hand. And a plan variant written before M10 has neither of M10's strategies, so reusing one
+would switch M10 off along with the memory.
+
+A shortcut was proposed and refused: `memory.longestReplyRead` at zero would silence the source in
+one line. But a plan that still names a source that a setting has silenced says something about the
+run that is not true. And a limit on the size of a reply is not a switch, whatever it is called.
+
+So the page shows the shipped plan with the memory taken out and its weight shared among the rest in
+the proportions they already had, and the test compares it with the shipped plan, so it changes
+when that plan does. The comment on `MemorySettings` used to offer zero as the way an experiment
+switches the memory off, and said, wrongly, that any of its five limits at zero would do it. It now
+says what zero does for each limit, and that the plan is where the memory is taken away.
+[ADR-0028](0028-sequences-over-things-a-run-creates.md), which repeated the claim, gains a note
+correcting it.
+
+**Three places were wrong about what gives the seed back.** The README, the campaign file's page and
+the shipped plan's own comment said that taking `observed` out gives a run back its seed, and the
+README added `mutation.violations`. Since 10.1 and 10.3, the changes to accepted requests and the
+series cost the same promise, and the source is named in three strategies. All three places now say
+so, and the page gives the plan and the file.
+
+**Some levers are older than the rule.** The audit behind the page found every behaviour M9 and
+M10 added behind its switch. It also found three older behaviours with no switch:
+- a whole thing the API returned, reused with one value changed (2.5b);
+- the preference for JSON that an `Accept` header states;
+- lists written for one place, asked before lists written for a whole kind of value.
+
+§5 says they move when the code around them is next touched. The page does not list them as
+switches, because they are not.

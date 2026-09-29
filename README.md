@@ -154,13 +154,17 @@ as it came back and recorded as that). Measured against two containerised APIs,
 restarting each before every run: 27.8 of pet-clinic's operations answered 2XX without this and
 31.6 with it, better on every one of five seeds.
 
-It costs one promise, and so does changing accepted requests, since which requests were accepted is
-the API's answer too: what such a run sends depends on what the API answered, so `--seed` on its
-own no longer repeats it — it makes a similar run rather than the same one. `--store` keeps every
-request and reply of the run you actually had, which is the record to go back to; sending those
-requests again is a later milestone's job. Taking `source: observed` out of the plan below, and
-switching the changes off with `--set mutation.violations=false`, puts the old promise back
-exactly.
+It costs one promise, and so do two other things a run does. Changing accepted requests costs it,
+since which requests were accepted is the API's answer too. So does the tenth of the run that turns
+a creation into the first request of a short series about the thing created — delete it and read it
+again, create it twice — each step built from the answer to the one before. What such a run sends
+depends on what the API answered, so `--seed` on its own no longer repeats it — it makes a similar
+run rather than the same one. `--store` keeps every request and reply of the run you actually had,
+which is the record to go back to; sending those requests again is a later milestone's job. Taking
+`source: observed` out of the plan below, where three of its strategies name it, and switching both
+the changes and the series off puts the old promise back exactly:
+[docs/switches.md](docs/switches.md#getting-the-seed-back) has the plan and the file of settings
+that do it.
 
 Which of those a run prefers, and in what proportion, is itself a file. `restest run
 --print-campaign` writes out the plan RESTest follows when it is given none: which sources fill in
@@ -180,7 +184,10 @@ when asked two things at once. The same names work as environment variables,
 `RESTEST_ENGINE_MAX_CONCURRENCY=1`, which is how a container is configured. Every run writes the lot
 into `report.json`, so a directory of results carries the configuration that produced it.
 [docs/settings.md](docs/settings.md) is the list, and it shows the file `--print-settings` writes so
-you can see one without building anything.
+you can see one without building anything. Twenty-six of the settings are switches, `true` or
+`false`, each turning off one thing the tool does, so that what it is worth can be measured by
+running the same tool with it and without it. [docs/switches.md](docs/switches.md) lists them with
+what each was found to be worth, and gives the files that turn off a whole idea at once.
 
 Nothing else is required. `--url` is only needed when the document does not name an address you
 can reach; it says which machine, so an API the document describes as living under a directory is

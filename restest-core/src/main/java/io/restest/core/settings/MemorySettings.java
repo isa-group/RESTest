@@ -68,15 +68,22 @@ public record MemorySettings(
     }
 
     /**
-     * Zero is allowed everywhere here, and means "remember none of this".
+     * Zero is allowed everywhere here, because the smallest limit is still a limit somebody may
+     * want.
      *
-     * <p>Turning the memory off is a thing an experiment asks for, and any of these at zero does
-     * it. Refusing zero would make the only way to ask for it a change to the plan.
+     * <p>What it does is not the same for all five. With no values kept under a name, no names
+     * kept, or no reply read, nothing is remembered. A reply read no deeper than its top still
+     * gives what its top holds, and values no longer than nothing still include true, false and
+     * anything empty.
+     *
+     * <p>None of them is the way to run without the memory. That is the plan's to say, by leaving
+     * out the source that draws on it; a plan naming a source these settings had silenced would
+     * say something about the run that is not true.
      */
     private static void atLeastNothing(int value, String what) {
         if (value < 0) {
-            throw new IllegalArgumentException(what + " cannot be negative; zero remembers none of "
-                    + "them, which is the least this can do: " + value);
+            throw new IllegalArgumentException(what + " cannot be negative, and zero is the least "
+                    + "it can be: " + value);
         }
     }
 

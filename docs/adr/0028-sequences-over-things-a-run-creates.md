@@ -434,3 +434,16 @@ pet-clinic's requests and 4% of notebook-manager's.
   and the wider corpus one; it is row 4.3.
 - **Cleaning up after a series.** It is a request more per series, and it would change the state the
   ordinary requests meet, for a benefit nothing measures.
+
+## Amendment (M11.2)
+
+**Date:** 2026-09-29
+
+One sentence of the decision needs correcting. Where it says what a series reads, it speaks of "a
+run that switches the memory off, by any of its limits at zero". Only three of the memory's five
+limits leave it with nothing at zero: the values kept under a name, the names kept, and the largest
+reply read. A reply read no deeper than its top still gives what its top holds, and values no
+longer than nothing still include true, false and anything empty. None of the five is the way to
+run without the memory. That is the plan's to say, by leaving out the source that draws on it, for
+the reason [ADR-0025](0025-settings.md)'s M11.2 amendment gives. What the sentence was there to say
+still holds: however the memory is limited, a series reads its creation's reply, and still sends.
