@@ -142,8 +142,6 @@ generation:
 mutation:
   # whether accepted requests are changed in ways the description forbids
   violations: true            # default
-  # whether accepted requests are changed in ways the description does not rule on
-  probes: false               # default
   # leave out a parameter or body property the description says is required
   dropRequired: true          # default
   # send a required parameter in the query, a header or a cookie other than its own
@@ -162,10 +160,6 @@ mutation:
   sendEmpty: true             # default
   # send a word or list far longer than the longest the description allows
   oversize: true              # default
-  # the same where the description states no longest length; a probe
-  oversizeWithNoLimit: true   # default
-  # send an empty word, list or object where nothing forbids one; a probe
-  emptyWithNoRule: true       # default
   # send the whole body as another kind of thing, such as a list where an object is declared
   wrongRoot: true             # default
   # send a body of no bytes at all where the description requires one
@@ -176,18 +170,12 @@ mutation:
   wrongContentType: true      # default
   # send a number past what its declared format holds, such as 2147483648 for int32
   beyondItsWidth: true        # default
-  # add an undeclared member nested nestingDepth lists deep to a body that allows one; a probe
-  deepNesting: true           # default
-  # send the edges of what a common width of number holds, or just past them, where nothing rules them out; a probe
-  extremeNumber: true         # default
   # how many of each operation's accepted requests are kept to be changed, newest first
   acceptedKept: 16            # default
   # how many characters an oversized word has
   oversizedLength: 10000      # default
   # how many items an oversized list has
   oversizedItems: 1000        # default
-  # how many lists deep the member deepNesting adds is, at most a million
-  nestingDepth: 10000         # default
 
 sequences:
   # create a thing, delete it, then read it and what hangs from it: is it gone?
@@ -357,24 +345,18 @@ spelling `--budget` takes.
 ### `mutation.*`
 
 What a strategy whose plan says `mutates: accepted` may change in a request the API accepted — see
-[the campaign file](campaign-format.md#changing-one-thing-in-a-request-that-worked). A kind of
-change is made only when its own switch and its family's are both on. The first family,
-`violations`, breaks something the description states, so a refusal is the right answer; the second,
-`probes`, goes where the description says nothing, and either answer may be right. Probes are off
-unless you turn them on: measured against five APIs, a minute each, they found no server failure the
-violations had not, and on one API they cost a third of the requests. With both off, such a strategy
+[the campaign file](campaign-format.md#changing-one-thing-in-a-request-that-worked). Every kind of
+change breaks something the description states, so a refusal is the right answer. A kind is made
+only when its own switch and `violations` are both on; with `violations` off, such a strategy
 builds its requests the ordinary way.
 
-Seven of the kinds, from `wrongRoot` to `extremeNumber`, break the body as a whole rather than one
-value in it — its kind, its bytes, its media type, how deep it goes — or push a number to the edge of
-what a kind of number can hold. They aim at the code that reads a body before the API's own code
-runs, and they belong to the same two families by the same rule: `deepNesting` and `extremeNumber`
-are probes, the other five violations.
+Five of the kinds, from `wrongRoot` to `beyondItsWidth`, break the body as a whole rather than one
+value in it — its kind, its bytes, its media type — or push a number past what its declared format
+can hold. They aim at the code that reads a body before the API's own code runs.
 
 | Setting | Default | What it does |
 |---|---|---|
 | `violations` | `true` | whether accepted requests are changed in ways the description forbids |
-| `probes` | `false` | whether accepted requests are changed in ways the description does not rule on |
 | `dropRequired` | `true` | leave out a parameter or body property the description says is required |
 | `wrongLocation` | `true` | send a required parameter in the query, a header or a cookie other than its own |
 | `wrongType` | `true` | send a value of another kind, such as a word where a number is declared |
@@ -384,19 +366,14 @@ are probes, the other five violations.
 | `sendNull` | `true` | send null for a body property that may not be null |
 | `sendEmpty` | `true` | send an empty word, list or object where the description forbids one |
 | `oversize` | `true` | send a word or list far longer than the longest the description allows |
-| `oversizeWithNoLimit` | `true` | the same where the description states no longest length; a probe |
-| `emptyWithNoRule` | `true` | send an empty word, list or object where nothing forbids one; a probe |
 | `wrongRoot` | `true` | send the whole body as another kind of thing, such as a list where an object is declared |
 | `emptyBody` | `true` | send a body of no bytes at all where the description requires one |
 | `notJson` | `true` | send a body that is not JSON: the accepted one cut off halfway, or plain words |
 | `wrongContentType` | `true` | send the accepted body under a media type the description does not offer |
 | `beyondItsWidth` | `true` | send a number past what its declared format holds, such as 2147483648 for int32 |
-| `deepNesting` | `true` | add an undeclared member nested nestingDepth lists deep to a body that allows one; a probe |
-| `extremeNumber` | `true` | send the edges of what a common width of number holds, or just past them, where nothing rules them out; a probe |
 | `acceptedKept` | `16` | how many of each operation's accepted requests are kept to be changed, newest first |
 | `oversizedLength` | `10000` | how many characters an oversized word has |
 | `oversizedItems` | `1000` | how many items an oversized list has |
-| `nestingDepth` | `10000` | how many lists deep the member deepNesting adds is, at most a million |
 
 ### `sequences.*`
 

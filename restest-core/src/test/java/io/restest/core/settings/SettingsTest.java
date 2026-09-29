@@ -408,7 +408,7 @@ class SettingsTest {
             assertThat(from.withGeneration(GenerationSettings.defaults()).generation())
                     .isEqualTo(GenerationSettings.defaults());
             assertThat(from.withMutation(from.mutation().withNothingChanged()).mutation()
-                    .anyFamilyOn()).isFalse();
+                    .violations()).isFalse();
             assertThat(from.withMutation(from.mutation().withNothingChanged()).generation())
                     .isEqualTo(from.generation());
             assertThat(from.withSequences(SequenceSettings.noneSent()).sequences().anyOn())

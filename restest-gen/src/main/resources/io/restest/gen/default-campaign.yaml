@@ -128,10 +128,8 @@ strategies:
   # one thing gets past every check but one.
   #
   # Which changes are made, and how large, are settings rather than part of the plan: see
-  # `restest run --print-settings`, under mutation. Only the changes that break what the document
-  # states are made unless you say otherwise; `mutation.probes` adds the ones it does not rule on,
-  # such as ten thousand characters where no limit is stated. With them all off, this strategy's
-  # share is built exactly as nominal builds its own.
+  # `restest run --print-settings`, under mutation. Every one of them breaks something the document
+  # states. With them all off, this strategy's share is built exactly as nominal builds its own.
   #
   # The sources below are what it falls back on: until the API has accepted anything for an
   # operation, or when nothing in what it accepted can be changed, the request is built from them,

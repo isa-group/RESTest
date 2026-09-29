@@ -58,9 +58,9 @@ public enum Intent {
      * Nothing in particular is expected.
      *
      * <p>The honest intent of most requests. A value invented to fit what the documentation
-     * describes may still be refused for a rule it never wrote down, and a change the
-     * documentation does not rule on - a name ten thousand characters long where no longest length
-     * is given - may be accepted or refused, and either answer is a fair one.
+     * describes may still be refused for a rule it never wrote down, and a thing a series deletes a
+     * second time may be answered that it is not there, or with a success: either answer is a fair
+     * one.
      */
     UNKNOWN,
 

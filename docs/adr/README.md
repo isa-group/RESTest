@@ -64,5 +64,5 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted |
 | [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1 and M10.3 |
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
-| [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 |
+| [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 and M8.5 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted |

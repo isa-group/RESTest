@@ -112,9 +112,9 @@ class FuzzingFindsWhatNominalMissesTest {
         // are for, and not what this test is comparing. Left on in the first run, it would pass
         // even if the list of awkward values lost its empty word.
         String withAwkwardValues = run(directory.resolve("with"), document, "--fuzzing", "25",
-                "--set", "mutation.violations=false", "--set", "mutation.probes=false");
+                "--set", "mutation.violations=false");
         String withoutThem = run(directory.resolve("without"), document, "--fuzzing", "0",
-                "--set", "mutation.violations=false", "--set", "mutation.probes=false");
+                "--set", "mutation.violations=false");
 
         assertThat(withAwkwardValues)
                 .describedAs("an empty search term is in RESTest's own list of awkward values, and "

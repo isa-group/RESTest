@@ -104,7 +104,7 @@ class MutationFindsWhatNothingElseReachesTest {
 
         String withChanges = run(directory.resolve("with"), document);
         String withoutThem = run(directory.resolve("without"), document,
-                "--set", "mutation.violations=false", "--set", "mutation.probes=false");
+                "--set", "mutation.violations=false");
 
         assertThat(withChanges)
                 .describedAs("the customer left out of a request the API accepted is what makes "
