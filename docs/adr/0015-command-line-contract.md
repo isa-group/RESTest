@@ -885,3 +885,10 @@ was cut short, close the store - or says plainly that it could not; and it ends 
 second one names, the conventional one for an interrupted program, which is Java's `130` or `143`.
 The maintainer chose both on 30 September, so that a run cut short is never read as one that
 passed.
+
+The two ways RESTest can go wrong without answering `4`, listed at the end of the amendment before
+this one, go to 12.1b too, with the answers the maintainer chose on 30 September. A request RESTest
+loses on its own thread counts as RESTest's failure: the run carries on to the end of its budget,
+then answers `4` with the first failure's stack trace, and stops early, saying RESTest lost them,
+once as many requests as may be in flight have ended unanswered with nothing answered at all. And
+an exchange kept without its details answers `4`.
