@@ -20,9 +20,13 @@
  * shapes ({@code schema}) that data must follow. Every other part of RESTest is built on top of
  * these definitions.
  *
- * <p>Eleven packages are exported and one is not. {@code io.restest.core.internal} holds small
- * helpers shared between the other eleven and is deliberately kept internal, so it can change
+ * <p>Twelve packages are exported and one is not. {@code io.restest.core.internal} holds small
+ * helpers shared between the other twelve and is deliberately kept internal, so it can change
  * freely without affecting anything built on top of this module.
+ *
+ * <p>One of the twelve, {@code io.restest.core.auth}, is about the keys a person hands over so that
+ * an API answers: where each one goes in a request, and how it is kept out of everything a run
+ * writes down.
  *
  * <p>Two of the eleven have names close enough to be worth telling apart on sight.
  * {@code io.restest.core.execution} is data: one test attempt, the request sent, the reply received.
@@ -45,6 +49,7 @@ module io.restest.core {
     requires com.fasterxml.jackson.core;
     requires org.yaml.snakeyaml;
 
+    exports io.restest.core.auth;
     exports io.restest.core.event;
     exports io.restest.core.exec;
     exports io.restest.core.gen;
