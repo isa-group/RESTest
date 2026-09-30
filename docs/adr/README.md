@@ -52,7 +52,7 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 |
-| [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1 and M11.3, and in #314 |
+| [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1 and M11.3, and in #314 and #344 |
 | [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 |
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted |

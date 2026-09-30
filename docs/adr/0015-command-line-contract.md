@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1 and M11.3, and in #314
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1 and M11.3, and in #314 and #344
 **Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30)
 
 ## Context
