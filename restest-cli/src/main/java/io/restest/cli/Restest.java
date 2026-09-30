@@ -42,6 +42,11 @@ import picocli.CommandLine.UnmatchedArgumentException;
  * somebody else's program: a library that can stop the program it is embedded in is a library nobody
  * can embed. Running the command and ending the program are therefore two separate methods here, and
  * the tests use the first one.
+ *
+ * <p>Running the command always ends in an answer, however badly RESTest itself breaks along the
+ * way - running out of memory included. A crash that escaped instead would end the program with the
+ * number Java gives any program that crashes, which is the number that says a fault was found in
+ * the API.
  */
 @Command(
         name = "restest",
@@ -49,7 +54,11 @@ import picocli.CommandLine.UnmatchedArgumentException;
         mixinStandardHelpOptions = true,
         versionProvider = ToolVersion.class,
         subcommands = RunCommand.class,
-        synopsisSubcommandLabel = "COMMAND")
+        synopsisSubcommandLabel = "COMMAND",
+        // What the command-line framework answers when something fails inside the framework itself
+        // rather than in a command - while it writes the help, say. Left alone it answers 1, the
+        // number that says a fault was found in the API.
+        exitCodeOnExecutionException = ExitCode.TOOL_FAILED)
 public final class Restest {
 
     private Restest() {
@@ -69,7 +78,9 @@ public final class Restest {
      *
      * <p>The answer is 0 when the run found nothing wrong, 1 when it found a fault, 2 when the
      * command line was wrong, 3 when there was nothing to test, and 4 when RESTest itself went
-     * wrong.
+     * wrong. However it went wrong - running out of memory included - that is answered rather than
+     * thrown, and what went wrong is said where problems go, with the stack trace somebody needs to
+     * report it.
      *
      * @param arguments what was typed after {@code restest}
      * @return the number the command answered with
@@ -114,6 +125,31 @@ public final class Restest {
      */
     static int run(String[] arguments, PrintWriter out, PrintWriter err,
             Map<String, String> environment) {
+        try {
+            return answer(arguments, out, err, environment);
+        } catch (Throwable failure) {
+            // What arrives here is what the command-line framework does not catch. It catches the
+            // exceptions a command throws, and lets through the more serious kind of failure Java
+            // calls an error: running out of memory, running out of room for the stack, a piece of
+            // Java missing where the program runs. Let through, one of those would end the program
+            // with the number Java gives any program that crashes - 1, the number that says a fault
+            // was found in the API - and whatever ran the command would count a crash as a finding.
+            //
+            // Caught here rather than only where the program ends, so that every caller gets the
+            // same answer: a test, or a program running RESTest inside itself, reads 4 exactly as a
+            // script does. By now the run has closed everything it opened, on its way out, so the
+            // caller is free to start another.
+            return saysItBroke(failure, err);
+        }
+    }
+
+    /**
+     * The command itself, as the command-line framework runs it: everything
+     * {@link #run(String[], PrintWriter, PrintWriter, Map)} does, except answering for what the
+     * framework lets through.
+     */
+    private static int answer(String[] arguments, PrintWriter out, PrintWriter err,
+            Map<String, String> environment) {
         CommandLine restest = new CommandLine(new Restest(), new StartedIn(environment))
                 .setOut(out)
                 .setErr(err)
@@ -127,14 +163,10 @@ public final class Restest {
                 .setColorScheme(CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.OFF))
                 .setCaseInsensitiveEnumValuesAllowed(true)
                 .setParameterExceptionHandler(Restest::saysWhatWasWrong)
-                .setExecutionExceptionHandler((failure, command, parsed) -> {
-                    // Anything that reaches here is RESTest going wrong rather than the API under
-                    // test, and the two must not answer the same. The stack trace goes out because
-                    // somebody has to be able to report it.
-                    err.println("restest: the run could not be completed: " + failure);
-                    failure.printStackTrace(err);
-                    return ExitCode.TOOL_FAILED;
-                });
+                // Anything that reaches here is RESTest going wrong rather than the API under test,
+                // and the two must not answer the same.
+                .setExecutionExceptionHandler(
+                        (failure, command, parsed) -> saysItBroke(failure, err));
         // With no sub-command there is nothing to run; saying so and showing what the choices are
         // beats a silent success.
         if (arguments.length == 0) {
@@ -150,6 +182,28 @@ public final class Restest {
             return ExitCode.BAD_COMMAND_LINE;
         }
         return restest.execute(arguments);
+    }
+
+    /**
+     * Says that RESTest itself went wrong, and gives the answer that means so.
+     *
+     * <p>What went wrong is named and its stack trace printed, because somebody has to be able to
+     * report it. Saying so can fail in its turn - a program that has just run out of memory may not
+     * have enough left to write a stack trace - and the answer is given all the same, since the
+     * answer is what whatever ran the command acts on.
+     *
+     * @param failure what went wrong
+     * @param err where anything that went wrong goes
+     * @return the answer that says RESTest itself went wrong
+     */
+    private static int saysItBroke(Throwable failure, PrintWriter err) {
+        try {
+            err.println("restest: the run could not be completed: " + failure);
+            failure.printStackTrace(err);
+        } catch (Throwable whileSayingSo) {
+            // Nothing is left to say it with. The answer still goes out.
+        }
+        return ExitCode.TOOL_FAILED;
     }
 
     /** The name of every option of every command, each way it can be written. */

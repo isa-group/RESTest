@@ -24,13 +24,18 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.restest.core.auth.AuthGiven;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,8 +48,9 @@ import org.junit.jupiter.api.io.TempDir;
  *
  * <p>The number the command leaves behind is what a build server and a script act on, usually
  * without reading anything else, so each of them is pinned here: nothing wrong, something wrong,
- * nonsense on the command line, nothing to test. The API is a stand-in that answers exactly as this
- * test tells it to, so no network is involved and nothing depends on somebody else's server.
+ * nonsense on the command line, nothing to test, and RESTest itself breaking. The API is a stand-in
+ * that answers exactly as this test tells it to, so no network is involved and nothing depends on
+ * somebody else's server.
  */
 class RestestTest {
 
@@ -573,6 +579,74 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("a run that breaks with an error rather than an exception answers 4, not the 1 "
+            + "of a fault found, and says what broke")
+    void an_error_partway_through_a_run_answers_four(@TempDir Path directory) {
+        // Out of room for the stack is what a walk of a shape with no end runs into, and running
+        // out of memory is its cousin. Java calls both errors rather than exceptions, and the
+        // command-line framework lets errors through: left to go on up, this one would end the
+        // program with the number Java gives any program that crashes, which is 1.
+        int answer = run(anEnvironmentThatBreaks(() -> {
+            throw new StackOverflowError("a shape too deep to walk");
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.toString());
+
+        assertThat(answer)
+                .describedAs("RESTest broke, not the API; 1 would have whatever ran the command "
+                        + "count a crash as a fault found")
+                .isEqualTo(4);
+        assertThat(problems.toString())
+                .contains("restest: the run could not be completed: java.lang.StackOverflowError: "
+                        + "a shape too deep to walk")
+                .describedAs("with the stack trace, so that somebody can report it")
+                .contains("at io.restest.cli.RunCommand");
+    }
+
+    @Test
+    @DisplayName("a run that breaks with an exception answers 4 as well, in the same words")
+    void an_exception_partway_through_a_run_answers_four(@TempDir Path directory) {
+        int answer = run(anEnvironmentThatBreaks(() -> {
+            throw new IllegalStateException("something RESTest did not expect");
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(4);
+        assertThat(problems.toString()).contains("restest: the run could not be completed: "
+                + "java.lang.IllegalStateException: something RESTest did not expect");
+    }
+
+    @Test
+    @DisplayName("a failure inside the command-line framework itself answers 4, not 1")
+    void a_failure_inside_the_framework_answers_four() {
+        // The help is written by the framework rather than by a command, so a failure while it is
+        // being written is answered by the framework's own last resort - with 1, unless it is told
+        // otherwise.
+        PrintWriter aScreenThatBreaks = new PrintWriter(new Writer() {
+            @Override
+            public void write(char[] text, int from, int length) {
+                throw new IllegalStateException("the screen went away");
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        });
+        PrintWriter err = new PrintWriter(problems);
+
+        int answer = Restest.run(new String[] {"--help"}, aScreenThatBreaks, err);
+        err.flush();
+
+        assertThat(answer).isEqualTo(4);
+        assertThat(problems.toString())
+                .describedAs("what broke is still said, where problems go")
+                .contains("java.lang.IllegalStateException: the screen went away");
+    }
+
+    @Test
     @DisplayName("the seed a run used is the one it was given, and is printed either way")
     void the_seed_is_passed_on_and_reported(@TempDir Path directory) throws Exception {
         // What the command is responsible for is handing the seed to the part that invents values
@@ -648,5 +722,39 @@ class RestestTest {
             out.flush();
             err.flush();
         }
+    }
+
+    private int run(Map<String, String> environment, String... arguments) {
+        PrintWriter out = new PrintWriter(screen);
+        PrintWriter err = new PrintWriter(problems);
+        try {
+            return Restest.run(arguments, out, err, environment);
+        } finally {
+            out.flush();
+            err.flush();
+        }
+    }
+
+    /**
+     * An environment in which looking for a key left there breaks, in the way given. A run looks
+     * for one once it has read the document and started the engine that sends its requests, so
+     * what breaks, breaks partway through the run. Every setting is looked for as well, and none
+     * is found.
+     */
+    private static Map<String, String> anEnvironmentThatBreaks(Runnable breaking) {
+        return new AbstractMap<>() {
+            @Override
+            public Set<Map.Entry<String, String>> entrySet() {
+                return Set.of();
+            }
+
+            @Override
+            public String get(Object name) {
+                if (AuthGiven.VARIABLE.equals(name)) {
+                    breaking.run();
+                }
+                return null;
+            }
+        };
     }
 }
