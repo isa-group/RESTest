@@ -234,7 +234,8 @@ class AKeyIsWrittenNowhereTest {
         assertThat(report).contains("REDACTED-AUTH.inAHeader")
                 .contains("token=REDACTED-AUTH.inTheQuery")
                 .contains("sid=REDACTED-AUTH.inACookie");
-        assertThat(screen.toString()).contains("-H 'X-API-Key: REDACTED-AUTH.inAHeader'");
+        assertThat(screen.toString()).contains("-H 'X-API-Key: REDACTED-AUTH.inAHeader'")
+                .containsPattern("\\d+ replies repeated a key back; it is hidden there too");
 
         List<Interaction> stored;
         try (InteractionStore store = SqliteInteractionStore.at(out.resolve("run.sqlite"))) {

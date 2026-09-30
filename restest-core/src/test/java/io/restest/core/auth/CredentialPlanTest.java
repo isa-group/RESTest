@@ -17,6 +17,7 @@ package io.restest.core.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
@@ -35,6 +36,7 @@ import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -150,6 +152,41 @@ class CredentialPlanTest {
         }
 
         @Test
+        @DisplayName("a line break at the end of the variable, as a file read into it leaves, is not part of the key")
+        void a_line_break_ending_the_variable_is_left_off() {
+            for (String end : List.of("\n", "\r\n", "\n\n")) {
+                CredentialPlan.Found found = gather(petstore(),
+                        AuthGiven.fromTheEnvironment(KEY + end));
+
+                assertThat(found.warnings()).isEmpty();
+                assertThat(credentials(found, "getInventory")).extracting(Credential::secret)
+                        .extracting(Secret::value).containsExactly(KEY);
+            }
+            assertThat(AuthGiven.fromTheEnvironment("\r\n").isEmpty()).isTrue();
+            assertThat(gather(petstore(), AuthGiven.fromTheEnvironment("Zk9-leakprobe-4f\nmore"))
+                    .warnings()).singleElement().asString().contains("a line break");
+        }
+
+        @Test
+        @DisplayName("two keys whose names come out the same in the text put in their place are told apart")
+        void no_two_keys_share_the_text_in_their_place() {
+            ApiModel model = model(orderedSchemes(
+                            "API Key", new SecurityScheme.ApiKey(ParameterLocation.HEADER, "X-One"),
+                            "API_Key", new SecurityScheme.ApiKey(ParameterLocation.HEADER, "X-Two")),
+                    Optional.of(new SecurityRequirement(List.of(Set.of("API Key", "API_Key")))),
+                    get("track", "/track"));
+
+            CredentialPlan.Found found = gather(model, AuthGiven.typed("API Key=" + KEY, 1),
+                    AuthGiven.typed("API_Key=Qm7-leakprobe-8x+z/Pt==", 2));
+
+            assertThat(credentials(found, "track")).extracting(Credential::secret)
+                    .extracting(Secret::mask)
+                    .containsExactlyInAnyOrder("REDACTED-AUTH.API_Key", "REDACTED-AUTH.API_Key.2");
+            assertThat(found.plan().placed()).extracting(CredentialPlan.Placed::mask)
+                    .containsExactly("REDACTED-AUTH.API_Key", "REDACTED-AUTH.API_Key.2");
+        }
+
+        @Test
         @DisplayName("a key in the environment that cannot be used is left out with a warning, not refused")
         void a_key_in_the_environment_only_warns() {
             ApiModel nothingDeclared = model(Map.of(), Optional.empty(), get("listPets", "/pets"));
@@ -197,7 +234,23 @@ class CredentialPlanTest {
                     gather(withABearer, AuthGiven.typed("owned=" + KEY, 1)));
             refused.put("scheme and nothing after",
                     gather(pet, AuthGiven.typed("api_key=", 1)));
-            refused.put("a place and no =", gather(none, AuthGiven.typed("header:" + KEY, 1)));
+            refused.put("a place and no =",
+                    gather(none, AuthGiven.typed("header:Zk9-leakprobe-4f", 1)));
+            refused.put("a header, and a key without the name it goes under",
+                    gather(none, AuthGiven.typed("header:" + KEY, 1)));
+            refused.put("the query, and a key without the name it goes under",
+                    gather(none, AuthGiven.typed("query:Zk9leakprobe4fqRw==", 1)));
+            refused.put("a cookie, and a key without the name it goes under",
+                    gather(none, AuthGiven.typed("cookie:Zk9leakprobe4fqRw==", 1)));
+            refused.put("shorter than four characters", gather(pet, AuthGiven.typed("abc", 1)));
+            refused.put("a scheme's key shorter than four characters",
+                    gather(pet, AuthGiven.typed("api_key==", 1)));
+            refused.put("a name before an = that is no scheme's",
+                    gather(pet, AuthGiven.typed("apikey=" + KEY, 1)));
+            refused.put("a name before an =, and no key declared",
+                    gather(none, AuthGiven.typed("leakprobe=" + KEY, 1)));
+            refused.put("a name before an = that is none of two schemes'",
+                    gather(two, AuthGiven.typed("leakprobe=" + KEY, 1)));
             refused.put("a place and no name", gather(none, AuthGiven.typed("query:=" + KEY, 1)));
             refused.put("a place and no key", gather(none, AuthGiven.typed("cookie:sid=", 1)));
             refused.put("a line break", gather(pet, AuthGiven.typed(KEY + "\r", 1)));
@@ -230,6 +283,17 @@ class CredentialPlanTest {
                     .contains("--auth cookie:<name>=<key>");
             assertThat(refused.get("following redirections").refusals()).singleElement()
                     .asString().contains("engine.followRedirects");
+            assertThat(refused.get("the query, and a key without the name it goes under")
+                    .refusals()).singleElement().asString().contains("nothing but '='")
+                    .contains("query:<name>=<key>");
+            assertThat(refused.get("shorter than four characters").refusals()).singleElement()
+                    .asString().contains("shorter than 4 characters");
+            assertThat(refused.get("a name before an = that is no scheme's").refusals())
+                    .singleElement().asString().contains("no scheme of that name")
+                    .contains("--auth api_key=<key>");
+            assertThat(refused.get("a name before an = that is none of two schemes'").refusals())
+                    .singleElement().asString().contains("no scheme of that name")
+                    .contains("key, other");
             assertThat(refused.get("twice for one place").refusals()).singleElement().asString()
                     .isEqualTo("the key given with the second --auth goes in the header api_key, "
                             + "and so does the key given with --auth: one key for each place");
@@ -547,6 +611,44 @@ class CredentialPlanTest {
                                     .doesNotContainKey("apiKey")));
             assertThat(formOf(trimmed, "loop")).isEqualTo(SchemaReference.to("Loop"));
             assertThat(trimmed.schema("Form")).contains(named);
+        }
+    }
+
+    @Nested
+    @DisplayName("the model the values are invented from, for a form whose shapes lead back to one another")
+    class ShapesThatLeadBack {
+
+        @Test
+        @DisplayName("each named shape is copied once, not once for every way round")
+        void each_named_shape_is_copied_once() {
+            // Every shape a choice among the others and the form itself: followed afresh each time,
+            // every way round would multiply the work by four, over and over. Three shapes rather
+            // than four already take seconds that way.
+            ObjectSchema theFields = ObjectSchema.of(fields("apiKey", "word"), Set.of("apiKey"));
+            Map<String, CanonicalSchema> shapes = new LinkedHashMap<>();
+            shapes.put("Form", ChoiceSchema.of(List.of(SchemaReference.to("A"),
+                    SchemaReference.to("B"), SchemaReference.to("C"), SchemaReference.to("D"),
+                    theFields)));
+            for (String name : List.of("A", "B", "C", "D")) {
+                List<CanonicalSchema> others = new ArrayList<>();
+                for (String other : List.of("A", "B", "C", "D", "Form")) {
+                    if (!other.equals(name)) {
+                        others.add(SchemaReference.to(other));
+                    }
+                }
+                shapes.put(name, ChoiceSchema.of(others));
+            }
+            ApiModel model = model(Map.of(), Optional.empty(),
+                    post("addWord", "/words", SchemaReference.to("Form"))).withSchemas(shapes);
+
+            ApiModel trimmed = assertTimeoutPreemptively(Duration.ofSeconds(5), () ->
+                    gather(model, AuthGiven.typed("query:apiKey=" + KEY, 1)).plan()
+                            .modelToFillIn(model));
+
+            assertThat(formOf(trimmed, "addWord")).isInstanceOfSatisfying(ChoiceSchema.class,
+                    choice -> assertThat(choice.alternatives().get(4))
+                            .isInstanceOfSatisfying(ObjectSchema.class, shape ->
+                                    assertThat(shape.properties()).containsOnlyKeys("word")));
         }
     }
 

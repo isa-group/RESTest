@@ -80,6 +80,8 @@ final class Specifications {
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation seen = Operation.of(HttpMethod.GET, "/seen")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+        Operation label = Operation.of(HttpMethod.GET, "/label")
+                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation strayEscape = Operation.of(HttpMethod.GET, "/strayescape")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation encodedReference = Operation.of(HttpMethod.GET, "/encodedref")
@@ -95,7 +97,7 @@ final class Specifications {
 
         return ApiModel.of("Pets", "1.0.0", List.of(listPets, onePet, kinds, raw, unsaid, noReply,
                         onlyXml, dangling, charsetKey, byReference, byChain, elsewhere, seen,
-                        strayEscape, encodedReference, cycle, nowhere, problem))
+                        label, strayEscape, encodedReference, cycle, nowhere, problem))
                 .withDocument(read("/pets-3.0.json"));
     }
 

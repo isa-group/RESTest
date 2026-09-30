@@ -15,7 +15,10 @@
  */
 package io.restest.cli;
 
+import io.restest.core.auth.AuthGiven;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -140,13 +143,17 @@ public final class Restest {
 
     /**
      * Says what was wrong with what was typed, the way the command-line framework would, except for
-     * one thing: an argument it did not understand is not repeated back.
+     * one thing: a key is never repeated back.
      *
      * <p>A mistyped option leaves whatever followed it as something nobody asked for, and what
      * follows {@code --auth} is a key. Repeating it would put the key on the screen, and into any
-     * log the screen is kept in, for the sake of a typing mistake. The names of options that do not
-     * exist are still said, up to any {@code =}, since those are what somebody needs to see to put
-     * the mistake right; and the options that do exist and look like them are suggested as before.
+     * log the screen is kept in, for the sake of a typing mistake. So an argument the framework did
+     * not understand is not repeated at all, though the names of options that do not exist are
+     * still said, up to any {@code =}, since those are what somebody needs to see to put the
+     * mistake right; the options that do exist and look like them are suggested as before. Any
+     * other complaint is said in the framework's words, with whatever was typed after
+     * {@code --auth} taken out: an option missing its value, just before {@code --auth=<key>}, is
+     * told what it found instead, and would say so.
      */
     private static int saysWhatWasWrong(ParameterException wrong, String[] arguments) {
         CommandLine command = wrong.getCommandLine();
@@ -173,10 +180,47 @@ public final class Restest {
                 command.usage(err, command.getColorScheme());
             }
         } else {
-            err.println(wrong.getMessage());
+            err.println(withoutTheKeys(String.valueOf(wrong.getMessage()), arguments));
             command.usage(err, command.getColorScheme());
         }
         return command.getCommandSpec().exitCodeOnInvalidInput();
+    }
+
+    /**
+     * A complaint with every key typed after {@code --auth} taken out, wherever the framework quoted
+     * it: whole, as {@code '<key>'}, or after the option, as {@code --auth=<key>}. A key written
+     * with {@code =} in a file of arguments named with {@code @} is not among the arguments here,
+     * so whatever follows {@code --auth=} to the end of a line is taken out as well.
+     */
+    static String withoutTheKeys(String complaint, String[] arguments) {
+        String hidden = AuthGiven.OPTION + "=<key>";
+        List<String> keys = new ArrayList<>();
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i].equals(AuthGiven.OPTION) && i + 1 < arguments.length) {
+                keys.add(arguments[i + 1]);
+            } else if (arguments[i].startsWith(AuthGiven.OPTION + "=")) {
+                keys.add(arguments[i].substring(AuthGiven.OPTION.length() + 1));
+            }
+        }
+        keys.sort(Comparator.comparingInt(String::length).reversed());
+        String said = complaint;
+        for (String key : keys) {
+            if (!key.isEmpty()) {
+                said = said.replace(AuthGiven.OPTION + "=" + key, hidden)
+                        .replace("'" + key + "'", "'<key>'");
+            }
+        }
+        int from = said.indexOf(AuthGiven.OPTION + "=");
+        while (from >= 0) {
+            if (!said.startsWith(hidden, from)) {
+                int end = said.indexOf('\n', from);
+                end = end < 0 ? said.length() : end;
+                boolean quoted = said.charAt(end - 1) == '\'';
+                said = said.substring(0, from) + hidden + (quoted ? "'" : "") + said.substring(end);
+            }
+            from = said.indexOf(AuthGiven.OPTION + "=", from + hidden.length());
+        }
+        return said;
     }
 
     /**

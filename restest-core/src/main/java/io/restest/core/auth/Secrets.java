@@ -71,7 +71,7 @@ public final class Secrets {
     /**
      * The text every replacement begins with, so that anything reading what a run kept can tell that
      * a key was taken out of it: the part of the tool that judges replies against the document, for
-     * one, which does not judge a reply that was changed.
+     * one, which does not hold against the API what the replacement may have changed.
      */
     public static final String MARKER = "REDACTED-AUTH";
 
@@ -81,6 +81,15 @@ public final class Secrets {
      * somebody, not something a run might want to choose.
      */
     private static final int SHORTEST_HALF_KEY = 4;
+
+    /**
+     * The fewest characters a key handed over can have. Every appearance of a key is hidden, and a
+     * shorter one turns up inside ordinary words and numbers so often that most of what a run
+     * writes would be hidden with it - a key typed without the name it goes under, which leaves an
+     * {@code =} or two to be taken for the key, is one way to arrive at one. As long as the least of
+     * a key recognised at the end of a reply cut short, and for the same reason.
+     */
+    static final int SHORTEST_KEY = SHORTEST_HALF_KEY;
 
     /**
      * How long a piece of a key, found apart from the rest of it, has to be to be hidden: long enough
@@ -100,6 +109,8 @@ public final class Secrets {
     private final List<Spelling> spellings;
 
     private final AtomicLong hiddenWhole = new AtomicLong();
+
+    private final AtomicLong repliesThatRepeatedAKey = new AtomicLong();
 
     private record Spelling(String text, String mask) {
     }
@@ -192,6 +203,15 @@ public final class Secrets {
     }
 
     /**
+     * How many replies repeated a key back - in a header, the body, or the words after the status
+     * code - and had it hidden there. Such a reply is no longer exactly what the API sent, and an
+     * API that hands a key back to whoever sent it is worth knowing about, so a run says how many.
+     */
+    public long repliesThatRepeatedAKey() {
+        return repliesThatRepeatedAKey.get();
+    }
+
+    /**
      * The exchange with every appearance of a key hidden, under the same identity, or the very same
      * exchange when there was nothing to hide. Never fails: see the class's own description.
      */
@@ -207,6 +227,10 @@ public final class Secrets {
             if (testCase == interaction.testCase() && request == interaction.request()
                     && outcome == interaction.outcome()) {
                 return interaction;
+            }
+            if (outcome != interaction.outcome()
+                    && !(outcome instanceof InteractionOutcome.TransportFailure)) {
+                repliesThatRepeatedAKey.incrementAndGet();
             }
             return new Interaction(interaction.id(), testCase, request, outcome,
                     interaction.sentAt(), interaction.elapsed());

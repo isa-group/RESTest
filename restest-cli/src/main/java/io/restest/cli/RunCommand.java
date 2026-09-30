@@ -551,7 +551,9 @@ final class RunCommand implements Callable<Integer> {
                 events.undelivered());
         int answer = ExitCode.of(outcome, ours.reports() + ours.judgements(),
                 ours.eventsNeverHeard(), console.faults());
-        explain(out, err, answer, outcome, address, reportFile, runFile, ours);
+        long repeated = sending instanceof CredentialedEngine door
+                ? door.repliesThatRepeatedAKey() : 0;
+        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated);
         return answer;
     }
 
@@ -587,7 +589,8 @@ final class RunCommand implements Callable<Integer> {
      * <em>judging</em> broke kept it in full, so that one is still announced.
      */
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
-            String address, Path reportFile, Path runFile, OurOwnFailures ours) {
+            String address, Path reportFile, Path runFile, OurOwnFailures ours,
+            long repliesThatRepeatedAKey) {
         if (outcome != null) {
             long lost = outcome.notGenerated() + outcome.notAssembled();
             if (lost > 0) {
@@ -598,6 +601,16 @@ final class RunCommand implements Callable<Integer> {
                         + "and the run stopped waiting for them, so they are missing from what is "
                         + "reported above");
             }
+        }
+        // A reply with a key hidden in it is not quite what the API sent, and the check of replies
+        // against the document lets pass whatever the hiding may have changed - so how many there
+        // were is part of what "nothing wrong" means. An API handing a key back is worth knowing
+        // about in itself.
+        if (repliesThatRepeatedAKey > 0) {
+            out.println(repliesThatRepeatedAKey
+                    + (repliesThatRepeatedAKey == 1 ? " reply" : " replies")
+                    + " repeated a key back; it is hidden there too, and the check of replies "
+                    + "against the document passes over whatever the hiding changed");
         }
         // Said first, and said whatever else went wrong. A run can break in both ways at once,
         // and an earlier version of this reported only the listeners - so a run where one report
@@ -790,12 +803,12 @@ final class RunCommand implements Callable<Integer> {
      * Every key handed over: the one left in the environment first, then each one typed, in the
      * order typed - which is the order in which a key typed wins over one left in the environment
      * for the same place. An empty variable is how a shell says a variable is not there for one
-     * command, so it counts as none.
+     * command, so it counts as none, and so does one holding nothing but a line break.
      */
     private List<AuthGiven> keysGiven() {
         List<AuthGiven> given = new ArrayList<>();
         String left = environment.get(AuthGiven.VARIABLE);
-        if (left != null && !left.isEmpty()) {
+        if (left != null && !AuthGiven.fromTheEnvironment(left).isEmpty()) {
             given.add(AuthGiven.fromTheEnvironment(left));
         }
         for (int position = 0; position < keysTyped.size(); position++) {

@@ -36,8 +36,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * The requests RESTest sends to the APIs whose documents ask for a key, when it is given none -
- * pinned, so that reading what a document says about keys can be shown to change nothing else.
+ * The requests RESTest sends to the APIs whose documents declare a key, or carry one, when it is
+ * given none - pinned, so that reading what a document says about keys can be shown to change
+ * nothing else.
  *
  * <p>An API may ask for a key: a document names it, says whether it travels in a header, in the
  * address or in a cookie, and says which operations want it. Reading all of that is only safe if a
@@ -64,8 +65,9 @@ class RequestsWithoutAKeyTest {
     private static final String PINNED = "requests-without-a-key.txt";
 
     /**
-     * The eight documents of the corpus that declare a key the API asks for, and the one that asks
-     * for its key as an ordinary parameter and declares none.
+     * The eight documents of the corpus that declare a key - two of which, BigOven's and Tumblr's,
+     * never ask for it on any operation - and the one that asks for its key as an ordinary
+     * parameter and declares none.
      */
     private static final List<String> DOCUMENTS = List.of(
             "community/Amadeus/openapi.yaml",

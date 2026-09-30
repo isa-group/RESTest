@@ -24,6 +24,7 @@ import io.restest.core.model.SecurityRequirement;
 import io.restest.core.model.SecurityScheme;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -89,7 +90,8 @@ public final class CredentialPlan {
      * @param refusals why a key typed on the command line cannot be used. Any at all, and the run
      *     does not start, because it would test the API without a key somebody meant it to have
      * @param warnings why a key left in the environment is not used. The run goes on without it: a
-     *     variable is left for every run on a machine, not written for this one
+     *     variable can outlive the command it was set for, and a key that fits nothing in this
+     *     document is no reason not to test the API
      */
     public record Found(CredentialPlan plan, List<String> refusals, List<String> warnings) {
 
@@ -198,7 +200,7 @@ public final class CredentialPlan {
                 problem(key, refused.getMessage(), refusals, warnings);
             }
         }
-        List<Key> keys = oneForEachPlace(read, refusals, warnings);
+        List<Key> keys = withTextsOfTheirOwn(oneForEachPlace(read, refusals, warnings));
         List<Key> usable = new ArrayList<>();
         for (Key key : keys) {
             Optional<String> wrong = whatStopsItGoing(key, keys, followRedirects);
@@ -289,20 +291,39 @@ public final class CredentialPlan {
                     value);
         }
         List<String> keySchemes = keySchemes(model);
-        if (keySchemes.size() == 1) {
+        // A key on its own may end in '=', as one written in Base64 does. An '=' with more after it
+        // is where the name of a scheme ends, and this text names none the document declares:
+        // sending all of it as the key would send a mistyped name along with it.
+        boolean namesAScheme = holdsANameBeforeAnEquals(text);
+        if (keySchemes.size() == 1 && !namesAScheme) {
             String only = keySchemes.get(0);
             SecurityScheme.ApiKey scheme1 = (SecurityScheme.ApiKey) model.securitySchemes().get(only);
             return new Key(given, Optional.of(only), placeOf(scheme1),
                     new Secret(text, Secrets.MARKER));
         }
+        String what = namesAScheme
+                ? named + " reads as <name>=<key>, and the document declares no scheme of that name"
+                : named + " is a key on its own";
         if (keySchemes.isEmpty()) {
-            throw new Refused(named + " is a key on its own, and the document declares no API key "
-                    + "for it to answer; " + HOW_TO_SAY_WHERE);
+            throw new Refused(what + (namesAScheme ? ", nor any API key at all"
+                    : ", and the document declares no API key for it to answer")
+                    + "; " + HOW_TO_SAY_WHERE);
         }
-        throw new Refused(named + " is a key on its own, and the document declares "
+        if (keySchemes.size() == 1) {
+            throw new Refused(what + ": its one API key is " + keySchemes.get(0) + ". Name it: "
+                    + AuthGiven.OPTION + " " + keySchemes.get(0) + "=<key>, which also sends a key "
+                    + "holding an '=' of its own as it is");
+        }
+        throw new Refused(what + (namesAScheme ? ": it declares " : ", and the document declares ")
                 + keySchemes.size() + " API keys: " + String.join(", ", keySchemes)
                 + ". Name the one it is for: " + AuthGiven.OPTION + " " + keySchemes.get(0)
                 + "=<key>");
+    }
+
+    /** Whether a text has an {@code =} with something other than more of them after it. */
+    private static boolean holdsANameBeforeAnEquals(String text) {
+        int equals = text.indexOf('=');
+        return equals > 0 && text.chars().skip(equals).anyMatch(character -> character != '=');
     }
 
     private static Key atAPlace(AuthGiven given, String prefix, Place.Where where, String rest)
@@ -321,6 +342,14 @@ public final class CredentialPlan {
         }
         if (value.isEmpty()) {
             throw new Refused(named + " gives no key after the '='");
+        }
+        if (value.chars().allMatch(character -> character == '=')) {
+            // A key written in Base64 ends in '=', so one typed without the name it goes under
+            // reads as a name followed by nothing but '='. The name is not repeated: it is most
+            // likely the key.
+            throw new Refused(named + " gives nothing but '=' after the name it goes under, which "
+                    + "is how a key written in Base64 ends: write the name first, as " + prefix
+                    + "<name>=<key>");
         }
         Place place = new Place(where, name);
         String mask = Secrets.MARKER + "." + where.name().toLowerCase(Locale.ROOT) + "."
@@ -430,11 +459,43 @@ public final class CredentialPlan {
         return new ArrayList<>(byPlace.values());
     }
 
+    /**
+     * The keys, each with a text of its own to stand in its place. Two names can come out the same
+     * in that text - {@code API Key} and {@code API_Key} are both written {@code API_Key} - and then
+     * each one after the first is told apart by a number, so that whoever puts the keys back into
+     * what a run wrote can tell which went where.
+     */
+    private static List<Key> withTextsOfTheirOwn(List<Key> keys) {
+        Set<String> written = new HashSet<>();
+        keys.forEach(key -> written.add(key.secret().mask()));
+        Set<String> taken = new HashSet<>();
+        List<Key> own = new ArrayList<>(keys.size());
+        for (Key key : keys) {
+            String mask = key.secret().mask();
+            if (taken.add(mask)) {
+                own.add(key);
+                continue;
+            }
+            int number = 2;
+            while (written.contains(mask + "." + number) || !taken.add(mask + "." + number)) {
+                number++;
+            }
+            own.add(new Key(key.given(), key.scheme(), key.place(),
+                    new Secret(key.secret().value(), mask + "." + number)));
+        }
+        return own;
+    }
+
     /** What would stop a key reaching the API as it was given, or reaching it safely. */
     private static Optional<String> whatStopsItGoing(Key key, List<Key> keys,
             boolean followRedirects) {
         String named = key.given().named();
         String value = key.secret().value();
+        if (value.length() < Secrets.SHORTEST_KEY) {
+            return Optional.of(named + " is shorter than " + Secrets.SHORTEST_KEY + " characters: "
+                    + "a key is hidden wherever it appears in what the run writes, and one this "
+                    + "short would be hidden inside ordinary words and numbers too");
+        }
         for (char character : value.toCharArray()) {
             if (character < 0x20 || character > 0x7E) {
                 return Optional.of(named + " holds a character that cannot be sent as it is: a "

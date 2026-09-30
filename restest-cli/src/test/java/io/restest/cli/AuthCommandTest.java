@@ -373,6 +373,9 @@ class AuthCommandTest {
                     List.of(none, "--auth", KEY),
                     List.of(pets, "--auth", "petstore_auth=" + KEY),
                     List.of(pets, "--auth", "header:=" + KEY),
+                    List.of(none, "--auth", "query:Zk9leakprobe4fqRw=="),
+                    List.of(pets, "--auth", "apikey=" + KEY),
+                    List.of(pets, "--auth", "abc"),
                     List.of(pets, "--auth", KEY + "\n"),
                     List.of(pets, "--auth", ""),
                     List.of(pets, "--auth", KEY, "--auth", "api_key=" + KEY),
@@ -415,6 +418,43 @@ class AuthCommandTest {
                     .contains("not repeated here in case one is a key")
                     .contains("--auth")
                     .doesNotContain(CORE);
+        }
+    }
+
+    @Nested
+    @DisplayName("what the command-line framework complains of")
+    class Complaints {
+
+        @Test
+        @DisplayName("an option missing its value, just before --auth=<key>, is told what it found without the key")
+        void an_option_missing_its_value_does_not_repeat_the_key(@TempDir Path directory)
+                throws IOException {
+            String pets = document(directory, PETSTORE);
+            Path arguments = Files.writeString(directory.resolve("arguments"),
+                    "--url\n--auth=" + KEY + "\n");
+
+            int url = run(Map.of(), "run", pets, "--url", "--auth=" + KEY);
+            int budget = run(Map.of(), "run", pets, "--budget", "--auth=" + KEY);
+            int fromAFile = run(Map.of(), "run", pets, "@" + arguments);
+
+            assertThat(List.of(url, budget, fromAFile)).containsOnly(2);
+            assertThat(problems.toString())
+                    .contains("Expected parameter for option '--url' but found '--auth=<key>'")
+                    .contains("Expected parameter for option '--budget' but found '--auth=<key>'")
+                    .doesNotContain(CORE);
+            assertThat(api.findAll(anyRequestedFor(anyUrl()))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a key that reads as an option is taken out of the complaint as well")
+        void a_key_that_reads_as_an_option_is_not_repeated() {
+            String complaint = "Expected parameter for option '--auth' but found '-hV'";
+
+            assertThat(Restest.withoutTheKeys(complaint, new String[] {"run", "--auth", "-hV"}))
+                    .isEqualTo("Expected parameter for option '--auth' but found '<key>'");
+            assertThat(Restest.withoutTheKeys("found '--auth=" + KEY + "'\nUsage: restest run",
+                    new String[] {"run", "@arguments"}))
+                    .isEqualTo("found '--auth=<key>'\nUsage: restest run");
         }
     }
 

@@ -67,13 +67,25 @@ public final class AuthGiven {
     }
 
     /**
-     * A key left in {@code RESTEST_AUTH}.
+     * A key left in {@code RESTEST_AUTH}. A variable filled from a file often ends with the file's
+     * last line break, which no key holds and none could be sent with, so any line break at the end
+     * is left off.
      *
      * @param text what the variable holds
      * @return the key as it was handed over
      */
     public static AuthGiven fromTheEnvironment(String text) {
-        return new AuthGiven(text, Source.ENVIRONMENT, 1);
+        Objects.requireNonNull(text, "text");
+        int end = text.length();
+        while (end > 0 && (text.charAt(end - 1) == '\n' || text.charAt(end - 1) == '\r')) {
+            end--;
+        }
+        return new AuthGiven(text.substring(0, end), Source.ENVIRONMENT, 1);
+    }
+
+    /** Whether nothing at all was handed over: an empty variable, or an empty {@code --auth}. */
+    public boolean isEmpty() {
+        return text.isEmpty();
     }
 
     /** Exactly what was handed over. Only this package reads it. */

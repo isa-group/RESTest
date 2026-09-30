@@ -95,6 +95,11 @@ public final class CredentialedEngine implements HttpEngine {
         return secrets.hiddenWhole();
     }
 
+    /** How many replies repeated a key back, and had it hidden there. */
+    public long repliesThatRepeatedAKey() {
+        return secrets.repliesThatRepeatedAKey();
+    }
+
     /** Closes the engine behind this door. Closing it twice is harmless, as it is for the engine. */
     @Override
     public void close() {

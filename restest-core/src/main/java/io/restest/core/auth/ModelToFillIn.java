@@ -94,7 +94,7 @@ final class ModelToFillIn {
             BodyContent form = content.get(FORM);
             if (form != null) {
                 content.put(FORM, new BodyContent(
-                        without(form.schema(), trim.formFields(), model, 0),
+                        new Trimming(trim.formFields(), model).without(form.schema(), 0),
                         form.examples().stream()
                                 .map(example -> without(example, trim.formFields()))
                                 .toList()));
@@ -141,22 +141,56 @@ final class ModelToFillIn {
         }
     }
 
-    private static CanonicalSchema without(CanonicalSchema schema, Set<String> fields,
-            ApiModel model, int depth) {
-        if (depth > REFERENCES_FOLLOWED) {
-            return schema;
+    /**
+     * One form's shape being copied without the fields, each named shape it reaches copied once. A
+     * named shape met again while it is still being copied - a choice that leads back to itself -
+     * is left as it is, under its name: going round would never finish, and each time round a
+     * choice of several would multiply the work. The field is still in that shape, so a request
+     * built from it may have one; the key added as the request leaves takes that field's place.
+     */
+    private static final class Trimming {
+
+        private final Set<String> fields;
+        private final ApiModel model;
+        private final Map<String, CanonicalSchema> copied = new LinkedHashMap<>();
+        private final Set<String> beingCopied = new HashSet<>();
+
+        Trimming(Set<String> fields, ApiModel model) {
+            this.fields = fields;
+            this.model = model;
         }
-        return switch (schema) {
-            case ObjectSchema object -> without(object, fields);
-            case SchemaReference reference -> model.resolve(reference)
-                    .map(resolved -> without(resolved, fields, model, depth + 1))
-                    .orElse(schema);
-            case ChoiceSchema choice -> new ChoiceSchema(without(choice.metadata(), fields),
-                    choice.alternatives().stream()
-                            .map(alternative -> without(alternative, fields, model, depth + 1))
-                            .toList());
-            default -> schema;
-        };
+
+        CanonicalSchema without(CanonicalSchema schema, int depth) {
+            if (depth > REFERENCES_FOLLOWED) {
+                return schema;
+            }
+            return switch (schema) {
+                case ObjectSchema object -> ModelToFillIn.without(object, fields);
+                case SchemaReference reference -> withoutTheFields(reference, depth);
+                case ChoiceSchema choice -> new ChoiceSchema(
+                        ModelToFillIn.without(choice.metadata(), fields),
+                        choice.alternatives().stream()
+                                .map(alternative -> without(alternative, depth + 1))
+                                .toList());
+                default -> schema;
+            };
+        }
+
+        private CanonicalSchema withoutTheFields(SchemaReference reference, int depth) {
+            CanonicalSchema done = copied.get(reference.name());
+            if (done != null) {
+                return done;
+            }
+            if (!beingCopied.add(reference.name())) {
+                return reference;
+            }
+            CanonicalSchema copy = model.resolve(reference)
+                    .map(resolved -> without(resolved, depth + 1))
+                    .orElse(reference);
+            beingCopied.remove(reference.name());
+            copied.put(reference.name(), copy);
+            return copy;
+        }
     }
 
     private static ObjectSchema without(ObjectSchema object, Set<String> fields) {

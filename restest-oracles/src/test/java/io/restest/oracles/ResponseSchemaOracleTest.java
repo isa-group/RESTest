@@ -288,17 +288,35 @@ class ResponseSchemaOracleTest {
         }
 
         @Test
-        @DisplayName("a reply the run changed to hide a key it repeated back is not judged")
-        void a_reply_that_hid_a_key_is_left_alone() {
-            // Once as text longer than the document allows, once inside a number, which it breaks:
-            // both are the run's doing, not the API's.
-            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
-                    "{\"id\": \"REDACTED-AUTH\", \"name\": \"Rex\"}"), pets)).isEmpty();
-            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
-                    "{\"id\": 9REDACTED-AUTH.digits, \"name\": \"Rex\"}"), pets)).isEmpty();
-            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
-                    "{\"id\": \"seven\", \"name\": \"Rex\"}"), pets))
-                    .describedAs("and one it did not change is judged as ever")
+        @DisplayName("in a reply with a key hidden in it, only what the hiding could have changed is let pass")
+        void a_reply_with_a_key_hidden_in_it_is_judged_on_the_rest() {
+            OperationId label = OperationId.of("GET /label");
+            // What the text written in a key's place can change: a length, a pattern, a value
+            // from a list, the name of a member, and a number it breaks into something that is
+            // not JSON at all.
+            for (String changed : List.of(
+                    "{\"name\": \"a\", \"short\": \"REDACTED-AUTH.api_key\"}",
+                    "{\"name\": \"a\", \"letters\": \"abREDACTED-AUTH\"}",
+                    "{\"name\": \"a\", \"colour\": \"REDACTED-AUTH\"}",
+                    "{\"name\": \"a\", \"REDACTED-AUTH.api_key\": \"x\"}",
+                    "{\"name\": \"a\", \"count\": 9REDACTED-AUTH.digits}")) {
+                assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON, changed),
+                        pets)).describedAs(changed).isEmpty();
+            }
+            // What it can never change: a kind of value, a missing member, anything wrong
+            // somewhere else in the same reply.
+            for (String wrong : List.of(
+                    "{\"name\": \"REDACTED-AUTH\", \"count\": \"seven\"}",
+                    "{\"name\": 7, \"short\": \"REDACTED-AUTH\"}",
+                    "{\"short\": \"https://api/pets?key=REDACTED-AUTH\"}",
+                    "{\"name\": \"a\", \"short\": \"REDACTED-AUTH\", \"colour\": \"blue\"}")) {
+                assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON, wrong),
+                        pets)).describedAs(wrong).singleElement()
+                        .satisfies(finding -> assertThat(finding.details()).hasSize(1));
+            }
+            assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON,
+                    "{\"name\": \"a\", \"colour\": \"blue\"}"), pets))
+                    .describedAs("and a reply with no key in it is judged as ever")
                     .hasSize(1);
         }
 

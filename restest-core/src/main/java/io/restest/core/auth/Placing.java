@@ -86,24 +86,30 @@ final class Placing {
         return address + "?" + String.join("&", pairs) + fragment;
     }
 
-    private static List<Header> withCookie(List<Header> headers, String name, String value) {
+    /**
+     * The headers with the cookie added to the one {@code Cookie} header, or in one of its own. Every
+     * other cookie stays exactly as it was written, so that what a test case says was sent is what
+     * was sent; only a cookie of the same name goes.
+     */
+    static List<Header> withCookie(List<Header> headers, String name, String value) {
         List<Header> written = new ArrayList<>(headers);
+        String pair = name + "=" + value;
         for (int i = 0; i < written.size(); i++) {
             Header header = written.get(i);
             if (header.name().equalsIgnoreCase("Cookie")) {
-                List<String> cookies = new ArrayList<>();
-                for (String cookie : header.value().split(";")) {
-                    String trimmed = cookie.trim();
-                    if (!trimmed.isEmpty() && !nameOf(trimmed).equals(name)) {
-                        cookies.add(trimmed);
+                List<String> others = new ArrayList<>();
+                for (String cookie : header.value().split(";", -1)) {
+                    if (!nameOf(cookie).trim().equals(name)) {
+                        others.add(cookie);
                     }
                 }
-                cookies.add(name + "=" + value);
-                written.set(i, Header.of(header.name(), String.join("; ", cookies)));
+                String kept = String.join(";", others);
+                written.set(i, Header.of(header.name(),
+                        kept.isBlank() ? pair : kept + "; " + pair));
                 return written;
             }
         }
-        written.add(Header.of("Cookie", name + "=" + value));
+        written.add(Header.of("Cookie", pair));
         return written;
     }
 

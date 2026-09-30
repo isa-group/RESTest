@@ -259,6 +259,7 @@ class StockJreRunTest {
                 .isEqualTo("0");
         assertThat(lineOf(run, "answer=")).isIn("0", "1");
         assertThat(run.getStdout()).doesNotContain(KEY.substring(4, 13));
+        assertThat(run.getStderr()).doesNotContain(KEY.substring(4, 13));
     }
 
     /** Runs the probe in the container: what Java it is, what it can provide, what it would send. */

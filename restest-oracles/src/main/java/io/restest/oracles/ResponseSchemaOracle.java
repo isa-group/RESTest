@@ -27,6 +27,7 @@ import com.networknt.schema.dialect.OpenApi31;
 import io.restest.core.auth.Secrets;
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
+import io.restest.core.json.JsonValue;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.Payload;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -76,6 +78,19 @@ public final class ResponseSchemaOracle implements Oracle {
     /** What a JSON reply calls itself: {@code application/json}, or anything ending in +json. */
     private static final String JSON_SUFFIX = "+json";
     private static final String JSON_TYPE = "application/json";
+
+    /**
+     * The objections hiding a key can never be the cause of: about what kind of value something is,
+     * about how many members or items it has, and about a number - a key hidden inside a number
+     * stops the body being JSON at all.
+     */
+    private static final Set<String> NEVER_THE_HIDING = Set.of("type", "minimum", "maximum",
+            "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minItems", "maxItems",
+            "minProperties", "maxProperties");
+
+    /** The objections about the names of an object's members rather than about their values. */
+    private static final Set<String> ABOUT_NAMES = Set.of("required", "dependentRequired",
+            "dependencies", "additionalProperties", "unevaluatedProperties", "propertyNames");
 
     /** The document being tested against, prepared once. Guarded by this object's own lock. */
     private Reader reader;
@@ -120,8 +135,7 @@ public final class ResponseSchemaOracle implements Oracle {
         if (contentType.isEmpty()) {
             return List.of();
         }
-        if (isTruncated(response) || !hasBody(response) || !isUtf8(mediaType.get())
-                || hidesAKey(response)) {
+        if (isTruncated(response) || !hasBody(response) || !isUtf8(mediaType.get())) {
             return List.of();
         }
         Optional<String> pointer = reader.get().document()
@@ -175,17 +189,6 @@ public final class ResponseSchemaOracle implements Oracle {
         return response.body().map(payload -> payload.size() > 0).orElse(false);
     }
 
-    /**
-     * Whether the run changed the reply before anything saw it, to hide a key the API repeated
-     * back. What would be judged is then not what the API sent: the text written in a key's place
-     * can be longer than a length the document allows, and a key hidden inside a number stops the
-     * body being JSON at all. A fault found in such a reply could be the run's own doing, so none
-     * is looked for.
-     */
-    private static boolean hidesAKey(HttpResponseRecord response) {
-        return bodyText(response).contains(Secrets.MARKER);
-    }
-
     private static String bodyText(HttpResponseRecord response) {
         return new String(response.body().orElseThrow().content(), StandardCharsets.UTF_8);
     }
@@ -220,10 +223,16 @@ public final class ResponseSchemaOracle implements Oracle {
         // as a broken reply from an API that had answered perfectly. Reporting a fault that is not
         // one is the single thing a testing tool must not do, and it is what this rule exists to
         // avoid rather than cause.
+        // A key the API repeated back was hidden before anything saw the reply, so a reply with
+        // the text written in a key's place is not quite what the API sent: that text can be longer
+        // than a length the document allows, or not one of the values it allows, and a key hidden
+        // inside a number stops the body being JSON at all. What the hiding may have changed is not
+        // held against the API; everything else in the reply is judged as ever.
+        boolean hidesAKey = body.contains(Secrets.MARKER);
         try {
             JsonText.checkOneValue(body);
         } catch (JsonException notJson) {
-            return List.of(mismatch(interaction, statusCode, contentType,
+            return hidesAKey ? List.of() : List.of(mismatch(interaction, statusCode, contentType,
                     "the body is not JSON at all", List.of(firstLineOf(notJson))));
         }
         List<Error> errors;
@@ -246,6 +255,9 @@ public final class ResponseSchemaOracle implements Oracle {
                 // specification only says it should not be, so that is no fault to report.
                 continue;
             }
+            if (hidesAKey && mayBeTheHidingsDoing(error)) {
+                continue;
+            }
             String where = String.valueOf(error.getInstanceLocation());
             details.add((where.isEmpty() ? "the body" : where) + ": " + error.getMessage());
         }
@@ -254,6 +266,37 @@ public final class ResponseSchemaOracle implements Oracle {
         }
         return List.of(mismatch(interaction, statusCode, contentType,
                 "the body does not match the shape the specification declares for it", details));
+    }
+
+    /**
+     * Whether an objection may be the doing of the text written in a key's place rather than the
+     * API's: when what it objects to holds that text, and is something the text could change - a
+     * length, a pattern, a value from a list, the names of an object's members, or which of several
+     * shapes a value fits. Hiding a key never changes what kind of value something is, nor how many
+     * members or items there are, nor a number, so those objections always stand. An object whose
+     * members' names are what is objected to counts only if one of those names holds the text,
+     * which keeps an object with a key hidden in one of its values - an address repeated back, say
+     * - judged on everything else.
+     */
+    private static boolean mayBeTheHidingsDoing(Error error) {
+        String keyword = String.valueOf(error.getKeyword());
+        if (NEVER_THE_HIDING.contains(keyword)) {
+            return false;
+        }
+        String instance = String.valueOf(error.getInstanceNode());
+        if (!instance.contains(Secrets.MARKER)) {
+            return false;
+        }
+        if (!ABOUT_NAMES.contains(keyword)) {
+            return true;
+        }
+        try {
+            return !(JsonText.readFromAnApi(instance) instanceof JsonValue.JsonObject object)
+                    || object.members().keySet().stream()
+                            .anyMatch(name -> name.contains(Secrets.MARKER));
+        } catch (JsonException unreadable) {
+            return true;
+        }
     }
 
     private static Finding mismatch(Interaction interaction, int statusCode, String contentType,

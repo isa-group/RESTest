@@ -211,6 +211,32 @@ class SecretsTest {
         }
 
         @Test
+        @DisplayName("a reply that repeated a key back is counted; a request carrying one, or a failure naming one, is not")
+        void replies_that_repeated_a_key_are_counted() {
+            Secrets counting = new Secrets(List.of(new Secret(KEY, MASK)));
+            counting.hidden(Interaction.answered(testCaseCarrying("nothing"),
+                    HttpRequestRecord.of(HttpMethod.GET, "http://api/pets?key=" + KEY),
+                    new HttpResponseRecord(StatusLine.of(200), List.of(),
+                            Optional.of(Payload.text("[]", "application/json"))),
+                    Instant.now(), Duration.ZERO));
+            counting.hidden(Interaction.transportFailure(testCaseCarrying("nothing"),
+                    HttpRequestRecord.of(HttpMethod.GET, "http://api/pets?key=" + KEY),
+                    "could not reach http://api/pets?key=" + KEY, Instant.now(), Duration.ZERO));
+
+            assertThat(counting.repliesThatRepeatedAKey()).isZero();
+
+            counting.hidden(answeredWith(Payload.text("{\"echo\":\"" + KEY + "\"}",
+                    "application/json")));
+            counting.hidden(Interaction.answered(testCaseCarrying("nothing"),
+                    HttpRequestRecord.of(HttpMethod.GET, "http://api/pets"),
+                    new HttpResponseRecord(StatusLine.of(302),
+                            List.of(Header.of("Location", "/pets?key=" + KEY)), Optional.empty()),
+                    Instant.now(), Duration.ZERO));
+
+            assertThat(counting.repliesThatRepeatedAKey()).isEqualTo(2);
+        }
+
+        @Test
         @DisplayName("a reply that broke off, and a request nobody answered, say why without the key")
         void reasons_are_hidden() {
             Interaction broken = Interaction.malformedResponse(testCaseCarrying("nothing"),

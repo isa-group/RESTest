@@ -108,6 +108,18 @@ class CredentialedEngineTest {
     }
 
     @Test
+    @DisplayName("every other cookie is kept exactly as it was written, spaces and odd pieces included")
+    void every_other_cookie_is_kept_as_written() {
+        List<Header> written = Placing.withCookie(List.of(Header.of("Accept", "*/*"),
+                Header.of("cookie", "theme=dark;lang = es ;sid=old;")), "sid", KEY);
+
+        assertThat(written).containsExactly(Header.of("Accept", "*/*"),
+                Header.of("cookie", "theme=dark;lang = es ;; sid=" + KEY));
+        assertThat(Placing.withCookie(List.of(Header.of("Cookie", " ")), "sid", KEY))
+                .containsExactly(Header.of("Cookie", "sid=" + KEY));
+    }
+
+    @Test
     @DisplayName("a field goes into a form built from its fields, and into nothing else")
     void a_field_of_a_form() {
         ApiModel languageTool = CredentialPlanTest.languageTool();
