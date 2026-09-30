@@ -104,15 +104,17 @@ public final class CredentialPlan {
      * Where one key handed over goes.
      *
      * @param named how a message names the key without repeating it
+     * @param mask what everything the run writes shows in the key's place
      * @param places every place in a request it goes, in the order they were found
      * @param operations the operations it goes with
      * @param whyWithNone when it goes with none, why not
      */
-    public record Placed(String named, List<Place> places, Set<OperationId> operations,
-            Optional<String> whyWithNone) {
+    public record Placed(String named, String mask, List<Place> places,
+            Set<OperationId> operations, Optional<String> whyWithNone) {
 
         public Placed {
             Objects.requireNonNull(named, "named");
+            Objects.requireNonNull(mask, "mask");
             Objects.requireNonNull(whyWithNone, "whyWithNone");
             places = List.copyOf(places);
             operations = Set.copyOf(operations);
@@ -472,7 +474,8 @@ public final class CredentialPlan {
                     + "the key there. Leave redirections off, or give the key in the query");
         }
         for (Key other : keys) {
-            if (other.secret().mask().contains(value) || Secrets.MARKER.contains(value)) {
+            if (other.secret().mask().contains(value) || Secrets.MARKER.contains(value)
+                    || value.contains(Secrets.MARKER)) {
                 return Optional.of(named + " is part of the text RESTest writes in the place of a "
                         + "key, so it could not be hidden");
             }
@@ -602,7 +605,8 @@ public final class CredentialPlan {
         List<Placed> placed = new ArrayList<>();
         for (Key key : keys) {
             Set<OperationId> operations = wentWith.get(key);
-            placed.add(new Placed(key.given().named(), new ArrayList<>(wentTo.get(key)), operations,
+            placed.add(new Placed(key.given().named(), key.secret().mask(),
+                    new ArrayList<>(wentTo.get(key)), operations,
                     operations.isEmpty() ? Optional.of(whyWithNone(key, model)) : Optional.empty()));
         }
         List<Secret> secrets = keys.stream().map(Key::secret).toList();

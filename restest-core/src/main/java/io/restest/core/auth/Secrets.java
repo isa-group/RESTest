@@ -54,10 +54,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@code REDACTED-AUTH.api_key} in its place - text that says a key was there, and which one.
  *
  * <p>A key is looked for in every way it could have been written: as it is, the way an address or a
- * web form writes it, the way a JSON document or a web page escapes it. And it is replaced in one
- * pass over the text that never looks again at what it has written, so a key can never be found
- * inside the text put in the place of another one. What comes back in a reply that was cut short may
- * end halfway through a key, and the half is hidden too.
+ * web form writes it, the way a JSON document or a web page escapes it. And not only whole: an API
+ * that repeats an address back may break it across two lines with something else in between, so
+ * any piece of a key eight characters or longer is hidden wherever it is, and what is left of a key
+ * cut off at the very end of a reply kept only in part is hidden from four. Everything is replaced
+ * in one pass over the text that never looks again at what it has written, so a key can never be
+ * found inside the text put in the place of another one.
  *
  * <p>This must not fail, because an exchange that could not be passed on would be lost to every
  * report. If something here goes wrong nonetheless, the exchange is passed on with everything that
@@ -80,6 +82,20 @@ public final class Secrets {
      */
     private static final int SHORTEST_HALF_KEY = 4;
 
+    /**
+     * How long a piece of a key, found apart from the rest of it, has to be to be hidden: long enough
+     * that a piece this long turning up in ordinary text by chance is next to impossible, and short
+     * enough that a key an API breaks in two leaves little of itself behind. A safeguard of the same
+     * kind as the one above.
+     */
+    private static final int SHORTEST_PIECE = 8;
+
+    /** The number each character of a piece is weighed by, for the pieces' hashes. */
+    private static final long BASE = 1_000_003L;
+
+    /** What the first character of a piece is weighed by: the base to the piece's length less one. */
+    private static final long FIRST_WEIGHT = weightOfTheFirst();
+
     /** Every way each key could be written, longest first, each with the text that replaces it. */
     private final List<Spelling> spellings;
 
@@ -88,8 +104,20 @@ public final class Secrets {
     private record Spelling(String text, String mask) {
     }
 
-    private record Span(int start, int end, String mask) {
+    /**
+     * A stretch of text to replace, with what replaces it. Whole when it is a whole way of writing a
+     * key: of two keys, one the beginning of the other, a stretch that is the whole of the shorter
+     * is named after the shorter.
+     */
+    private record Span(int start, int end, String mask, boolean whole) {
     }
+
+    /** Where a piece of a key sits in one way of writing it. */
+    private record Anchor(int spelling, int offset) {
+    }
+
+    /** Every piece of every way of writing a key long enough to be looked for, by its hash. */
+    private final Map<Long, List<Anchor>> pieces;
 
     Secrets(Collection<Secret> secrets) {
         Objects.requireNonNull(secrets, "secrets");
@@ -114,6 +142,16 @@ public final class Secrets {
         ordered.sort(Comparator.comparingInt((Spelling spelling) -> spelling.text().length())
                 .reversed());
         this.spellings = List.copyOf(ordered);
+        Map<Long, List<Anchor>> anchors = new java.util.HashMap<>();
+        for (int index = 0; index < spellings.size(); index++) {
+            String text = spellings.get(index).text();
+            for (int offset = 0; offset + SHORTEST_PIECE <= text.length(); offset++) {
+                anchors.computeIfAbsent(hashOf(text, offset), ignored -> new ArrayList<>())
+                        .add(new Anchor(index, offset));
+            }
+        }
+        anchors.replaceAll((hash, list) -> List.copyOf(list));
+        this.pieces = Map.copyOf(anchors);
     }
 
     /** Nothing to hide: what a run is when it was handed no key. */
@@ -171,13 +209,19 @@ public final class Secrets {
         }
         List<Span> spans = new ArrayList<>();
         for (Spelling spelling : spellings) {
+            // A way of writing a key shorter than a piece can only be found whole.
+            if (spelling.text().length() >= SHORTEST_PIECE) {
+                continue;
+            }
             int from = 0;
             int found;
             while ((found = text.indexOf(spelling.text(), from)) >= 0) {
-                spans.add(new Span(found, found + spelling.text().length(), spelling.mask()));
+                spans.add(new Span(found, found + spelling.text().length(), spelling.mask(),
+                        true));
                 from = found + 1;
             }
         }
+        piecesOfAKey(text, spans);
         if (mayEndHalfway) {
             halfAKeyAtTheEnd(text, spans).ifPresent(spans::add);
         }
@@ -185,7 +229,8 @@ public final class Secrets {
             return text;
         }
         spans.sort(Comparator.comparingInt(Span::start)
-                .thenComparing(Comparator.comparingInt(Span::end).reversed()));
+                .thenComparing(Comparator.comparingInt(Span::end).reversed())
+                .thenComparing(span -> !span.whole()));
         StringBuilder written = new StringBuilder(text.length());
         int cursor = 0;
         int next = 0;
@@ -205,6 +250,74 @@ public final class Secrets {
     }
 
     /**
+     * Every stretch of the text that is a piece of a key at least {@link #SHORTEST_PIECE} long, a
+     * whole key included, found by sliding a window of that length along the text once and, where
+     * what is under the window is a piece of some key, stretching it as far as the text and that key
+     * go on agreeing in both directions.
+     */
+    private void piecesOfAKey(String text, List<Span> spans) {
+        if (pieces.isEmpty() || text.length() < SHORTEST_PIECE) {
+            return;
+        }
+        int[] lastStart = new int[spellings.size()];
+        int[] lastEnd = new int[spellings.size()];
+        Arrays.fill(lastStart, -1);
+        long hash = hashOf(text, 0);
+        for (int at = 0; ; at++) {
+            List<Anchor> found = pieces.get(hash);
+            if (found != null) {
+                for (Anchor anchor : found) {
+                    String spelling = spellings.get(anchor.spelling()).text();
+                    if (!text.regionMatches(at, spelling, anchor.offset(), SHORTEST_PIECE)) {
+                        continue;
+                    }
+                    int start = at;
+                    int from = anchor.offset();
+                    while (start > 0 && from > 0
+                            && text.charAt(start - 1) == spelling.charAt(from - 1)) {
+                        start--;
+                        from--;
+                    }
+                    int end = at + SHORTEST_PIECE;
+                    int to = anchor.offset() + SHORTEST_PIECE;
+                    while (end < text.length() && to < spelling.length()
+                            && text.charAt(end) == spelling.charAt(to)) {
+                        end++;
+                        to++;
+                    }
+                    if (start != lastStart[anchor.spelling()] || end != lastEnd[anchor.spelling()]) {
+                        lastStart[anchor.spelling()] = start;
+                        lastEnd[anchor.spelling()] = end;
+                        spans.add(new Span(start, end, spellings.get(anchor.spelling()).mask(),
+                                from == 0 && to == spelling.length()));
+                    }
+                }
+            }
+            if (at + SHORTEST_PIECE >= text.length()) {
+                return;
+            }
+            hash = (hash - text.charAt(at) * FIRST_WEIGHT) * BASE + text.charAt(at + SHORTEST_PIECE);
+        }
+    }
+
+    /** The hash of the piece of the text that starts at the given place. */
+    private static long hashOf(String text, int from) {
+        long hash = 0;
+        for (int i = from; i < from + SHORTEST_PIECE; i++) {
+            hash = hash * BASE + text.charAt(i);
+        }
+        return hash;
+    }
+
+    private static long weightOfTheFirst() {
+        long weight = 1;
+        for (int i = 1; i < SHORTEST_PIECE; i++) {
+            weight *= BASE;
+        }
+        return weight;
+    }
+
+    /**
      * The longest beginning of a key, at least a few characters long, that the text ends with - what
      * is left of a key in a reply that was cut short in the middle of it.
      */
@@ -216,7 +329,8 @@ public final class Secrets {
             for (int length = most; length >= SHORTEST_HALF_KEY; length--) {
                 if (text.endsWith(spelling.text().substring(0, length))) {
                     if (longest == null || length > longest.end() - longest.start()) {
-                        longest = new Span(text.length() - length, text.length(), spelling.mask());
+                        longest = new Span(text.length() - length, text.length(), spelling.mask(),
+                                false);
                     }
                     break;
                 }

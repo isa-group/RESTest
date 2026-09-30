@@ -16,8 +16,13 @@
 package io.restest.cli;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.UnmatchedArgumentException;
 
 /**
  * The {@code restest} command: where a person's typing becomes a run.
@@ -86,7 +91,24 @@ public final class Restest {
      * @return the number the command answered with
      */
     public static int run(String[] arguments, PrintWriter out, PrintWriter err) {
-        CommandLine restest = new CommandLine(new Restest())
+        // The environment is read here, once, and handed to the command rather than read by it, so
+        // that the part of the program deciding what the command does can be given another one.
+        return run(arguments, out, err, System.getenv());
+    }
+
+    /**
+     * The same, started in the given environment rather than the program's own: what a test uses
+     * to see what a variable does without setting one in the machine running the tests.
+     *
+     * @param arguments what was typed after {@code restest}
+     * @param out where everything the command has to say goes
+     * @param err where anything that went wrong goes
+     * @param environment the variables the command is started with
+     * @return the number the command answered with
+     */
+    static int run(String[] arguments, PrintWriter out, PrintWriter err,
+            Map<String, String> environment) {
+        CommandLine restest = new CommandLine(new Restest(), new StartedIn(environment))
                 .setOut(out)
                 .setErr(err)
                 // Plain text, on every machine. The command-line framework would otherwise colour
@@ -98,6 +120,7 @@ public final class Restest {
                 // everywhere, for the same reason.
                 .setColorScheme(CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.OFF))
                 .setCaseInsensitiveEnumValuesAllowed(true)
+                .setParameterExceptionHandler(Restest::saysWhatWasWrong)
                 .setExecutionExceptionHandler((failure, command, parsed) -> {
                     // Anything that reaches here is RESTest going wrong rather than the API under
                     // test, and the two must not answer the same. The stack trace goes out because
@@ -113,5 +136,67 @@ public final class Restest {
             return ExitCode.BAD_COMMAND_LINE;
         }
         return restest.execute(arguments);
+    }
+
+    /**
+     * Says what was wrong with what was typed, the way the command-line framework would, except for
+     * one thing: an argument it did not understand is not repeated back.
+     *
+     * <p>A mistyped option leaves whatever followed it as something nobody asked for, and what
+     * follows {@code --auth} is a key. Repeating it would put the key on the screen, and into any
+     * log the screen is kept in, for the sake of a typing mistake. The names of options that do not
+     * exist are still said, up to any {@code =}, since those are what somebody needs to see to put
+     * the mistake right; and the options that do exist and look like them are suggested as before.
+     */
+    private static int saysWhatWasWrong(ParameterException wrong, String[] arguments) {
+        CommandLine command = wrong.getCommandLine();
+        PrintWriter err = command.getErr();
+        if (wrong instanceof UnmatchedArgumentException unmatched) {
+            List<String> options = unmatched.getUnmatched().stream()
+                    .filter(argument -> argument.startsWith("--"))
+                    .map(argument -> argument.contains("=")
+                            ? argument.substring(0, argument.indexOf('=')) : argument)
+                    .toList();
+            long others = unmatched.getUnmatched().size() - options.size();
+            StringBuilder said = new StringBuilder();
+            if (!options.isEmpty()) {
+                said.append("Unknown option").append(options.size() == 1 ? "" : "s").append(": ")
+                        .append(String.join(", ", options));
+            }
+            if (others > 0) {
+                said.append(said.isEmpty() ? "" : "; ").append(others)
+                        .append(others == 1 ? " argument was" : " arguments were")
+                        .append(" not understood, and not repeated here in case one is a key");
+            }
+            err.println(said);
+            if (!UnmatchedArgumentException.printSuggestions(unmatched, err)) {
+                command.usage(err, command.getColorScheme());
+            }
+        } else {
+            err.println(wrong.getMessage());
+            command.usage(err, command.getColorScheme());
+        }
+        return command.getCommandSpec().exitCodeOnInvalidInput();
+    }
+
+    /**
+     * Builds the run command with the environment it was handed, and everything else the way the
+     * command-line framework would. A class rather than a record, so that printing it never prints
+     * the environment, a key left in it included.
+     */
+    private static final class StartedIn implements CommandLine.IFactory {
+
+        private final Map<String, String> environment;
+
+        StartedIn(Map<String, String> environment) {
+            this.environment = Objects.requireNonNull(environment, "environment");
+        }
+
+        @Override
+        public <K> K create(Class<K> kind) throws Exception {
+            return kind == RunCommand.class
+                    ? kind.cast(new RunCommand(environment))
+                    : CommandLine.defaultFactory().create(kind);
+        }
     }
 }

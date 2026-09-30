@@ -24,6 +24,7 @@ import com.networknt.schema.SchemaRegistryConfig;
 import com.networknt.schema.dialect.Dialect;
 import com.networknt.schema.dialect.OpenApi30;
 import com.networknt.schema.dialect.OpenApi31;
+import io.restest.core.auth.Secrets;
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
 import io.restest.core.execution.HttpResponseRecord;
@@ -119,7 +120,8 @@ public final class ResponseSchemaOracle implements Oracle {
         if (contentType.isEmpty()) {
             return List.of();
         }
-        if (isTruncated(response) || !hasBody(response) || !isUtf8(mediaType.get())) {
+        if (isTruncated(response) || !hasBody(response) || !isUtf8(mediaType.get())
+                || hidesAKey(response)) {
             return List.of();
         }
         Optional<String> pointer = reader.get().document()
@@ -171,6 +173,17 @@ public final class ResponseSchemaOracle implements Oracle {
      */
     private static boolean hasBody(HttpResponseRecord response) {
         return response.body().map(payload -> payload.size() > 0).orElse(false);
+    }
+
+    /**
+     * Whether the run changed the reply before anything saw it, to hide a key the API repeated
+     * back. What would be judged is then not what the API sent: the text written in a key's place
+     * can be longer than a length the document allows, and a key hidden inside a number stops the
+     * body being JSON at all. A fault found in such a reply could be the run's own doing, so none
+     * is looked for.
+     */
+    private static boolean hidesAKey(HttpResponseRecord response) {
+        return bodyText(response).contains(Secrets.MARKER);
     }
 
     private static String bodyText(HttpResponseRecord response) {

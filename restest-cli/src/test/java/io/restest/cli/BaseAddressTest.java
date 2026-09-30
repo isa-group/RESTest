@@ -97,7 +97,6 @@ class BaseAddressTest {
         "ftp://api.example",
         "/api/v3",
         "http:///api",
-        "http://api.example/v2?key=abc",
         "http://api.example/v2#section",
         "not an address at all",
     })
@@ -106,6 +105,17 @@ class BaseAddressTest {
         assertThatThrownBy(() -> BaseAddress.resolve(typed, NO_SERVERS))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("is not somewhere requests can be sent");
+    }
+
+    @Test
+    @DisplayName("an address typed with a query string is refused without repeating it, and --auth is named")
+    void an_address_with_a_query_is_refused_without_repeating_it() {
+        assertThatThrownBy(() -> BaseAddress.resolve("http://api.example/v2?key=s3cr3t-value",
+                NO_SERVERS))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("carries a query string")
+                .hasMessageContaining("--auth query:<name>=<key>")
+                .hasMessageNotContaining("s3cr3t");
     }
 
     @Test

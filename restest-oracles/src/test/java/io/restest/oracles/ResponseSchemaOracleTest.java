@@ -288,6 +288,21 @@ class ResponseSchemaOracleTest {
         }
 
         @Test
+        @DisplayName("a reply the run changed to hide a key it repeated back is not judged")
+        void a_reply_that_hid_a_key_is_left_alone() {
+            // Once as text longer than the document allows, once inside a number, which it breaks:
+            // both are the run's doing, not the API's.
+            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
+                    "{\"id\": \"REDACTED-AUTH\", \"name\": \"Rex\"}"), pets)).isEmpty();
+            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
+                    "{\"id\": 9REDACTED-AUTH.digits, \"name\": \"Rex\"}"), pets)).isEmpty();
+            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
+                    "{\"id\": \"seven\", \"name\": \"Rex\"}"), pets))
+                    .describedAs("and one it did not change is judged as ever")
+                    .hasSize(1);
+        }
+
+        @Test
         @DisplayName("a reply insisting on some other character set is not read wrongly and blamed")
         void a_reply_in_another_character_set_is_left_alone() {
             assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200,

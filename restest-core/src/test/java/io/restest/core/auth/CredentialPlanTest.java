@@ -266,6 +266,7 @@ class CredentialPlanTest {
                     .containsExactlyInAnyOrder("getPetById", "getInventory", "deletePet");
             assertThat(plan.placed()).singleElement().satisfies(placed -> {
                 assertThat(placed.named()).isEqualTo("the key given with --auth");
+                assertThat(placed.mask()).isEqualTo("REDACTED-AUTH");
                 assertThat(placed.places())
                         .containsExactly(new Place(Place.Where.HEADER, "api_key"));
                 assertThat(placed.operations()).extracting(OperationId::value)

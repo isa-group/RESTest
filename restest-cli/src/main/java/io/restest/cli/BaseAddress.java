@@ -72,6 +72,14 @@ final class BaseAddress {
     }
 
     private static String checked(String address, ApiModel model) {
+        if (address.indexOf('?') >= 0) {
+            // Not repeated: what follows the question mark in an address somebody typed is, as
+            // often as not, the key the API asks for.
+            throw new IllegalArgumentException("the address given with --url carries a query "
+                    + "string, which is not repeated here in case it holds a key. Give the address "
+                    + "up to its path, such as http://localhost:8080/api/v3, and a key the API asks "
+                    + "for in the query with --auth query:<name>=<key>");
+        }
         if (!isUsable(address)) {
             throw new IllegalArgumentException("'" + address + "' is not somewhere requests can be "
                     + "sent. Give a whole web address with a host and nothing after the path, such "

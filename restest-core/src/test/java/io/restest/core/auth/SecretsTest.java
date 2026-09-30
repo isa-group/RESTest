@@ -141,9 +141,10 @@ class SecretsTest {
         @Test
         @DisplayName("a megabyte of near misses is read through in one pass, and nothing but the keys changes")
         void a_megabyte_of_near_misses() {
+            // Seven characters of the key at a time, one short of a piece long enough to hide.
             StringBuilder near = new StringBuilder();
             while (near.length() < 1024 * 1024) {
-                near.append(KEY, 0, KEY.length() - 1).append('#');
+                near.append(KEY, 0, 7).append('#').append(KEY, 7, 14).append('#');
             }
             near.append(KEY);
             String text = near.toString();
@@ -336,13 +337,29 @@ class SecretsTest {
         }
 
         @Test
-        @DisplayName("a reply kept whole may end with the first letters of a key, which are nobody's business")
+        @DisplayName("a reply kept whole may end with a few letters of a key, which are nobody's business")
         void a_whole_reply_is_not_cut() {
-            String whole = "ends with " + KEY.substring(0, 12);
+            String whole = "ends with " + KEY.substring(0, 6);
             Payload payload = Payload.text(whole, "text/plain");
 
             assertThat(secrets.hidden(answeredWith(payload)).response().orElseThrow().body())
                     .containsSame(payload);
+        }
+
+        @Test
+        @DisplayName("a key broken in two with something else in between is hidden piece by piece")
+        void a_key_broken_in_two() {
+            String percent = Encoding.percent(KEY);
+            String broken = "| /files/1?key=" + percent.substring(0, 20) + " <<< does not match\n"
+                    + "|   " + percent.substring(20) + " |";
+
+            String hidden = secrets.hidden(broken);
+
+            assertThat(hidden).doesNotContain(CORE)
+                    .isEqualTo("| /files/1?key=" + MASK + " <<< does not match\n|   " + MASK + " |");
+            assertThat(secrets.hidden("only " + KEY.substring(3, 10) + " of it"))
+                    .describedAs("seven characters of it are not enough to be taken for it")
+                    .isEqualTo("only " + KEY.substring(3, 10) + " of it");
         }
 
         @Test
