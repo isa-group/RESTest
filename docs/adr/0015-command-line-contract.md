@@ -971,8 +971,8 @@ the key hidden only where the exchanges were.
 sees a finished run. The maintainer kept that a question of its own on 30 September.
 
 The review of this amendment found three more ways a failure of RESTest's own reads as something
-the API did. None was among the maintainer's two decisions, and no row takes them yet; whether one
-does, and which, is the maintainer's to say:
+the API did. None was among the maintainer's two decisions; asked, the maintainer put them after
+v2.0 on 30 September, as row 3.8 of the roadmap:
 
 - **A key that cannot be added to a request.** The request is not sent, and is recorded as one that
   could not be assembled, which is a failure on the way to the API. Every request going that way
