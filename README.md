@@ -204,8 +204,9 @@ document says — in a header, the query or a cookie — with the operations tha
 several, name the one it is for: `--auth api_key=special-key`. For a document that declares none,
 say where the key goes, and it goes with every request: `--auth header:X-API-Key=…`, or `query:` or
 `cookie:` in place of `header:`. Repeat `--auth` for several keys. `RESTEST_AUTH` holds the same as
-one `--auth`, so that a key need not be typed where a shell remembers it. Before its first request a
-run says where each key goes:
+one `--auth`, so that a key need not be typed where a shell remembers it. It goes to whatever API a
+run tests while it is set, so set it for the run it is meant for — `RESTEST_AUTH=… ./restest run …`
+— rather than once for every run. Before its first request a run says where each key goes:
 
 ```
   the key given with --auth goes with 3 of them, in the header api_key; what the run writes says REDACTED-AUTH in its place
@@ -214,6 +215,8 @@ run says where each key goes:
 The key is written into nothing the run leaves behind. The screen, `report.json` with its `curl`
 commands, and the stored run all show `REDACTED-AUTH` where it went, or `REDACTED-AUTH.api_key`
 for a named scheme. So a `curl` command copied from a report is run by putting the key back there.
+An API that repeats the key back in its replies has it hidden there too, and the run says at the
+end how many replies did.
 [ADR-0029](docs/adr/0029-the-key-an-api-asks-for.md) has the rules: which operations get a key, what
 fills an input the document declares under the key's name, and what is refused.
 

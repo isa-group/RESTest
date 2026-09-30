@@ -847,7 +847,7 @@ credentials for containers that no longer exist, but worth knowing about before 
 public. The tool can promise only what it writes itself.
 
 
-**11.3 — what the building settled.** Seven things differ from the notes above, each argued in
+**11.3 — what the building settled.** Eight things differ from the notes above, each argued in
 [ADR-0029](docs/adr/0029-the-key-an-api-asks-for.md):
 - **The option is `--auth`**, not a word about keys, and the variable is `RESTEST_AUTH`, chosen by
   the maintainer on 30 September.
@@ -855,14 +855,19 @@ public. The tool can promise only what it writes itself.
   key in the query. Filled wherever declared, a query key called `key` would have gone into any
   field called `key`, where an API might store it.
 - **A key left in the variable that cannot be placed is a warning**, where one typed is refused. A
-  harness that exports it for one API must not stop the next from being tested.
+  variable can outlive the command it was set for, and a key that fits nothing is no reason not to
+  test an API. One that fits is sent, to whatever API is tested, so the variable is set per run.
 - **Pieces of a key are hidden too.** The test that searches every file found WireMock's page for
   an unmatched request repeating a key broken across two lines, so any piece eight characters long
   is hidden, beside the whole key in each of its spellings.
 - **What stands in for a key is `REDACTED-AUTH` and a name**, with no angle brackets: the series of
   10.3 read an identifier out of a `Location` header by parsing it as an address.
-- **The rule that checks replies against the document leaves a changed reply unjudged**, since a
-  replacement can break a length the document states, or the body's JSON.
+- **The rule that checks replies against the document lets pass what the hiding changed**, since
+  a replacement can break a length the document states, or the body's JSON; the rest of such a
+  reply is judged, and a run says how many replies repeated a key back.
+- **A key typed without the name it goes under is refused**, as are one shorter than four
+  characters and one whose text before an `=` names no scheme. The review found that
+  `--auth query:<a key in Base64>` read the key as the name and a lone `=` as the key.
 - **The smoke gate's check runs in the plain Java runtime** as the tool's own process with the key
   in its real environment, the one place the variable is read from one. The stand-in API tests run
   in every build, on every row, where the smoke job would have run them on one.

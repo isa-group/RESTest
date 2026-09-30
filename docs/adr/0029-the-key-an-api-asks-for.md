@@ -134,11 +134,15 @@ restest run languagetool.json --auth query:apiKey=abc   # it declares none: say 
 - **A key given with its place** begins `header:`, `query:` or `cookie:`, in any capitals, and then
   the name it goes under.
 - **Anything else is a key on its own.** It answers the document's one API key, and is refused
-  where the document declares none or several.
+  where the document declares none or several. It may hold `=` only at its end, as Base64 does: a
+  text with an `=` that has anything else after it reads as a scheme's name and its key, and is
+  refused when the name is none the document declares, so a scheme's name typed wrong is never sent
+  as part of the key. A key that holds an `=` of its own is sent by naming its scheme first.
 
 `RESTEST_AUTH` holds what one `--auth` holds, so that a key need not sit in a shell's history or in
 the list of running processes. A key typed for the same place wins over it. An empty variable is how
-a shell says a variable is not there for one command, and counts as none.
+a shell says a variable is not there for one command, and counts as none. A line break at the end of
+the variable, as a file read into one often leaves, is not part of the key.
 
 The option is named `--auth`, not `--api-key`, by the maintainer's choice on 30 September. The same
 option is meant to carry the other credentials later, under the name of the scheme they answer, and a
@@ -148,6 +152,12 @@ file in the Web Fuzzing Commons format would come in beside it as `--auth-file`.
 never repeats the key.** It names the key by where it came from: "the key given with the second
 --auth". A key is refused when:
 - it is on its own, and the document declares no API key or several (which are named);
+- it has an `=` with more after it, and what comes before names no scheme the document declares;
+- it is given with its place and has nothing after the name but `=`. A key in Base64 typed without
+  the name it goes under reads that way, so the name, which is then most likely the key, is not
+  repeated either;
+- it is shorter than four characters. A key is hidden wherever it appears (section 6), and one that
+  short would be hidden inside ordinary words and numbers everywhere the run writes;
 - it names a scheme that is not an API key: "RESTest 2.0 sends only API keys";
 - another key typed goes to the same place;
 - it holds a character that is not plain printable ASCII, or a space at either end, which the HTTP
@@ -164,8 +174,12 @@ A run of a protected API without the key somebody meant it to have would answer 
 asked.
 
 **A key left in `RESTEST_AUTH` that cannot be used is left out with a warning, and the run goes
-on.** A variable is left for every run on a machine, not written for this one, and a harness that
-exports it for one API must not stop another API from being tested.
+on.** A variable can outlive the command it was set for, exported in a shell or by a script that
+tests one API after another, and a key that fits nothing in a document is no reason not to test it.
+A key that does fit is sent. RESTest cannot tell which API a key was meant for, so a variable holding
+one is an instruction for every run it is set for, and the line before the first request names it
+("the key in RESTEST_AUTH goes with …"). A script that tests several APIs sets the variable for each
+run, `RESTEST_AUTH=… restest run …`, rather than once for all of them.
 
 ### 3. Which operations get a key, and where
 
@@ -212,7 +226,10 @@ For a field of a form, the following are taken out:
 
 A form whose shape is named, and referred to by that name, gets a copy of the shape without the
 field, and so loses the name for the lists that are keyed by it. A choice between shapes loses the
-field in each of them.
+field in each of them. Each named shape is copied once. One met again while it is still being
+copied, in choices that lead back to one another, is left as it is: copied afresh each way round,
+the work would multiply at every turn and a run would never start. The field stays in that one
+shape, and the key added as the request leaves takes that field's place.
 
 So nothing is invented for such an input, no change to an accepted request can pick it, and no
 test case ever holds the key. With no key given, or none that fills an input, the model handed over
@@ -290,7 +307,8 @@ place is never looked into again, so nothing loops and no replacement is corrupt
 - `REDACTED-AUTH.header.X-API-Key` for a key given with its place.
 
 It holds only letters, digits and `- . _ ~`, any other character of a name becoming `_`
-(`API Key` → `API_Key`). The series read an identifier out of a `Location` header by parsing it as
+(`API Key` → `API_Key`). No two keys of a run share one: where two names come out the same, the
+second gets `.2` after it, the third `.3`. The series read an identifier out of a `Location` header by parsing it as
 an address, which angle brackets would break. The same text is safe in a header, a cookie, a form,
 a JSON string and a single-quoted shell argument.
 
@@ -312,17 +330,27 @@ says, at the end, how many times that happened.
 - a key inside something else encoded, such as a JWT or a Base64 blob the API made;
 - what the tool never wrote itself: the recording the benchmark's proxy keeps, a shell's history,
   the list of running processes;
-- the command line's own echo of an argument it does not understand. The command no longer repeats
-  one, and names only an option that does not exist, up to any `=`.
+- the command line's own echo of an argument. The command never repeats one it does not understand,
+  naming only an option that does not exist, up to any `=`; and it takes whatever was typed after
+  `--auth` out of any other complaint, as when an option missing its value is followed by
+  `--auth=<key>` and would be told that is what it found.
 
 ### 7. What the rules and the memory see
 
 What they judge and learn from is what was hidden.
 
-The rule that checks a reply against the document does not judge a reply whose body carries
-`REDACTED-AUTH`. What would be judged is not what the API sent: the replacement can break a length
-or a pattern the document states, and a key hidden inside a number stops the body being JSON at all.
-Reporting a fault the run itself caused is the one thing a testing tool must not do.
+The rule that checks a reply against the document judges every reply as it always has, and lets
+pass only what the text written in a key's place could have caused. That is an objection to
+something holding the text that the text can change: a length, a pattern, a value from a list, which
+of several shapes a value fits, or the names of an object's members when one of them holds it. So is
+a body that is not JSON because a key was hidden inside a number. Hiding a key never changes what
+kind of value something is, nor how many members or items there are, nor a number, so those
+objections stand, and so does anything wrong elsewhere in the same reply. An API that repeats the
+address back in every reply is judged on all the rest of each one. Reporting a fault the run itself
+caused is the one thing a testing tool must not do.
+
+At the end, a run says how many replies repeated a key back. They are not quite what the API sent,
+and an API that hands a key back to whoever sent it is worth knowing about in itself.
 
 The memory of observed values learns the replacement, never the key, so it can never send a key
 somewhere else.
@@ -356,11 +384,20 @@ A run whose key is missing is not refused. Anybody may be testing what an API do
 ADR-0025 asks for a switch on every lever. A key handed over is an instruction, not a lever: leave
 it out, and nothing of this happens.
 
+Three rules that come with it could be taken for levers of their own: rule 2b, rule 3's reach into
+a form's fields, and the letting pass of what the hiding changed (section 7). None of them trades
+one result for another that an experiment would weigh. Each says where a key given goes, or what is
+not blamed on the API once one was given. Turned off, 2b sends BigOven's and Tumblr's key nowhere,
+rule 3 sends LanguageTool a made-up `apiKey` in the form beside the real one, and section 7 reports
+faults RESTest wrote itself. So none gets a switch, and each is named here for whoever disagrees.
+
 ### 10. Replaying a run, and judging it again
 
 There is no `restest replay` in v2.0; it is row 3.5. When it comes:
 - A stored run holds every request whole but the key, so replaying it needs the keys handed over
-  again. Each replacement names the key it stands for, so putting it back is not ambiguous.
+  again. Each replacement names the key it stands for, and no two keys of a run share one, so
+  putting them back is not ambiguous. The longest replacement is put back first, since
+  `REDACTED-AUTH` begins every other.
 - The stored test cases never held a key at all, so a replay that rebuilds requests from them sends
   them through the same door, which adds the keys as the original run did.
 - What is lost is a byte-for-byte replay from the file alone, and that is the point. The file can be
@@ -386,7 +423,7 @@ same hidden replies.
   its first use.
 
 An HTTP bearer token or a user name and password, schemes of type `http`, come through the same
-option under the scheme's name: `--auth bearerAuth=…`, `--auth basicAuth=ana:secreto`. They are one
+option under the scheme's name: `--auth bearerAuth=…`, `--auth basicAuth=ana:secret`. They are one
 more kind of scheme, sent in `Authorization`, hidden the same way. The command line learns no second
 vocabulary for them.
 
@@ -413,8 +450,10 @@ operations that need each credential, which are the two things a key needs.
   corpus are pinned.
 - The store, `report.json` and the `curl` commands hold every exchange exactly as it went, except
   the keys. ADR-0005 and ADR-0006 are amended to say so.
-- The rule that checks replies against the document judges fewer replies, those that echoed a key,
-  and only in runs that were handed one.
+- In a reply that repeated a key back, the rule that checks replies against the document lets pass
+  what the hiding may have changed, and judges the rest. A run says how many replies did. In a run
+  handed no key nothing is hidden, and every reply is judged as before, unless an API writes
+  RESTest's replacement text of its own accord.
 - A dictionary entry for an input a key fills goes unused while a key fills it.
 
 ## Alternatives considered

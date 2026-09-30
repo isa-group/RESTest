@@ -2,12 +2,12 @@
 
 A switch is a setting that is `true` or `false` and turns off one thing RESTest does. Every
 behaviour added since RESTest has had settings comes with one, and the few older ones that do not
-are [named further down](#what-has-no-switch-yet). Sending a key somebody hands over is not one of
-those behaviours: it happens only when asked for, [as said below](#a-key-the-api-asks-for). There are two reasons for them. Somebody whose API
+are [named further down](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
 dislikes one of them can turn it off in a line. And what each one is worth can be measured by
 running the same tool twice, once with it and once without, rather than by building two versions of
 the tool. A comparison of that kind is called an *ablation*, and this page is written for whoever is
-planning one.
+planning one. Sending a key somebody hands over has no switch, because it happens only when asked
+for; [a section further down](#a-key-the-api-asks-for) says why.
 
 ```bash
 restest run api.yaml --url http://localhost:9966 --set schedule.openingLap=false
