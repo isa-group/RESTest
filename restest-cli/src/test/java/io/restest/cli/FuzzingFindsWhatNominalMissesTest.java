@@ -331,9 +331,12 @@ class FuzzingFindsWhatNominalMissesTest {
                 "--out", out.toString()));
         arguments.addAll(java.util.List.of(extra));
         StringWriter screen = new StringWriter();
+        int answer;
         try (PrintWriter writer = new PrintWriter(screen, true)) {
-            Restest.run(arguments.toArray(new String[0]), writer, writer);
+            answer = Restest.run(arguments.toArray(new String[0]), writer, writer);
         }
+        // A run that broke answers rather than throws, and would pass every "does not contain".
+        assertThat(answer).describedAs("the run finished: %s", screen).isIn(0, 1);
         return screen.toString();
     }
 }

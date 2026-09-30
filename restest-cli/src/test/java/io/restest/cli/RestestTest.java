@@ -24,13 +24,21 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.restest.core.auth.AuthGiven;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.store.InteractionQuery;
+import io.restest.core.store.InteractionStore;
+import io.restest.store.SqliteInteractionStore;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,8 +51,9 @@ import org.junit.jupiter.api.io.TempDir;
  *
  * <p>The number the command leaves behind is what a build server and a script act on, usually
  * without reading anything else, so each of them is pinned here: nothing wrong, something wrong,
- * nonsense on the command line, nothing to test. The API is a stand-in that answers exactly as this
- * test tells it to, so no network is involved and nothing depends on somebody else's server.
+ * nonsense on the command line, nothing to test, and RESTest itself breaking. The API is a stand-in
+ * that answers exactly as this test tells it to, so no network is involved and nothing depends on
+ * somebody else's server.
  */
 class RestestTest {
 
@@ -105,11 +114,12 @@ class RestestTest {
         for (int again = 1; again <= 40; again++) {
             StringWriter seen = new StringWriter();
             PrintWriter out = new PrintWriter(seen);
-            Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", "http://127.0.0.1:1",
-                    "--budget", "1ms", "--seed", "20260923", "--out", directory.toString()},
-                    out, new PrintWriter(new StringWriter()));
+            int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url",
+                "http://127.0.0.1:1", "--budget", "1ms", "--seed", "20260923",
+                "--out", directory.toString()}, out, new PrintWriter(new StringWriter()));
             out.flush();
 
+            assertThat(answer).describedAs("run %d of the same command", again).isEqualTo(3);
             assertThat(seen.toString().lines().limit(3))
                     .describedAs("run %d of the same command", again)
                     .containsExactly("RESTest testing Pet Shelter at http://127.0.0.1:1", "",
@@ -200,8 +210,8 @@ class RestestTest {
         Path somebodysWork = directory.resolve("notes.txt");
         Files.writeString(somebodysWork, "not ours");
 
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
-                "--seed", "20260914", "--out", directory.toString());
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString())).isEqualTo(1);
 
         assertThat(somebodysWork)
                 .describedAs("--out is whatever somebody typed, and may be a directory full of "
@@ -573,6 +583,140 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("a run that breaks with an error rather than an exception answers 4, not the 1 "
+            + "of a fault found, and says what broke")
+    void an_error_in_a_run_answers_four(@TempDir Path directory) {
+        // Out of room for the stack is what a walk of a shape with no end runs into, and running
+        // out of memory is its cousin. Java calls both errors rather than exceptions, and the
+        // command-line framework lets errors through: left to go on up, this one would end the
+        // program with the number Java gives any program that crashes, which is 1.
+        int answer = run(anEnvironmentThatBreaks(() -> {
+            throw new StackOverflowError("a shape too deep to walk");
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.toString());
+
+        assertThat(answer)
+                .describedAs("RESTest broke, not the API; 1 would have whatever ran the command "
+                        + "count a crash as a fault found")
+                .isEqualTo(4);
+        assertThat(problems.toString())
+                .contains("restest: the run could not be completed: java.lang.StackOverflowError: "
+                        + "a shape too deep to walk")
+                .describedAs("with the stack trace, so that somebody can report it")
+                .contains("at io.restest.cli.RunCommand");
+    }
+
+    @Test
+    @DisplayName("a run that breaks with an exception answers 4 as well, in the same words")
+    void an_exception_in_a_run_answers_four(@TempDir Path directory) {
+        int answer = run(anEnvironmentThatBreaks(() -> {
+            throw new IllegalStateException("something RESTest did not expect");
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(4);
+        assertThat(problems.toString()).contains("restest: the run could not be completed: "
+                + "java.lang.IllegalStateException: something RESTest did not expect");
+    }
+
+    @Test
+    @DisplayName("a run that breaks while it is sending answers 4, leaves what it opened closed, "
+            + "and leaves the program able to run another")
+    void a_run_that_breaks_while_sending_answers_four_and_leaves_nothing_open(
+            @TempDir Path directory) throws Exception {
+        // A real error, with no stand-in. The body createNode takes is one it merely accepts, so
+        // whether the operation can be tested is decided without building one. The run opens by
+        // sending listPets and keeping what comes back; then it builds a body for createNode, which
+        // must hold another of itself, a million deep - and runs out of room for the stack while
+        // the engine, the store and the thread delivering its events are all open.
+        Path document = Files.writeString(directory.resolve("nested.yaml"), """
+                openapi: 3.0.3
+                info: {title: Nested, version: '1'}
+                paths:
+                  /pets:
+                    get:
+                      operationId: listPets
+                      responses: {'200': {description: every pet}}
+                  /nodes:
+                    post:
+                      operationId: createNode
+                      requestBody:
+                        content:
+                          application/json:
+                            schema: {$ref: '#/components/schemas/Node'}
+                      responses: {'201': {description: created}}
+                components:
+                  schemas:
+                    Node:
+                      type: object
+                      required: [child]
+                      properties:
+                        child: {$ref: '#/components/schemas/Node'}
+                """);
+        Path out = directory.resolve("out");
+        List<Thread> deliveringBefore = threadsNamed("restest-events");
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "10s",
+                "--seed", "20260930", "--store", "--out", out.toString(),
+                "--set", "generation.optionalNestingDepth=1000000",
+                "--set", "generation.hardNestingDepth=1000000",
+                "--set", "generation.optionalBodyChance=1");
+
+        assertThat(problems.toString())
+                .describedAs("what this test stands on: building that body runs out of room for "
+                        + "the stack. If it stops doing so, the test needs another way to break a "
+                        + "run while it is sending")
+                .contains("restest: the run could not be completed: java.lang.StackOverflowError");
+        assertThat(answer).isEqualTo(4);
+        assertThat(out.resolve("run.sqlite-wal"))
+                .describedAs("the store was closed on the way out, which folds its working files "
+                        + "back in")
+                .doesNotExist();
+        assertThat(stored(out.resolve("run.sqlite")))
+                .describedAs("with what listPets sent back in it")
+                .isPositive();
+        assertThat(threadsNamed("restest-events"))
+                .describedAs("the thread that delivered the run's events ended with it")
+                .isSubsetOf(deliveringBefore);
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.resolve("again").toString()))
+                .describedAs("and the same program runs another, which finds what it always finds")
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a run that breaks where even saying so breaks still answers 4")
+    void a_run_that_cannot_say_it_broke_still_answers_four(@TempDir Path directory) {
+        // A program that has run out of memory may not have enough left to write a stack trace.
+        // Somewhere to write problems that breaks when it is written to stands in for that.
+        int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
+            "--budget", "1s", "--out", directory.toString()},
+                new PrintWriter(screen), aScreenThatBreaks(),
+                anEnvironmentThatBreaks(() -> {
+                    throw new StackOverflowError("a shape too deep to walk");
+                }));
+
+        assertThat(answer).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("a failure inside the command-line framework itself answers 4, not 1")
+    void a_failure_inside_the_framework_answers_four() {
+        // The help is written by the framework rather than by a command, so a failure while it is
+        // being written is answered by the framework's own last resort - with 1, unless it is told
+        // otherwise.
+        PrintWriter err = new PrintWriter(problems);
+
+        int answer = Restest.run(new String[] {"--help"}, aScreenThatBreaks(), err);
+        err.flush();
+
+        assertThat(answer).isEqualTo(4);
+        assertThat(problems.toString())
+                .describedAs("what broke is still said, where problems go")
+                .contains("java.lang.IllegalStateException: the screen went away");
+    }
+
+    @Test
     @DisplayName("the seed a run used is the one it was given, and is printed either way")
     void the_seed_is_passed_on_and_reported(@TempDir Path directory) throws Exception {
         // What the command is responsible for is handing the seed to the part that invents values
@@ -580,17 +724,18 @@ class RestestTest {
         // part's own promise, and its own test. Note what is deliberately NOT claimed here: with
         // requests overlapping, the order answers come back in is not fixed by the seed, so two
         // runs print the same questions but not necessarily in the same order.
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
-                "--seed", "424242", "--out", directory.toString());
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                "--seed", "424242", "--out", directory.toString())).isEqualTo(1);
 
         assertThat(screen.toString()).contains("seed 424242");
 
         StringWriter unseeded = new StringWriter();
         PrintWriter out = new PrintWriter(unseeded);
-        Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
+        int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
             "--budget", "2s", "--out", directory.toString()}, out, new PrintWriter(problems));
         out.flush();
 
+        assertThat(answer).isEqualTo(1);
         assertThat(unseeded.toString())
                 .describedAs("a run nobody gave a seed still says which one it chose, or the run "
                         + "cannot be repeated")
@@ -603,8 +748,8 @@ class RestestTest {
     void a_run_replaces_whatever_was_there(@TempDir Path directory) throws Exception {
         Files.writeString(directory.resolve("report.json"), "left over from something else");
 
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
-                "--seed", "7", "--out", directory.toString());
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                "--seed", "7", "--out", directory.toString())).isEqualTo(1);
 
         assertThat(Files.readString(directory.resolve("report.json")))
                 .doesNotContain("left over")
@@ -647,6 +792,70 @@ class RestestTest {
         } finally {
             out.flush();
             err.flush();
+        }
+    }
+
+    private int run(Map<String, String> environment, String... arguments) {
+        PrintWriter out = new PrintWriter(screen);
+        PrintWriter err = new PrintWriter(problems);
+        try {
+            return Restest.run(arguments, out, err, environment);
+        } finally {
+            out.flush();
+            err.flush();
+        }
+    }
+
+    /**
+     * An environment in which looking for a key left there breaks, in the way given. A run looks
+     * for one once it has read the document and started the engine that sends its requests, before
+     * anything is sent. Every setting is looked for as well, and none is found.
+     */
+    private static Map<String, String> anEnvironmentThatBreaks(Runnable breaking) {
+        return new AbstractMap<>() {
+            @Override
+            public Set<Map.Entry<String, String>> entrySet() {
+                return Set.of();
+            }
+
+            @Override
+            public String get(Object name) {
+                if (AuthGiven.VARIABLE.equals(name)) {
+                    breaking.run();
+                }
+                return null;
+            }
+        };
+    }
+
+    /** Somewhere to write that breaks as soon as anything is written to it. */
+    private static PrintWriter aScreenThatBreaks() {
+        return new PrintWriter(new Writer() {
+            @Override
+            public void write(char[] text, int from, int length) {
+                throw new IllegalStateException("the screen went away");
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        });
+    }
+
+    /** The threads of this program by this name that are still running, whoever started them. */
+    private static List<Thread> threadsNamed(String name) {
+        return Thread.getAllStackTraces().keySet().stream()
+                .filter(thread -> thread.getName().equals(name) && thread.isAlive())
+                .toList();
+    }
+
+    private static long stored(Path runFile) {
+        try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
+            return store.count(InteractionQuery.all());
         }
     }
 }
