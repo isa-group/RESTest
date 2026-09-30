@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Pet Shelter behind a key
+  version: 1.0.0
+security:
+  - shelterKey: []
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      responses:
+        "200":
+          description: every pet
+  /pets/{petId}:
+    get:
+      operationId: getPet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 99
+      responses:
+        "200":
+          description: the pet
+components:
+  securitySchemes:
+    shelterKey:
+      type: apiKey
+      name: X-Shelter-Key
+      in: header

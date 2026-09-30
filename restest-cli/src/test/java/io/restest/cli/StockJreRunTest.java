@@ -22,10 +22,22 @@ import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.spec.SwaggerSpecificationParser;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,6 +49,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
+import org.testcontainers.containers.ExecConfig;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -95,6 +108,12 @@ class StockJreRunTest {
 
     /** The document, and how long the run gets. */
     private static final String SPECIFICATION = INSIDE + "/pet-shelter.yaml";
+
+    /** A document whose every operation asks for a key in a header. */
+    private static final String BEHIND_A_KEY = INSIDE + "/pet-shelter-behind-a-key.yaml";
+
+    /** The key the run is handed, in the environment; its middle is what a leak is looked for by. */
+    private static final String KEY = "Zk9-leakprobe-4f+q/Rw==";
     private static final String BUDGET = "5s";
 
     /**
@@ -127,7 +146,9 @@ class StockJreRunTest {
                 // until a command is sent in; the container only has to stay up until then.
                 .withCommand("sleep", "infinity")
                 .withCopyFileToContainer(
-                        MountableFile.forHostPath(specificationOnThisMachine()), SPECIFICATION);
+                        MountableFile.forHostPath(specificationOnThisMachine()), SPECIFICATION)
+                .withCopyFileToContainer(MountableFile.forHostPath(
+                        onThisMachine("/pet-shelter-behind-a-key.yaml")), BEHIND_A_KEY);
         int entry = 0;
         for (String onThisMachine : System.getProperty("java.class.path")
                 .split(File.pathSeparator)) {
@@ -213,6 +234,31 @@ class StockJreRunTest {
                         + "has.%nInside:  %s%nOutside: %s", inTheContainer, onThisMachine)
                 .isEqualTo(onThisMachine)
                 .isNotBlank();
+    }
+
+    @Test
+    @DisplayName("a key left in the environment of a run on a plain Java runtime reaches an API that refuses requests without it, and is written nowhere")
+    void a_key_in_the_environment_reaches_the_api() throws Exception {
+        // The one place the tool runs as a program of its own, so the one place the variable is
+        // read from a real environment rather than handed to the command by a test.
+        Container.ExecResult run = jre.execInContainer(ExecConfig.builder()
+                .command(new String[] {"java", "-cp", classPathInsideTheContainer(),
+                    KeyProbe.class.getName(), BEHIND_A_KEY, "/tmp/keyed", KEY})
+                .envVars(Map.of("RESTEST_AUTH", KEY))
+                .build());
+
+        assertThat(lineOf(run, "unkeyed="))
+                .describedAs("every request carried the key. It said:%n%s%n%s", run.getStdout(),
+                        run.getStderr())
+                .isEqualTo("0");
+        assertThat(Integer.parseInt(lineOf(run, "keyed=")))
+                .describedAs("and the API was asked something")
+                .isPositive();
+        assertThat(lineOf(run, "leaks="))
+                .describedAs("no file the run left behind holds the key")
+                .isEqualTo("0");
+        assertThat(lineOf(run, "answer=")).isIn("0", "1");
+        assertThat(run.getStdout()).doesNotContain(KEY.substring(4, 13));
     }
 
     /** Runs the probe in the container: what Java it is, what it can provide, what it would send. */
@@ -301,8 +347,101 @@ class StockJreRunTest {
     }
 
     private static Path specificationOnThisMachine() throws URISyntaxException {
-        return Path.of(Objects.requireNonNull(
-                StockJreRunTest.class.getResource("/pet-shelter.yaml"),
-                "pet-shelter.yaml is not on the test class path").toURI());
+        return onThisMachine("/pet-shelter.yaml");
+    }
+
+    private static Path onThisMachine(String resource) throws URISyntaxException {
+        return Path.of(Objects.requireNonNull(StockJreRunTest.class.getResource(resource),
+                resource + " is not on the test class path").toURI());
+    }
+
+    /**
+     * The part that runs inside the container for the key: an API that answers only a request
+     * carrying its key, and a whole run of the command against it.
+     *
+     * <p>The API is written with nothing but what every Java runtime has, because the point of the
+     * container is to have nothing else. It answers {@code 200} to a request whose
+     * {@code X-Shelter-Key} header is the key and {@code 401} to any other, and counts both. The
+     * run is started the way a person starts it, so the key is read from the environment the
+     * container was told to give this program. Afterwards every file the run wrote is read for the
+     * key. Four answers, printed one per line: how many requests carried the key, how many did not,
+     * how many files hold it, and what the command answered.
+     */
+    public static final class KeyProbe {
+
+        private KeyProbe() {
+        }
+
+        public static void main(String[] arguments) throws Exception {
+            String document = arguments[0];
+            Path out = Path.of(arguments[1]);
+            String key = arguments[2];
+            AtomicInteger keyed = new AtomicInteger();
+            AtomicInteger unkeyed = new AtomicInteger();
+            try (ServerSocket api = new ServerSocket(0, 50, InetAddress.getLoopbackAddress())) {
+                Thread.ofPlatform().daemon().start(() -> answerEveryRequest(api, key, keyed,
+                        unkeyed));
+                int answer = Restest.run(new String[] {"run", document, "--url",
+                    "http://127.0.0.1:" + api.getLocalPort(), "--budget", "3s", "--seed",
+                    "20260930", "--out", out.toString(), "--store"});
+                long leaks;
+                try (var files = Files.walk(out)) {
+                    List<Path> written = files.filter(Files::isRegularFile).toList();
+                    leaks = written.stream().filter(file -> holds(file, key)).count();
+                }
+                System.out.println("keyed=" + keyed.get());
+                System.out.println("unkeyed=" + unkeyed.get());
+                System.out.println("leaks=" + leaks);
+                System.out.println("answer=" + answer);
+            }
+        }
+
+        private static void answerEveryRequest(ServerSocket api, String key, AtomicInteger keyed,
+                AtomicInteger unkeyed) {
+            while (!api.isClosed()) {
+                try {
+                    Socket connection = api.accept();
+                    Thread.ofVirtual().start(() -> answer(connection, key, keyed, unkeyed));
+                } catch (IOException closed) {
+                    return;
+                }
+            }
+        }
+
+        private static void answer(Socket connection, String key, AtomicInteger keyed,
+                AtomicInteger unkeyed) {
+            try (connection) {
+                BufferedReader request = new BufferedReader(new InputStreamReader(
+                        connection.getInputStream(), StandardCharsets.ISO_8859_1));
+                boolean carriesTheKey = false;
+                String line = request.readLine();
+                while (line != null && !line.isEmpty()) {
+                    int colon = line.indexOf(':');
+                    if (colon > 0 && line.substring(0, colon).equalsIgnoreCase("X-Shelter-Key")
+                            && line.substring(colon + 1).trim().equals(key)) {
+                        carriesTheKey = true;
+                    }
+                    line = request.readLine();
+                }
+                (carriesTheKey ? keyed : unkeyed).incrementAndGet();
+                String status = carriesTheKey ? "200 OK" : "401 Unauthorized";
+                OutputStream reply = connection.getOutputStream();
+                reply.write(("HTTP/1.1 " + status + "\r\nContent-Type: application/json\r\n"
+                        + "Content-Length: 2\r\nConnection: close\r\n\r\n{}")
+                        .getBytes(StandardCharsets.ISO_8859_1));
+                reply.flush();
+            } catch (IOException hungUp) {
+                // The run may stop listening at its deadline; nothing to count then.
+            }
+        }
+
+        private static boolean holds(Path file, String key) {
+            try {
+                String bytes = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
+                return bytes.contains(key) || bytes.contains(key.substring(4, 13));
+            } catch (IOException unreadable) {
+                return true;
+            }
+        }
     }
 }
