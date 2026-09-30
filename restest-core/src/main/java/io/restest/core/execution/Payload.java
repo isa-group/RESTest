@@ -30,6 +30,11 @@ import java.util.Optional;
  * the bytes actually received, not a version that has already been cleaned up and might hide the
  * very problem being looked for.
  *
+ * <p>With one exception: a key the person running the tool handed over is never kept. Wherever one
+ * appears in a body, the text that stands for it is kept instead - see
+ * {@link io.restest.core.auth.Secrets} - so a body that held one may be a different length from the
+ * one that went over the wire.
+ *
  * <p>{@code content} and {@code wireLength} always describe the same version of the body - typically
  * already decoded and reassembled by the underlying HTTP client. What matters is that the two are
  * never mixed: a header stating the encoded size cannot be meaningfully compared against a decoded

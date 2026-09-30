@@ -31,6 +31,13 @@ a behaviour off should not have to rewrite a file about the API.
 The test for which one something belongs in: *would it mean the same thing for a different API on
 the same machine?* If yes, it is a setting.
 
+**A key the API asks for is neither.** It belongs to one deployment of one API and to the person
+running the tool, so it fails the test above. It would also be printed by `--print-settings` and
+recorded in `report.json` if it were a setting, which is exactly what must not happen to it. It is
+handed over with `--auth`, or left in `RESTEST_AUTH` — a variable named like a setting's and not one
+of them, never printed or recorded with them. See
+[ADR-0029](adr/0029-the-key-an-api-asks-for.md).
+
 ## The four places a setting can be given
 
 Each one wins over the one before it.

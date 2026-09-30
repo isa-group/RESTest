@@ -1,7 +1,7 @@
 # ADR-0005: Test cases are data, executed directly — not generated source code
 
-**Status:** Accepted, amended at M1.1b and M2.2
-**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18)
+**Status:** Accepted, amended at M1.1b, M2.2, M10.3 and M11.3
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18, 2026-09-28, 2026-09-30)
 
 ## Context
 
@@ -273,3 +273,27 @@ from them. A step names its deletion, which no value's origin does, because a re
 refusal has to say what it expects it for; `REFUSAL_EXPECTED` is allowed with a step as it is with a
 change, and a test case is never both. The component travels in the test case's JSON, so the
 store's layout does not change, and a run stored before reads back with none.
+
+## Amendment (M11.3)
+
+**Date:** 2026-09-30
+
+**A key the run was handed is hidden in everything recorded, and no test case ever holds one.**
+M1.1b stopped `HttpRequestRecord` and `HttpResponseRecord` printing header values. It left the rest
+to the reporting work of 3.5: a credential in a query string, or in a body. 11.3 brings that forward
+for the credentials a run is handed ([ADR-0029](0029-the-key-an-api-asks-for.md)).
+
+- **A key is added to a request only as it leaves**, so it is never a value of a test case. An input
+  the document declares under the key's name is left out of what the generator fills. Nothing is
+  invented for it, and no change to an accepted request can pick it, so what a test case records
+  about its values and its changes stays true.
+- **Every exchange is passed on with every appearance of every key replaced.** The replacement is
+  by value, not by the names of the headers that carry it. It covers the address, the headers, the
+  bodies, the reasons a request failed, and the values and descriptions a test case carries.
+  - `Interaction` is rebuilt under the same identity.
+  - So is `TestCase`, when a value it carries held a key: a list of values somebody wrote may hold
+    one.
+- **What stays for 3.5 is a secret the run was not handed**: a password written in a sample, a token
+  in a list of values, a credential an API hands out in a reply.
+- **`HttpRequestRecord.toString` still prints the address**, where a key may sit. An address with a
+  key in it never leaves the door that hides it (ADR-0029 §6).

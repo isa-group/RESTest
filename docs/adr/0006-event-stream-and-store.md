@@ -1,7 +1,7 @@
 # ADR-0006: One event stream, and every interaction persisted
 
-**Status:** Accepted, amended at M1.4, M1.6 and M1.7
-**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13, 2026-09-15)
+**Status:** Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13, 2026-09-15, 2026-09-22, 2026-09-23, 2026-09-24, 2026-09-27, 2026-09-30)
 
 ## Context
 
@@ -593,3 +593,23 @@ run made without a list finishes exactly like a run made with one that did not h
 The same argument as for skipped operations puts the refusal after the verdict rather than at the
 top: it qualifies what the run found. *Held* is not *drawn on* — a plan decides which lists each kind
 of request asks — and `read` claims only the first.
+
+## Amendment (M11.3)
+
+**Date:** 2026-09-30
+
+**A kept run holds every exchange whole, except the keys the run was handed.** The decision says the
+exact bytes of every request and reply are kept. When a key is handed over
+([ADR-0029](0029-the-key-an-api-asks-for.md)), every exchange first passes through a door, on its
+way back from the engine and before the loop announces it. The door replaces each appearance of
+each key with text naming the key, such as `REDACTED-AUTH.api_key`, so nothing the store, the
+reports or any listener sees holds a key. Nothing else in an exchange changes, and a run handed no
+key is kept byte for byte as before.
+
+Three things follow:
+- **A stored request cannot be sent again as it is.** A replay (3.5) is handed the keys again and
+  puts each back where its replacement names it. Judging the stored replies again (3.3) gives the
+  verdict the run gave, since the rules judged the same hidden replies.
+- **A body a key was hidden in may not be the length its `Content-Length` header says.** Nothing
+  compares the two today.
+- **The layout of the store does not change.**

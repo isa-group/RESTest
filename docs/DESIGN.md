@@ -62,7 +62,8 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **Fuzzing** | Sending deliberately malformed or extreme inputs to see whether the API handles them correctly. |
 | **Mutation** (of a request) | Taking a request the API *accepted* and sending it again with exactly one thing changed — a required value left out, a number one past the largest allowed, a body that is not JSON at all — so that whatever the API does next can be put down to that one change. Not to be confused with *mutation testing* below, which changes our own code. |
 | **Intent** | What a test case says was expected of the API when it was built: that it would be accepted, that it would be refused (and what was broken to make it so), that it is pushing at the API with awkward values, or nothing in particular. Recorded with every request, so that a rule judging the reply later knows which answer would have been right. |
-| **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. |
+| **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. The same project publishes a file format for authentication — users, headers sent with every request, a sign-in whose token later requests carry — which four related tools read, and which is how RESTest's own authentication is meant to grow after v2.0 ([ADR-0029](adr/0029-the-key-an-api-asks-for.md) §11). |
+| **Security scheme, API key** | How a document says an API wants callers to prove who they are. It declares each way under a name — a *key* in a header, the query or a cookie; a bearer token; OAuth 2 — and says which operations need which. The document never holds the key itself: the person running the tool hands it over with `--auth`, RESTest sends it where the document says, and hides it in everything a run writes. |
 | **RESTGym** | The Docker-based infrastructure behind the SBFT REST League: it runs testing tools against a fixed set of instrumented APIs and computes comparable metrics. We drive it for milestone campaigns from a separate repository; nothing in this one references it. |
 | **ANTLR4** | A library for turning a grammar — the formal definition of a language such as IDL — into a parser. |
 | **ArchUnit** | A library for writing *tests about the structure of the code itself*, for example "no class in the core may depend on the network layer", so architectural rules fail the build instead of eroding silently. |
@@ -111,7 +112,9 @@ restest-arch-tests   architecture rules. No main sources, never published.
 
 A run is a loop, not a batch. The specification is parsed into a canonical model of our own — not
 the parser library's types — operations are scheduled, requests are generated and sent, responses
-are captured verbatim, oracles judge them, and every step is announced on the event stream.
+are captured verbatim, oracles judge them, and every step is announced on the event stream. The one
+thing never captured is a key the run was handed: it is added to a request as it leaves, and replaced
+in everything that comes back before anything sees it.
 
 ### The interaction store
 

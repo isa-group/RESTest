@@ -31,6 +31,11 @@ import java.util.Optional;
  * request, exactly as it was sent - which is also what letting someone reproduce a request by hand
  * (for example as a {@code curl} command) needs to show.
  *
+ * <p>Except for a key the person running the tool handed over. Where one went, in the address, a
+ * header or the body, the record holds the text that stands for it, such as
+ * {@code REDACTED-AUTH.api_key}, and whoever sends the request again puts the key back there. See
+ * {@link io.restest.core.auth.Secrets}.
+ *
  * @param method the HTTP method used
  * @param url the exact URL requested, path parameters substituted and the query string appended
  * @param headers the headers sent, in wire order, repeats kept
