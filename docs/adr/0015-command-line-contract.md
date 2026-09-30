@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1 and M11.3, and in #314 and #344
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3 and M12.1a, and in #314 and #344
 **Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30)
 
 ## Context
@@ -715,7 +715,8 @@ running out of memory the answer that means nothing could be tested.
 One mistake in what is typed reaches the framework's last resort too: a file of arguments named with
 `@` that is there but cannot be opened, a directory for instance. It answered `1` and now answers
 `4`, with the framework's stack trace. The table's number for it is `2`, and saying so in plain
-words is for the command line's own increment, 12.1.
+words is for the command line's own increment, 12.1. **Done at M12.1a: it answers `2`, in a
+sentence — see that amendment.**
 
 ### Still open
 
@@ -753,3 +754,141 @@ handed to `run`, and the run first waits until its deadline for the reports to c
 - **A handler for everything no thread catches, set for the whole program.** It would reach threads
   that are not RESTest's in a program that runs RESTest inside itself, and it is the kind of state
   shared by the whole program that two runs in one program cannot both own.
+
+## Amendment (M12.1a)
+
+**Date:** 2026-09-30
+
+**The command line is frozen. Two commands join `run`, the help says what every number means, a
+file of arguments that cannot be read answers `2`, and there is no `--header`.**
+
+### The surface
+
+```
+restest run <specification> [--url=<base>] [--auth=<key>]... [--budget=<duration>]
+            [--seed=<number>] [--out=<directory>] [--dictionary=<file-or-directory>]...
+            [--fuzzing=<percentage>] [--campaign=<file>] [--print-campaign]
+            [--settings=<file>] [--set=<group.key=value>]... [--print-settings] [--store]
+restest version
+restest help [<command>]
+```
+
+Every one of them takes `-h` and `--help`; `restest`, `run` and `version` take `-V` and
+`--version`. [`docs/command-line.md`](../command-line.md) is the whole of it in one place — the
+commands, every option with its value and its default, the two kinds of variable, files of
+arguments, and the exit codes. A test reads the tool's own help on every build and fails when the
+page disagrees with it about the commands, the name, value or default of an option, the variables,
+or an exit code and what it means; what the page says about files of arguments, and its longer
+descriptions of the options, are checked by the tests of those behaviours rather than against the
+page. The page is the contract, and this amendment says what the contract promises.
+
+**What frozen means.** For every 2.x version: no command, option or environment variable is removed
+or renamed, and none changes what it means; no exit code changes what it means; and the files a run
+writes keep their names. A minor version may add - a command, an option, a setting, a number for
+something that has none yet - because a script written for 2.0 does not break when something is
+added beside what it uses. Anything that would break one waits for 3.0. That is semantic
+versioning, the tenth design principle, applied to the command line; the wording of what the tool
+prints for people is not part of it.
+
+### `restest version` and `restest help`
+
+`restest version` prints what `restest --version` prints, now two lines: the version alone, as
+before, so a script that reads one line reads the same line; and the Java and the machine, because
+those are the first questions about anything that behaves differently on somebody else's computer.
+A command of its own because the list of commands is where people look first, and it is the line
+pasted at the top of a report of something that went wrong.
+
+`restest help` is the command-line framework's own: `restest help run` is `restest run --help`. It
+costs nothing, and it is the spelling that `git`, `docker` and `go` have taught people to try.
+
+### The help, complete
+
+`restest run --help` gains three sections. **Exit codes**, the table above in plain words, read from
+the same constants the command answers with, and a test fails if the two lists differ. Writing them
+out showed the table short by one case: since M1.7 the command has also answered `3` when not one
+request was answered - none could be built, the budget ran out before the first, or nothing at the
+address replied - which the table's "nothing could be tested" covered only by a stretch. The row
+now says so, in the help and on the page. The meaning is the one the code always had; a script
+that starts an API and RESTest together meets it when RESTest is the quicker of the two. **Environment**,
+naming `RESTEST_AUTH` and `RESTEST_<GROUP>_<KEY>` with an example of each and what wins over what.
+**Examples**, each printed whole on one line - the framework breaks a long line after a colon or a
+full stop, which put half an address on one line and half on the next - and each one a command the
+tool parses, which a test checks. `restest --help` gains two lines to start from. Every option
+already said what it does; a test now holds every option of every command to that.
+
+### A file of arguments is read once, and one that cannot be read answers `2`
+
+The framework reads a file named with `@` as if its words had been typed, and one that is there
+and cannot be read - a directory named by mistake - made it throw an error of its own, which
+reached the last resort: `4` and a stack trace, for a typing mistake. It now answers `2`, with a
+sentence naming the file.
+
+To say that, the command has to read the files before the framework does, and 11.3 already read
+them once to look for a key stuck to `--auth` inside one. Two readings of one file were two chances
+to disagree, and the review of this amendment found both: its own reading split words differently
+from the framework's - comments, quotation marks in the middle of a word, a name through a link -
+and a file that can be read only once, a pipe or `@/dev/stdin`, gave its words to the first reading
+and left the framework nothing, so a run went ahead without the arguments it was handed. **So the
+command now reads every file of arguments itself, once, by the framework's own rules - the same
+tokenizer, the same quotation marks, `#` for a comment, every line break made one character before
+any of it, a file read once for each argument that names it - hands the framework the words, and
+tells the framework not to read files itself.** A test reads every awkward case both ways and
+requires the same words. A file means exactly what it meant; a pipe now works; and what is looked
+through for a key is what is acted on. One thing the framework read no longer does anything: the
+system property `picocli.useSimplifiedAtFiles`, which switched its reading to one argument a line.
+RESTest never set it, and a person would have had to set it for Java as a whole.
+
+The one place the command still looks at more than the framework would is a `--` inside a file:
+the framework takes it to end the options for everything after it, typed or not, and the search
+for a stuck key stops at it only for the rest of that file, as it did in 11.3. So `@a.args
+--auth<key>`, with `a.args` ending in `--`, is refused rather than taken for the document's name.
+
+### Why there is no `--header`
+
+The roadmap asked for `--header name:value`, for a bearer token or a session cookie somebody
+already holds. It was written before 11.3, and 11.3 already carries both, under the one option this
+command has for anything that signs a request:
+
+```bash
+restest run api.yaml --auth 'header:Authorization=Bearer eyJhbGciOi...'
+restest run api.yaml --auth cookie:JSESSIONID=8F3A2C...
+```
+
+A value given with its place goes with every request and is hidden in everything the run writes,
+which is everything `--header` was to do. A second option for it would be the second vocabulary
+[ADR-0029](0029-the-key-an-api-asks-for.md)'s eleventh section rules out, and two ways to say one
+thing is one more thing to explain, test and keep. The maintainer took it out of the row on 30
+September. The help and the page show the two lines above, and a run refusing a key for an HTTP
+bearer or basic scheme now ends by naming the line that sends one already held.
+
+A header that is not a secret - a tenant's name, a language - has no option of its own either.
+Given the same way, it is hidden like any value handed over, and one shorter than four characters is
+refused, since hiding it would hide it inside ordinary words everywhere the run writes. Nobody has
+asked for more, and the fixed headers of a Web Fuzzing Commons file, with the rest of 2.6, are where
+more would come.
+
+### Consequences
+
+- The harness repository's adapter, and any script around the tool, has a surface that stays as it
+  is for every 2.x version.
+- Adding to the command line needs this ADR amended and the page changed with it; the test that
+  reads the page is what reminds whoever forgets.
+- A key, a token and a cookie come in by one door. When the rest of 2.6 brings a sign-in, it comes
+  through the same option or beside it as `--auth-file`, as ADR-0029 says.
+
+### Still open
+
+What a run stopped from outside leaves behind. Today Ctrl-C, `kill` and `docker stop` end it where it
+stands, with Java's `130` or `143`, no summary and no report. Increment 12.1b takes from the three
+answers the M1.8 amendment listed the first one's evidence - write what was found, say that the run
+was cut short, close the store - or says plainly that it could not; and it ends with the number the
+second one names, the conventional one for an interrupted program, which is Java's `130` or `143`.
+The maintainer chose both on 30 September, so that a run cut short is never read as one that
+passed.
+
+The two ways RESTest can go wrong without answering `4`, listed at the end of the amendment before
+this one, go to 12.1b too, with the answers the maintainer chose on 30 September. A request RESTest
+loses on its own thread counts as RESTest's failure: the run carries on to the end of its budget,
+then answers `4` with the first failure's stack trace, and stops early, saying RESTest lost them,
+once as many requests as may be in flight have ended unanswered with nothing answered at all. And
+an exchange kept without its details answers `4`.

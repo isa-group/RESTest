@@ -248,6 +248,57 @@ class AuthCommandTest {
             assertThat(screen.toString()).contains("  the key given with --auth goes with every "
                     + "one of them, in the query parameter apiKey and the form field apiKey");
         }
+
+        @Test
+        @DisplayName("a bearer token somebody already holds goes in Authorization with every request, and is written nowhere")
+        void a_bearer_token_already_held(@TempDir Path directory) throws IOException {
+            // The shape the help offers for a token RESTest 2.0 cannot obtain for itself, against a
+            // document declaring the scheme it answers - which the command refuses by name, since
+            // it sends only API keys.
+            String signedIn = """
+                    openapi: 3.0.3
+                    info: {title: Signed-in pets, version: '1'}
+                    security: [{bearerAuth: []}]
+                    paths:
+                      /pets:
+                        get: {operationId: listPets, responses: {'200': {description: the pets}}}
+                      /pets/{petId}:
+                        get:
+                          operationId: showPet
+                          parameters:
+                            - {name: petId, in: path, required: true, schema: {type: integer}}
+                          responses: {'200': {description: a pet}}
+                    components:
+                      securitySchemes:
+                        bearerAuth: {type: http, scheme: bearer}
+                    """;
+            String token = "eyJ-leakprobe-4f.q_Rw";
+            api.stubFor(any(anyUrl()).withHeader("Authorization", equalTo("Bearer " + token))
+                    .atPriority(1).willReturn(aResponse().withStatus(200)
+                            .withHeader("Content-Type", "application/json")
+                            .withBody("{\"signedInWith\": \"Bearer " + token + "\"}")));
+            Path out = directory.resolve("out");
+
+            int answer = run(Map.of(), "run", document(directory, signedIn), "--url",
+                    api.baseUrl(), "--budget", "2s", "--seed", "20260930", "--out", out.toString(),
+                    "--store", "--auth", "header:Authorization=Bearer " + token);
+
+            assertThat(answer).describedAs("%s%n%s", screen, problems).isBetween(0, 1);
+            assertThat(api.findAll(anyRequestedFor(anyUrl()))).isNotEmpty()
+                    .allSatisfy(request -> assertThat(request.getHeader("Authorization"))
+                            .isEqualTo("Bearer " + token));
+            assertThat(refusals()).isZero();
+            assertThat(screen.toString()).contains("goes with every one of them, in the header "
+                    + "Authorization");
+            assertThat(screen.toString() + problems).doesNotContain(CORE);
+            try (var written = Files.list(out)) {
+                assertThat(written.toList()).isNotEmpty().allSatisfy(file -> assertThat(
+                        new String(Files.readAllBytes(file), java.nio.charset.StandardCharsets
+                                .ISO_8859_1))
+                        .describedAs("%s", file.getFileName())
+                        .doesNotContain(CORE));
+            }
+        }
     }
 
     @Nested
@@ -441,12 +492,21 @@ class AuthCommandTest {
                     "@" + afterAnOption);
 
             int inQuotesInAFile = run(Map.of(), "run", pets, "--url", api.baseUrl(), "@" + quoted);
+            // After --, where the document's name goes and nothing is looked at, a second word is
+            // one the framework does not understand, and says so without the key.
+            int afterTheEnd = run(Map.of(), "run", pets, "--url", api.baseUrl(), "--",
+                    "--auth" + KEY);
 
             assertThat(List.of(stuck, colon, asTheAddress, fromAFile, asAValueInAFile,
-                    inQuotesInAFile)).containsOnly(2);
+                    inQuotesInAFile, afterTheEnd)).containsOnly(2);
+            assertThat(problems.toString()).contains("Unknown option: --auth...");
+            assertThat(problems.toString().split("an argument begins with --auth and runs "
+                    + "straight on", -1))
+                    .describedAs("every one of them caught before the framework reads it - the one "
+                            + "in quotes too, now that a file of arguments is read word for word "
+                            + "as the framework reads it, which keeps a quoted word whole")
+                    .hasSize(7);
             assertThat(problems.toString())
-                    .contains("an argument begins with --auth and runs straight on")
-                    .contains("Unknown option: --auth...")
                     .doesNotContain("Invalid value")
                     .doesNotContain(CORE);
             assertThat(api.findAll(anyRequestedFor(anyUrl()))).isEmpty();

@@ -16,10 +16,7 @@
 package io.restest.cli;
 
 import io.restest.core.auth.AuthGiven;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,9 +30,11 @@ import picocli.CommandLine.UnmatchedArgumentException;
 /**
  * The {@code restest} command: where a person's typing becomes a run.
  *
- * <p>There is one thing to do today - {@code restest run}, which tests an API and reports what is
- * wrong with it. Later versions add commands that look at a finished run rather than making a new
- * one; they will sit beside this one and share its options and its answers.
+ * <p>There is one thing it does today - {@code restest run}, which tests an API and reports what is
+ * wrong with it - beside {@code restest version}, which says which RESTest this is, and
+ * {@code restest help}, which shows how any of them is used. Later versions add commands that look
+ * at a finished run rather than making a new one; they will sit beside these and share their
+ * options and their answers.
  *
  * <p>This is the only place in the whole of RESTest that ends the program. Everything else hands
  * back a result and lets its caller decide, which is what makes any part of the tool usable inside
@@ -53,8 +52,14 @@ import picocli.CommandLine.UnmatchedArgumentException;
         description = "Black-box testing for REST APIs, from an OpenAPI document.",
         mixinStandardHelpOptions = true,
         versionProvider = ToolVersion.class,
-        subcommands = RunCommand.class,
+        subcommands = {RunCommand.class, VersionCommand.class, CommandLine.HelpCommand.class},
         synopsisSubcommandLabel = "COMMAND",
+        footerHeading = "%nStart with:%n",
+        footer = {
+                "  restest run openapi.yaml --url http://localhost:8080 --budget 30s",
+                "  restest help run",
+                "",
+                "restest help run also lists the exit codes, and what each one means."},
         // What the command-line framework answers when something fails inside the framework itself
         // rather than in a command - while it writes the help, say. Left alone it answers 1, the
         // number that says a fault was found in the API.
@@ -163,7 +168,48 @@ public final class Restest {
      */
     private static int answer(String[] arguments, PrintWriter out, PrintWriter err,
             Map<String, String> environment) {
-        CommandLine restest = new CommandLine(new Restest(), new StartedIn(environment))
+        CommandLine restest = commandLine(out, err, environment);
+        // With no sub-command there is nothing to run; saying so and showing what the choices are
+        // beats a silent success.
+        if (arguments.length == 0) {
+            restest.usage(err);
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        // Every file of arguments read here, once, and the framework handed the words they hold. One
+        // that is there and cannot be read is a mistake in what was typed, and answers that way:
+        // read by the framework, it was a stack trace and the answer that RESTest broke.
+        List<FilesOfArguments.Given> given;
+        try {
+            given = FilesOfArguments.read(List.of(arguments));
+        } catch (FilesOfArguments.CannotBeRead mistake) {
+            err.println("restest: " + mistake.getMessage() + ". Name a file whose words are the "
+                    + "arguments, or write @@ for an argument that begins with @");
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        if (aKeyStuckToItsOption(given, optionsOf(restest))) {
+            err.println("restest: an argument begins with " + AuthGiven.OPTION + " and runs straight "
+                    + "on into something else, and is not repeated here in case that is a key: "
+                    + "write " + AuthGiven.OPTION + " <key> or " + AuthGiven.OPTION + "=<key>. The "
+                    + "value of another option that begins with " + AuthGiven.OPTION + " goes after "
+                    + "its '=', as in --out=" + AuthGiven.OPTION + "-results");
+            return ExitCode.BAD_COMMAND_LINE;
+        }
+        return restest.execute(FilesOfArguments.words(given).toArray(String[]::new));
+    }
+
+    /**
+     * The command line, configured the way every run of it is: writing where it is told to, in plain
+     * text, answering every mistake with the number that means one, and starting the run command in
+     * the given environment. A test asks it what the options are, rather than reading the help.
+     *
+     * @param out where everything a command has to say goes
+     * @param err where anything that went wrong goes
+     * @param environment the variables the run command is started with
+     * @return the command line, ready to be handed what was typed
+     */
+    static CommandLine commandLine(PrintWriter out, PrintWriter err,
+            Map<String, String> environment) {
+        return new CommandLine(new Restest(), new StartedIn(environment))
                 .setOut(out)
                 .setErr(err)
                 // Plain text, on every machine. The command-line framework would otherwise colour
@@ -175,26 +221,14 @@ public final class Restest {
                 // everywhere, for the same reason.
                 .setColorScheme(CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.OFF))
                 .setCaseInsensitiveEnumValuesAllowed(true)
+                // Files of arguments are read before the framework is handed anything, once, so
+                // that what the command looks through and what it acts on are the same words.
+                .setExpandAtFiles(false)
                 .setParameterExceptionHandler(Restest::saysWhatWasWrong)
                 // Anything that reaches here is RESTest going wrong rather than the API under test,
                 // and the two must not answer the same.
                 .setExecutionExceptionHandler(
                         (failure, command, parsed) -> saysItBroke(failure, err));
-        // With no sub-command there is nothing to run; saying so and showing what the choices are
-        // beats a silent success.
-        if (arguments.length == 0) {
-            restest.usage(err);
-            return ExitCode.BAD_COMMAND_LINE;
-        }
-        if (aKeyStuckToItsOption(List.of(arguments), optionsOf(restest), 0)) {
-            err.println("restest: an argument begins with " + AuthGiven.OPTION + " and runs straight "
-                    + "on into something else, and is not repeated here in case that is a key: "
-                    + "write " + AuthGiven.OPTION + " <key> or " + AuthGiven.OPTION + "=<key>. The "
-                    + "value of another option that begins with " + AuthGiven.OPTION + " goes after "
-                    + "its '=', as in --out=" + AuthGiven.OPTION + "-results");
-            return ExitCode.BAD_COMMAND_LINE;
-        }
-        return restest.execute(arguments);
     }
 
     /**
@@ -236,52 +270,38 @@ public final class Restest {
      * an {@code =}, as a key typed without the space after the option does, and is no option of its
      * own. It is caught before the command-line framework sees it, because every way the framework
      * would take it repeats it whole: as an option that does not exist, or as the value of the
-     * option before it - a directory to write into, say. A file of arguments named with {@code @} is
-     * read by the framework as if its words had been typed, so its words are looked at too; and
-     * nothing after {@code --}, where only the document's name can come, is.
+     * option before it - a directory to write into, say. The words of every file of arguments are
+     * looked at too. Nothing after {@code --}, where only the document's name can come, is looked
+     * at; a {@code --} inside a file ends the looking for the rest of that file only, which looks
+     * at more than the framework would and so lets no key through that it would repeat.
      */
-    private static boolean aKeyStuckToItsOption(List<String> arguments, List<String> options,
-            int filesDeep) {
+    private static boolean aKeyStuckToItsOption(List<FilesOfArguments.Given> given,
+            List<String> options) {
         String option = AuthGiven.OPTION;
-        for (String argument : arguments) {
-            if (argument.equals("--")) {
-                return false;
-            }
-            boolean stuck = argument.length() > option.length()
-                    && argument.regionMatches(true, 0, option, 0, option.length())
-                    && argument.charAt(option.length()) != '=';
-            boolean anOption = options.stream().anyMatch(name -> argument.equals(name)
-                    || argument.startsWith(name + "="));
-            if (stuck && !anOption) {
-                return true;
-            }
-            if (argument.startsWith("@") && !argument.startsWith("@@") && filesDeep < 8
-                    && aKeyStuckToItsOption(wordsIn(argument.substring(1)), options,
-                            filesDeep + 1)) {
-                return true;
+        for (FilesOfArguments.Given argument : given) {
+            switch (argument) {
+                case FilesOfArguments.ReadFrom file -> {
+                    if (aKeyStuckToItsOption(file.holds(), options)) {
+                        return true;
+                    }
+                }
+                case FilesOfArguments.Word word -> {
+                    String text = word.text();
+                    if (text.equals("--")) {
+                        return false;
+                    }
+                    boolean stuck = text.length() > option.length()
+                            && text.regionMatches(true, 0, option, 0, option.length())
+                            && text.charAt(option.length()) != '=';
+                    boolean anOption = options.stream().anyMatch(name -> text.equals(name)
+                            || text.startsWith(name + "="));
+                    if (stuck && !anOption) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
-    }
-
-    /**
-     * The words of a file of arguments, split where the framework splits them, with any quotation
-     * marks around a word taken off. None, for a file that cannot be read: the framework says so
-     * itself.
-     */
-    private static List<String> wordsIn(String file) {
-        try {
-            List<String> words = new ArrayList<>();
-            for (String word : Files.readString(Path.of(file)).split("\\s+")) {
-                String bare = word.replaceAll("^[\"']+|[\"']+$", "");
-                if (!bare.isEmpty()) {
-                    words.add(bare);
-                }
-            }
-            return words;
-        } catch (IOException | RuntimeException unreadable) {
-            return List.of();
-        }
     }
 
     /**
@@ -344,9 +364,10 @@ public final class Restest {
 
     /**
      * A complaint with every key typed after {@code --auth} taken out, wherever the framework quoted
-     * it: whole, as {@code '<key>'}, or after the option, as {@code --auth=<key>}. A key written
-     * with {@code =} in a file of arguments named with {@code @} is not among the arguments here,
-     * so whatever follows {@code --auth=} to the end of a line is taken out as well.
+     * it: whole, as {@code '<key>'}, or after the option, as {@code --auth=<key>}. The arguments are
+     * the words the framework was handed, those of every file of arguments included; whatever
+     * follows {@code --auth=} to the end of a line is taken out as well, for a key quoted in some
+     * other way than the one it was handed over in.
      */
     static String withoutTheKeys(String complaint, String[] arguments) {
         String hidden = AuthGiven.OPTION + "=<key>";

@@ -494,8 +494,9 @@ operations that need each credential, which are the two things a key needs.
 - **Sending every key with every request**, as most related tools do. It is simpler, and it sends a
   key to operations the document says need none, and one key where another was asked for. The
   document's own requirements are there to be read; a key given with its place does go everywhere.
-- **Reading a WFC file now.** It would read fixed headers and nothing else, which 12.1's `--header`
-  already will. The part of WFC that matters, signing in and users, is the rest of 2.6.
+- **Reading a WFC file now.** It would read fixed headers and nothing else, which
+  `--auth header:<name>=<value>` already does. *Amended at M12.1a: this once said 12.1's `--header`
+  would, and 12.1a added none, for the reason ADR-0015's amendment of that name gives.* The part of WFC that matters, signing in and users, is the rest of 2.6.
 - **`--api-key`, or `--credential`, as the option's name.** `--api-key` reads best today and wrongly
   the day a bearer token comes through it. `--credential` is general and long. The maintainer chose
   `--auth` on 30 September.

@@ -307,7 +307,7 @@ public final class CredentialPlan {
         if (keySchemes.isEmpty()) {
             throw new Refused(what + (namesAScheme ? ", nor any API key at all"
                     : ", and the document declares no API key for it to answer")
-                    + "; " + HOW_TO_SAY_WHERE);
+                    + "; " + HOW_TO_SAY_WHERE + aTokenAlreadyHeld(model));
         }
         if (keySchemes.size() == 1) {
             throw new Refused(what + ": its one API key is " + keySchemes.get(0) + ". Name it: "
@@ -365,7 +365,9 @@ public final class CredentialPlan {
                     new Secret(value, Secrets.MARKER + "." + label(name)));
             case SecurityScheme.Http http -> throw new Refused(named + " is for '" + name
                     + "', which is an HTTP " + http.scheme() + " scheme; RESTest 2.0 sends only "
-                    + "API keys, so it cannot send this one");
+                    + "API keys, so it cannot send this one" + heldAlready(http)
+                            .map(how -> "; one you already hold goes with every request as " + how)
+                            .orElse(""));
             case SecurityScheme.Other other -> throw new Refused(named + " is for '" + name
                     + "', which is a scheme of type " + other.type() + "; RESTest 2.0 sends only "
                     + "API keys, so it cannot send this one");
@@ -373,6 +375,39 @@ public final class CredentialPlan {
                     + name + "', which the document declares in a way RESTest cannot use: "
                     + unreadable.why() + "; " + HOW_TO_SAY_WHERE);
         };
+    }
+
+    /**
+     * How what an HTTP scheme asks for goes anyway, when the person already holds it: in the header
+     * it travels in, given with its place, which sends it with every request. Nothing for a scheme
+     * whose header has to be worked out afresh for every request, as a digest's is.
+     */
+    private static Optional<String> heldAlready(SecurityScheme.Http http) {
+        String how = AuthGiven.OPTION + " 'header:Authorization=";
+        return switch (http.scheme().toLowerCase(Locale.ROOT)) {
+            case "bearer" -> Optional.of(how + "Bearer <token>'");
+            case "basic" -> Optional.of(how + "Basic <user:password in Base64>'");
+            default -> Optional.empty();
+        };
+    }
+
+    /**
+     * For a key typed alone against a document that declares no API key, and does declare an HTTP
+     * scheme a token already held would answer: how that token goes. Most likely it is the token,
+     * typed the way a key would be.
+     */
+    private static String aTokenAlreadyHeld(ApiModel model) {
+        for (Map.Entry<String, SecurityScheme> scheme : model.securitySchemes().entrySet()) {
+            if (scheme.getValue() instanceof SecurityScheme.Http http) {
+                Optional<String> how = heldAlready(http);
+                if (how.isPresent()) {
+                    return ". The document's " + scheme.getKey() + " is an HTTP " + http.scheme()
+                            + " scheme, and one already held goes with every request as "
+                            + how.get();
+                }
+            }
+        }
+        return "";
     }
 
     /**
