@@ -56,13 +56,13 @@ import org.junit.jupiter.api.io.TempDir;
  * A run in which RESTest itself lost part of its own work answers 4, the number that says the tool
  * went wrong, and never the 0, 1 or 3 that say something about the API.
  *
- * <p>Two things can go wrong on RESTest's side while the API answers perfectly well. The part of the
- * tool that sends a request can fail on the thread the request is sent on - running out of memory
- * while it reads an enormous reply, say - and then nothing comes back for that request at all. And
- * the part that hides a key the run was handed can fail to pick it out of an exchange, and keep that
- * exchange with nearly everything in it blanked. Either way every report is missing something, so
- * finding nothing wrong - or finding faults, or finding nobody at the address - is not an answer
- * the run is in a position to give.
+ * <p>Two things can go wrong on RESTest's side while the API answers perfectly well. The part of
+ * the tool that sends a request can fail on the thread the request is sent on - running out of
+ * memory while it reads an enormous reply, say - and then nothing comes back for that request at
+ * all. And the part that hides a key the run was handed can fail to pick it out of an exchange, and
+ * keep that exchange with nearly everything in it blanked. Either way every report is missing
+ * something, so finding nothing wrong - or finding faults, or finding nobody at the address - is
+ * not an answer the run is in a position to give.
  *
  * <p>The API here is a stand-in that answers every request; what breaks is a stand-in for the
  * sending part of the tool, wrapped around the real one, that fails the way the real one does when
@@ -106,8 +106,8 @@ class ABrokenRunAnswersFourTest {
     void losing_some_requests_answers_four(@TempDir Path directory) {
         int answer = run(settings -> new Losing(new OkHttpEngine(settings),
                 testCase -> testCase.operation().value().equals("listPets")),
-                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", BUDGET, "--seed", "7",
-                "--out", directory.toString());
+                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", BUDGET, "--seed",
+                "7", "--out", directory.toString());
 
         assertThat(answer).describedAs("%s%n%s", screen, problems).isEqualTo(4);
         assertThat(problems.toString())
@@ -140,8 +140,9 @@ class ABrokenRunAnswersFourTest {
                 .isLessThan(Duration.ofSeconds(15));
         assertThat(problems.toString())
                 .contains("were lost by RESTest itself")
-                .contains("Not one request was answered, and a run stops sending, at the end of the "
-                        + "round it is in, once as many as can be in flight have gone unanswered")
+                .contains("Not one request was answered, and a run stops sending, at the end of "
+                        + "the round it is in, once as many as can be in flight have gone "
+                        + "unanswered")
                 .describedAs("the address is not what is wrong, and saying it is would send "
                         + "whoever reads it looking in the wrong place")
                 .doesNotContain("Check the address");
@@ -154,8 +155,9 @@ class ABrokenRunAnswersFourTest {
         // picking the key out of it runs out of stack, so the exchange is kept with everything that
         // could hold a key blanked. The run is handed a key, or there is nothing to hide at all.
         int answer = run(settings -> new NestingTooDeep(new OkHttpEngine(settings)),
-                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", BUDGET, "--seed", "7",
-                "--out", directory.toString(), "--auth", "header:X-Shelter-Key=Zk9-leakprobe-4f");
+                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", BUDGET, "--seed",
+                "7", "--out", directory.toString(), "--auth",
+                "header:X-Shelter-Key=Zk9-leakprobe-4f");
 
         assertThat(problems.toString())
                 .describedAs("the premise: hiding the key did fail on these exchanges. %s", screen)
@@ -224,7 +226,8 @@ class ABrokenRunAnswersFourTest {
 
         assertThat(answer).describedAs("%s%n%s", screen, problems).isEqualTo(4);
         assertThat(problems.toString())
-                .contains("java.lang.StackOverflowError: sent with REDACTED-AUTH.header.X-Shelter-Key")
+                .contains("java.lang.StackOverflowError: sent with "
+                        + "REDACTED-AUTH.header.X-Shelter-Key")
                 .doesNotContain("leakprobe");
     }
 
