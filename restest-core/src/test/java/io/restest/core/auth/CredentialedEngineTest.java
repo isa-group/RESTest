@@ -211,8 +211,36 @@ class CredentialedEngineTest {
         return new String(api.received().body().orElseThrow().content(), StandardCharsets.UTF_8);
     }
 
+    @Test
+    @DisplayName("nothing handed back by the engine behind is passed on as nothing, not as a failure of the hiding")
+    void nothing_is_passed_on_as_nothing() throws Exception {
+        HttpEngine handsBackNothing = new Recording() {
+            @Override
+            public CompletableFuture<Interaction> sendAsync(TestCase testCase,
+                    HttpRequestRecord request) {
+                return CompletableFuture.completedFuture(null);
+            }
+        };
+        CredentialedEngine engine = new CredentialedEngine(handsBackNothing,
+                gather(listPets(), AuthGiven.typed("header:X-API-Key=" + KEY, 1)).plan());
+
+        assertThat(engine.sendAsync(testCase("listPets"),
+                HttpRequestRecord.of(HttpMethod.GET, "http://api/pets")).get()).isNull();
+        assertThat(engine.hiddenWhole()).isZero();
+    }
+
+    @Test
+    @DisplayName("a text the run writes itself has the key hidden in it, as every exchange has")
+    void a_text_the_run_writes_has_the_key_hidden() {
+        CredentialedEngine engine = new CredentialedEngine(api,
+                gather(listPets(), AuthGiven.typed("header:X-API-Key=" + KEY, 1)).plan());
+
+        assertThat(engine.withTheKeysHidden("java.lang.IllegalStateException: sent " + KEY))
+                .isEqualTo("java.lang.IllegalStateException: sent REDACTED-AUTH.header.X-API-Key");
+    }
+
     /** A stand-in for the engine that answers everything with 200 and remembers what it was sent. */
-    private static final class Recording implements HttpEngine {
+    private static class Recording implements HttpEngine {
 
         private final List<HttpRequestRecord> received = new ArrayList<>();
         private final EngineStatistics statistics = new EngineStatistics(0, Duration.ZERO,

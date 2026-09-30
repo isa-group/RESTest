@@ -109,7 +109,7 @@ The number the command ends with, which is what a build server or a script acts 
 | `1` | The run finished and found at least one fault in the API |
 | `2` | The command line was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent. A file of arguments that cannot be read is one of these |
 | `3` | Nothing was tested: the document describes no operation that can be tried, there is no address to send requests to or nowhere to write the results, or not one request was answered - none could be built, the budget ran out before the first, or nothing at the address replied. The run says which. A script that starts the API and RESTest together meets the last one when RESTest is quicker |
-| `4` | RESTest itself went wrong, so what it printed may be incomplete. The message and the stack trace are what to report, with what `restest version` says |
+| `4` | RESTest itself went wrong - it lost requests on their way, had to keep exchanges without their details, or broke outright - so what it printed may be incomplete. The message and the stack trace are what to report, with what `restest version` says. A run in which RESTest lost requests answers `4` even when nothing at all was answered; if the address looks wrong as well, the run says so beside it. An exchange kept without its details is one a key could not be picked out of, so everything in it that could hold the key was blanked: the key is hidden, not leaked |
 
 A fault found is `1` rather than `0` because the usual use is a gate that should go red when the API
 is broken. An operation RESTest had to skip is not an error: a run says what it skipped and carries

@@ -1,6 +1,6 @@
 # ADR-0029: A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes
 
-**Status:** Accepted
+**Status:** Accepted, amended at M12.1c
 **Date:** 2026-09-30
 
 ## Context
@@ -328,7 +328,7 @@ curl -i -X GET 'http://localhost:8080/api/v3/store/inventory' -H 'Accept: applic
 **Hiding cannot fail.** An exchange that could not be passed on would be lost to every report. If
 something goes wrong nonetheless, the exchange is passed on with everything that could hold a key
 replaced whole: every header value, every body, the address, the test case's values. The run then
-says, at the end, how many times that happened.
+says, at the end, how many times that happened. *Amended at M12.1c: and it answers `4`.*
 
 **What is not hidden:**
 - a body the API compressed with something the tool never asked for;
@@ -504,3 +504,27 @@ operations that need each credential, which are the two things a key needs.
   its key is a legitimate thing to want, and the line before the first request already says what
   would change it.
 - **A switch.** Rejected in section 9.
+
+## Amendment (M12.1c)
+
+**Date:** 2026-09-30
+
+**An exchange kept without its details answers `4`.** Section 6 made hiding a key something that
+cannot fail: when a key cannot be picked out of an exchange, the exchange is kept with everything
+that could hold one replaced whole, and the run says how many times that happened. It said nothing
+of the number, which stayed what the rest of the run earned.
+
+That exchange is in every report and in the stored run with next to nothing in it - no values, no
+body, no address - so a run that had to keep one concludes without it, as a run whose report broke
+concludes without whatever the report missed. ADR-0015 answers `4` for the second, and now, by the
+maintainer's choice on 30 September, for the first: its M12.1c amendment says how, beside a request
+lost on its own thread, the other way a run lost part of its own work. The sentence the run prints
+is unchanged; hiding still never fails an exchange, and nothing is sent differently.
+
+**One text the run writes itself goes through the hiding too:** the failure of a request lost on
+its own thread, which the run prints with its stack trace. The alternatives below set aside hiding
+in each place that writes, because every exchange passes through the door and one door cannot be
+forgotten; this text never passes through it, since no exchange was ever made, so the door offers
+its hiding to the one place that writes it. Nothing is known to put a key there - running out of
+memory, or of stack, names no key - but the run was handed one, and prints what it did not make.
+

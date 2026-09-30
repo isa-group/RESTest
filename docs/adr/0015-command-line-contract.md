@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3 and M12.1a, and in #314 and #344
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a and M12.1c, and in #314 and #344
 **Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30)
 
 ## Context
@@ -887,8 +887,100 @@ The maintainer chose both on 30 September, so that a run cut short is never read
 passed.
 
 The two ways RESTest can go wrong without answering `4`, listed at the end of the amendment before
-this one, go to 12.1b too, with the answers the maintainer chose on 30 September. A request RESTest
+this one, go to 12.1b too, with the answers the maintainer chose on 30 September. *They were split
+from it the same evening, into 12.1c, taken first; its amendment, below, closes them.* A request RESTest
 loses on its own thread counts as RESTest's failure: the run carries on to the end of its budget,
 then answers `4` with the first failure's stack trace, and stops early, saying RESTest lost them,
 once as many requests as may be in flight have ended unanswered with nothing answered at all. And
 an exchange kept without its details answers `4`.
+
+## Amendment (M12.1c)
+
+**Date:** 2026-09-30
+
+**A run in which RESTest itself lost part of its work answers `4`: a request lost on the thread it
+was sent on, and an exchange that had to be kept without its details. The two ways the amendment of
+#344 left open are closed.**
+
+### Why
+
+The table gives `4` to RESTest going wrong, and both of these are RESTest going wrong while the API
+answers perfectly well; what was missing was the number.
+
+- **A request lost on its own thread.** Each request is sent on a thread of its own. The part of
+  the tool sending it turns everything the API or the network can do - a refused connection, a reply
+  cut off, a wait that ran out - into an answer, so what escapes it is the tool's own failure:
+  running out of memory while a reply is read, say. The loop counted such a request, silently, as
+  one nothing came back for. Measured on a stand-in that answers the first request for one
+  operation with 512 MB, against a run limited to 128 MB of memory and told to keep replies whole up
+  to a gigabyte (`--set engine.maxRetainedResponseBytes=1000000000`; by default the engine keeps the
+  first megabyte of a reply and reads the rest away, and nothing is lost): the request was lost, the
+  other 64,655 were answered, and the run said *no faults found* and answered `0`. A run in which every
+  request went that way would have answered `3` and told its reader to check the address.
+- **An exchange kept without its details.** When the key a run was handed cannot be picked out of
+  an exchange, the exchange is kept with everything that could hold a key blanked
+  ([ADR-0029](0029-the-key-an-api-asks-for.md), section 6). The run said so at the end, and answered
+  as if nothing had happened. Every report and the stored run have that exchange with next to nothing
+  in it, so whatever the run concludes, it concludes without it.
+
+### What it does now
+
+- **A lost request is counted apart**, with the first failure kept. The run carries on to the end
+  of its budget: one request lost to an enormous reply says nothing about the next thousand. At the
+  end it answers `4` and says, where problems go, how many requests RESTest lost, that they are
+  missing from what is reported, and the first failure with its stack trace. So does a request the
+  sending part hands back as nothing at all, a case its contract forbids, with nothing to show.
+- **A run that loses every request stops early.** A lost request still counts as unanswered, so the
+  rule that stops a run whose address answers nothing - as many requests as may be in flight, 32 by
+  default, ended with not one answered, looked at the end of each round - stops this one too. It
+  answers `4`, and says RESTest lost them. The address is named as well only when the API left other
+  requests unanswered too - refused, reset, timed out - since then it may be wrong as well; the
+  sentence that sends a reader to the address and nowhere else belongs to `3`. Stopping at the first
+  lost request was considered and rejected by the maintainer.
+- **An exchange kept without its details answers `4`**, with the sentence the run already printed.
+- **In what order.** RESTest's own failures come before "was anything tested", as a report that
+  broke already did: a run that lost every request tested nothing, and the reason is RESTest.
+
+The help and [`docs/command-line.md`](../command-line.md) name the two in the row for `4`: *it lost
+requests on their way, had to keep exchanges without their details, or broke outright*. The meaning
+is the one the table always gave; the words now cover what the number does. An exchange kept without
+its details is one in which the key was hidden the only way left, by blanking everything that could
+hold it, and the page says so, so that a `4` from a run handed a key is not read as a key written
+somewhere.
+
+The first failure is printed through the hiding of the keys the run was handed, as every exchange
+is, and so that failing to print it - memory running out a second time - leaves its kind said and
+the rest of what the run has to say, where its report is included, still said. The failure that
+escapes a run altogether, which the amendment of #344 answers with `4`, is printed as it was: with
+the key hidden only where the exchanges were.
+
+### Consequences
+
+- A script can no longer read as a clean one a run whose sending part lost a request, or that had
+  to keep an exchange without its details.
+- A run that loses one request in a million answers `4` where it answered `0` or `1`. That is the
+  point: a `4` says the run is not complete, which it is not, and what it did find is still printed
+  and still in `report.json`.
+- The tests reach both failures through a seam of the command's own: what builds the engine is
+  handed to the run command, the engine that talks HTTP unless a test says otherwise. Nothing a
+  person types reaches it.
+
+### Still open
+
+`report.json` still does not say that a run broke; a harness reading the file instead of the number
+sees a finished run. The maintainer kept that a question of its own on 30 September.
+
+The review of this amendment found three more ways a failure of RESTest's own reads as something
+the API did. None was among the maintainer's two decisions, and no row takes them yet; whether one
+does, and which, is the maintainer's to say:
+
+- **A key that cannot be added to a request.** The request is not sent, and is recorded as one that
+  could not be assembled, which is a failure on the way to the API. Every request going that way
+  would answer `3` and point at the address.
+- **A failure of RESTest's own code inside the engine** that Java calls an exception rather than an
+  error - in the code that records what went over the wire, say - is caught with the network's
+  failures and recorded as one.
+- **A failure while the loop deals with an answer** - announcing it, or handing it to a series - is
+  lost with the future it happened in. The request is counted as answered and no report hears of
+  it.
+

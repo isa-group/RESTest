@@ -29,9 +29,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Spends the time a run was given, asking the API one question after another until it runs out.
@@ -54,8 +56,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>What to send next, and when the time is up, it does not decide. It asks the {@link Scheduler},
  * which holds the deadline and the order the operations go in, and does what it is told: send a
  * request for this operation, wait for the answers still owed, or stop. What it does decide for
- * itself is to stop early on its own evidence - a round in which nothing could be sent, or an
- * address where nothing answers. The one waiting it does on the scheduler's behalf is at the start
+ * itself is to stop early on its own evidence - a round in which nothing could be sent, or a run in
+ * which nothing is answered, whether because nothing is there or because RESTest itself is losing
+ * the requests on the way. The one waiting it does on the scheduler's behalf is at the start
  * of a run, where the first round goes in steps and each step waits for the answers to the one
  * before - and even that wait has a limit, so one request the API never answers costs the run that
  * limit once rather than the whole budget.
@@ -85,9 +88,18 @@ final class RunLoop {
      * @param stillOwed how many answers had still not arrived when the run stopped waiting for them.
      *     Normally zero, because the engine gives up on a request of its own accord long before this
      *     does
+     * @param lost how many requests RESTest itself lost on the way to the API or back: the part of
+     *     the tool that sends them failed, rather than the API or the network, so nothing about the
+     *     API can be said from them. Normally zero
+     * @param firstLoss what went wrong with the first of them, when anything did go wrong rather
+     *     than the sending part simply handing back nothing
      */
     record Outcome(long sent, long answered, long notGenerated, long notAssembled, long passes,
-            long stillOwed) {
+            long stillOwed, long lost, Optional<Throwable> firstLoss) {
+
+        Outcome {
+            Objects.requireNonNull(firstLoss, "firstLoss");
+        }
 
         /** Whether requests went out and not one of them was ever answered. */
         boolean nothingAnswered() {
@@ -226,7 +238,8 @@ final class RunLoop {
         // Those requests were paid for and what came back is evidence; throwing it away would also
         // leave the run's stored file disagreeing with the number of requests it says it sent.
         long stillOwed = waitForTheAnswersStillOwed(slots, workAhead, howLongToWaitForStragglers);
-        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes, stillOwed);
+        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes, stillOwed,
+                answers.lost(), answers.firstLoss());
     }
 
     /**
@@ -241,7 +254,11 @@ final class RunLoop {
         try {
             engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
                 try {
-                    announce(interaction, answers, events);
+                    if (wentWrong != null || interaction == null) {
+                        answers.recordLost(wentWrong);
+                    } else {
+                        announce(interaction, answers, events);
+                    }
                 } finally {
                     try {
                         // Before the slot is given back, so that the next step of a series is
@@ -271,19 +288,8 @@ final class RunLoop {
         }
     }
 
-    /**
-     * Announces one answer.
-     *
-     * <p>A request that produced nothing at all is counted and not announced. The engine does not
-     * normally allow that - it turns even a refused connection into an answer of its own - but if it
-     * ever happens, making one up would mean inventing the moment the request was sent, and one
-     * request's misfortune must not throw away everything else that is still outstanding.
-     */
+    /** Announces one answer, the moment it arrives. */
     private static void announce(Interaction interaction, Answers answers, EventStream events) {
-        if (interaction == null) {
-            answers.recordNothingCameBack();
-            return;
-        }
         answers.record(interaction);
         events.publish(new RunEvent.InteractionCompleted(Instant.now(), interaction));
     }
@@ -397,12 +403,22 @@ final class RunLoop {
      * is not: it says something about the address it was sent to, and nothing whatsoever about the
      * API. Telling the two apart is what lets a run notice it is shouting into an empty room.
      *
+     * <p>A request RESTest itself lost is a third thing, and says nothing about the API or the
+     * address. The engine turns everything the API or the network can do - a refused connection, a
+     * reply cut off, a wait that ran out - into an answer of its own, so what reaches here as a
+     * failure is the tool's: running out of memory while a reply is read, say. It is counted apart,
+     * with the first such failure kept to be shown, because a run that lost part of its own work must
+     * not end as if it had done all of it. It still counts as unanswered too, so that a run losing
+     * every request stops as early as one whose address answers nothing.
+     *
      * <p>Counted from whichever thread the answer arrives on, so the counts are atomic.
      */
     private static final class Answers {
 
         private final AtomicLong answered = new AtomicLong();
         private final AtomicLong unanswered = new AtomicLong();
+        private final AtomicLong lost = new AtomicLong();
+        private final AtomicReference<Throwable> firstLoss = new AtomicReference<>();
 
         void record(Interaction interaction) {
             if (interaction.isAnswered()) {
@@ -412,12 +428,32 @@ final class RunLoop {
             }
         }
 
-        void recordNothingCameBack() {
+        /**
+         * A request RESTest lost: nothing came back from the part of the tool that sends it, with
+         * what went wrong, or with nothing at all.
+         */
+        void recordLost(Throwable wentWrong) {
+            if (wentWrong != null) {
+                // The failure itself rather than the wrapping the asynchronous machinery adds to it,
+                // which says only that something failed asynchronously.
+                Throwable failure = wentWrong instanceof CompletionException wrapped
+                        && wrapped.getCause() != null ? wrapped.getCause() : wentWrong;
+                firstLoss.compareAndSet(null, failure);
+            }
+            lost.incrementAndGet();
             unanswered.incrementAndGet();
         }
 
         long answered() {
             return answered.get();
+        }
+
+        long lost() {
+            return lost.get();
+        }
+
+        Optional<Throwable> firstLoss() {
+            return Optional.ofNullable(firstLoss.get());
         }
 
         /**

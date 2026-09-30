@@ -16,12 +16,16 @@
 package io.restest.cli;
 
 import io.restest.core.auth.AuthGiven;
+import io.restest.core.exec.EngineSettings;
+import io.restest.core.exec.HttpEngine;
+import io.restest.exec.OkHttpEngine;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ParameterException;
@@ -142,8 +146,25 @@ public final class Restest {
      */
     static int run(String[] arguments, PrintWriter out, PrintWriter err,
             Map<String, String> environment) {
+        return run(arguments, out, err, environment, OkHttpEngine::new);
+    }
+
+    /**
+     * The same, sending through whatever engine is made from the engine's settings: what a test uses
+     * to make a request fail where only a real failure of the tool would, on the thread it is sent
+     * on.
+     *
+     * @param arguments what was typed after {@code restest}
+     * @param out where everything the command has to say goes
+     * @param err where anything that went wrong goes
+     * @param environment the variables the command is started with
+     * @param engines what makes the engine requests go through, from its settings
+     * @return the number the command answered with
+     */
+    static int run(String[] arguments, PrintWriter out, PrintWriter err,
+            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
         try {
-            return answer(arguments, out, err, environment);
+            return answer(arguments, out, err, environment, engines);
         } catch (Throwable failure) {
             // What arrives here is what the command-line framework does not catch. It catches the
             // exceptions a command throws, and lets through the more serious kind of failure Java
@@ -167,8 +188,8 @@ public final class Restest {
      * framework lets through.
      */
     private static int answer(String[] arguments, PrintWriter out, PrintWriter err,
-            Map<String, String> environment) {
-        CommandLine restest = commandLine(out, err, environment);
+            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
+        CommandLine restest = commandLine(out, err, environment, engines);
         // With no sub-command there is nothing to run; saying so and showing what the choices are
         // beats a silent success.
         if (arguments.length == 0) {
@@ -209,7 +230,12 @@ public final class Restest {
      */
     static CommandLine commandLine(PrintWriter out, PrintWriter err,
             Map<String, String> environment) {
-        return new CommandLine(new Restest(), new StartedIn(environment))
+        return commandLine(out, err, environment, OkHttpEngine::new);
+    }
+
+    private static CommandLine commandLine(PrintWriter out, PrintWriter err,
+            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
+        return new CommandLine(new Restest(), new StartedIn(environment, engines))
                 .setOut(out)
                 .setErr(err)
                 // Plain text, on every machine. The command-line framework would otherwise colour
@@ -401,22 +427,24 @@ public final class Restest {
     }
 
     /**
-     * Builds the run command with the environment it was handed, and everything else the way the
-     * command-line framework would. A class rather than a record, so that printing it never prints
-     * the environment, a key left in it included.
+     * Builds the run command with the environment it was handed and the engine it sends through, and
+     * everything else the way the command-line framework would. A class rather than a record, so
+     * that printing it never prints the environment, a key left in it included.
      */
     private static final class StartedIn implements CommandLine.IFactory {
 
         private final Map<String, String> environment;
+        private final Function<EngineSettings, HttpEngine> engines;
 
-        StartedIn(Map<String, String> environment) {
+        StartedIn(Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
             this.environment = Objects.requireNonNull(environment, "environment");
+            this.engines = Objects.requireNonNull(engines, "engines");
         }
 
         @Override
         public <K> K create(Class<K> kind) throws Exception {
             return kind == RunCommand.class
-                    ? kind.cast(new RunCommand(environment))
+                    ? kind.cast(new RunCommand(environment, engines))
                     : CommandLine.defaultFactory().create(kind);
         }
     }

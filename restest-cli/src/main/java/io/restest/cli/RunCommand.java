@@ -21,6 +21,7 @@ import io.restest.core.auth.CredentialedEngine;
 import io.restest.core.auth.Place;
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
+import io.restest.core.exec.EngineSettings;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
@@ -31,7 +32,6 @@ import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
 import io.restest.core.store.InteractionStore;
-import io.restest.exec.OkHttpEngine;
 import io.restest.gen.Campaign;
 import io.restest.gen.Campaigns;
 import java.util.Optional;
@@ -58,6 +58,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -104,8 +106,10 @@ import picocli.CommandLine.Spec;
                         + "nowhere to write the results, or not one request was answered - none "
                         + "could be built, the budget ran out before the first, or nothing at the "
                         + "address replied. The run says which.",
-                ExitCode.TOOL_FAILED + ":RESTest itself went wrong, so what it printed may be "
-                        + "incomplete. The message and the stack trace are what to report."},
+                ExitCode.TOOL_FAILED + ":RESTest itself went wrong - it lost requests on their "
+                        + "way, had to keep exchanges without their details, or broke outright - "
+                        + "so what it printed may be incomplete. The message and the stack trace "
+                        + "are what to report."},
         // Written out line by line, each short enough never to be broken by the framework, which
         // breaks a long line after a colon or a full stop - in the middle of an address, or of the
         // name of a setting, where a person copying it would copy half.
@@ -286,12 +290,21 @@ final class RunCommand implements Callable<Integer> {
     private final Map<String, String> environment;
 
     /**
-     * A command started in the given environment.
+     * What sends the requests, made from the engine's settings once they are known. The engine that
+     * talks HTTP, except in a test that needs a run to break where only a real one ever would: on
+     * the thread a request is sent on.
+     */
+    private final Function<EngineSettings, HttpEngine> engines;
+
+    /**
+     * A command started in the given environment, sending through the given engine.
      *
      * @param environment the variables the command was started with
+     * @param engines what makes the engine requests are sent through, from its settings
      */
-    RunCommand(Map<String, String> environment) {
+    RunCommand(Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
         this.environment = Objects.requireNonNull(environment, "environment");
+        this.engines = Objects.requireNonNull(engines, "engines");
     }
 
     @Spec
@@ -382,7 +395,7 @@ final class RunCommand implements Callable<Integer> {
         // API is being asked nothing - and a tool that spends its time preparing instead of testing
         // is exactly what that measurement exists to catch. Start the clock afterwards, and such a
         // run reports itself as flawless.
-        try (HttpEngine engine = new OkHttpEngine(settings.engine())) {
+        try (HttpEngine engine = engines.apply(settings.engine())) {
             ApiModel model = new SwaggerSpecificationParser(settings.document()).parse(specification);
             // Read against the document as soon as there is one, and before anything else is said
             // about it. A key typed that cannot be placed ends the command here with nothing sent:
@@ -575,20 +588,26 @@ final class RunCommand implements Callable<Integer> {
             }
         }
 
-        if (sending instanceof CredentialedEngine door && door.hiddenWhole() > 0) {
-            err.println("restest: " + door.hiddenWhole() + " exchange(s) were kept without their "
-                    + "details, because RESTest could not pick the key out of them; this is a "
-                    + "fault of RESTest rather than of the API");
+        // Read once, so that the sentence and the number are about the same exchanges however late
+        // the last of them arrives.
+        long keptWithoutTheirDetails = sending instanceof CredentialedEngine door
+                ? door.hiddenWhole() : 0;
+        if (keptWithoutTheirDetails > 0) {
+            err.println("restest: " + keptWithoutTheirDetails + " exchange(s) were kept without "
+                    + "their details, because RESTest could not pick the key out of them; this is "
+                    + "a fault of RESTest rather than of the API");
         }
         OurOwnFailures ours = new OurOwnFailures(events.listenerFailures(),
                 rules == null ? 0 : rules.failures(),
                 rules == null ? 0 : rules.rulesThatFailed(),
                 events.undelivered());
         int answer = ExitCode.of(outcome, ours.reports() + ours.judgements(),
-                ours.eventsNeverHeard(), console.faults());
+                ours.eventsNeverHeard(), keptWithoutTheirDetails, console.faults());
         long repeated = sending instanceof CredentialedEngine door
                 ? door.repliesThatRepeatedAKey() : 0;
-        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated);
+        UnaryOperator<String> hidden = sending instanceof CredentialedEngine door
+                ? door::withTheKeysHidden : UnaryOperator.identity();
+        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated, hidden);
         return answer;
     }
 
@@ -625,16 +644,41 @@ final class RunCommand implements Callable<Integer> {
      */
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
             String address, Path reportFile, Path runFile, OurOwnFailures ours,
-            long repliesThatRepeatedAKey) {
+            long repliesThatRepeatedAKey, UnaryOperator<String> hidden) {
         if (outcome != null) {
-            long lost = outcome.notGenerated() + outcome.notAssembled();
-            if (lost > 0) {
-                out.println(lost + " test case(s) could not be built and were skipped");
+            long notBuilt = outcome.notGenerated() + outcome.notAssembled();
+            if (notBuilt > 0) {
+                out.println(notBuilt + " test case(s) could not be built and were skipped");
             }
             if (outcome.stillOwed() > 0) {
                 err.println("restest: " + outcome.stillOwed() + " request(s) were never answered "
                         + "and the run stopped waiting for them, so they are missing from what is "
                         + "reported above");
+            }
+            // Said with what went wrong, because somebody has to be able to report it; and never as
+            // a problem with the address, which is what a run where nothing came back would
+            // otherwise be told, and what would send whoever reads it looking in the wrong place.
+            if (outcome.lost() > 0) {
+                // The requests that were neither answered, nor lost, nor still owed ended without
+                // an answer from the API - refused, reset, timed out - and when nothing at all was
+                // answered those say something about the address, which is worth saying beside
+                // what RESTest did wrong rather than instead of it.
+                long unansweredByTheApi = outcome.sent() - outcome.answered() - outcome.lost()
+                        - outcome.stillOwed();
+                err.println("restest: " + outcome.lost() + " request(s) were lost by RESTest "
+                        + "itself, on their way to the API or back, and are missing from what is "
+                        + "reported above; this is a fault of RESTest rather than of the API"
+                        + (outcome.nothingAnswered() ? ". Not one request was answered, and a run "
+                                + "stops sending, at the end of the round it is in, once as many "
+                                + "as can be in flight have gone unanswered" : "")
+                        + (outcome.nothingAnswered() && unansweredByTheApi > 0
+                                ? "; the other " + unansweredByTheApi + " ended without an answer "
+                                        + "- refused, reset, timed out, or never sent at all - so "
+                                        + "check " + address + " as well"
+                                : "")
+                        + (outcome.firstLoss().isPresent() ? ". The first went wrong like this:"
+                                : ""));
+                outcome.firstLoss().ifPresent(failure -> printed(failure, err, hidden));
             }
         }
         // A reply with a key hidden in it is not quite what the API sent, and the check of replies
@@ -692,6 +736,30 @@ final class RunCommand implements Callable<Integer> {
             err.println("restest: nothing at " + address + " answered any of the " + outcome.sent()
                     + " requests, so the API was never actually tested. Check the address, and that "
                     + "it is running.");
+        }
+    }
+
+    /**
+     * What went wrong, with its stack trace, the way the run writes everything else: with every key
+     * it was handed hidden. Saying so can fail in its turn - a program that has run out of memory
+     * may not have enough left to write it out - and the run goes on to say what it wrote, which it
+     * did write.
+     */
+    private static void printed(Throwable failure, PrintWriter err, UnaryOperator<String> hidden) {
+        try {
+            StringWriter trace = new StringWriter();
+            failure.printStackTrace(new PrintWriter(trace));
+            err.print(hidden.apply(trace.toString()));
+            err.flush();
+        } catch (Throwable whileSayingSo) {
+            // Its kind at least, which holds no key, so that the line above it is not left
+            // introducing nothing. If even that cannot be written, the count above has been said.
+            try {
+                err.println(failure.getClass().getName() + " (the rest of it could not be "
+                        + "written out)");
+            } catch (Throwable stillNot) {
+                // Nothing is left to say it with.
+            }
         }
     }
 
