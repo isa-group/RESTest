@@ -80,6 +80,8 @@ final class Specifications {
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation seen = Operation.of(HttpMethod.GET, "/seen")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+        Operation label = Operation.of(HttpMethod.GET, "/label")
+                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation strayEscape = Operation.of(HttpMethod.GET, "/strayescape")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation encodedReference = Operation.of(HttpMethod.GET, "/encodedref")
@@ -95,7 +97,7 @@ final class Specifications {
 
         return ApiModel.of("Pets", "1.0.0", List.of(listPets, onePet, kinds, raw, unsaid, noReply,
                         onlyXml, dangling, charsetKey, byReference, byChain, elsewhere, seen,
-                        strayEscape, encodedReference, cycle, nowhere, problem))
+                        label, strayEscape, encodedReference, cycle, nowhere, problem))
                 .withDocument(read("/pets-3.0.json"));
     }
 
@@ -120,6 +122,22 @@ final class Specifications {
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         return ApiModel.of("Kinds", "1.0.0", List.of(kinds))
                 .withDocument(read("/kinds-3.1.json"));
+    }
+
+    /**
+     * An API written as OpenAPI 3.1 whose replies choose between shapes, or depend on a condition,
+     * or allow nothing beyond what some other part accepted - each shaped so that a key repeated
+     * back in it, and hidden, could make the reply fail the shape it really has.
+     */
+    static ApiModel choices31() {
+        List<Operation> operations = new java.util.ArrayList<>();
+        for (String path : List.of("/pet", "/either", "/plan", "/me", "/usage", "/registry",
+                "/tuple")) {
+            operations.add(Operation.of(HttpMethod.GET, path)
+                    .withResponses(List.of(ResponseModel.json("200", AnySchema.of()))));
+        }
+        return ApiModel.of("Choices", "1.0.0", operations)
+                .withDocument(read("/choices-3.1.json"));
     }
 
     /**

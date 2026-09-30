@@ -15,11 +15,17 @@
  */
 package io.restest.cli;
 
+import io.restest.core.auth.AuthGiven;
+import io.restest.core.auth.CredentialPlan;
+import io.restest.core.auth.CredentialedEngine;
+import io.restest.core.auth.Place;
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
+import io.restest.core.model.SecurityScheme;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
@@ -48,7 +54,11 @@ import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -125,6 +135,19 @@ final class RunCommand implements Callable<Integer> {
                     + "document says the API is served from is kept; given with one, such as "
                     + "http://localhost:8080/api/v3, that replaces it.")
     private String baseUrl;
+
+    @Option(
+            names = "--auth",
+            paramLabel = "<key>",
+            description = "A key the API asks for, sent where its document says - in a header, the "
+                    + "query or a cookie - and only with the operations that ask for one. Where the "
+                    + "document declares more than one kind of key, name the one this is for, as "
+                    + "api_key=<key>. Where it declares none, say where the key goes, and it goes "
+                    + "with every request: header:X-API-Key=<key>, query:<name>=<key> or "
+                    + "cookie:<name>=<key>. Repeat for several. RESTEST_AUTH may hold one instead, "
+                    + "which keeps it out of the shell's history; one typed here wins over it. "
+                    + "What the run writes shows REDACTED-AUTH where a key went, never the key.")
+    private List<String> keysTyped = new ArrayList<>();
 
     @Option(
             names = "--budget",
@@ -219,6 +242,23 @@ final class RunCommand implements Callable<Integer> {
     /** Whether starting this run destroyed a kept run somebody may have wanted. */
     private boolean replacedAKeptRun;
 
+    /**
+     * The environment the command was started in, read for the settings and for a key left in it.
+     * Handed in rather than read here, so that two commands in one program can be started in two
+     * environments; and held as it was handed over, never copied, because on some systems the
+     * names in it are looked up whatever their capitals, and a copy would not be.
+     */
+    private final Map<String, String> environment;
+
+    /**
+     * A command started in the given environment.
+     *
+     * @param environment the variables the command was started with
+     */
+    RunCommand(Map<String, String> environment) {
+        this.environment = Objects.requireNonNull(environment, "environment");
+    }
+
     @Spec
     private CommandSpec spec;
 
@@ -260,7 +300,7 @@ final class RunCommand implements Callable<Integer> {
         SettingsInEffect configuration;
         try {
             configuration = SettingsFromEverywhere.gather(Optional.ofNullable(settingsFile),
-                    System.getenv(), settingsTyped);
+                    environment, settingsTyped);
         } catch (SettingsException refused) {
             err.println("restest: " + refused.getMessage());
             return ExitCode.BAD_COMMAND_LINE;
@@ -309,6 +349,22 @@ final class RunCommand implements Callable<Integer> {
         // run reports itself as flawless.
         try (HttpEngine engine = new OkHttpEngine(settings.engine())) {
             ApiModel model = new SwaggerSpecificationParser(settings.document()).parse(specification);
+            // Read against the document as soon as there is one, and before anything else is said
+            // about it. A key typed that cannot be placed ends the command here with nothing sent:
+            // a run of a protected API without the key somebody meant it to have is a run of
+            // refusals, answering a question nobody asked. A document with nothing in it to test is
+            // left to say so in its own words, whatever keys came with it.
+            CredentialPlan credentials = CredentialPlan.none();
+            if (!model.operations().isEmpty()) {
+                CredentialPlan.Found keys = CredentialPlan.gather(keysGiven(), model,
+                        settings.engine().followRedirects());
+                keys.warnings().forEach(warning -> err.println("restest: " + warning));
+                if (!keys.refusals().isEmpty()) {
+                    keys.refusals().forEach(refusal -> err.println("restest: " + refusal));
+                    return ExitCode.BAD_COMMAND_LINE;
+                }
+                credentials = keys.plan();
+            }
             Dictionaries.Found found = Dictionaries.gather(dictionaries, model);
             found.problems().forEach(problem -> err.println("restest: " + problem));
             // Every list this run holds, not only the ones somebody handed over: the question a
@@ -335,7 +391,9 @@ final class RunCommand implements Callable<Integer> {
                 Campaign campaign = askedForAShareOfPushing()
                         ? plan.campaign().withTheShareOfPushingSetTo(fuzzingShare)
                         : plan.campaign();
-                generator = new RandomTestCaseGenerator(model,
+                // The one part of the run that sees the API without the inputs a key fills, so that
+                // nothing is invented for them; everything else keeps the document as it is.
+                generator = new RandomTestCaseGenerator(credentials.modelToFillIn(model),
                         seed == null ? new java.util.SplittableRandom().nextLong() : seed,
                         found.dictionaries(), campaign, settings);
             } catch (IllegalArgumentException outOfRange) {
@@ -369,15 +427,21 @@ final class RunCommand implements Callable<Integer> {
                 return ExitCode.NOTHING_TO_TEST;
             }
             return testing(model, generator, found, testable, address, directory, startedAt,
-                    engine, configuration, out, err);
+                    engine, credentials, configuration, out, err);
         }
     }
 
     private int testing(ApiModel model, RandomTestCaseGenerator generator,
             Dictionaries.Found found, List<Operation> testable, String address, Path directory,
-            Instant startedAt, HttpEngine engine, SettingsInEffect configuration, PrintWriter out,
-            PrintWriter err) {
+            Instant startedAt, HttpEngine engine, CredentialPlan credentials,
+            SettingsInEffect configuration, PrintWriter out, PrintWriter err) {
         Settings settings = configuration.settings();
+        // Each key goes into a request as it leaves, and comes out of each exchange before anything
+        // else sees it. A run handed no key sends through the engine itself, exactly as it did
+        // before keys could be handed over. Nothing here needs closing: the engine behind it is
+        // closed where it was opened.
+        HttpEngine sending = credentials.isEmpty()
+                ? engine : new CredentialedEngine(engine, credentials);
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
         // What this command has to say about the run before it begins - the count, the seed, the
@@ -386,7 +450,8 @@ final class RunCommand implements Callable<Integer> {
         // written alongside that line rather than after it, and the two reached the screen in
         // either order, now and then one inside the other: one command explaining itself two ways.
         StringWriter introduction = new StringWriter();
-        describe(new PrintWriter(introduction), model, generator, configuration, testable.size());
+        describe(new PrintWriter(introduction), model, generator, configuration, testable,
+                credentials);
         ConsoleReport console = ConsoleReport.to(out, settings.report(),
                 introduction.toString());
 
@@ -459,14 +524,14 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().announcementsAllowedToPileUp(),
                             settings.engine().readTimeout()
                                     .plus(settings.schedule().stragglerGrace()),
-                            engine, drained);
+                            sending, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
                     // this, the run's summary and its report file would both be missing, and the
                     // evidence of whatever went wrong would go with them.
                     Instant finishedAt = Instant.now();
                     drained.publish(new RunEvent.RunFinished(finishedAt,
-                            Duration.between(startedAt, finishedAt), engine.statistics()));
+                            Duration.between(startedAt, finishedAt), sending.statistics()));
                 }
             }
         } finally {
@@ -475,13 +540,20 @@ final class RunCommand implements Callable<Integer> {
             }
         }
 
+        if (sending instanceof CredentialedEngine door && door.hiddenWhole() > 0) {
+            err.println("restest: " + door.hiddenWhole() + " exchange(s) were kept without their "
+                    + "details, because RESTest could not pick the key out of them; this is a "
+                    + "fault of RESTest rather than of the API");
+        }
         OurOwnFailures ours = new OurOwnFailures(events.listenerFailures(),
                 rules == null ? 0 : rules.failures(),
                 rules == null ? 0 : rules.rulesThatFailed(),
                 events.undelivered());
         int answer = ExitCode.of(outcome, ours.reports() + ours.judgements(),
                 ours.eventsNeverHeard(), console.faults());
-        explain(out, err, answer, outcome, address, reportFile, runFile, ours);
+        long repeated = sending instanceof CredentialedEngine door
+                ? door.repliesThatRepeatedAKey() : 0;
+        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated);
         return answer;
     }
 
@@ -517,7 +589,8 @@ final class RunCommand implements Callable<Integer> {
      * <em>judging</em> broke kept it in full, so that one is still announced.
      */
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
-            String address, Path reportFile, Path runFile, OurOwnFailures ours) {
+            String address, Path reportFile, Path runFile, OurOwnFailures ours,
+            long repliesThatRepeatedAKey) {
         if (outcome != null) {
             long lost = outcome.notGenerated() + outcome.notAssembled();
             if (lost > 0) {
@@ -528,6 +601,16 @@ final class RunCommand implements Callable<Integer> {
                         + "and the run stopped waiting for them, so they are missing from what is "
                         + "reported above");
             }
+        }
+        // A reply with a key hidden in it is not quite what the API sent, and the check of replies
+        // against the document lets pass whatever the hiding may have changed - so how many there
+        // were is part of what "nothing wrong" means. An API handing a key back is worth knowing
+        // about in itself.
+        if (repliesThatRepeatedAKey > 0) {
+            out.println(repliesThatRepeatedAKey
+                    + (repliesThatRepeatedAKey == 1 ? " reply" : " replies")
+                    + " repeated a key back; it is hidden there too, and the check of replies "
+                    + "against the document passes over whatever the hiding changed");
         }
         // Said first, and said whatever else went wrong. A run can break in both ways at once,
         // and an earlier version of this reported only the listeners - so a run where one report
@@ -616,14 +699,16 @@ final class RunCommand implements Callable<Integer> {
     }
 
     private void describe(PrintWriter out, ApiModel model, RandomTestCaseGenerator generator,
-            SettingsInEffect configuration, int testable) {
+            SettingsInEffect configuration, List<Operation> testable, CredentialPlan credentials) {
         int setAside = generator.operationsThePlanSetAside().size();
         // Every operation the document describes, including the ones it could not be read for.
-        out.println(testable + " of "
-                + (testable + generator.untestableOperations().size()
+        out.println(testable.size() + " of "
+                + (testable.size() + generator.untestableOperations().size()
                         + model.unreadableOperations().size() + setAside)
                 + " operations can be tested, seed " + generator.seed()
                 + ", budget " + human(budget));
+        // Straight under the count, so that "of them" is read against it.
+        describeTheKeys(out, model, credentials, testable);
         // Said as its own line rather than folded into the count, because the two are different
         // things: one is what the document makes impossible, the other is what somebody asked for.
         if (setAside > 0) {
@@ -648,6 +733,88 @@ final class RunCommand implements Callable<Integer> {
         }
         report(out, model.issues());
         out.println();
+    }
+
+    /**
+     * What happens to the keys: where each one handed over goes, and which keys the document asks
+     * for that nobody handed over.
+     *
+     * <p>Said before the first request, because a protected API run without its key answers every
+     * request with a refusal, and that should not take the whole budget to find out. Only the
+     * operations that can be tested are counted, since those are the ones the count above names.
+     */
+    private static void describeTheKeys(PrintWriter out, ApiModel model,
+            CredentialPlan credentials, List<Operation> testable) {
+        Set<OperationId> tested = testable.stream().map(Operation::id)
+                .collect(Collectors.toSet());
+        for (CredentialPlan.Placed placed : credentials.placed()) {
+            long with = placed.operations().stream().filter(tested::contains).count();
+            if (with == 0) {
+                out.println("  " + placed.named() + " goes with none of them: "
+                        + placed.whyWithNone().orElse("the operations it would go with cannot be "
+                                + "tested"));
+            } else {
+                out.println("  " + placed.named() + " goes with " + ofThem(with, tested.size())
+                        + ", in " + inWords(placed.places()) + "; what the run writes says "
+                        + placed.mask() + " in its place");
+            }
+        }
+        long keys = model.securitySchemes().values().stream()
+                .filter(SecurityScheme.ApiKey.class::isInstance).count();
+        for (CredentialPlan.Missing missing : credentials.missing()) {
+            long asking = missing.operations().stream().filter(tested::contains).count();
+            if (asking == 0) {
+                continue;
+            }
+            String option = AuthGiven.OPTION + " "
+                    + (keys == 1 ? "<key>" : asAShellWord(missing.scheme() + "=<key>"));
+            String which = "(" + missing.scheme() + ", in " + missing.place().described() + ")";
+            if (missing.askedForNowhere()) {
+                out.println("  the document declares an API key it asks for on no operation "
+                        + which + ": " + option + " sends it with " + ofThem(asking, tested.size()));
+            } else {
+                out.println("  " + (asking == tested.size() && asking > 1 ? "all " : "") + asking
+                        + " of them " + (asking == 1 ? "asks" : "ask") + " for an API key that was "
+                        + "not given " + which + ": " + option + " gives it");
+            }
+        }
+    }
+
+    private static String ofThem(long some, int all) {
+        return some == all && all > 1 ? "every one of them" : some + " of them";
+    }
+
+    /** Places in words: "the header api_key", or "the query parameter k and the form field k". */
+    private static String inWords(List<Place> places) {
+        List<String> described = places.stream().map(Place::described).toList();
+        if (described.size() <= 1) {
+            return String.join("", described);
+        }
+        return String.join(", ", described.subList(0, described.size() - 1)) + " and "
+                + described.get(described.size() - 1);
+    }
+
+    /** A word as a shell needs it to arrive whole: quoted when it holds anything but the plain. */
+    private static String asAShellWord(String word) {
+        return word.matches("[A-Za-z0-9._=<>-]+") ? word : "'" + word.replace("'", "'\\''") + "'";
+    }
+
+    /**
+     * Every key handed over: the one left in the environment first, then each one typed, in the
+     * order typed - which is the order in which a key typed wins over one left in the environment
+     * for the same place. An empty variable is how a shell says a variable is not there for one
+     * command, so it counts as none, and so does one holding nothing but a line break.
+     */
+    private List<AuthGiven> keysGiven() {
+        List<AuthGiven> given = new ArrayList<>();
+        String left = environment.get(AuthGiven.VARIABLE);
+        if (left != null && !AuthGiven.fromTheEnvironment(left).isEmpty()) {
+            given.add(AuthGiven.fromTheEnvironment(left));
+        }
+        for (int position = 0; position < keysTyped.size(); position++) {
+            given.add(AuthGiven.typed(keysTyped.get(position), position + 1));
+        }
+        return given;
     }
 
     /**

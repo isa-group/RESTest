@@ -195,6 +195,31 @@
         }
       }
     },
+    "/label": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a label, with things a key hidden in it could change",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["name"],
+                  "properties": {
+                    "name": {"type": "string"},
+                    "short": {"type": "string", "maxLength": 12},
+                    "letters": {"type": "string", "pattern": "^[a-z]+$"},
+                    "colour": {"type": "string", "enum": ["red", "green"]},
+                    "count": {"type": "integer"}
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/seen": {
       "get": {
         "responses": {

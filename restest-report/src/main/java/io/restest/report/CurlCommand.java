@@ -66,7 +66,11 @@ public final class CurlCommand {
     private CurlCommand() {
     }
 
-    /** The command that repeats this request, exactly as it was sent. */
+    /**
+     * The command that repeats this request, exactly as it was sent - save for a key the run was
+     * handed, where the command shows the text that stands for it and the key has to be put back
+     * before the command is run.
+     */
     public static String of(HttpRequestRecord request) {
         Objects.requireNonNull(request, "request");
         StringBuilder command = new StringBuilder("curl ")

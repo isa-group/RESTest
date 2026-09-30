@@ -284,6 +284,13 @@
                           container runtime and Windows runners only run Windows containers.
                         -->
                         <excludedGroups>smoke</excludedGroups>
+                        <!--
+                          A key left in RESTEST_AUTH on the machine running the build would be read
+                          by every test that starts the command, and change what those tests send -
+                          or have them refuse to start. The tests that are about that variable hand
+                          the command an environment of their own instead.
+                        -->
+                        <excludedEnvironmentVariables>RESTEST_AUTH</excludedEnvironmentVariables>
                     </configuration>
                 </plugin>
                 <plugin>

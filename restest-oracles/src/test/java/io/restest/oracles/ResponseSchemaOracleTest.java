@@ -23,6 +23,7 @@ import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -285,6 +286,86 @@ class ResponseSchemaOracleTest {
         void a_truncated_reply_is_left_alone() {
             assertThat(oracle.judge(Attempts.answeredWithPartOfTheBody(ONE_PET, "/pets/7", 200,
                     JSON, "{\"id\": 7, \"na", 4096), pets)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("in a reply with a key hidden in it, only what the hiding could have changed is let pass")
+        void a_reply_with_a_key_hidden_in_it_is_judged_on_the_rest() {
+            OperationId label = OperationId.of("GET /label");
+            // What the text written in a key's place can change: a length, a pattern, a value
+            // from a list, the name of a member, and a number it breaks into something that is
+            // not JSON at all.
+            for (String changed : List.of(
+                    "{\"name\": \"a\", \"short\": \"REDACTED-AUTH.api_key\"}",
+                    "{\"name\": \"a\", \"letters\": \"abREDACTED-AUTH\"}",
+                    "{\"name\": \"a\", \"colour\": \"REDACTED-AUTH\"}",
+                    "{\"name\": \"a\", \"REDACTED-AUTH.api_key\": \"x\"}",
+                    "{\"name\": \"a\", \"count\": 9REDACTED-AUTH.digits}")) {
+                assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON, changed),
+                        pets)).describedAs(changed).isEmpty();
+            }
+            // What it can never change: a kind of value, even of the replacement itself, a missing
+            // member, anything wrong somewhere else in the same reply.
+            for (String wrong : List.of(
+                    "{\"name\": \"a\", \"count\": \"REDACTED-AUTH\"}",
+                    "{\"name\": \"REDACTED-AUTH\", \"count\": \"seven\"}",
+                    "{\"name\": 7, \"short\": \"REDACTED-AUTH\"}",
+                    "{\"short\": \"https://api/pets?key=REDACTED-AUTH\"}",
+                    "{\"name\": \"a\", \"short\": \"REDACTED-AUTH\", \"colour\": \"blue\"}")) {
+                assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON, wrong),
+                        pets)).describedAs(wrong).singleElement()
+                        .satisfies(finding -> assertThat(finding.details()).hasSize(1));
+            }
+            assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON,
+                    "{\"name\": \"a\", \"colour\": \"blue\"}"), pets))
+                    .describedAs("and a reply with no key in it is judged as ever")
+                    .hasSize(1);
+        }
+
+        @Test
+        @DisplayName("in a reply with a key hidden in it, what a choice or a condition objects to is let pass")
+        void what_a_choice_objects_to_is_let_pass() {
+            ApiModel choices = Specifications.choices31();
+            // Each of these is what an API sent with a key in it, a valid reply, once the key is
+            // hidden: the replacement breaks the shape the reply really has - the cat's link, the
+            // key's length, the key's letters, the token - or the name it is counted under, and
+            // then the other shape, the other branch, or the rule for what is left over objects to
+            // parts of the reply the replacement never touched.
+            Map<String, String> validOnceTheKeyIsBack = Map.of(
+                    "/pet", "{\"kind\": \"cat\", \"name\": \"Tom\", "
+                            + "\"self\": \"/pets/1?key=REDACTED-AUTH\"}",
+                    "/either", "{\"key\": \"REDACTED-AUTH.x\"}",
+                    "/plan", "{\"key\": \"REDACTED-AUTH\", \"plan\": \"paid\"}",
+                    "/me", "{\"name\": \"a\", \"token\": \"abREDACTED-AUTH\"}",
+                    "/usage", "{\"REDACTED-AUTH\": 42}");
+            validOnceTheKeyIsBack.forEach((path, body) -> assertThat(oracle.judge(
+                    Attempts.answered(OperationId.of("GET " + path), path, 200, JSON, body),
+                    choices)).describedAs(path + " " + body).isEmpty());
+
+            // Outside every choice, what the replacement cannot have changed still stands.
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /me"), "/me", 200, JSON,
+                    "{\"name\": 7, \"token\": \"abREDACTED-AUTH\"}"), choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .startsWith("/name"));
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /usage"), "/usage", 200,
+                    JSON, "{\"REDACTED-AUTH\": 42, \"Other\": 5}"), choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .startsWith("/Other"));
+            // A member whose name is a word of a shape is still only a member, and one item more
+            // than a tuple allows is still one too many.
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /registry"), "/registry",
+                    200, JSON, "{\"self\": \"/x?k=REDACTED-AUTH\", \"dependencies\": {\"a\": 7}}"),
+                    choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .startsWith("/dependencies/a"));
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /tuple"), "/tuple", 200,
+                    JSON, "[\"REDACTED-AUTH\", 1, 2]"), choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .contains("additional items"));
+            // And with no key hidden in it, a reply is judged through every choice as ever.
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /pet"), "/pet", 200, JSON,
+                    "{\"kind\": \"cat\", \"name\": \"Tom\", \"self\": \"/pets/1?key=ABC\"}"),
+                    choices)).hasSize(1);
         }
 
         @Test

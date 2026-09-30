@@ -62,6 +62,7 @@ numbers in it are that run's and yours will be different:
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
 19 of 19 operations can be tested, seed 20260914, budget 10s
+  2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
 F100  HTTP Status 500
@@ -188,6 +189,36 @@ you can see one without building anything. Twenty-six of the settings are switch
 `false`, each turning off one thing the tool does, so that what it is worth can be measured by
 running the same tool with it and without it. [docs/switches.md](docs/switches.md) lists them with
 what each was found to be worth, and gives the files that turn off a whole idea at once.
+
+An API that asks for a key answers every request without it with a 401, and a run of refusals
+finds nothing behind them. The pet shop's document asks for one on two operations, and the run above
+says so under its count of operations. `--auth` hands the key over, and RESTest sends it where the
+document says — in a header, the query or a cookie — with the operations that ask for it:
+
+```bash
+./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+    --url https://petstore3.swagger.io/api/v3 --budget 10s --auth special-key
+```
+
+`special-key` on its own is enough when the document declares one key, as the pet shop does. With
+several, name the one it is for: `--auth api_key=special-key`. For a document that declares none,
+say where the key goes, and it goes with every request: `--auth header:X-API-Key=…`, or `query:` or
+`cookie:` in place of `header:`. Repeat `--auth` for several keys. `RESTEST_AUTH` holds the same as
+one `--auth`, so that a key need not be typed where a shell remembers it. It goes to whatever API a
+run tests while it is set, so set it for the run it is meant for — `RESTEST_AUTH=… ./restest run …`
+— rather than once for every run. Before its first request a run says where each key goes:
+
+```
+  the key given with --auth goes with 3 of them, in the header api_key; what the run writes says REDACTED-AUTH in its place
+```
+
+The key is written into nothing the run leaves behind. The screen, `report.json` with its `curl`
+commands, and the stored run all show `REDACTED-AUTH` where it went, or `REDACTED-AUTH.api_key`
+for a named scheme. So a `curl` command copied from a report is run by putting the key back there.
+An API that repeats the key back in its replies has it hidden there too, and the run says at the
+end how many replies did.
+[ADR-0029](docs/adr/0029-the-key-an-api-asks-for.md) has the rules: which operations get a key, what
+fills an input the document declares under the key's name, and what is refused.
 
 Nothing else is required. `--url` is only needed when the document does not name an address you
 can reach; it says which machine, so an API the document describes as living under a directory is

@@ -54,9 +54,12 @@ import java.util.Optional;
  * has to behave the same way in every directory, and a file found by accident is a run nobody can
  * explain afterwards.
  *
- * <p>This is the only part of RESTest that reads the environment, which an architecture test keeps
- * true. Everything else is handed the settings it needs, so two runs in the same program can have
- * different ones without either noticing the other.
+ * <p>The environment is read once, where the command starts, and handed here; the command-line
+ * module is the only part of RESTest that reads it at all, which an architecture test keeps true.
+ * This class reads the settings out of it, and the command reads one more thing beside them - a key
+ * left in it for the API - which is not a setting and is never printed or recorded as one. Everything
+ * else is handed the settings it needs, so two runs in the same program can have different ones
+ * without either noticing the other.
  */
 final class SettingsFromEverywhere {
 

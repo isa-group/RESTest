@@ -1,7 +1,7 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a and M2.10a
-**Date:** 2026-09-14 (amended 2026-09-15)
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1 and M11.3, and in #314
+**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30)
 
 ## Context
 
@@ -598,3 +598,51 @@ the step before are in and have been heard by the listeners, for at most
 `schedule.openingLapPatience` and never past the deadline. The part of that wait with nothing in
 flight is counted in the idle time like every other pause. The summary gains one line saying what that round took and what it bought,
 and `report.json` a `phases` block. [ADR-0026](0026-what-a-run-sends-first.md).
+
+## Amendment (M11.3)
+
+**Date:** 2026-09-30
+
+**One more option, and a variable beside it.**
+
+```
+restest run [--auth=<key>]... ... <spec>
+```
+
+[ADR-0029](0029-the-key-an-api-asks-for.md) is the reasoning. What is recorded here is what the
+command line gains, since 12.1 freezes it.
+
+`--auth` hands over a key the API asks for, and may be repeated. It is written in one of three ways:
+- the key alone, for a document that declares one API key;
+- `<scheme>=<key>`, naming one of the document's schemes;
+- `header:<name>=<key>`, `query:<name>=<key>` or `cookie:<name>=<key>`, for a key the document does
+  not declare, which then goes with every request.
+
+`RESTEST_AUTH` holds what one `--auth` holds, so that a key need not be typed. It is not a setting:
+it is never printed or recorded with them. A key typed for the same place wins over it.
+
+**A key typed that cannot be placed answers `2`.** That is decided after the document is read and
+before anything is sent, as for a plan file the command line named, and the message never repeats
+the key. A key in `RESTEST_AUTH` that cannot be placed is only a warning, and the run goes on.
+
+**A key the document asks for and nobody handed over is not a refusal.** A line under the count of
+operations says which key, and names the option that would give it.
+
+`--print-settings` and `--print-campaign` read no document, so they read no key either.
+
+**Four complaints no longer repeat what was typed.**
+- `--url` with a query string says so without repeating the query, which may be a key, and names
+  `--auth query:<name>=<key>`. It answers `3`, as before.
+- An argument the command does not understand is not repeated. An option that does not exist is
+  named, up to any `=`; anything else is only counted. It answers `2`, as before.
+- Any other complaint about the command line is said in the framework's words, with whatever was
+  typed after `--auth` taken out. An option missing its value, followed by `--auth=<key>`, is told
+  it found `--auth=<key>` - those very characters, not the key. It answers `2`, as before.
+- An argument that runs straight on from `--auth`, with no space or `=` between them, is refused
+  before the framework reads the command line, without repeating it. So is one in a file of
+  arguments named with `@`; nothing after `--` is looked at. It answers `2`.
+
+At the end, a run handed a key says how many replies repeated one back, on a line of its own before
+the files are named.
+
+**Nothing else changes.** A run handed no key behaves exactly as it did.

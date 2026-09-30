@@ -6,7 +6,8 @@ are [named further down](#what-has-no-switch-yet). There are two reasons for the
 dislikes one of them can turn it off in a line. And what each one is worth can be measured by
 running the same tool twice, once with it and once without, rather than by building two versions of
 the tool. A comparison of that kind is called an *ablation*, and this page is written for whoever is
-planning one.
+planning one. Sending a key somebody hands over has no switch, because it happens only when asked
+for; [a section further down](#a-key-the-api-asks-for) says why.
 
 ```bash
 restest run api.yaml --url http://localhost:9966 --set schedule.openingLap=false
@@ -350,6 +351,12 @@ share and builds it the ordinary way. Taking the strategy out of the plan instea
 share to the others by hand, since the shares have to add up to a hundred, and the run that gives
 is not always the one its switches give. For the series it is: given to `nominal`, whose sources it
 has, their tenth builds the same requests, one for one.
+
+### A key the API asks for
+
+Handing a key over with `--auth` is not a switch either: it is an instruction about one API, and a
+run without it is simply a run without `--auth`. Nothing about keys happens unless one is given, and
+a run given none sends exactly what it sent before keys could be handed over.
 
 ## Getting the seed back
 

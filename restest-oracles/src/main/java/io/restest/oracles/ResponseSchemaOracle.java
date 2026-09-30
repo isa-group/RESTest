@@ -24,8 +24,11 @@ import com.networknt.schema.SchemaRegistryConfig;
 import com.networknt.schema.dialect.Dialect;
 import com.networknt.schema.dialect.OpenApi30;
 import com.networknt.schema.dialect.OpenApi31;
+import com.networknt.schema.path.NodePath;
+import io.restest.core.auth.Secrets;
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
+import io.restest.core.json.JsonValue;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.Payload;
@@ -41,7 +44,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 /**
  * Reports a reply whose body is not the shape the specification said it would be.
@@ -75,6 +80,33 @@ public final class ResponseSchemaOracle implements Oracle {
     /** What a JSON reply calls itself: {@code application/json}, or anything ending in +json. */
     private static final String JSON_SUFFIX = "+json";
     private static final String JSON_TYPE = "application/json";
+
+    /**
+     * The objections hiding a key can never be the cause of: about what kind of value something is,
+     * about how many members or items it has, and about a number - a key hidden inside a number
+     * stops the body being JSON at all.
+     */
+    private static final Set<String> NEVER_THE_HIDING = Set.of("type", "minimum", "maximum",
+            "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minItems", "maxItems",
+            "minProperties", "maxProperties", "items", "additionalItems");
+
+    /** The objections about the names of an object's members rather than about their values. */
+    private static final Set<String> ABOUT_NAMES = Set.of("required", "dependentRequired",
+            "additionalProperties", "propertyNames");
+
+    /**
+     * The words of a shape that make what else is checked depend on how some other part of the
+     * reply turned out: a choice between shapes, a condition, a count of the items that fit, and
+     * the members or items no other part accepted. When the part that turned out otherwise holds a
+     * key's replacement, what is objected to through one of these may have nothing of it at all.
+     */
+    private static final Set<String> DEPENDS_ON_THE_REST = Set.of("oneOf", "anyOf", "not", "if",
+            "then", "else", "contains", "minContains", "maxContains", "dependentSchemas",
+            "dependencies", "unevaluatedProperties", "unevaluatedItems", "discriminator");
+
+    /** The words of a shape followed, in the way to an objection, by a name the document chose. */
+    private static final Set<String> FOLLOWED_BY_A_NAME = Set.of("properties",
+            "patternProperties", "dependentSchemas");
 
     /** The document being tested against, prepared once. Guarded by this object's own lock. */
     private Reader reader;
@@ -207,10 +239,17 @@ public final class ResponseSchemaOracle implements Oracle {
         // as a broken reply from an API that had answered perfectly. Reporting a fault that is not
         // one is the single thing a testing tool must not do, and it is what this rule exists to
         // avoid rather than cause.
+        // A key the API repeated back was hidden before anything saw the reply, so a reply with
+        // the text written in a key's place is not quite what the API sent: that text can be longer
+        // than a length the document allows, or not one of the values it allows, can make the reply
+        // fail the shape it really has so that another shape of a choice objects instead, and a key
+        // hidden inside a number stops the body being JSON at all. What the hiding may have changed
+        // is not held against the API; everything else in the reply is judged as ever.
+        boolean hidesAKey = body.contains(Secrets.MARKER);
         try {
             JsonText.checkOneValue(body);
         } catch (JsonException notJson) {
-            return List.of(mismatch(interaction, statusCode, contentType,
+            return hidesAKey ? List.of() : List.of(mismatch(interaction, statusCode, contentType,
                     "the body is not JSON at all", List.of(firstLineOf(notJson))));
         }
         List<Error> errors;
@@ -233,6 +272,9 @@ public final class ResponseSchemaOracle implements Oracle {
                 // specification only says it should not be, so that is no fault to report.
                 continue;
             }
+            if (hidesAKey && mayBeTheHidingsDoing(error)) {
+                continue;
+            }
             String where = String.valueOf(error.getInstanceLocation());
             details.add((where.isEmpty() ? "the body" : where) + ": " + error.getMessage());
         }
@@ -241,6 +283,82 @@ public final class ResponseSchemaOracle implements Oracle {
         }
         return List.of(mismatch(interaction, statusCode, contentType,
                 "the body does not match the shape the specification declares for it", details));
+    }
+
+    /**
+     * Whether an objection may be the doing of the text written in a key's place rather than the
+     * API's.
+     *
+     * <p>It may when it is reached through a choice between shapes or a condition - the shape the
+     * reply really has can fail on the replacement, and then every other shape's objections are
+     * made, about parts of the reply the replacement never touched - or when the way to it goes
+     * through a member whose name holds the replacement. Otherwise it may when what it objects to
+     * holds the replacement and is something the replacement could change: a length, a pattern, a
+     * value from a list, or the names of an object's members when one of them holds it. Hiding a
+     * key never changes what kind of value something is, nor how many members or items there are,
+     * nor a number, so those objections stand; so does an object with the replacement in one of its
+     * values, judged on its members' names.
+     */
+    private static boolean mayBeTheHidingsDoing(Error error) {
+        if (anyStep(error.getInstanceLocation(), step -> step.contains(Secrets.MARKER))
+                || throughAChoice(error.getEvaluationPath())) {
+            return true;
+        }
+        String keyword = String.valueOf(error.getKeyword());
+        if (NEVER_THE_HIDING.contains(keyword)) {
+            return false;
+        }
+        String instance = String.valueOf(error.getInstanceNode());
+        if (!instance.contains(Secrets.MARKER)) {
+            return false;
+        }
+        if (!ABOUT_NAMES.contains(keyword)) {
+            return true;
+        }
+        try {
+            return !(JsonText.readFromAnApi(instance) instanceof JsonValue.JsonObject object)
+                    || object.members().keySet().stream()
+                            .anyMatch(name -> name.contains(Secrets.MARKER));
+        } catch (JsonException unreadable) {
+            return true;
+        }
+    }
+
+    /**
+     * Whether the way to an objection goes through a choice or a condition. A member of an object
+     * may be called {@code else} or {@code dependencies}, so a step that names a member is told
+     * apart from one that is a word of the shape by the word before it. A way the checker did not
+     * give is taken to go through one.
+     */
+    private static boolean throughAChoice(NodePath path) {
+        if (path == null) {
+            return true;
+        }
+        boolean aName = false;
+        for (int step = 0; step < path.getNameCount(); step++) {
+            String word = String.valueOf(path.getName(step));
+            if (aName) {
+                aName = false;
+            } else if (DEPENDS_ON_THE_REST.contains(word)) {
+                return true;
+            } else {
+                aName = FOLLOWED_BY_A_NAME.contains(word);
+            }
+        }
+        return false;
+    }
+
+    /** Whether any step of a path passes the test. A path the checker did not give passes it. */
+    private static boolean anyStep(NodePath path, Predicate<String> test) {
+        if (path == null) {
+            return true;
+        }
+        for (int step = 0; step < path.getNameCount(); step++) {
+            if (test.test(String.valueOf(path.getName(step)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Finding mismatch(Interaction interaction, int statusCode, String contentType,

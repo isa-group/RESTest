@@ -16,6 +16,9 @@
 package io.restest.spec;
 
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.Operation;
+import io.restest.core.model.SecurityRequirement;
+import io.restest.core.model.SecurityScheme;
 import io.restest.core.model.Server;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.schema.CanonicalSchema;
@@ -178,10 +181,49 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
         List<SpecificationIssue> issues = new ArrayList<>(documentIssues);
         issues.addAll(operations.issues());
 
+        Map<String, SecurityScheme> securitySchemes =
+                SecurityConverter.schemes(api.getComponents());
+        Optional<SecurityRequirement> security = SecurityConverter.requirement(api.getSecurity());
+        issues.addAll(schemesNamedAndNotDeclared(security, operations.operations(),
+                securitySchemes));
+
         Optional<String> document = asOneJsonDocument(api, issues);
 
         return new ApiModel(title, version, servers, operations.operations(), schemas, issues,
-                document);
+                document, securitySchemes, security);
+    }
+
+    /**
+     * Every place the document asks for a scheme it never declares.
+     *
+     * <p>Said, because it changes what a run can do: a request can prove nothing through a scheme
+     * nobody described, so an operation asking only for that one is sent without anything to prove
+     * who it comes from, and a person who handed over a key would otherwise not know why it went
+     * nowhere. Said once per place, not once per operation that inherits it.
+     */
+    private static List<SpecificationIssue> schemesNamedAndNotDeclared(
+            Optional<SecurityRequirement> security, List<Operation> operations,
+            Map<String, SecurityScheme> declared) {
+        List<SpecificationIssue> issues = new ArrayList<>();
+        security.ifPresent(root -> undeclared(root, declared).forEach(name ->
+                issues.add(SpecificationIssue.document("security", "the document asks for the "
+                        + "security scheme '" + name + "', which it does not declare"))));
+        for (Operation operation : operations) {
+            String location = "paths." + operation.path() + "."
+                    + operation.method().name().toLowerCase(java.util.Locale.ROOT) + ".security";
+            operation.security().ifPresent(own -> undeclared(own, declared).forEach(name ->
+                    issues.add(SpecificationIssue.document(location, operation.id().value()
+                            + " asks for the security scheme '" + name
+                            + "', which the document does not declare"))));
+        }
+        return issues;
+    }
+
+    private static List<String> undeclared(SecurityRequirement requirement,
+            Map<String, SecurityScheme> declared) {
+        return requirement.schemesNamed().stream()
+                .filter(name -> !declared.containsKey(name))
+                .toList();
     }
 
     /**

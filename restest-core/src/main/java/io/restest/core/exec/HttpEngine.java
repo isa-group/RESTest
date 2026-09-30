@@ -22,7 +22,8 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Sends requests to the API under test and reports, for each one, exactly what was sent and exactly
- * what came back.
+ * what came back - save for a key the person running the tool handed over, which the door that adds
+ * it to requests hides in everything it reports (see {@link io.restest.core.auth.CredentialedEngine}).
  *
  * <p>This is the only door out of RESTest onto the network. Everything on this side of it - the
  * generator that invents the requests, the oracles that judge the answers, the reports - deals in
