@@ -28,6 +28,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -102,8 +103,8 @@ class FilesOfArgumentsTest {
     @DisplayName("a name reached through a link and back out of it names the file the framework reads")
     void a_link_in_the_name(@TempDir Path directory) throws Exception {
         Path inner = Files.createDirectories(directory.resolve("real").resolve("inner"));
-        write(directory.resolve("real"), "x.args", "--from-the-real-one\n");
-        write(directory, "x.args", "--from-the-wrong-one\n");
+        write(directory.resolve("real"), "x.args", "--beside-the-target\n");
+        write(directory, "x.args", "--beside-the-link\n");
         Path link = directory.resolve("link");
         try {
             Files.createSymbolicLink(link, inner);
@@ -112,8 +113,12 @@ class FilesOfArgumentsTest {
         }
         List<String> arguments = List.of("@" + link + "/../x.args");
 
+        // Which file that is belongs to the operating system: Linux and macOS follow the link and
+        // then go up from where it points, Windows takes the .. off the name before it looks at the
+        // link. What matters is that both readings open the same one.
         assertThat(ours(arguments)).isEqualTo(theFrameworks(arguments))
-                .containsExactly("--from-the-real-one");
+                .containsExactly(OS.WINDOWS.isCurrentOs() ? "--beside-the-link"
+                        : "--beside-the-target");
     }
 
     @Test

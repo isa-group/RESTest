@@ -256,10 +256,12 @@ class CommandLineSurfaceTest {
             assertThat(run("run", "@" + arguments)).isZero();
             assertThat(screen.toString()).contains("maxConcurrency: 3");
 
-            // Read as a file, this one would hand the command an option that does not exist.
+            // Read as a file, this one would hand the command an option that does not exist. Given
+            // to an option that takes any text, since on Windows the word it stands for - an @ and
+            // then a drive letter - is no name a directory can have.
             Path notToBeRead = Files.writeString(directory.resolve("not-to-be-read"),
                     "--no-such-option\n");
-            assertThat(run("run", "--print-settings", "--out", "@@" + notToBeRead)).isZero();
+            assertThat(run("run", "--print-settings", "--url", "@@" + notToBeRead)).isZero();
             assertThat(problems.toString()).isEmpty();
         }
 
