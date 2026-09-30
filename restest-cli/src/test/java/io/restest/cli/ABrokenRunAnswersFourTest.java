@@ -71,6 +71,13 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class ABrokenRunAnswersFourTest {
 
+    /**
+     * Long enough for a slow machine to read the document, start and still send: a run that sends
+     * nothing answers 3, which is not what these runs are about. One second was not, on one of the
+     * machines the build runs on.
+     */
+    private static final String BUDGET = "3s";
+
     private static WireMockServer api;
 
     private final StringWriter screen = new StringWriter();
@@ -99,7 +106,7 @@ class ABrokenRunAnswersFourTest {
     void losing_some_requests_answers_four(@TempDir Path directory) {
         int answer = run(settings -> new Losing(new OkHttpEngine(settings),
                 testCase -> testCase.operation().value().equals("listPets")),
-                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s", "--seed", "7",
+                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", BUDGET, "--seed", "7",
                 "--out", directory.toString());
 
         assertThat(answer).describedAs("%s%n%s", screen, problems).isEqualTo(4);
@@ -147,7 +154,7 @@ class ABrokenRunAnswersFourTest {
         // picking the key out of it runs out of stack, so the exchange is kept with everything that
         // could hold a key blanked. The run is handed a key, or there is nothing to hide at all.
         int answer = run(settings -> new NestingTooDeep(new OkHttpEngine(settings)),
-                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s", "--seed", "7",
+                "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", BUDGET, "--seed", "7",
                 "--out", directory.toString(), "--auth", "header:X-Shelter-Key=Zk9-leakprobe-4f");
 
         assertThat(problems.toString())
@@ -172,11 +179,11 @@ class ABrokenRunAnswersFourTest {
                         testCase -> testCase.operation().value().equals("listPets"), true);
 
         int plain = run(nothingForListPets, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "7", "--out", directory.resolve("plain").toString());
+                "--budget", BUDGET, "--seed", "7", "--out", directory.resolve("plain").toString());
         String saidWithoutAKey = problems.toString();
         problems.getBuffer().setLength(0);
         int keyed = run(nothingForListPets, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "7", "--out", directory.resolve("keyed").toString(),
+                "--budget", BUDGET, "--seed", "7", "--out", directory.resolve("keyed").toString(),
                 "--auth", "header:X-Shelter-Key=Zk9-leakprobe-4f");
         String saidWithAKey = problems.toString();
 
@@ -212,7 +219,7 @@ class ABrokenRunAnswersFourTest {
         int answer = run(settings -> new Losing(new OkHttpEngine(settings),
                 testCase -> testCase.operation().value().equals("listPets"), false,
                 "sent with " + key), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget",
-                "1s", "--seed", "7", "--out", directory.toString(), "--auth",
+                BUDGET, "--seed", "7", "--out", directory.toString(), "--auth",
                 "header:X-Shelter-Key=" + key);
 
         assertThat(answer).describedAs("%s%n%s", screen, problems).isEqualTo(4);
