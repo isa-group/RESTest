@@ -47,6 +47,9 @@ import java.util.stream.Collectors;
  * @param summary the document's one-line description
  * @param description the document's longer description
  * @param deprecated whether the document marks the operation as on its way out
+ * @param security what the document says a request to this operation has to prove, when it says
+ *     so for this operation. Empty means the operation says nothing and what the document says for
+ *     the whole API applies, which {@link ApiModel#securityFor(Operation)} works out
  */
 public record Operation(
         OperationId id,
@@ -59,7 +62,8 @@ public record Operation(
         List<String> tags,
         Optional<String> summary,
         Optional<String> description,
-        boolean deprecated) {
+        boolean deprecated,
+        Optional<SecurityRequirement> security) {
 
     public Operation {
         Objects.requireNonNull(id, "id");
@@ -68,6 +72,7 @@ public record Operation(
         Objects.requireNonNull(requestBody, "requestBody");
         Objects.requireNonNull(summary, "summary");
         Objects.requireNonNull(description, "description");
+        Objects.requireNonNull(security, "security");
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("a path starts with '/': " + path);
         }
@@ -77,6 +82,29 @@ public record Operation(
         tags = List.copyOf(tags);
         rejectDuplicateParameters(parameters);
         rejectUnfillableTemplate(path, parameters);
+    }
+
+    /**
+     * An operation that says nothing of its own about what a request has to prove.
+     *
+     * @param id what this operation is called throughout the tool
+     * @param method the HTTP method
+     * @param path the path template as the document wrote it
+     * @param servers the servers this operation overrides the API's with
+     * @param parameters the inputs, in declaration order
+     * @param requestBody what the operation accepts in the body, if anything
+     * @param responses what the document says it answers
+     * @param tags the document's own grouping
+     * @param summary the document's one-line description
+     * @param description the document's longer description
+     * @param deprecated whether the document marks the operation as on its way out
+     */
+    public Operation(OperationId id, HttpMethod method, String path, List<Server> servers,
+            List<Parameter> parameters, Optional<RequestBodyModel> requestBody,
+            List<ResponseModel> responses, List<String> tags, Optional<String> summary,
+            Optional<String> description, boolean deprecated) {
+        this(id, method, path, servers, parameters, requestBody, responses, tags, summary,
+                description, deprecated, Optional.empty());
     }
 
     /** The variables a path template carries: {@code petId} in {@code /pets/{petId}}. */
@@ -153,32 +181,40 @@ public record Operation(
     /** The same operation, taking the given parameters. */
     public Operation withParameters(List<Parameter> value) {
         return new Operation(id, method, path, servers, value, requestBody, responses, tags,
-                summary, description, deprecated);
+                summary, description, deprecated, security);
     }
 
     /** The same operation, accepting the given request body. */
     public Operation withRequestBody(RequestBodyModel value) {
         return new Operation(id, method, path, servers, parameters,
                 Optional.of(Objects.requireNonNull(value, "value")), responses, tags, summary,
-                description, deprecated);
+                description, deprecated, security);
     }
 
     /** The same operation, answering with the given responses. */
     public Operation withResponses(List<ResponseModel> value) {
         return new Operation(id, method, path, servers, parameters, requestBody, value, tags,
-                summary, description, deprecated);
+                summary, description, deprecated, security);
     }
 
     /** The same operation, served from the given servers rather than the API's. */
     public Operation withServers(List<Server> value) {
         return new Operation(id, method, path, value, parameters, requestBody, responses, tags,
-                summary, description, deprecated);
+                summary, description, deprecated, security);
     }
 
     /** The same operation under the given identifier, as the document declared it. */
     public Operation withId(OperationId value) {
         return new Operation(Objects.requireNonNull(value, "value"), method, path, servers,
-                parameters, requestBody, responses, tags, summary, description, deprecated);
+                parameters, requestBody, responses, tags, summary, description, deprecated,
+                security);
+    }
+
+    /** The same operation, saying for itself what a request to it has to prove. */
+    public Operation withSecurity(SecurityRequirement value) {
+        return new Operation(id, method, path, servers, parameters, requestBody, responses, tags,
+                summary, description, deprecated,
+                Optional.of(Objects.requireNonNull(value, "value")));
     }
 
     /**

@@ -53,6 +53,10 @@ import java.util.Optional;
  * @param document the specification itself, written as one OpenAPI 3 JSON document, or nothing if
  *     it could not be kept. Held so that a reply can be checked against what the document actually
  *     says rather than against anybody's reading of it
+ * @param securitySchemes the ways of proving who one is that the document declares, under the names
+ *     it gives them, in the order it declares them
+ * @param security what the document asks of every request unless an operation says otherwise, or
+ *     nothing if it says nothing for the API as a whole
  */
 public record ApiModel(
         String title,
@@ -61,17 +65,39 @@ public record ApiModel(
         List<Operation> operations,
         Map<String, CanonicalSchema> schemas,
         List<SpecificationIssue> issues,
-        Optional<String> document) {
+        Optional<String> document,
+        Map<String, SecurityScheme> securitySchemes,
+        Optional<SecurityRequirement> security) {
 
     public ApiModel {
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(version, "version");
         Objects.requireNonNull(document, "document");
+        Objects.requireNonNull(security, "security");
         servers = List.copyOf(servers);
         operations = List.copyOf(operations);
         schemas = Copies.orderedMap(schemas, "schemas");
         issues = List.copyOf(issues);
+        securitySchemes = Copies.orderedMap(securitySchemes, "securitySchemes");
         rejectDuplicateIds(operations);
+    }
+
+    /**
+     * An API whose document says nothing about proving who one is.
+     *
+     * @param title the API's name
+     * @param version the API's version
+     * @param servers the base URLs the document declares
+     * @param operations every operation that could be read
+     * @param schemas the shapes the document declares by name
+     * @param issues everything that could not be read
+     * @param document the specification itself, if it could be kept
+     */
+    public ApiModel(String title, String version, List<Server> servers, List<Operation> operations,
+            Map<String, CanonicalSchema> schemas, List<SpecificationIssue> issues,
+            Optional<String> document) {
+        this(title, version, servers, operations, schemas, issues, document, Map.of(),
+                Optional.empty());
     }
 
     /** An API of the given name and version with the given operations, read in full. */
@@ -82,12 +108,33 @@ public record ApiModel(
 
     /** The same API, with the named shapes its references resolve against. */
     public ApiModel withSchemas(Map<String, CanonicalSchema> value) {
-        return new ApiModel(title, version, servers, operations, value, issues, document);
+        return new ApiModel(title, version, servers, operations, value, issues, document,
+                securitySchemes, security);
     }
 
     /** The same API, carrying what could not be read. */
     public ApiModel withIssues(List<SpecificationIssue> value) {
-        return new ApiModel(title, version, servers, operations, schemas, value, document);
+        return new ApiModel(title, version, servers, operations, schemas, value, document,
+                securitySchemes, security);
+    }
+
+    /** The same API, with these operations in place of its own. */
+    public ApiModel withOperations(List<Operation> value) {
+        return new ApiModel(title, version, servers, value, schemas, issues, document,
+                securitySchemes, security);
+    }
+
+    /**
+     * The same API, with what its document says about proving who one is.
+     *
+     * @param schemes the ways the document declares, by name
+     * @param requirement what it asks of every request unless an operation says otherwise
+     * @return the API, otherwise unchanged
+     */
+    public ApiModel withSecurity(Map<String, SecurityScheme> schemes,
+            Optional<SecurityRequirement> requirement) {
+        return new ApiModel(title, version, servers, operations, schemas, issues, document,
+                schemes, requirement);
     }
 
     /**
@@ -98,7 +145,7 @@ public record ApiModel(
      */
     public ApiModel withDocument(String value) {
         return new ApiModel(title, version, servers, operations, schemas, issues,
-                Optional.of(Objects.requireNonNull(value, "value")));
+                Optional.of(Objects.requireNonNull(value, "value")), securitySchemes, security);
     }
 
     /** The operation under the given identifier, if this API has one. */
@@ -162,6 +209,23 @@ public record ApiModel(
     public List<Server> serversFor(Operation operation) {
         Objects.requireNonNull(operation, "operation");
         return operation.servers().isEmpty() ? servers : operation.servers();
+    }
+
+    /**
+     * What a request to an operation has to prove: what the operation says, if it says anything,
+     * and what the document says for the whole API otherwise.
+     *
+     * <p>Empty when neither says anything, which means the operation asks for nothing. That is not
+     * the same as an operation saying {@code security: []}: the operation that says it has been
+     * told, in so many words, to ask for nothing whatever the rest of the API asks for, while one
+     * that says nothing in a document that says nothing was simply never described.
+     *
+     * <p>Here beside {@link #serversFor(Operation)}, and for the same reason: only the API knows
+     * what is being inherited.
+     */
+    public Optional<SecurityRequirement> securityFor(Operation operation) {
+        Objects.requireNonNull(operation, "operation");
+        return operation.security().or(() -> security);
     }
 
     /**

@@ -248,7 +248,8 @@ final class OperationConverter {
         Optional<String> description = Optional.ofNullable(swaggerOperation.getDescription());
         boolean deprecated = Boolean.TRUE.equals(swaggerOperation.getDeprecated());
         return new Operation(id, method, path, servers, parameters, requestBody, responses, tags,
-                summary, description, deprecated);
+                summary, description, deprecated,
+                SecurityConverter.requirement(swaggerOperation.getSecurity()));
     }
 
     /**
