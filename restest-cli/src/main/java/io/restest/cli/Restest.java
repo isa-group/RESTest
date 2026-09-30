@@ -70,7 +70,19 @@ public final class Restest {
      * @param arguments what was typed after {@code restest}
      */
     public static void main(String[] arguments) {
-        System.exit(run(arguments));
+        int answer = ExitCode.TOOL_FAILED;
+        try {
+            answer = run(arguments);
+        } catch (Throwable escaped) {
+            // Running the command answers for whatever goes wrong in it. What could still get here
+            // is a failure in the few lines around it - making somewhere to write, and flushing
+            // it - which takes memory already gone; it is said if it can be.
+            escaped.printStackTrace();
+        } finally {
+            // Always with a number RESTest chose. Java would otherwise end the program with 1, the
+            // number that says a fault was found in the API.
+            System.exit(answer);
+        }
     }
 
     /**
@@ -78,9 +90,9 @@ public final class Restest {
      *
      * <p>The answer is 0 when the run found nothing wrong, 1 when it found a fault, 2 when the
      * command line was wrong, 3 when there was nothing to test, and 4 when RESTest itself went
-     * wrong. However it went wrong - running out of memory included - that is answered rather than
-     * thrown, and what went wrong is said where problems go, with the stack trace somebody needs to
-     * report it.
+     * wrong. A failure that would otherwise be thrown out of it - running out of memory included -
+     * is answered with 4 instead, and said where problems go, with the stack trace somebody needs
+     * to report it.
      *
      * @param arguments what was typed after {@code restest}
      * @return the number the command answered with
@@ -137,8 +149,9 @@ public final class Restest {
             //
             // Caught here rather than only where the program ends, so that every caller gets the
             // same answer: a test, or a program running RESTest inside itself, reads 4 exactly as a
-            // script does. By now the run has closed everything it opened, on its way out, so the
-            // caller is free to start another.
+            // script does. On its way out the run has closed the engine, the store and the thread
+            // that delivers its events; requests it had already sent may still be finishing, for as
+            // long as the engine waits for a reply.
             return saysItBroke(failure, err);
         }
     }

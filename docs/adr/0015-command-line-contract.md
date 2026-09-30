@@ -135,7 +135,7 @@ below and ADR-0006's.**
 | `1` | The run finished. At least one fault was found. |
 | `2` | The command line was wrong. |
 | `3` | Nothing could be tested: the document yielded no testable operation, no usable base address, or nowhere to write the results. |
-| `4` | RESTest itself malfunctioned — an unexpected failure of any kind, running out of memory included, a listener that threw, or announcements that never reached one. |
+| `4` | RESTest itself malfunctioned — an unexpected failure, a listener that threw, or announcements that never reached one. |
 
 `127` is never returned by the program. It is reserved by the launcher script for "this checkout has
 not been built yet", so a problem with the wrapper can never be mistaken for an answer from the tool.
@@ -647,29 +647,31 @@ the files are named.
 
 **Nothing else changes.** A run handed no key behaves exactly as it did.
 
-## Amendment (a crash never answers 1)
+## Amendment (an error that escapes a run answers 4)
 
 **Date:** 2026-09-30
 
-**Whatever breaks inside RESTest answers `4`, including the failures Java calls errors. `1` means a
-fault was found in the API, and nothing else.**
+**Whatever escapes the command answers `4`, the failures Java calls errors included, so RESTest no
+longer ends with the `1` Java gives a program that crashes. What is still open is listed at the
+end.**
 
 ### Why
 
 The table gives `4` to "an unexpected failure", and the code kept that promise for one kind of
 failure only. Java has two. An *exception* is the kind a program is expected to deal with; an
 *error* - running out of memory, running out of room for the stack, a piece of Java missing where
-the program runs - is the kind it is not. The command-line framework hands every exception a command
+the program runs - is the kind it is not. The command-line framework hands the exceptions a command
 throws to the handler that answers `4`, and lets every error through. An error that got that far
 went on up and out of the program, and Java ended it the way it ends any program that crashes: with
 `1`, the number that says a fault was found. A harness reading the number, which is what a harness
 does, counted a crash as a finding.
 
 The review of 11.3 found it, with a document whose shape made a walk of it run out of memory. That
-walk is fixed, but an error anywhere in a run went the same way: before this amendment, a shape that
-contains itself, walked with both nesting settings at a million, ran out of room for the stack and
-answered `1`. So did a failure inside the framework itself - an exception while it writes the help,
-say - because the framework's own last resort answers `1` unless it is told otherwise.
+walk is fixed, but an error anywhere on the thread running the command went the same way: before
+this amendment, a shape that contains itself, walked with both nesting settings at a million, ran
+out of room for the stack and answered `1`. So did a failure inside the framework itself - an
+exception while it writes the help, say - because the framework's own last resort answers `1`
+unless it is told otherwise.
 
 ### How
 
@@ -678,42 +680,73 @@ say - because the framework's own last resort answers `1` unless it is told othe
   what broke, and its stack trace. The answer is `4`. When not even that can be written - a program
   that has run out of memory may not have enough left to write it - the answer is `4` all the same.
 - The framework is told that its last resort answers `4`.
-- The table's row for `4` says "of any kind".
-
-`main` is unchanged. It ends the program with whatever `run` answered, and `run` now always
-answers.
+- `main` ends the program with whatever `run` answered, and with `4` if even the few lines of `run`
+  around the command fail, which takes memory gone before a word could be written.
 
 **In `run` rather than only in `main`, deliberately.** `run` is documented as answering `4` when
 RESTest itself went wrong, so a test, or a program running RESTest inside itself, now gets that
 answer - the one a script gets - instead of an error it would have had to know to catch. The cost is
 that such a program no longer sees the error itself: only the `4`, and the stack trace on the output
-it handed over for problems. Two things keep that cost small. By the time an error reaches `run`,
-the run has closed everything it opened - the engine, the store, the thread that delivers its
-events - since each of them is closed on the way out however the run ends, so the program is free
-to start another. And what Java itself does about running out of memory, such as writing a heap
-dump, happens where the error is thrown, before anything could catch it.
+it handed over for problems. On its way out, a run closes its engine, its store and the thread that
+delivers its events, however it ends; requests it had already sent may still be finishing, for as
+long as the engine waits for a reply, and after running out of memory nothing about a program is
+certain. What Java itself does about running out of memory, such as writing a heap dump, happens
+where the error is thrown, before anything could catch it.
 
-**No thread keeps a crashed run alive.** Java waits, before ending, for every thread not marked as a
-*daemon*. During a run, the thread running the command is the only such thread: the one delivering
-events is a daemon, requests go out on virtual threads, which always are, and so is every thread the
-HTTP client and Java start for themselves - checked with a thread dump of a run in flight. The HTTP
-client's own pool of ordinary threads is never started, because RESTest sends each request on a
-thread of its own. So the crash above ended the program at once, and ends it at once now.
+**No thread kept a crashed run alive.** Java waits, before ending, for every thread not marked as a
+*daemon*, and it ended with that `1` at once: during a run, the thread running the command is the
+only such thread. The one delivering events is a daemon, requests go out on virtual threads, which
+always are, and so is every thread the HTTP client and Java start for themselves - checked with a
+thread dump of a run in flight. The HTTP client's own pool of ordinary threads is never started,
+because RESTest sends each request on a thread of its own. Since `main` now ends the program itself,
+without waiting for any thread, this matters from here on only to a program running RESTest inside
+itself.
 
 ### What the number cannot say
 
 It is RESTest's number only while RESTest is running. Java that cannot start - a class path with no
 RESTest on it, an option it does not know - answers `1` by itself. Java started with
-`-XX:+ExitOnOutOfMemoryError` answers `3` when memory runs out, before any of this code is reached,
-and Java stopped from outside answers whatever the operating system gives it. The launcher starts
-Java with none of those options; an image that added the second, as advice for containers often
-does, would give running out of memory the answer that means nothing could be tested.
+`-XX:+ExitOnOutOfMemoryError` answers `3` when memory runs out, before any of this is reached, and
+Java stopped from outside answers whatever the operating system gives it. The launcher starts Java
+with none of those options, but Java also reads options from `JAVA_TOOL_OPTIONS` and
+`JDK_JAVA_OPTIONS`, which is where containers often put the second; an image that does gives
+running out of memory the answer that means nothing could be tested.
+
+One mistake in what is typed reaches the framework's last resort too: a file of arguments named with
+`@` that is a directory. It answered `1` and now answers `4`, with the framework's stack trace. The
+table's number for it is `2`, and saying so in plain words is for the command line's own increment,
+12.1.
+
+### Still open
+
+Two ways RESTest can go wrong without answering `4`, found in the review of this amendment and left
+for a change of their own:
+
+- **An error on a request's own thread.** Each request is sent on a thread of its own, and an error
+  there - running out of memory while a reply is read, a class the HTTP client needs missing - ends
+  the request with nothing, which the loop counts, silently, as a request nothing came back for. A
+  run that found faults elsewhere answers `1`, one that did not answers `0`, and one where every
+  request ended that way answers `3` and blames the address.
+- **A key that could not be picked out of an exchange.** The exchange is kept without its details
+  and the run says so, as a fault of RESTest's own; the number does not.
+
+And one thing a harness may read instead of the number: a run that broke while it was sending still
+writes its report, which is right, and the report does not say that the run broke.
+
+Running out of memory in a listener already answers `4`, through the announcements that never
+reached the reports. What went wrong is written to Java's own error output rather than to the one
+handed to `run`, and the run first waits until its deadline for the reports to catch up.
 
 ### Alternatives considered
 
 - **Catch only in `main`.** A program running RESTest inside itself would go on receiving the error,
-  and could still act on it. Rejected, because `run` promises an answer, and because nothing but a
-  new program could then check what a crash answers.
+  and could act on it. Rejected, because `run` promises an answer, and because nothing but a second
+  program could then check what a crash answers.
+- **Answer some errors and throw the rest** - answer running out of room for the stack or a missing
+  class, and throw running out of memory on to a program running RESTest inside itself, after saying
+  it, so that such a program's own way of dealing with it still works. Rejected for now: `run` would
+  keep two promises, and a program that wants to react to memory running out can have Java do it at
+  the moment it happens, with the options above.
 - **A number of its own for a crash.** A crash is RESTest going wrong, which is what `4` already
   says; a new number is a change to the contract that every script branching on it would have to
   learn, for a difference nobody acts on.
