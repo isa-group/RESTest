@@ -119,6 +119,16 @@ public final class Secrets {
     /** Every piece of every way of writing a key long enough to be looked for, by its hash. */
     private final Map<Long, List<Anchor>> pieces;
 
+    /**
+     * One bit for each hash a piece of a key could have, folded into a table small enough to stay
+     * in a processor's cache: a window of text whose bit is not set cannot be a piece, and is passed
+     * over without looking anything up. Nearly every window of a long reply is.
+     */
+    private final long[] mightBeAPiece = new long[FOLDED_BITS / Long.SIZE];
+
+    /** How many bits the hashes of the pieces are folded into. */
+    private static final int FOLDED_BITS = 1 << 16;
+
     Secrets(Collection<Secret> secrets) {
         Objects.requireNonNull(secrets, "secrets");
         Map<String, String> written = new LinkedHashMap<>();
@@ -152,6 +162,14 @@ public final class Secrets {
         }
         anchors.replaceAll((hash, list) -> List.copyOf(list));
         this.pieces = Map.copyOf(anchors);
+        for (long hash : pieces.keySet()) {
+            int folded = folded(hash);
+            mightBeAPiece[folded >>> 6] |= 1L << folded;
+        }
+    }
+
+    private static int folded(long hash) {
+        return (int) (hash ^ (hash >>> 29) ^ (hash >>> 47)) & (FOLDED_BITS - 1);
     }
 
     /** Nothing to hide: what a run is when it was handed no key. */
@@ -264,7 +282,9 @@ public final class Secrets {
         Arrays.fill(lastStart, -1);
         long hash = hashOf(text, 0);
         for (int at = 0; ; at++) {
-            List<Anchor> found = pieces.get(hash);
+            int folded = folded(hash);
+            List<Anchor> found = (mightBeAPiece[folded >>> 6] & (1L << folded)) == 0
+                    ? null : pieces.get(hash);
             if (found != null) {
                 for (Anchor anchor : found) {
                     String spelling = spellings.get(anchor.spelling()).text();
