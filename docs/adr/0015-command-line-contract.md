@@ -630,7 +630,7 @@ operations says which key, and names the option that would give it.
 
 `--print-settings` and `--print-campaign` read no document, so they read no key either.
 
-**Three complaints no longer repeat what was typed.**
+**Four complaints no longer repeat what was typed.**
 - `--url` with a query string says so without repeating the query, which may be a key, and names
   `--auth query:<name>=<key>`. It answers `3`, as before.
 - An argument the command does not understand is not repeated. An option that does not exist is
@@ -638,6 +638,8 @@ operations says which key, and names the option that would give it.
 - Any other complaint about the command line is said in the framework's words, with whatever was
   typed after `--auth` taken out. An option missing its value, followed by `--auth=<key>`, is told
   it found `--auth=<key>` - those very characters, not the key. It answers `2`, as before.
+- An argument that runs straight on from `--auth`, with no space or `=` between them, is refused
+  before the framework reads the command line, without repeating it. It answers `2`.
 
 At the end, a run handed a key says how many replies repeated one back, on a line of its own before
 the files are named.

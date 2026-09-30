@@ -122,7 +122,7 @@ One option, repeated for several keys. It is written in three ways:
 ```bash
 restest run petstore.yaml --auth special-key            # the document declares one API key
 restest run api.yaml --auth api_key=special-key         # it declares several: name the one
-restest run languagetool.json --auth query:apiKey=abc   # it declares none: say where it goes
+restest run languagetool.json --auth query:apiKey=k3y-4-lt   # it declares none: say where it goes
 ```
 
 - **A key for a scheme** names the scheme before an `=`. The text is read that way only when what
@@ -158,6 +158,9 @@ never repeats the key.** It names the key by where it came from: "the key given 
   repeated either;
 - it is shorter than four characters. A key is hidden wherever it appears (section 6), and one that
   short would be hidden inside ordinary words and numbers everywhere the run writes;
+- it runs straight on from `--auth`, with no space or `=` between them (`--authKEY`). This is
+  checked before anything reads the command line, because every other complaint about such an
+  argument would repeat it whole;
 - it names a scheme that is not an API key: "RESTest 2.0 sends only API keys";
 - another key typed goes to the same place;
 - it holds a character that is not plain printable ASCII, or a space at either end, which the HTTP
@@ -330,24 +333,34 @@ says, at the end, how many times that happened.
 - a key inside something else encoded, such as a JWT or a Base64 blob the API made;
 - what the tool never wrote itself: the recording the benchmark's proxy keeps, a shell's history,
   the list of running processes;
-- the command line's own echo of an argument. The command never repeats one it does not understand,
-  naming only an option that does not exist, up to any `=`; and it takes whatever was typed after
-  `--auth` out of any other complaint, as when an option missing its value is followed by
-  `--auth=<key>` and would be told that is what it found.
+- a key typed where another option's value goes, which that option's complaint repeats as it would
+  any value. The command never repeats an argument it does not understand: it names an option that
+  does not exist up to any `=`, and no further than `--auth` for one that begins with it. It refuses
+  an argument that runs straight on from `--auth` before anything reads it. It takes whatever was
+  typed after `--auth` out of any other complaint, as when an option missing its value is followed
+  by `--auth=<key>`. And it does not repeat an address given with `--url` that begins with `-`,
+  which is what the next argument becomes when the address is left out.
 
 ### 7. What the rules and the memory see
 
 What they judge and learn from is what was hidden.
 
-The rule that checks a reply against the document judges every reply as it always has, and lets
-pass only what the text written in a key's place could have caused. That is an objection to
-something holding the text that the text can change: a length, a pattern, a value from a list, which
-of several shapes a value fits, or the names of an object's members when one of them holds it. So is
-a body that is not JSON because a key was hidden inside a number. Hiding a key never changes what
-kind of value something is, nor how many members or items there are, nor a number, so those
-objections stand, and so does anything wrong elsewhere in the same reply. An API that repeats the
-address back in every reply is judged on all the rest of each one. Reporting a fault the run itself
-caused is the one thing a testing tool must not do.
+The rule that checks a reply against the document judges every reply as it always has. In a reply
+holding the text written in a key's place, it lets pass what that text could have caused:
+- an objection reached through a choice between shapes or a condition: `oneOf`, `anyOf`, `not`,
+  `if`, `then` and `else`, and what `contains` and `unevaluatedProperties` decide from how other
+  parts turned out. The shape the reply really has can fail on the replacement, and then another
+  shape objects to parts of the reply the replacement never touched;
+- an objection to something under a member whose name holds the replacement;
+- an objection to something holding the replacement that the replacement can change: a length, a
+  pattern, a value from a list, or the names of an object's members when one of them holds it;
+- a body that is not JSON, because a key was hidden inside a number.
+
+Hiding a key never changes what kind of value something is, nor how many members or items there
+are, nor a number. So, outside a choice, those objections stand, and so does anything wrong
+elsewhere in the same reply. An API that repeats the address back in every reply is judged on all
+the rest of each one, short of what its choices decide. Reporting a fault the run itself caused is
+the one thing a testing tool must not do.
 
 At the end, a run says how many replies repeated a key back. They are not quite what the API sent,
 and an API that hands a key back to whoever sent it is worth knowing about in itself.

@@ -24,6 +24,7 @@ import com.networknt.schema.SchemaRegistryConfig;
 import com.networknt.schema.dialect.Dialect;
 import com.networknt.schema.dialect.OpenApi30;
 import com.networknt.schema.dialect.OpenApi31;
+import com.networknt.schema.path.NodePath;
 import io.restest.core.auth.Secrets;
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 /**
  * Reports a reply whose body is not the shape the specification said it would be.
@@ -90,7 +92,17 @@ public final class ResponseSchemaOracle implements Oracle {
 
     /** The objections about the names of an object's members rather than about their values. */
     private static final Set<String> ABOUT_NAMES = Set.of("required", "dependentRequired",
-            "dependencies", "additionalProperties", "unevaluatedProperties", "propertyNames");
+            "additionalProperties", "propertyNames");
+
+    /**
+     * The words of a shape that make what else is checked depend on how some other part of the
+     * reply turned out: a choice between shapes, a condition, a count of the items that fit, and
+     * the members or items no other part accepted. When the part that turned out otherwise holds a
+     * key's replacement, what is objected to through one of these may have nothing of it at all.
+     */
+    private static final Set<String> DEPENDS_ON_THE_REST = Set.of("oneOf", "anyOf", "not", "if",
+            "then", "else", "contains", "minContains", "maxContains", "dependentSchemas",
+            "dependencies", "unevaluatedProperties", "unevaluatedItems", "discriminator");
 
     /** The document being tested against, prepared once. Guarded by this object's own lock. */
     private Reader reader;
@@ -225,9 +237,10 @@ public final class ResponseSchemaOracle implements Oracle {
         // avoid rather than cause.
         // A key the API repeated back was hidden before anything saw the reply, so a reply with
         // the text written in a key's place is not quite what the API sent: that text can be longer
-        // than a length the document allows, or not one of the values it allows, and a key hidden
-        // inside a number stops the body being JSON at all. What the hiding may have changed is not
-        // held against the API; everything else in the reply is judged as ever.
+        // than a length the document allows, or not one of the values it allows, can make the reply
+        // fail the shape it really has so that another shape of a choice objects instead, and a key
+        // hidden inside a number stops the body being JSON at all. What the hiding may have changed
+        // is not held against the API; everything else in the reply is judged as ever.
         boolean hidesAKey = body.contains(Secrets.MARKER);
         try {
             JsonText.checkOneValue(body);
@@ -270,15 +283,23 @@ public final class ResponseSchemaOracle implements Oracle {
 
     /**
      * Whether an objection may be the doing of the text written in a key's place rather than the
-     * API's: when what it objects to holds that text, and is something the text could change - a
-     * length, a pattern, a value from a list, the names of an object's members, or which of several
-     * shapes a value fits. Hiding a key never changes what kind of value something is, nor how many
-     * members or items there are, nor a number, so those objections always stand. An object whose
-     * members' names are what is objected to counts only if one of those names holds the text,
-     * which keeps an object with a key hidden in one of its values - an address repeated back, say
-     * - judged on everything else.
+     * API's.
+     *
+     * <p>It may when it is reached through a choice between shapes or a condition - the shape the
+     * reply really has can fail on the replacement, and then every other shape's objections are
+     * made, about parts of the reply the replacement never touched - or when the way to it goes
+     * through a member whose name holds the replacement. Otherwise it may when what it objects to
+     * holds the replacement and is something the replacement could change: a length, a pattern, a
+     * value from a list, or the names of an object's members when one of them holds it. Hiding a
+     * key never changes what kind of value something is, nor how many members or items there are,
+     * nor a number, so those objections stand; so does an object with the replacement in one of its
+     * values, judged on its members' names.
      */
     private static boolean mayBeTheHidingsDoing(Error error) {
+        if (anyStep(error.getInstanceLocation(), step -> step.contains(Secrets.MARKER))
+                || anyStep(error.getEvaluationPath(), DEPENDS_ON_THE_REST::contains)) {
+            return true;
+        }
         String keyword = String.valueOf(error.getKeyword());
         if (NEVER_THE_HIDING.contains(keyword)) {
             return false;
@@ -297,6 +318,19 @@ public final class ResponseSchemaOracle implements Oracle {
         } catch (JsonException unreadable) {
             return true;
         }
+    }
+
+    /** Whether any step of a path passes the test. A path the checker did not give passes it. */
+    private static boolean anyStep(NodePath path, Predicate<String> test) {
+        if (path == null) {
+            return true;
+        }
+        for (int step = 0; step < path.getNameCount(); step++) {
+            if (test.test(String.valueOf(path.getName(step)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Finding mismatch(Interaction interaction, int statusCode, String contentType,

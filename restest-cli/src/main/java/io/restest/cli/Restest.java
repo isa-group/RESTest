@@ -138,7 +138,42 @@ public final class Restest {
             restest.usage(err);
             return ExitCode.BAD_COMMAND_LINE;
         }
+        if (aKeyStuckToItsOption(arguments, restest)) {
+            err.println("restest: an argument begins with " + AuthGiven.OPTION + " and runs straight "
+                    + "on into something else, and is not repeated here in case that is a key: "
+                    + "write " + AuthGiven.OPTION + " <key> or " + AuthGiven.OPTION + "=<key>");
+            return ExitCode.BAD_COMMAND_LINE;
+        }
         return restest.execute(arguments);
+    }
+
+    /**
+     * Whether an argument begins with {@code --auth} and runs straight on into something other than
+     * an {@code =}, as a key typed without the space after the option does, and is no option of its
+     * own. It is caught before the command-line framework sees it, because every way the framework
+     * would complain of it repeats it whole: as an option that does not exist, or as the value of
+     * the option before it.
+     */
+    private static boolean aKeyStuckToItsOption(String[] arguments, CommandLine restest) {
+        List<String> options = new ArrayList<>();
+        List<CommandLine> commands = new ArrayList<>(List.of(restest));
+        commands.addAll(restest.getSubcommands().values());
+        for (CommandLine command : commands) {
+            command.getCommandSpec().options()
+                    .forEach(option -> options.addAll(List.of(option.names())));
+        }
+        String option = AuthGiven.OPTION;
+        for (String argument : arguments) {
+            boolean stuck = argument.length() > option.length()
+                    && argument.regionMatches(true, 0, option, 0, option.length())
+                    && argument.charAt(option.length()) != '=';
+            boolean anOption = options.stream().anyMatch(name -> argument.equals(name)
+                    || argument.startsWith(name + "="));
+            if (stuck && !anOption) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -163,6 +198,7 @@ public final class Restest {
                     .filter(argument -> argument.startsWith("--"))
                     .map(argument -> argument.contains("=")
                             ? argument.substring(0, argument.indexOf('=')) : argument)
+                    .map(Restest::asFarAsItIsSafe)
                     .toList();
             long others = unmatched.getUnmatched().size() - options.size();
             StringBuilder said = new StringBuilder();
@@ -184,6 +220,18 @@ public final class Restest {
             command.usage(err, command.getColorScheme());
         }
         return command.getCommandSpec().exitCodeOnInvalidInput();
+    }
+
+    /**
+     * The name of an option that does not exist, as far as it is safe to say it: no further than
+     * {@code --auth} for one that begins with it and runs on, since the rest is most likely a key
+     * stuck to the option in a file of arguments.
+     */
+    private static String asFarAsItIsSafe(String name) {
+        String option = AuthGiven.OPTION;
+        return name.length() > option.length()
+                && name.regionMatches(true, 0, option, 0, option.length())
+                ? name.substring(0, option.length()) + "..." : name;
     }
 
     /**

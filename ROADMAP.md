@@ -863,11 +863,13 @@ public. The tool can promise only what it writes itself.
 - **What stands in for a key is `REDACTED-AUTH` and a name**, with no angle brackets: the series of
   10.3 read an identifier out of a `Location` header by parsing it as an address.
 - **The rule that checks replies against the document lets pass what the hiding changed**, since
-  a replacement can break a length the document states, or the body's JSON; the rest of such a
-  reply is judged, and a run says how many replies repeated a key back.
+  a replacement can break a length the document states or the body's JSON, or make a choice
+  between shapes object through another shape; the rest of such a reply is judged, and a run says
+  how many replies repeated a key back.
 - **A key typed without the name it goes under is refused**, as are one shorter than four
-  characters and one whose text before an `=` names no scheme. The review found that
-  `--auth query:<a key in Base64>` read the key as the name and a lone `=` as the key.
+  characters, one whose text before an `=` names no scheme, and one stuck to `--auth` without a
+  space. The review found that `--auth query:<a key in Base64>` read the key as the name and a lone
+  `=` as the key.
 - **The smoke gate's check runs in the plain Java runtime** as the tool's own process with the key
   in its real environment, the one place the variable is read from one. The stand-in API tests run
   in every build, on every row, where the smoke job would have run them on one.

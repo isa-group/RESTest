@@ -81,9 +81,15 @@ final class BaseAddress {
                     + "for in the query with --auth query:<name>=<key>");
         }
         if (!isUsable(address)) {
-            throw new IllegalArgumentException("'" + address + "' is not somewhere requests can be "
-                    + "sent. Give a whole web address with a host and nothing after the path, such "
-                    + "as http://localhost:8080/api/v3");
+            // Not repeated when it reads as an option: an address left out makes whatever was typed
+            // next the address, and that may be --auth with a key stuck to it.
+            String what = address.startsWith("-")
+                    ? "what was given with --url begins with '-', as an option does, and is not "
+                            + "repeated here in case it holds a key. It"
+                    : "'" + address + "'";
+            throw new IllegalArgumentException(what + " is not somewhere requests can be sent. "
+                    + "Give a whole web address with a host and nothing after the path, such as "
+                    + "http://localhost:8080/api/v3");
         }
         String directory = namesNoDirectory(address) ? declaredDirectory(address, model) : "";
         if (directory.isEmpty()) {

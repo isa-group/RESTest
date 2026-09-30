@@ -108,6 +108,16 @@ class BaseAddressTest {
     }
 
     @Test
+    @DisplayName("what reads as an option, taken for the address because the address was left out, is not repeated")
+    void an_option_taken_for_the_address_is_not_repeated() {
+        assertThatThrownBy(() -> BaseAddress.resolve("--authZk9-leakprobe-4fqRw", NO_SERVERS))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("is not somewhere requests can be sent")
+                .hasMessageContaining("begins with '-'")
+                .hasMessageNotContaining("leakprobe");
+    }
+
+    @Test
     @DisplayName("an address typed with a query string is refused without repeating it, and --auth is named")
     void an_address_with_a_query_is_refused_without_repeating_it() {
         assertThatThrownBy(() -> BaseAddress.resolve("http://api.example/v2?key=s3cr3t-value",

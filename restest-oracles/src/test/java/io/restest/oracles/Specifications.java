@@ -125,6 +125,21 @@ final class Specifications {
     }
 
     /**
+     * An API written as OpenAPI 3.1 whose replies choose between shapes, or depend on a condition,
+     * or allow nothing beyond what some other part accepted - each shaped so that a key repeated
+     * back in it, and hidden, could make the reply fail the shape it really has.
+     */
+    static ApiModel choices31() {
+        List<Operation> operations = new java.util.ArrayList<>();
+        for (String path : List.of("/pet", "/either", "/plan", "/me", "/usage")) {
+            operations.add(Operation.of(HttpMethod.GET, path)
+                    .withResponses(List.of(ResponseModel.json("200", AnySchema.of()))));
+        }
+        return ApiModel.of("Choices", "1.0.0", operations)
+                .withDocument(read("/choices-3.1.json"));
+    }
+
+    /**
      * An API of users whose password is required and write-only: sent to the API, never handed
      * back. Written as OpenAPI 3.0 or 3.1, which the version given picks.
      */

@@ -323,7 +323,7 @@ public final class CredentialPlan {
     /** Whether a text has an {@code =} with something other than more of them after it. */
     private static boolean holdsANameBeforeAnEquals(String text) {
         int equals = text.indexOf('=');
-        return equals > 0 && text.chars().skip(equals).anyMatch(character -> character != '=');
+        return equals >= 0 && text.chars().skip(equals).anyMatch(character -> character != '=');
     }
 
     private static Key atAPlace(AuthGiven given, String prefix, Place.Where where, String rest)

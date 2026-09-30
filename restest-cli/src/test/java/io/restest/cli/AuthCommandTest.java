@@ -419,6 +419,27 @@ class AuthCommandTest {
                     .contains("--auth")
                     .doesNotContain(CORE);
         }
+
+        @Test
+        @DisplayName("a key stuck to --auth, without the space, is refused before anything reads it, and not repeated")
+        void a_key_stuck_to_the_option_is_not_repeated(@TempDir Path directory)
+                throws IOException {
+            String pets = document(directory, PETSTORE);
+            Path arguments = Files.writeString(directory.resolve("arguments"),
+                    "--auth" + KEY + "\n");
+
+            int stuck = run(Map.of(), "run", pets, "--auth" + KEY, "--url", api.baseUrl());
+            int colon = run(Map.of(), "run", pets, "--auth:" + KEY, "--url", api.baseUrl());
+            int asTheAddress = run(Map.of(), "run", pets, "--url", "--auth" + KEY);
+            int fromAFile = run(Map.of(), "run", pets, "--url", api.baseUrl(), "@" + arguments);
+
+            assertThat(List.of(stuck, colon, asTheAddress, fromAFile)).containsOnly(2);
+            assertThat(problems.toString())
+                    .contains("an argument begins with --auth and runs straight on")
+                    .contains("Unknown option: --auth...")
+                    .doesNotContain(CORE);
+            assertThat(api.findAll(anyRequestedFor(anyUrl()))).isEmpty();
+        }
     }
 
     @Nested

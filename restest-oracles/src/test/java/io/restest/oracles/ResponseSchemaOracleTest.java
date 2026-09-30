@@ -23,6 +23,7 @@ import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -303,9 +304,10 @@ class ResponseSchemaOracleTest {
                 assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON, changed),
                         pets)).describedAs(changed).isEmpty();
             }
-            // What it can never change: a kind of value, a missing member, anything wrong
-            // somewhere else in the same reply.
+            // What it can never change: a kind of value, even of the replacement itself, a missing
+            // member, anything wrong somewhere else in the same reply.
             for (String wrong : List.of(
+                    "{\"name\": \"a\", \"count\": \"REDACTED-AUTH\"}",
                     "{\"name\": \"REDACTED-AUTH\", \"count\": \"seven\"}",
                     "{\"name\": 7, \"short\": \"REDACTED-AUTH\"}",
                     "{\"short\": \"https://api/pets?key=REDACTED-AUTH\"}",
@@ -318,6 +320,41 @@ class ResponseSchemaOracleTest {
                     "{\"name\": \"a\", \"colour\": \"blue\"}"), pets))
                     .describedAs("and a reply with no key in it is judged as ever")
                     .hasSize(1);
+        }
+
+        @Test
+        @DisplayName("in a reply with a key hidden in it, what a choice or a condition objects to is let pass")
+        void what_a_choice_objects_to_is_let_pass() {
+            ApiModel choices = Specifications.choices31();
+            // Each of these is what an API sent with a key in it, a valid reply, once the key is
+            // hidden: the replacement breaks the shape the reply really has - the cat's link, the
+            // key's length, the key's letters, the token - or the name it is counted under, and
+            // then the other shape, the other branch, or the rule for what is left over objects to
+            // parts of the reply the replacement never touched.
+            Map<String, String> validOnceTheKeyIsBack = Map.of(
+                    "/pet", "{\"kind\": \"cat\", \"name\": \"Tom\", "
+                            + "\"self\": \"/pets/1?key=REDACTED-AUTH\"}",
+                    "/either", "{\"key\": \"REDACTED-AUTH.x\"}",
+                    "/plan", "{\"key\": \"REDACTED-AUTH\", \"plan\": \"paid\"}",
+                    "/me", "{\"name\": \"a\", \"token\": \"abREDACTED-AUTH\"}",
+                    "/usage", "{\"REDACTED-AUTH\": 42}");
+            validOnceTheKeyIsBack.forEach((path, body) -> assertThat(oracle.judge(
+                    Attempts.answered(OperationId.of("GET " + path), path, 200, JSON, body),
+                    choices)).describedAs(path + " " + body).isEmpty());
+
+            // Outside every choice, what the replacement cannot have changed still stands.
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /me"), "/me", 200, JSON,
+                    "{\"name\": 7, \"token\": \"abREDACTED-AUTH\"}"), choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .startsWith("/name"));
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /usage"), "/usage", 200,
+                    JSON, "{\"REDACTED-AUTH\": 42, \"Other\": 5}"), choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .startsWith("/Other"));
+            // And with no key hidden in it, a reply is judged through every choice as ever.
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /pet"), "/pet", 200, JSON,
+                    "{\"kind\": \"cat\", \"name\": \"Tom\", \"self\": \"/pets/1?key=ABC\"}"),
+                    choices)).hasSize(1);
         }
 
         @Test

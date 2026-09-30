@@ -247,6 +247,8 @@ class CredentialPlanTest {
                     gather(pet, AuthGiven.typed("api_key==", 1)));
             refused.put("a name before an = that is no scheme's",
                     gather(pet, AuthGiven.typed("apikey=" + KEY, 1)));
+            refused.put("nothing before an = that has more after it",
+                    gather(pet, AuthGiven.typed("=" + KEY, 1)));
             refused.put("a name before an =, and no key declared",
                     gather(none, AuthGiven.typed("leakprobe=" + KEY, 1)));
             refused.put("a name before an = that is none of two schemes'",

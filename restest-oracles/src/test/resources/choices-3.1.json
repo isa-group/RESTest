@@ -1,0 +1,218 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Choices",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pet": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a cat or a dog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Cat"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Dog"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/either": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a key or an error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "key"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "maxLength": 12
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "error"
+                      ],
+                      "properties": {
+                        "error": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plan": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a plan, which depends on the key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "plan": {
+                      "type": "string"
+                    }
+                  },
+                  "if": {
+                    "properties": {
+                      "key": {
+                        "pattern": "^[a-z0-9]+$"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "plan": {
+                        "enum": [
+                          "paid"
+                        ]
+                      }
+                    }
+                  },
+                  "else": {
+                    "required": [
+                      "error"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "who asks, and nothing else",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Base",
+                  "unevaluatedProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usage": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "requests counted under each key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[a-z0-9]+$": {
+                      "type": "integer"
+                    }
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Cat": {
+        "type": "object",
+        "required": [
+          "kind",
+          "name"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "cat"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "self": {
+            "type": "string",
+            "pattern": "^/pets/[0-9]+[?]key=[a-z0-9]+$"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Dog": {
+        "type": "object",
+        "required": [
+          "kind",
+          "bark"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "dog"
+            ]
+          },
+          "bark": {
+            "type": "boolean"
+          },
+          "self": {
+            "type": "string",
+            "pattern": "^/pets/[0-9]+[?]key=[a-z0-9]+$"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Base": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+$"
+          }
+        }
+      }
+    }
+  }
+}
