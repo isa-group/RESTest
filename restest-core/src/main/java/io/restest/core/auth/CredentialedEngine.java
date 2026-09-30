@@ -74,7 +74,21 @@ public final class CredentialedEngine implements HttpEngine {
                             + "not sent: " + couldNotBeAdded.getClass().getSimpleName(),
                     Instant.now(), Duration.ZERO)));
         }
-        return inner.sendAsync(testCase, withTheKeys).thenApply(secrets::hidden);
+        // Nothing handed back is passed on as nothing, for the loop to count as lost: hiding a key in
+        // it would fail on the nothing, and the failure would stand in for what really happened.
+        return inner.sendAsync(testCase, withTheKeys)
+                .thenApply(interaction -> interaction == null ? null : secrets.hidden(interaction));
+    }
+
+    /**
+     * A text the run writes itself - an error it prints, say - with every appearance of every key
+     * this door holds hidden, as it is in every exchange.
+     *
+     * @param text what is about to be written
+     * @return the same text, with each key replaced by the text naming it
+     */
+    public String withTheKeysHidden(String text) {
+        return secrets.hidden(Objects.requireNonNull(text, "text"));
     }
 
     @Override

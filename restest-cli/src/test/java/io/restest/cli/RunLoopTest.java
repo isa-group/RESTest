@@ -241,6 +241,102 @@ class RunLoopTest {
     }
 
     @Test
+    @DisplayName("a request RESTest loses is counted apart with what went wrong, and the run goes on")
+    void a_lost_request_is_counted_apart_and_the_run_goes_on() {
+        engine.loses = testCase -> testCase.operation().value().equals("listPets");
+
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
+
+        assertThat(outcome.lost()).describedAs("%s", outcome).isPositive();
+        assertThat(outcome.firstLoss()).get(org.assertj.core.api.InstanceOfAssertFactories.THROWABLE)
+                .describedAs("the failure itself, not the wrapping it arrived in")
+                .isInstanceOf(StackOverflowError.class)
+                .hasMessage("lost on the way to listPets");
+        assertThat(outcome.answered() + outcome.lost())
+                .describedAs("every request was either answered or lost: %s", outcome)
+                .isEqualTo(outcome.sent());
+        assertThat(outcome.passes())
+                .describedAs("one operation lost does not end the run for the others")
+                .isGreaterThan(1);
+        assertThat(outcome.nothingAnswered()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a request the engine hands nothing back for is lost too, with nothing to show")
+    void a_request_handed_back_as_nothing_is_lost() {
+        engine.loses = testCase -> testCase.operation().value().equals("listPets");
+        engine.losesWithoutSaying = true;
+
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
+
+        assertThat(outcome.lost()).describedAs("%s", outcome).isPositive();
+        assertThat(outcome.firstLoss()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a run that loses every request stops as early as one whose address answers nothing")
+    void losing_every_request_stops_the_run_early() {
+        engine.loses = testCase -> true;
+
+        Instant before = Instant.now();
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), listening -> { });
+
+        assertThat(Duration.between(before, Instant.now()))
+                .describedAs("it does not go on losing requests for the half minute it was given")
+                .isLessThan(Duration.ofSeconds(10));
+        assertThat(outcome.answered()).isZero();
+        assertThat(outcome.lost()).isEqualTo(outcome.sent());
+        assertThat(outcome.sent())
+                .describedAs("but it does lose enough to be sure, rather than stopping at the first")
+                .isGreaterThanOrEqualTo(WORK_AHEAD);
+    }
+
+    @Test
+    @DisplayName("a step of a series RESTest loses is heard as a step nothing came back to, so its series goes on")
+    void a_lost_step_of_a_series_is_heard_and_its_series_goes_on() {
+        // Reading around a pet: create it, read it, read the list, read it again. Reading the list
+        // only adds an observation, so a series whose list read came back with nothing goes on to
+        // the read after it - which it can only do if the lost step was heard. Unheard, the series
+        // would wait for an answer that never comes, and its last read would never go out.
+        engine.repliesWith(testCase -> "{\"id\": 7}");
+        engine.loses = testCase -> testCase.sequence().isPresent()
+                && testCase.operation().value().equals("listPets");
+        Campaign onlySeries = new Campaign(List.of(new Campaign.PlannedStrategy("sequences", 100,
+                List.of(new Campaign.Entry.Single(new Campaign.Source.Builtin(
+                        Campaign.Builtin.RANDOM))), false, true)), WhichOperations.everything());
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260914L,
+                List.of(), onlySeries, Settings.defaults().withSequences(
+                        new SequenceSettings(false, false, false, false, true, false)));
+
+        RunLoop.Outcome outcome;
+        try (EventStream events = new EventStream()) {
+            Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
+            outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
+                    ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events);
+        }
+
+        assertThat(outcome.lost()).describedAs("list reads were sent and lost: %s", outcome)
+                .isPositive();
+        Map<InteractionId, List<TestCase>> bySeries = new HashMap<>();
+        engine.stepsSentAt.keySet().forEach(step -> bySeries.computeIfAbsent(
+                step.sequence().orElseThrow().step() == 1
+                        ? engine.exchangeOf.get(step)
+                        : step.sequence().orElseThrow().follows().get(0),
+                ignored -> new ArrayList<>()).add(step));
+        assertThat(bySeries.values())
+                .describedAs("a series whose list read was lost still sent the read after it")
+                .anySatisfy(series -> {
+                    int lostAt = series.stream()
+                            .filter(step -> step.operation().value().equals("listPets"))
+                            .mapToInt(step -> step.sequence().orElseThrow().step())
+                            .min().orElse(Integer.MAX_VALUE);
+                    assertThat(series).anySatisfy(step -> assertThat(
+                            step.sequence().orElseThrow().step()).isGreaterThan(lostAt));
+                });
+    }
+
+    @Test
     @DisplayName("a document nothing can be sent for stops after one pass instead of spinning")
     void a_document_that_yields_no_request_stops_after_one_pass() {
         // A base address carrying a query string is one no request can be built on, so every
@@ -574,6 +670,12 @@ class RunLoopTest {
         private volatile Function<TestCase, String> replyBody = testCase -> "[]";
         private volatile boolean answers = true;
 
+        /** Which requests the engine loses, failing on the thread they are sent on. */
+        private volatile java.util.function.Predicate<TestCase> loses = testCase -> false;
+
+        /** Whether a lost request comes back as nothing at all rather than as a failure. */
+        private volatile boolean losesWithoutSaying = false;
+
         void takes(Function<HttpRequestRecord, Duration> perRequest) {
             this.howLong = perRequest;
         }
@@ -601,6 +703,17 @@ class RunLoopTest {
             CompletableFuture<Interaction> answer = new CompletableFuture<>();
             later.schedule(() -> {
                 inFlight.decrementAndGet();
+                if (loses.test(testCase)) {
+                    // As a real engine's request fails when the part of the tool sending it breaks:
+                    // wrapped the way the asynchronous machinery wraps what a request's thread threw.
+                    if (losesWithoutSaying) {
+                        answer.complete(null);
+                    } else {
+                        answer.completeExceptionally(new java.util.concurrent.CompletionException(
+                                new StackOverflowError("lost on the way to " + operation)));
+                    }
+                    return;
+                }
                 firstAnswered.putIfAbsent(operation, System.nanoTime());
                 Interaction replied = reply(testCase, request);
                 if (testCase.sequence().isPresent()) {

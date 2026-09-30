@@ -56,9 +56,11 @@ final class ExitCode {
     static final int NOTHING_TO_TEST = 3;
 
     /**
-     * RESTest itself went wrong. Something failed unexpectedly, or part of the reporting broke, so
-     * what was printed may be missing things. A wrong answer presented as a right one is the single
-     * failure a testing tool cannot afford, so this is deliberately not reported as either 0 or 1.
+     * RESTest itself went wrong. Something failed unexpectedly, part of the reporting broke, a
+     * request was lost by the part of the tool that sends it, or an exchange had to be kept without
+     * its details, so what was printed may be missing things. A wrong answer presented as a right one
+     * is the single failure a testing tool cannot afford, so this is deliberately not reported as
+     * either 0 or 1.
      */
     static final int TOOL_FAILED = 4;
 
@@ -82,12 +84,20 @@ final class ExitCode {
      *     on our side" is the same either way. Which of the two it was belongs in the words printed
      *     alongside, not in the number a script reads
      * @param eventsNeverHeard how many announcements never reached the listeners
+     * @param keptWithoutTheirDetails how many exchanges had to be kept without their details,
+     *     because a key could not be picked out of them: every report and the stored run have those
+     *     exchanges with next to nothing in them
      * @param faults how many faults were reported
      * @return the number the command should answer with
      */
     static int of(RunLoop.Outcome outcome, long whatFailedOnOurSide, long eventsNeverHeard,
-            int faults) {
-        if (whatFailedOnOurSide > 0 || eventsNeverHeard > 0) {
+            long keptWithoutTheirDetails, int faults) {
+        if (whatFailedOnOurSide > 0 || eventsNeverHeard > 0 || keptWithoutTheirDetails > 0) {
+            return TOOL_FAILED;
+        }
+        // Before asking whether anything was tested: a run in which RESTest lost every request it
+        // sent tested nothing, and the reason is RESTest, not the address it was pointed at.
+        if (outcome != null && outcome.lost() > 0) {
             return TOOL_FAILED;
         }
         if (outcome == null || outcome.sent() == 0 || outcome.nothingAnswered()) {
