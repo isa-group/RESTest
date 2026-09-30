@@ -713,9 +713,9 @@ with none of those options, but Java also reads options from `JAVA_TOOL_OPTIONS`
 running out of memory the answer that means nothing could be tested.
 
 One mistake in what is typed reaches the framework's last resort too: a file of arguments named with
-`@` that is a directory. It answered `1` and now answers `4`, with the framework's stack trace. The
-table's number for it is `2`, and saying so in plain words is for the command line's own increment,
-12.1.
+`@` that is there but cannot be opened, a directory for instance. It answered `1` and now answers
+`4`, with the framework's stack trace. The table's number for it is `2`, and saying so in plain
+words is for the command line's own increment, 12.1.
 
 ### Still open
 

@@ -74,9 +74,9 @@ public final class Restest {
         try {
             answer = run(arguments);
         } catch (Throwable escaped) {
-            // Running the command answers for whatever goes wrong in it. What could still get here
-            // is a failure in the few lines around it - making somewhere to write, and flushing
-            // it - which takes memory already gone; it is said if it can be.
+            // Running the command answers for whatever escapes it. What could still get here is a
+            // failure in the few lines around it - making somewhere to write, and flushing it -
+            // which takes memory already gone; it is said if it can be.
             escaped.printStackTrace();
         } finally {
             // Always with a number RESTest chose. Java would otherwise end the program with 1, the
@@ -90,9 +90,9 @@ public final class Restest {
      *
      * <p>The answer is 0 when the run found nothing wrong, 1 when it found a fault, 2 when the
      * command line was wrong, 3 when there was nothing to test, and 4 when RESTest itself went
-     * wrong. A failure that would otherwise be thrown out of it - running out of memory included -
-     * is answered with 4 instead, and said where problems go, with the stack trace somebody needs
-     * to report it.
+     * wrong. A failure that would otherwise be thrown out of the command - running out of memory
+     * included - is answered with 4 instead, and said where problems go, with the stack trace
+     * somebody needs to report it.
      *
      * @param arguments what was typed after {@code restest}
      * @return the number the command answered with
