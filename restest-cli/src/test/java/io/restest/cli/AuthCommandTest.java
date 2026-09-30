@@ -428,17 +428,38 @@ class AuthCommandTest {
             Path arguments = Files.writeString(directory.resolve("arguments"),
                     "--auth" + KEY + "\n");
 
+            Path afterAnOption = Files.writeString(directory.resolve("after-an-option"),
+                    "--budget\n--auth" + KEY + "\n");
+            Path quoted = Files.writeString(directory.resolve("quoted"),
+                    "\"--auth " + KEY + "\"\n");
+
             int stuck = run(Map.of(), "run", pets, "--auth" + KEY, "--url", api.baseUrl());
             int colon = run(Map.of(), "run", pets, "--auth:" + KEY, "--url", api.baseUrl());
             int asTheAddress = run(Map.of(), "run", pets, "--url", "--auth" + KEY);
             int fromAFile = run(Map.of(), "run", pets, "--url", api.baseUrl(), "@" + arguments);
+            int asAValueInAFile = run(Map.of(), "run", pets, "--url", api.baseUrl(),
+                    "@" + afterAnOption);
 
-            assertThat(List.of(stuck, colon, asTheAddress, fromAFile)).containsOnly(2);
+            int inQuotesInAFile = run(Map.of(), "run", pets, "--url", api.baseUrl(), "@" + quoted);
+
+            assertThat(List.of(stuck, colon, asTheAddress, fromAFile, asAValueInAFile,
+                    inQuotesInAFile)).containsOnly(2);
             assertThat(problems.toString())
                     .contains("an argument begins with --auth and runs straight on")
                     .contains("Unknown option: --auth...")
+                    .doesNotContain("Invalid value")
                     .doesNotContain(CORE);
             assertThat(api.findAll(anyRequestedFor(anyUrl()))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("the name of a document after --, which may begin with --auth, is not taken for a stuck key")
+        void a_document_after_the_end_of_the_options_is_not_refused(@TempDir Path directory)
+                throws IOException {
+            run(Map.of(), "run", "--url", api.baseUrl(), "--budget", "1s", "--",
+                    directory.resolve("--authors.yaml").toString());
+
+            assertThat(problems.toString()).doesNotContain("runs straight on");
         }
     }
 

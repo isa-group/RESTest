@@ -153,6 +153,60 @@
           }
         }
       }
+    },
+    "/registry": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a package, with what it depends on",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "self": {
+                      "type": "string",
+                      "maxLength": 12
+                    },
+                    "dependencies": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tuple": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a name and a number, and nothing more",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "maxLength": 12
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "items": false
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

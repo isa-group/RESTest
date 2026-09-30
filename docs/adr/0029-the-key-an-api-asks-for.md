@@ -159,8 +159,11 @@ never repeats the key.** It names the key by where it came from: "the key given 
 - it is shorter than four characters. A key is hidden wherever it appears (section 6), and one that
   short would be hidden inside ordinary words and numbers everywhere the run writes;
 - it runs straight on from `--auth`, with no space or `=` between them (`--authKEY`). This is
-  checked before anything reads the command line, because every other complaint about such an
-  argument would repeat it whole;
+  checked before anything reads the command line, in the words of a file of arguments named with
+  `@` as well, and nowhere after a `--`, where only the document's name can come. Read any other
+  way, such an argument would be repeated whole: as an option that does not exist, or as the value
+  of the option before it, even as the name of a directory to write into. The value of another
+  option that begins with `--auth` goes after its `=`, as in `--out=--auth-results`;
 - it names a scheme that is not an API key: "RESTest 2.0 sends only API keys";
 - another key typed goes to the same place;
 - it holds a character that is not plain printable ASCII, or a space at either end, which the HTTP
@@ -348,17 +351,19 @@ What they judge and learn from is what was hidden.
 The rule that checks a reply against the document judges every reply as it always has. In a reply
 holding the text written in a key's place, it lets pass what that text could have caused:
 - an objection reached through a choice between shapes or a condition: `oneOf`, `anyOf`, `not`,
-  `if`, `then` and `else`, and what `contains` and `unevaluatedProperties` decide from how other
+  `if`, `then`, `else`, `dependentSchemas`, `dependencies` and `discriminator`, and what `contains`,
+  `minContains`, `maxContains`, `unevaluatedProperties` and `unevaluatedItems` decide from how other
   parts turned out. The shape the reply really has can fail on the replacement, and then another
-  shape objects to parts of the reply the replacement never touched;
+  shape objects to parts of the reply the replacement never touched. A member that happens to be
+  called by one of those words, such as a package's `dependencies`, is only a member;
 - an objection to something under a member whose name holds the replacement;
 - an objection to something holding the replacement that the replacement can change: a length, a
   pattern, a value from a list, or the names of an object's members when one of them holds it;
 - a body that is not JSON, because a key was hidden inside a number.
 
 Hiding a key never changes what kind of value something is, nor how many members or items there
-are, nor a number. So, outside a choice, those objections stand, and so does anything wrong
-elsewhere in the same reply. An API that repeats the address back in every reply is judged on all
+are, nor a number. So, outside a choice, those objections stand, one item more than a list allows
+among them, and so does anything wrong elsewhere in the same reply. An API that repeats the address back in every reply is judged on all
 the rest of each one, short of what its choices decide. Reporting a fault the run itself caused is
 the one thing a testing tool must not do.
 
@@ -464,7 +469,8 @@ operations that need each credential, which are the two things a key needs.
 - The store, `report.json` and the `curl` commands hold every exchange exactly as it went, except
   the keys. ADR-0005 and ADR-0006 are amended to say so.
 - In a reply that repeated a key back, the rule that checks replies against the document lets pass
-  what the hiding may have changed, and judges the rest. A run says how many replies did. In a run
+  what the hiding may have changed, and judges the rest, short of what its choices decide. A run
+  says how many replies did. In a run
   handed no key nothing is hidden, and every reply is judged as before, unless an API writes
   RESTest's replacement text of its own accord.
 - A dictionary entry for an input a key fills goes unused while a key fills it.

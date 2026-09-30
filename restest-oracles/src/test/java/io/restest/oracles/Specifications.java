@@ -131,7 +131,8 @@ final class Specifications {
      */
     static ApiModel choices31() {
         List<Operation> operations = new java.util.ArrayList<>();
-        for (String path : List.of("/pet", "/either", "/plan", "/me", "/usage")) {
+        for (String path : List.of("/pet", "/either", "/plan", "/me", "/usage", "/registry",
+                "/tuple")) {
             operations.add(Operation.of(HttpMethod.GET, path)
                     .withResponses(List.of(ResponseModel.json("200", AnySchema.of()))));
         }

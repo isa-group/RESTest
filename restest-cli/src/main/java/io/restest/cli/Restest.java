@@ -16,7 +16,10 @@
 package io.restest.cli;
 
 import io.restest.core.auth.AuthGiven;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -138,23 +141,19 @@ public final class Restest {
             restest.usage(err);
             return ExitCode.BAD_COMMAND_LINE;
         }
-        if (aKeyStuckToItsOption(arguments, restest)) {
+        if (aKeyStuckToItsOption(List.of(arguments), optionsOf(restest), 0)) {
             err.println("restest: an argument begins with " + AuthGiven.OPTION + " and runs straight "
                     + "on into something else, and is not repeated here in case that is a key: "
-                    + "write " + AuthGiven.OPTION + " <key> or " + AuthGiven.OPTION + "=<key>");
+                    + "write " + AuthGiven.OPTION + " <key> or " + AuthGiven.OPTION + "=<key>. The "
+                    + "value of another option that begins with " + AuthGiven.OPTION + " goes after "
+                    + "its '=', as in --out=" + AuthGiven.OPTION + "-results");
             return ExitCode.BAD_COMMAND_LINE;
         }
         return restest.execute(arguments);
     }
 
-    /**
-     * Whether an argument begins with {@code --auth} and runs straight on into something other than
-     * an {@code =}, as a key typed without the space after the option does, and is no option of its
-     * own. It is caught before the command-line framework sees it, because every way the framework
-     * would complain of it repeats it whole: as an option that does not exist, or as the value of
-     * the option before it.
-     */
-    private static boolean aKeyStuckToItsOption(String[] arguments, CommandLine restest) {
+    /** The name of every option of every command, each way it can be written. */
+    private static List<String> optionsOf(CommandLine restest) {
         List<String> options = new ArrayList<>();
         List<CommandLine> commands = new ArrayList<>(List.of(restest));
         commands.addAll(restest.getSubcommands().values());
@@ -162,8 +161,25 @@ public final class Restest {
             command.getCommandSpec().options()
                     .forEach(option -> options.addAll(List.of(option.names())));
         }
+        return options;
+    }
+
+    /**
+     * Whether an argument begins with {@code --auth} and runs straight on into something other than
+     * an {@code =}, as a key typed without the space after the option does, and is no option of its
+     * own. It is caught before the command-line framework sees it, because every way the framework
+     * would take it repeats it whole: as an option that does not exist, or as the value of the
+     * option before it - a directory to write into, say. A file of arguments named with {@code @} is
+     * read by the framework as if its words had been typed, so its words are looked at too; and
+     * nothing after {@code --}, where only the document's name can come, is.
+     */
+    private static boolean aKeyStuckToItsOption(List<String> arguments, List<String> options,
+            int filesDeep) {
         String option = AuthGiven.OPTION;
         for (String argument : arguments) {
+            if (argument.equals("--")) {
+                return false;
+            }
             boolean stuck = argument.length() > option.length()
                     && argument.regionMatches(true, 0, option, 0, option.length())
                     && argument.charAt(option.length()) != '=';
@@ -172,8 +188,33 @@ public final class Restest {
             if (stuck && !anOption) {
                 return true;
             }
+            if (argument.startsWith("@") && !argument.startsWith("@@") && filesDeep < 8
+                    && aKeyStuckToItsOption(wordsIn(argument.substring(1)), options,
+                            filesDeep + 1)) {
+                return true;
+            }
         }
         return false;
+    }
+
+    /**
+     * The words of a file of arguments, split where the framework splits them, with any quotation
+     * marks around a word taken off. None, for a file that cannot be read: the framework says so
+     * itself.
+     */
+    private static List<String> wordsIn(String file) {
+        try {
+            List<String> words = new ArrayList<>();
+            for (String word : Files.readString(Path.of(file)).split("\\s+")) {
+                String bare = word.replaceAll("^[\"']+|[\"']+$", "");
+                if (!bare.isEmpty()) {
+                    words.add(bare);
+                }
+            }
+            return words;
+        } catch (IOException | RuntimeException unreadable) {
+            return List.of();
+        }
     }
 
     /**

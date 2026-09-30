@@ -88,7 +88,7 @@ public final class ResponseSchemaOracle implements Oracle {
      */
     private static final Set<String> NEVER_THE_HIDING = Set.of("type", "minimum", "maximum",
             "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "minItems", "maxItems",
-            "minProperties", "maxProperties");
+            "minProperties", "maxProperties", "items", "additionalItems");
 
     /** The objections about the names of an object's members rather than about their values. */
     private static final Set<String> ABOUT_NAMES = Set.of("required", "dependentRequired",
@@ -103,6 +103,10 @@ public final class ResponseSchemaOracle implements Oracle {
     private static final Set<String> DEPENDS_ON_THE_REST = Set.of("oneOf", "anyOf", "not", "if",
             "then", "else", "contains", "minContains", "maxContains", "dependentSchemas",
             "dependencies", "unevaluatedProperties", "unevaluatedItems", "discriminator");
+
+    /** The words of a shape followed, in the way to an objection, by a name the document chose. */
+    private static final Set<String> FOLLOWED_BY_A_NAME = Set.of("properties",
+            "patternProperties", "dependentSchemas");
 
     /** The document being tested against, prepared once. Guarded by this object's own lock. */
     private Reader reader;
@@ -297,7 +301,7 @@ public final class ResponseSchemaOracle implements Oracle {
      */
     private static boolean mayBeTheHidingsDoing(Error error) {
         if (anyStep(error.getInstanceLocation(), step -> step.contains(Secrets.MARKER))
-                || anyStep(error.getEvaluationPath(), DEPENDS_ON_THE_REST::contains)) {
+                || throughAChoice(error.getEvaluationPath())) {
             return true;
         }
         String keyword = String.valueOf(error.getKeyword());
@@ -318,6 +322,30 @@ public final class ResponseSchemaOracle implements Oracle {
         } catch (JsonException unreadable) {
             return true;
         }
+    }
+
+    /**
+     * Whether the way to an objection goes through a choice or a condition. A member of an object
+     * may be called {@code else} or {@code dependencies}, so a step that names a member is told
+     * apart from one that is a word of the shape by the word before it. A way the checker did not
+     * give is taken to go through one.
+     */
+    private static boolean throughAChoice(NodePath path) {
+        if (path == null) {
+            return true;
+        }
+        boolean aName = false;
+        for (int step = 0; step < path.getNameCount(); step++) {
+            String word = String.valueOf(path.getName(step));
+            if (aName) {
+                aName = false;
+            } else if (DEPENDS_ON_THE_REST.contains(word)) {
+                return true;
+            } else {
+                aName = FOLLOWED_BY_A_NAME.contains(word);
+            }
+        }
+        return false;
     }
 
     /** Whether any step of a path passes the test. A path the checker did not give passes it. */

@@ -639,7 +639,8 @@ operations says which key, and names the option that would give it.
   typed after `--auth` taken out. An option missing its value, followed by `--auth=<key>`, is told
   it found `--auth=<key>` - those very characters, not the key. It answers `2`, as before.
 - An argument that runs straight on from `--auth`, with no space or `=` between them, is refused
-  before the framework reads the command line, without repeating it. It answers `2`.
+  before the framework reads the command line, without repeating it. So is one in a file of
+  arguments named with `@`; nothing after `--` is looked at. It answers `2`.
 
 At the end, a run handed a key says how many replies repeated one back, on a line of its own before
 the files are named.

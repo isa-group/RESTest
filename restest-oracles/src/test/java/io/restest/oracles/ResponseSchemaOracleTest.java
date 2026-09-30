@@ -351,6 +351,17 @@ class ResponseSchemaOracleTest {
                     JSON, "{\"REDACTED-AUTH\": 42, \"Other\": 5}"), choices)).singleElement()
                     .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
                             .startsWith("/Other"));
+            // A member whose name is a word of a shape is still only a member, and one item more
+            // than a tuple allows is still one too many.
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /registry"), "/registry",
+                    200, JSON, "{\"self\": \"/x?k=REDACTED-AUTH\", \"dependencies\": {\"a\": 7}}"),
+                    choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .startsWith("/dependencies/a"));
+            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /tuple"), "/tuple", 200,
+                    JSON, "[\"REDACTED-AUTH\", 1, 2]"), choices)).singleElement()
+                    .satisfies(finding -> assertThat(finding.details()).singleElement().asString()
+                            .contains("additional items"));
             // And with no key hidden in it, a reply is judged through every choice as ever.
             assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /pet"), "/pet", 200, JSON,
                     "{\"kind\": \"cat\", \"name\": \"Tom\", \"self\": \"/pets/1?key=ABC\"}"),
