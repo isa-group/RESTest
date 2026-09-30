@@ -16,6 +16,7 @@
 package io.restest.report;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.json.JsonText;
@@ -24,6 +25,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import io.restest.core.settings.ReportSettings;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
@@ -70,6 +72,28 @@ class JsonReportTest {
                 .containsExactly("name", "version");
         assertThat(object(report, "api").members().keySet())
                 .containsExactly("title", "baseUrl");
+        assertThat(report.members().keySet())
+                .describedAs("whether the run was cut short comes straight after what was tested, "
+                        + "before any number it qualifies")
+                .startsWith("tool", "faultCatalogue", "createdAt", "api", "cutShort", "totals");
+    }
+
+    @Test
+    @DisplayName("a run that ended by itself says it was not cut short; one stopped from outside says it was")
+    void a_run_stopped_from_outside_says_so() {
+        assertThat(run(JsonReport.inMemory(fixedClock())).member("cutShort"))
+                .contains(JsonValue.of(false));
+
+        JsonReport stopped = JsonReport.inMemory(fixedClock());
+        stopped.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        stopped.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 200)));
+        stopped.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(3), Runs.engine(), true));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) stopped.document().orElseThrow();
+
+        assertThat(written.member("cutShort")).contains(JsonValue.of(true));
+        assertThat(number(object(written, "totals"), "requests"))
+                .describedAs("and what it counts is what it found until then")
+                .isEqualTo(1);
     }
 
     @Test
@@ -266,6 +290,32 @@ class JsonReportTest {
         assertThat(file).exists();
         JsonValue written = JsonText.read(Files.readString(file));
         assertThat(((JsonValue.JsonObject) written).member("findings")).isPresent();
+        assertThat(JsonReport.whileBeingWritten(file))
+                .describedAs("the file it was written into before it was given its name is gone")
+                .isEqualTo(directory.resolve("report.json.partial"))
+                .doesNotExist();
+    }
+
+    @Test
+    @DisplayName("a report is written whole under its name or not at all, never half of it")
+    void a_report_is_whole_or_absent(@TempDir Path directory) throws IOException {
+        Path earlier = directory.resolve("earlier").resolve("report.json");
+        Files.createDirectories(earlier.getParent());
+        Files.writeString(earlier, "{\"an\": \"earlier report\"}");
+        run(JsonReport.to(earlier));
+        assertThat(((JsonValue.JsonObject) JsonText.read(Files.readString(earlier)))
+                .member("findings")).describedAs("one already there is replaced whole").isPresent();
+
+        // A name that cannot be given, because a directory holding something already has it.
+        Path taken = directory.resolve("taken").resolve("report.json");
+        Files.createDirectories(taken);
+        Files.writeString(taken.resolve("something"), "not ours");
+        assertThatThrownBy(() -> run(JsonReport.to(taken)))
+                .isInstanceOf(UncheckedIOException.class)
+                .hasMessageContaining("the report could not be written to " + taken);
+        assertThat(JsonReport.whileBeingWritten(taken))
+                .describedAs("what could not be given its name is not left behind either")
+                .doesNotExist();
     }
 
     @Test

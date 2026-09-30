@@ -432,3 +432,14 @@ M10 added behind its switch. It also found three older behaviours with no switch
 
 §5 says they move when the code around them is next touched. The page does not list them as
 switches, because they are not.
+
+## Amendment (M12.1b)
+
+**Date:** 2026-09-30
+
+**`schedule.interruptGrace`, two seconds, is how long a run stopped from outside waits for the
+answers it is owed.** It is not a switch: a run always writes what it found when it is stopped, and
+zero means it writes at once. The five seconds a stopped run is then given to write stay a constant,
+under §5's test: nobody wants a different value for a wait that only runs out when writing is stuck,
+and raising the grace raises the whole wait. [ADR-0015](0015-command-line-contract.md)'s M12.1b
+amendment says why. Seventy-one settings in eight groups.

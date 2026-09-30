@@ -151,6 +151,7 @@ class SettingsTest {
             Settings changed = Settings.from(Map.of(
                     "engine.readTimeout", "2m",
                     "schedule.stragglerGrace", "500ms",
+                    "schedule.interruptGrace", "250ms",
                     "engine.followRedirects", "TRUE",
                     "engine.userAgent", "mine/1.0",
                     "engine.slowdownFactor", "1.5",
@@ -158,6 +159,7 @@ class SettingsTest {
 
             assertThat(changed.engine().readTimeout()).isEqualTo(Duration.ofMinutes(2));
             assertThat(changed.schedule().stragglerGrace()).isEqualTo(Duration.ofMillis(500));
+            assertThat(changed.schedule().interruptGrace()).isEqualTo(Duration.ofMillis(250));
             assertThat(changed.engine().followRedirects()).isTrue();
             assertThat(changed.engine().userAgent()).isEqualTo("mine/1.0");
             assertThat(changed.engine().slowdownFactor()).isEqualTo(1.5);
@@ -308,10 +310,14 @@ class SettingsTest {
                     .hasMessageStartingWith("schedule: ")
                     .hasMessageContaining("at least 1");
 
-            assertThatThrownBy(() -> new ScheduleSettings(2, 1_000, Duration.ofSeconds(10), true,
-                    Duration.ofSeconds(-1)))
+            assertThatThrownBy(() -> new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
+                    Duration.ofSeconds(2), true, Duration.ofSeconds(-1)))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("openingLapPatience cannot be negative");
+            assertThatThrownBy(() -> new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
+                    Duration.ofSeconds(-1), true, Duration.ofSeconds(2)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("interruptGrace cannot be negative");
         }
 
         /**
@@ -402,8 +408,8 @@ class SettingsTest {
 
             assertThat(from.withEngine(from.engine().withoutConcurrency()).engine()
                     .maxConcurrency()).isEqualTo(1);
-            assertThat(from.withSchedule(new ScheduleSettings(3, 10, Duration.ofSeconds(1), true,
-                    Duration.ofSeconds(2)))
+            assertThat(from.withSchedule(new ScheduleSettings(3, 10, Duration.ofSeconds(1),
+                    Duration.ofSeconds(2), true, Duration.ofSeconds(2)))
                     .schedule().workAheadFactor()).isEqualTo(3);
             assertThat(from.withGeneration(GenerationSettings.defaults()).generation())
                     .isEqualTo(GenerationSettings.defaults());

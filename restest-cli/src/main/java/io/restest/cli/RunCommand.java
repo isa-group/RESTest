@@ -76,7 +76,9 @@ import picocli.CommandLine.Spec;
  * anybody can paste into a terminal to see it happen again. What it found is left behind as a file
  * describing the faults, for a program to read. Asked to, it also keeps every request and reply, so
  * the run can be examined afterwards without asking the API anything - but only when asked, because
- * a minute against a fast API is hundreds of megabytes that almost nothing reads back.
+ * a minute against a fast API is hundreds of megabytes that almost nothing reads back. Stopped
+ * before its time is up - with Ctrl-C, say - it stops sending and still leaves all of that behind,
+ * said to be what a run cut short found.
  *
  * <p>It holds no cleverness of its own. Reading, inventing, sending, judging and reporting each
  * belong to a different part of the tool; what is decided here is the order they happen in, how long
@@ -109,7 +111,12 @@ import picocli.CommandLine.Spec;
                 ExitCode.TOOL_FAILED + ":RESTest itself went wrong - it lost requests on their "
                         + "way, had to keep exchanges without their details, or broke outright - "
                         + "so what it printed may be incomplete. The message and the stack trace "
-                        + "are what to report."},
+                        + "are what to report.",
+                ExitCode.INTERRUPTED + ":The run was stopped with Ctrl-C. What it found until then "
+                        + "was printed and written, and report.json says it was cut short.",
+                ExitCode.TERMINATED + ":The run was stopped with kill or docker stop. What it "
+                        + "found until then was printed and written, and report.json says it was "
+                        + "cut short."},
         // Written out line by line, each short enough never to be broken by the framework, which
         // breaks a long line after a colon or a full stop - in the middle of an address, or of the
         // name of a setting, where a person copying it would copy half.
@@ -145,10 +152,26 @@ final class RunCommand implements Callable<Integer> {
      * whatever somebody typed after {@code --out}, and may be full of work that is not ours.
      *
      * <p>Whoever adds a new kind of report has to name its file here too. Left out, it would survive
-     * into the next run and be read as part of it.
+     * into the next run and be read as part of it. So is the file the report is written into before
+     * it is given its name, which only a program ended outright while writing it leaves behind.
      */
-    private static final List<String> FILES_A_RUN_WRITES =
-            List.of("run.sqlite", "run.sqlite-wal", "run.sqlite-shm", "report.json");
+    private static final List<String> FILES_A_RUN_WRITES = List.of("run.sqlite", "run.sqlite-wal",
+            "run.sqlite-shm", "report.json",
+            JsonReport.whileBeingWritten(Path.of("report.json")).toString());
+
+    /**
+     * How long a run stopped from outside is given to write what it found, once it has stopped
+     * waiting for its answers, before the program is let end without it.
+     *
+     * <p>Writing takes a fraction of a second: the reports catching up with the last answers, the
+     * report file, the last interactions into the stored run. This is not a pause anybody waits
+     * through. It is how long to wait for writing that has got stuck - a report that stopped making
+     * progress, a disk that stopped answering - before saying so, because the program will be ended
+     * outright soon after whoever stopped it runs out of patience: ten seconds after
+     * {@code docker stop}, with nothing said. With the two seconds a stopped run waits for its
+     * answers by default, this leaves three in hand.
+     */
+    private static final Duration WRITING_ALLOWED = Duration.ofSeconds(5);
 
     @Parameters(
             index = "0",
@@ -297,14 +320,23 @@ final class RunCommand implements Callable<Integer> {
     private final Function<EngineSettings, HttpEngine> engines;
 
     /**
+     * Where a run hears that the program has been told to stop from outside. Java's own, except in
+     * a test that stops a run at a moment it chooses.
+     */
+    private final StopsFromOutside stops;
+
+    /**
      * A command started in the given environment, sending through the given engine.
      *
      * @param environment the variables the command was started with
      * @param engines what makes the engine requests are sent through, from its settings
+     * @param stops where a run hears that the program has been told to stop
      */
-    RunCommand(Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
+    RunCommand(Map<String, String> environment, Function<EngineSettings, HttpEngine> engines,
+            StopsFromOutside stops) {
         this.environment = Objects.requireNonNull(environment, "environment");
         this.engines = Objects.requireNonNull(engines, "engines");
+        this.stops = Objects.requireNonNull(stops, "stops");
     }
 
     @Spec
@@ -474,15 +506,63 @@ final class RunCommand implements Callable<Integer> {
                 err.println("restest: " + cannotStart.getMessage());
                 return ExitCode.NOTHING_TO_TEST;
             }
-            return testing(model, generator, found, testable, address, directory, startedAt,
-                    engine, credentials, configuration, out, err);
+            // From here until everything is written, being told to stop is heard, and the run is
+            // given the time to leave behind what it found - and no more. Before it, a run that is
+            // stopped has sent nothing and written nothing, and ends the way Java ends any program.
+            StopFromOutside stop = new StopFromOutside();
+            Duration grace = settings.schedule().interruptGrace();
+            try (StopsFromOutside.Arrangement heard = stops.whenStopped(
+                    () -> stoppedFromOutside(stop, grace, directory, err))) {
+                try {
+                    return testing(model, generator, found, testable, address, directory,
+                            startedAt, engine, credentials, configuration, stop, out, err);
+                } finally {
+                    // Before saying it is done, since the program may end the moment it has: what
+                    // was printed has to have reached the screen by then.
+                    out.flush();
+                    err.flush();
+                    stop.wrappedUp();
+                }
+            }
         }
+    }
+
+    /**
+     * What the program does, on a thread of its own, once it has been told to stop while a run is
+     * testing: it tells the run, and waits for it to leave behind what it found. When the run is
+     * done, this returns and the program ends. When it is not done in time, this says what it has
+     * not left behind, and the program ends all the same: whoever stopped it is about to end it
+     * outright.
+     *
+     * <p>What is missing is read from the directory rather than from the run. The report is given
+     * its name only once it is written whole, so there being none is the answer; and the stored run
+     * keeps its last interactions in a file beside it until it is closed.
+     */
+    private void stoppedFromOutside(StopFromOutside stop, Duration grace, Path directory,
+            PrintWriter err) {
+        Duration atMost = grace.plus(WRITING_ALLOWED);
+        if (stop.askAndWait(atMost)) {
+            return;
+        }
+        List<String> missing = new ArrayList<>();
+        if (!Files.exists(directory.resolve("report.json"))) {
+            missing.add("report.json was not written");
+        }
+        if (keepTheRun && Files.exists(directory.resolve("run.sqlite-wal"))) {
+            missing.add("run.sqlite was not closed, and its last interactions are in "
+                    + "run.sqlite-wal beside it, so keep the three files together");
+        }
+        err.println("restest: the run was stopped from outside and had not finished writing what "
+                + "it found " + human(atMost) + " later, so it ends here"
+                + (missing.isEmpty() ? "" : ": " + String.join("; ", missing)));
+        err.flush();
     }
 
     private int testing(ApiModel model, RandomTestCaseGenerator generator,
             Dictionaries.Found found, List<Operation> testable, String address, Path directory,
             Instant startedAt, HttpEngine engine, CredentialPlan credentials,
-            SettingsInEffect configuration, PrintWriter out, PrintWriter err) {
+            SettingsInEffect configuration, StopFromOutside stop, PrintWriter out,
+            PrintWriter err) {
         Settings settings = configuration.settings();
         // Each key goes into a request as it leaves, and comes out of each exchange before anything
         // else sees it. A run handed no key sends through the engine itself, exactly as it did
@@ -572,14 +652,15 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().announcementsAllowedToPileUp(),
                             settings.engine().readTimeout()
                                     .plus(settings.schedule().stragglerGrace()),
-                            sending, drained);
+                            settings.schedule().interruptGrace(), stop, sending, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
                     // this, the run's summary and its report file would both be missing, and the
                     // evidence of whatever went wrong would go with them.
                     Instant finishedAt = Instant.now();
                     drained.publish(new RunEvent.RunFinished(finishedAt,
-                            Duration.between(startedAt, finishedAt), sending.statistics()));
+                            Duration.between(startedAt, finishedAt), sending.statistics(),
+                            outcome == null ? stop.asked() : outcome.cutShort()));
                 }
             }
         } finally {
@@ -607,7 +688,11 @@ final class RunCommand implements Callable<Integer> {
                 ? door.repliesThatRepeatedAKey() : 0;
         UnaryOperator<String> hidden = sending instanceof CredentialedEngine door
                 ? door::withTheKeysHidden : UnaryOperator.identity();
-        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated, hidden);
+        Optional<Duration> stoppedAfter = outcome != null && outcome.cutShort()
+                ? stop.askedAt().map(at -> Duration.between(startedAt, at))
+                : Optional.empty();
+        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated, hidden,
+                stoppedAfter, settings.schedule().interruptGrace());
         return answer;
     }
 
@@ -644,13 +729,24 @@ final class RunCommand implements Callable<Integer> {
      */
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
             String address, Path reportFile, Path runFile, OurOwnFailures ours,
-            long repliesThatRepeatedAKey, UnaryOperator<String> hidden) {
+            long repliesThatRepeatedAKey, UnaryOperator<String> hidden,
+            Optional<Duration> stoppedAfter, Duration interruptGrace) {
+        // First, because it says how to read everything else: a run stopped half-way reports half
+        // a run, and nothing below is about the budget it was given.
+        stoppedAfter.ifPresent(after -> err.println("restest: the run was stopped from outside "
+                + "after " + seconds(after) + " of its " + human(budget) + " budget; what is "
+                + "reported above, and in report.json, is what it found until then"));
         if (outcome != null) {
             long notBuilt = outcome.notGenerated() + outcome.notAssembled();
             if (notBuilt > 0) {
                 out.println(notBuilt + " test case(s) could not be built and were skipped");
             }
-            if (outcome.stillOwed() > 0) {
+            if (outcome.stillOwed() > 0 && stoppedAfter.isPresent()) {
+                err.println("restest: " + outcome.stillOwed() + " request(s) were still unanswered "
+                        + "when the run stopped waiting for them, at most " + human(interruptGrace)
+                        + " after it was stopped (schedule.interruptGrace), so they are missing "
+                        + "from what is reported above");
+            } else if (outcome.stillOwed() > 0) {
                 err.println("restest: " + outcome.stillOwed() + " request(s) were never answered "
                         + "and the run stopped waiting for them, so they are missing from what is "
                         + "reported above");
@@ -700,7 +796,9 @@ final class RunCommand implements Callable<Integer> {
                     + " time(s) in all, so some replies were judged by fewer rules than the rest "
                     + "and finding nothing wrong with them means less than it should");
         }
-        if (answer == ExitCode.TOOL_FAILED && !ours.theFilesAreSound()) {
+        // Whatever the answer: a run stopped from outside answers with Java's number, and a report
+        // that broke before it was stopped still may not have written anything.
+        if (!ours.theFilesAreSound()) {
             err.println("restest: " + ours.reports() + " listener(s) failed and "
                     + ours.eventsNeverHeard() + " event(s) never arrived, so what is printed above "
                     + "may be incomplete and the files may not have been written");
@@ -1006,5 +1104,10 @@ final class RunCommand implements Callable<Integer> {
     /** The budget the way it was asked for, rather than the way a machine writes it. */
     private static String human(Duration budget) {
         return budget.toMillis() % 1000 == 0 ? budget.toSeconds() + "s" : budget.toMillis() + "ms";
+    }
+
+    /** A length of time the way a person reads one on a clock: {@code 12.3s}, whatever the machine. */
+    private static String seconds(Duration length) {
+        return String.format(Locale.ROOT, "%.1fs", length.toMillis() / 1000.0);
     }
 }

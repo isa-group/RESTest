@@ -33,8 +33,10 @@ import io.restest.core.settings.SettingsInEffect;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -85,6 +87,11 @@ import java.util.Set;
  * run which found nothing wrong says what it did not look at - and every list of values the run
  * held, beside any it could not read, so that a run made without the values somebody meant it to
  * have can be told from one made with them.
+ *
+ * <p>It says whether the run was stopped from outside before it finished - with Ctrl-C, say - since
+ * every number in it is then what the run found until it was stopped. And it is never half there:
+ * it is written in full under another name and then given its own, so a file called by the report's
+ * name is always a whole report.
  *
  * <p>Fault kinds are named by number from a catalogue several testing tools share, and the report
  * says which version of that catalogue it used, because a fault code only means something next to
@@ -198,6 +205,7 @@ public final class JsonReport implements RunListener {
     private int faults;
     private Duration elapsed = Duration.ZERO;
     private EngineStatistics engine = EngineStatistics.none();
+    private boolean cutShort;
     private JsonValue written;
 
     /** What each stretch of the run achieved, worked out in one place for every report. */
@@ -230,6 +238,23 @@ public final class JsonReport implements RunListener {
     public static JsonReport to(Path file, SettingsInEffect configuration) {
         return new JsonReport(Optional.of(Objects.requireNonNull(file, "file")), Clock.systemUTC(),
                 Objects.requireNonNull(configuration, "configuration"));
+    }
+
+    /**
+     * Where the report is written before it is given its own name, beside the file it becomes.
+     *
+     * <p>The report is written there in full and then renamed in one step, so that a file with the
+     * report's name is always a whole report. A program ended outright while it was writing - a
+     * run stopped from outside that ran out of time, say - leaves this one behind instead, and never
+     * half a report under the name a reader looks for. Whoever clears a directory for a new run has
+     * to clear this too.
+     *
+     * @param file where the report goes
+     * @return where it is written first
+     */
+    public static Path whileBeingWritten(Path file) {
+        Objects.requireNonNull(file, "file");
+        return file.resolveSibling(file.getFileName() + ".partial");
     }
 
     /** A report that is built but written nowhere, for anyone who only wants to read it back. */
@@ -279,6 +304,7 @@ public final class JsonReport implements RunListener {
                 closeOffTheAttemptBeingJudged();
                 elapsed = finished.elapsed();
                 engine = finished.engine();
+                cutShort = finished.cutShort();
                 finish();
             }
             case RunEvent.TestCasePlanned ignored -> {
@@ -371,9 +397,23 @@ public final class JsonReport implements RunListener {
     private void finish() {
         written = build();
         file.ifPresent(path -> {
+            Path partial = whileBeingWritten(path);
             try {
-                Files.writeString(path, JsonText.write(written));
+                Files.writeString(partial, JsonText.write(written));
+                try {
+                    Files.move(partial, path, StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.ATOMIC_MOVE);
+                } catch (AtomicMoveNotSupportedException notInOneStep) {
+                    // A file system that cannot rename in one step still renames: the report is
+                    // then whole or absent everywhere but in the instant of the rename.
+                    Files.move(partial, path, StandardCopyOption.REPLACE_EXISTING);
+                }
             } catch (IOException e) {
+                try {
+                    Files.deleteIfExists(partial);
+                } catch (IOException alsoNot) {
+                    e.addSuppressed(alsoNot);
+                }
                 throw new UncheckedIOException("the report could not be written to " + path, e);
             }
         });
@@ -404,6 +444,9 @@ public final class JsonReport implements RunListener {
                 "version", JsonValue.of(WfcFault.CATALOGUE_VERSION)));
         report.put("createdAt", JsonValue.of(clock.instant().toString()));
         report.put("api", pair("title", JsonValue.of(api), "baseUrl", JsonValue.of(baseUrl)));
+        // Beside what was tested, before any number: a run stopped from outside reports what it
+        // found until then, and every count below is to be read as that.
+        report.put("cutShort", JsonValue.of(cutShort));
         report.put("totals", totals());
         report.put("skippedOperations", skippedOperations());
         report.put("dictionaries", dictionaries());

@@ -101,7 +101,9 @@ public final class Restest {
      * command line was wrong, 3 when there was nothing to test, and 4 when RESTest itself went
      * wrong. A failure that would otherwise be thrown out of the command - running out of memory
      * included - is answered with 4 instead, and said where problems go, with the stack trace
-     * somebody needs to report it.
+     * somebody needs to report it. A run the program is told to stop while it runs - Ctrl-C, say -
+     * stops sending, writes what it found and answers 130; the program then ends with the number
+     * Java gives for the way it was stopped, 130 or 143.
      *
      * @param arguments what was typed after {@code restest}
      * @return the number the command answered with
@@ -163,8 +165,27 @@ public final class Restest {
      */
     static int run(String[] arguments, PrintWriter out, PrintWriter err,
             Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
+        return run(arguments, out, err, environment, engines, StopsFromOutside.shutdownHook());
+    }
+
+    /**
+     * The same, hearing that the program has been told to stop from whatever it is handed rather
+     * than from Java: what a test uses to stop a run at a moment it chooses, without stopping the
+     * program the tests run in.
+     *
+     * @param arguments what was typed after {@code restest}
+     * @param out where everything the command has to say goes
+     * @param err where anything that went wrong goes
+     * @param environment the variables the command is started with
+     * @param engines what makes the engine requests go through, from its settings
+     * @param stops where a run hears that the program has been told to stop
+     * @return the number the command answered with
+     */
+    static int run(String[] arguments, PrintWriter out, PrintWriter err,
+            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines,
+            StopsFromOutside stops) {
         try {
-            return answer(arguments, out, err, environment, engines);
+            return answer(arguments, out, err, environment, engines, stops);
         } catch (Throwable failure) {
             // What arrives here is what the command-line framework does not catch. It catches the
             // exceptions a command throws, and lets through the more serious kind of failure Java
@@ -188,8 +209,9 @@ public final class Restest {
      * framework lets through.
      */
     private static int answer(String[] arguments, PrintWriter out, PrintWriter err,
-            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
-        CommandLine restest = commandLine(out, err, environment, engines);
+            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines,
+            StopsFromOutside stops) {
+        CommandLine restest = commandLine(out, err, environment, engines, stops);
         // With no sub-command there is nothing to run; saying so and showing what the choices are
         // beats a silent success.
         if (arguments.length == 0) {
@@ -230,12 +252,14 @@ public final class Restest {
      */
     static CommandLine commandLine(PrintWriter out, PrintWriter err,
             Map<String, String> environment) {
-        return commandLine(out, err, environment, OkHttpEngine::new);
+        return commandLine(out, err, environment, OkHttpEngine::new,
+                StopsFromOutside.shutdownHook());
     }
 
     private static CommandLine commandLine(PrintWriter out, PrintWriter err,
-            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
-        return new CommandLine(new Restest(), new StartedIn(environment, engines))
+            Map<String, String> environment, Function<EngineSettings, HttpEngine> engines,
+            StopsFromOutside stops) {
+        return new CommandLine(new Restest(), new StartedIn(environment, engines, stops))
                 .setOut(out)
                 .setErr(err)
                 // Plain text, on every machine. The command-line framework would otherwise colour
@@ -427,24 +451,28 @@ public final class Restest {
     }
 
     /**
-     * Builds the run command with the environment it was handed and the engine it sends through, and
-     * everything else the way the command-line framework would. A class rather than a record, so
-     * that printing it never prints the environment, a key left in it included.
+     * Builds the run command with the environment it was handed, the engine it sends through and
+     * where it hears that it has been told to stop, and everything else the way the command-line
+     * framework would. A class rather than a record, so that printing it never prints the
+     * environment, a key left in it included.
      */
     private static final class StartedIn implements CommandLine.IFactory {
 
         private final Map<String, String> environment;
         private final Function<EngineSettings, HttpEngine> engines;
+        private final StopsFromOutside stops;
 
-        StartedIn(Map<String, String> environment, Function<EngineSettings, HttpEngine> engines) {
+        StartedIn(Map<String, String> environment, Function<EngineSettings, HttpEngine> engines,
+                StopsFromOutside stops) {
             this.environment = Objects.requireNonNull(environment, "environment");
             this.engines = Objects.requireNonNull(engines, "engines");
+            this.stops = Objects.requireNonNull(stops, "stops");
         }
 
         @Override
         public <K> K create(Class<K> kind) throws Exception {
             return kind == RunCommand.class
-                    ? kind.cast(new RunCommand(environment, engines))
+                    ? kind.cast(new RunCommand(environment, engines, stops))
                     : CommandLine.defaultFactory().create(kind);
         }
     }

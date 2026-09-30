@@ -34,6 +34,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Spends the time a run was given, asking the API one question after another until it runs out.
@@ -67,11 +69,26 @@ import java.util.concurrent.atomic.AtomicReference;
  * hands what came back to every one of them to the scheduler the moment it arrives, before the slot
  * the request held is given back, so that the next step of that series is waiting by the time there
  * is room to send it.
+ *
+ * <p>A run can also be stopped from outside - Ctrl-C, {@code kill}, a container being stopped - at
+ * any moment, and {@link StopFromOutside} is where the loop hears it. It looks there between one
+ * decision and the next and at least every few hundredths of a second while it waits, and when it
+ * has been stopped it sends nothing more, waits a short while for the answers it is still owed, and
+ * hands back what it did, as it would at the end of its time. However a run ends, an answer that
+ * arrives after the loop has stopped waiting for it is not announced: it counts as never answered,
+ * so that what the reports say and what the stored run keeps are the same requests.
  */
 final class RunLoop {
 
     /** How long to wait before looking again at whether the reports have caught up. */
     private static final Duration CATCH_UP_PAUSE = Duration.ofMillis(5);
+
+    /**
+     * The longest any one wait lasts before the loop looks again at whether it has been stopped from
+     * outside. How soon a stop is noticed, not how long anything waits: every wait still ends when
+     * what it waits for arrives.
+     */
+    private static final Duration LOOK_AGAIN_AFTER = Duration.ofMillis(50);
 
     private RunLoop() {
     }
@@ -93,9 +110,11 @@ final class RunLoop {
      *     API can be said from them. Normally zero
      * @param firstLoss what went wrong with the first of them, when anything did go wrong rather
      *     than the sending part simply handing back nothing
+     * @param cutShort whether the run was stopped from outside before it had stopped waiting for
+     *     its answers: what it did is then what it did until it was stopped
      */
     record Outcome(long sent, long answered, long notGenerated, long notAssembled, long passes,
-            long stillOwed, long lost, Optional<Throwable> firstLoss) {
+            long stillOwed, long lost, Optional<Throwable> firstLoss, boolean cutShort) {
 
         Outcome {
             Objects.requireNonNull(firstLoss, "firstLoss");
@@ -128,16 +147,21 @@ final class RunLoop {
      *     time. Pausing is the honest response, and is counted as time the tool wasted
      * @param howLongToWaitForStragglers how long to go on waiting, past the deadline, for answers to
      *     requests that had already gone out
+     * @param interruptGrace how long to wait for them instead, from the moment the run is stopped
+     *     from outside, when it is - whether that is before the deadline or while it waits after it
+     * @param stop where the loop hears that it has been stopped from outside
      * @param engine what sends them
      * @param events where everything that happens is announced
      * @return what the loop did with the time
      */
     static Outcome run(Scheduler scheduler, String baseUrl, int workAhead,
             int announcementsAllowedToPileUp, Duration howLongToWaitForStragglers,
-            HttpEngine engine, EventStream events) {
+            Duration interruptGrace, StopFromOutside stop, HttpEngine engine, EventStream events) {
         Objects.requireNonNull(scheduler, "scheduler");
         Objects.requireNonNull(baseUrl, "baseUrl");
         Objects.requireNonNull(howLongToWaitForStragglers, "howLongToWaitForStragglers");
+        Objects.requireNonNull(interruptGrace, "interruptGrace");
+        Objects.requireNonNull(stop, "stop");
         Objects.requireNonNull(engine, "engine");
         Objects.requireNonNull(events, "events");
         Instant deadline = scheduler.deadline();
@@ -161,13 +185,19 @@ final class RunLoop {
         try {
             deciding:
             while (true) {
+                // Before anything else is decided: a run stopped from outside sends nothing more,
+                // whatever the scheduler had in mind.
+                if (stop.asked()) {
+                    break deciding;
+                }
                 Scheduler.Step step = scheduler.next();
                 switch (step) {
                     case Scheduler.Step.TimeIsUp ignored -> {
                         break deciding;
                     }
                     case Scheduler.Step.WaitForTheAnswers waiting -> {
-                        waitForTheStep(stepAnswered, sentInThisStep, waiting.atMost(), events);
+                        waitForTheStep(stepAnswered, sentInThisStep, waiting.atMost(), events,
+                                stop);
                         stepAnswered = new Semaphore(0);
                         sentInThisStep = 0;
                     }
@@ -191,10 +221,17 @@ final class RunLoop {
                         }
                     }
                     case Scheduler.Step.Send send -> {
-                        if (!waitForASlot(slots, deadline)) {
+                        if (!waitForASlot(slots, deadline, stop)) {
                             break deciding;
                         }
-                        pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp);
+                        pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp,
+                                stop);
+                        if (stop.asked()) {
+                            // Stopped while it paused. The slot goes back unused, so that the wait
+                            // below finds every slot that is owed nothing.
+                            slots.release();
+                            break deciding;
+                        }
 
                         Operation operation = send.operation();
                         Optional<TestCase> testCase = scheduler.testCaseFor(send);
@@ -236,10 +273,16 @@ final class RunLoop {
 
         // The deadline stops us asking new questions, not listening to the answers we are owed.
         // Those requests were paid for and what came back is evidence; throwing it away would also
-        // leave the run's stored file disagreeing with the number of requests it says it sent.
-        long stillOwed = waitForTheAnswersStillOwed(slots, workAhead, howLongToWaitForStragglers);
-        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes, stillOwed,
-                answers.lost(), answers.firstLoss());
+        // leave the run's stored file disagreeing with the number of requests it says it sent. A
+        // run stopped from outside waits too, for much less, since whoever stopped it is waiting.
+        waitForTheAnswersStillOwed(slots, workAhead,
+                Instant.now().plus(howLongToWaitForStragglers), interruptGrace, stop);
+        // Whatever arrives from here on is not announced. Asked only now, so that a stop that came
+        // while the loop was waiting for its answers counts: the wait was cut short with it.
+        long settled = answers.stopListening();
+        boolean cutShort = stop.asked();
+        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes,
+                sent - settled, answers.lost(), answers.firstLoss(), cutShort);
     }
 
     /**
@@ -254,11 +297,13 @@ final class RunLoop {
         try {
             engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
                 try {
-                    if (wentWrong != null || interaction == null) {
-                        answers.recordLost(wentWrong);
-                    } else {
-                        announce(interaction, answers, events);
-                    }
+                    answers.ifStillListening(() -> {
+                        if (wentWrong != null || interaction == null) {
+                            answers.recordLost(wentWrong);
+                        } else {
+                            announce(interaction, answers, events);
+                        }
+                    });
                 } finally {
                     try {
                         // Before the slot is given back, so that the next step of a series is
@@ -334,59 +379,88 @@ final class RunLoop {
      * @param answered one permit per answer to a request of this step
      * @param sent how many requests this step sent
      * @param atMost the longest the two waits may take together
+     * @param stop where a stop from outside is heard, which ends the wait at once
      */
     private static void waitForTheStep(Semaphore answered, int sent, Duration atMost,
-            EventStream events) {
+            EventStream events, StopFromOutside stop) {
         long giveUpAt = System.nanoTime() + atMost.toNanos();
         try {
-            if (!answered.tryAcquire(sent, atMost.toNanos(), TimeUnit.NANOSECONDS)) {
-                return;
+            while (!answered.tryAcquire(sent, aLookAtMost(giveUpAt - System.nanoTime()),
+                    TimeUnit.NANOSECONDS)) {
+                if (stop.asked() || System.nanoTime() - giveUpAt >= 0) {
+                    return;
+                }
             }
         } catch (InterruptedException stopped) {
             Thread.currentThread().interrupt();
             return;
         }
-        long left = giveUpAt - System.nanoTime();
-        if (left > 0) {
-            events.awaitDelivery(Duration.ofNanos(left));
-        }
-    }
-
-    /** Waits for room to send another request, giving up at the deadline rather than after it. */
-    private static boolean waitForASlot(Semaphore slots, Instant deadline) {
-        Duration left = Duration.between(Instant.now(), deadline);
-        if (left.isNegative() || left.isZero()) {
-            return false;
-        }
-        try {
-            return slots.tryAcquire(left.toNanos(), TimeUnit.NANOSECONDS);
-        } catch (InterruptedException stopped) {
-            Thread.currentThread().interrupt();
-            return false;
+        long left;
+        while (!stop.asked() && (left = giveUpAt - System.nanoTime()) > 0) {
+            if (events.awaitDelivery(Duration.ofNanos(aLookAtMost(left)))) {
+                return;
+            }
         }
     }
 
     /**
-     * Waits for every request already sent to be answered.
-     *
-     * @return how many were still unanswered when it stopped waiting
+     * Waits for room to send another request, giving up at the deadline rather than after it, or as
+     * soon as the run is stopped from outside.
      */
-    private static long waitForTheAnswersStillOwed(Semaphore slots, int workAhead,
-            Duration howLong) {
-        try {
-            if (slots.tryAcquire(workAhead, howLong.toNanos(), TimeUnit.NANOSECONDS)) {
-                return 0;
+    private static boolean waitForASlot(Semaphore slots, Instant deadline, StopFromOutside stop) {
+        while (!stop.asked()) {
+            Duration left = Duration.between(Instant.now(), deadline);
+            if (left.isNegative() || left.isZero()) {
+                return false;
             }
-        } catch (InterruptedException stopped) {
-            Thread.currentThread().interrupt();
+            try {
+                if (slots.tryAcquire(aLookAtMost(left.toNanos()), TimeUnit.NANOSECONDS)) {
+                    return true;
+                }
+            } catch (InterruptedException stopped) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
         }
-        return workAhead - slots.availablePermits();
+        return false;
+    }
+
+    /**
+     * Waits for every request already sent to be answered, until the given moment - or, once the
+     * run has been stopped from outside, until the grace it is given from then, if that comes
+     * sooner.
+     */
+    private static void waitForTheAnswersStillOwed(Semaphore slots, int workAhead,
+            Instant giveUpAt, Duration interruptGrace, StopFromOutside stop) {
+        while (true) {
+            Instant until = stop.askedAt().map(stoppedAt -> stoppedAt.plus(interruptGrace))
+                    .filter(sooner -> sooner.isBefore(giveUpAt))
+                    .orElse(giveUpAt);
+            Duration left = Duration.between(Instant.now(), until);
+            if (left.isNegative() || left.isZero()) {
+                return;
+            }
+            try {
+                if (slots.tryAcquire(workAhead, aLookAtMost(left.toNanos()),
+                        TimeUnit.NANOSECONDS)) {
+                    return;
+                }
+            } catch (InterruptedException stopped) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+    /** How long one wait of the loop may last, given how long is left in all. */
+    private static long aLookAtMost(long nanosLeft) {
+        return Math.max(0, Math.min(nanosLeft, LOOK_AGAIN_AFTER.toNanos()));
     }
 
     private static void pauseWhileTheReportsCatchUp(EventStream events, Instant deadline,
-            int allowedToPileUp) {
+            int allowedToPileUp, StopFromOutside stop) {
         while (events.undelivered() > allowedToPileUp
-                && Instant.now().isBefore(deadline)) {
+                && Instant.now().isBefore(deadline) && !stop.asked()) {
             try {
                 Thread.sleep(CATCH_UP_PAUSE);
             } catch (InterruptedException stopped) {
@@ -411,7 +485,9 @@ final class RunLoop {
      * not end as if it had done all of it. It still counts as unanswered too, so that a run losing
      * every request stops as early as one whose address answers nothing.
      *
-     * <p>Counted from whichever thread the answer arrives on, so the counts are atomic.
+     * <p>Counted from whichever thread the answer arrives on, so the counts are atomic. Once the
+     * loop has stopped waiting, nothing more is counted, or announced: an answer that comes later
+     * counts as never having come.
      */
     private static final class Answers {
 
@@ -419,6 +495,42 @@ final class RunLoop {
         private final AtomicLong unanswered = new AtomicLong();
         private final AtomicLong lost = new AtomicLong();
         private final AtomicReference<Throwable> firstLoss = new AtomicReference<>();
+
+        /**
+         * Held while an answer is counted and announced, and held exclusively to stop listening.
+         * Without it, an answer found still wanted could be announced after the loop had stopped
+         * listening, and after the run had said it was over: in the stored run, and not in the
+         * report. Any number of answers are dealt with at once; only stopping waits.
+         */
+        private final ReadWriteLock listening = new ReentrantReadWriteLock();
+        private boolean stoppedListening;
+
+        /** Deals with an answer that has just arrived, unless the loop has stopped listening. */
+        void ifStillListening(Runnable dealWithIt) {
+            listening.readLock().lock();
+            try {
+                if (!stoppedListening) {
+                    dealWithIt.run();
+                }
+            } finally {
+                listening.readLock().unlock();
+            }
+        }
+
+        /**
+         * Stops listening, once every answer being dealt with has been.
+         *
+         * @return how many requests had ended by then, one way or another
+         */
+        long stopListening() {
+            listening.writeLock().lock();
+            try {
+                stoppedListening = true;
+                return answered.get() + unanswered.get();
+            } finally {
+                listening.writeLock().unlock();
+            }
+        }
 
         void record(Interaction interaction) {
             if (interaction.isAnswered()) {

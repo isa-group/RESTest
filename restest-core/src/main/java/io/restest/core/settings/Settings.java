@@ -126,6 +126,8 @@ public record Settings(
                         DEFAULTS.schedule.announcementsAllowedToPileUp()),
                 typed.lengthOfTime("schedule.stragglerGrace",
                         DEFAULTS.schedule.stragglerGrace()),
+                typed.lengthOfTime("schedule.interruptGrace",
+                        DEFAULTS.schedule.interruptGrace()),
                 typed.yesOrNo("schedule.openingLap", DEFAULTS.schedule.openingLap()),
                 typed.lengthOfTime("schedule.openingLapPatience",
                         DEFAULTS.schedule.openingLapPatience())));
@@ -263,6 +265,7 @@ public record Settings(
             case "schedule.announcementsAllowedToPileUp" ->
                     String.valueOf(schedule.announcementsAllowedToPileUp());
             case "schedule.stragglerGrace" -> LengthOfTime.written(schedule.stragglerGrace());
+            case "schedule.interruptGrace" -> LengthOfTime.written(schedule.interruptGrace());
             case "schedule.openingLap" -> String.valueOf(schedule.openingLap());
             case "schedule.openingLapPatience" ->
                     LengthOfTime.written(schedule.openingLapPatience());

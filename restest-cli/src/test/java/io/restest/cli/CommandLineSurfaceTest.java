@@ -160,7 +160,8 @@ class CommandLineSurfaceTest {
 
             assertThat(run("run", "--help")).isZero();
             assertThat(screen.toString()).contains("Exit codes")
-                    .containsPattern("(?m)^  4   RESTest itself went wrong");
+                    .containsPattern("(?m)^  4 +RESTest itself went wrong")
+                    .containsPattern("(?m)^  130 +The run was stopped with Ctrl-C");
         }
 
         @Test

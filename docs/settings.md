@@ -108,6 +108,8 @@ schedule:
   announcementsAllowedToPileUp: 1000 # default
   # how long past the deadline to wait for answers already asked for
   stragglerGrace: "10s"       # default
+  # how long a run stopped from outside waits for answers already asked for
+  interruptGrace: "2s"        # default
   # whether a run starts by sending every operation once, the request likeliest to work
   openingLap: true            # default
   # how long each step of that opening lap waits for the answers to the one before
@@ -327,6 +329,7 @@ spelling `--budget` takes.
 | `workAheadFactor` | `2` | how many requests may await an answer, as a multiple of maxConcurrency |
 | `announcementsAllowedToPileUp` | `1000` | how many announcements may await the reports before the run pauses |
 | `stragglerGrace` | `10s` | how long past the deadline to wait for answers already asked for |
+| `interruptGrace` | `2s` | how long a run stopped from outside waits for answers already asked for |
 | `openingLap` | `true` | whether a run starts by sending every operation once, the request likeliest to work |
 | `openingLapPatience` | `2s` | how long each step of that opening lap waits for the answers to the one before |
 
