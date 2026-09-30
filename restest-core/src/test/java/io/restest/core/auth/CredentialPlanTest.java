@@ -215,6 +215,8 @@ class CredentialPlanTest {
             ApiModel none = model(Map.of(), Optional.empty(), get("listPets", "/pets"));
             ApiModel withABearer = model(Map.of(
                             "bearer", new SecurityScheme.Http("bearer", Optional.empty()),
+                            "basic", new SecurityScheme.Http("Basic", Optional.empty()),
+                            "digest", new SecurityScheme.Http("digest", Optional.empty()),
                             "oauth", new SecurityScheme.Other("oauth2"),
                             "broken", new SecurityScheme.Unreadable("it names no header"),
                             "badName", new SecurityScheme.ApiKey(ParameterLocation.HEADER, "X Key"),
@@ -226,6 +228,11 @@ class CredentialPlanTest {
             refused.put("on its own, no scheme", gather(none, AuthGiven.typed(KEY, 1)));
             refused.put("on its own, two schemes", gather(two, AuthGiven.typed(KEY, 1)));
             refused.put("a bearer", gather(withABearer, AuthGiven.typed("bearer=" + KEY, 1)));
+            refused.put("a basic", gather(withABearer, AuthGiven.typed("basic=" + KEY, 1)));
+            refused.put("on its own, only a bearer declared", gather(model(Map.of("bearerAuth",
+                    new SecurityScheme.Http("bearer", Optional.empty())), Optional.empty(),
+                    get("listPets", "/pets")), AuthGiven.typed(KEY, 1)));
+            refused.put("a digest", gather(withABearer, AuthGiven.typed("digest=" + KEY, 1)));
             refused.put("oauth", gather(withABearer, AuthGiven.typed("oauth=" + KEY, 1)));
             refused.put("broken", gather(withABearer, AuthGiven.typed("broken=" + KEY, 1)));
             refused.put("no name for its header",
@@ -280,7 +287,23 @@ class CredentialPlanTest {
             assertThat(refused.get("on its own, two schemes").refusals()).singleElement()
                     .asString().contains("key, other").contains("--auth key=<key>");
             assertThat(refused.get("a bearer").refusals()).singleElement().asString()
-                    .contains("HTTP bearer scheme");
+                    .contains("HTTP bearer scheme")
+                    .describedAs("a token somebody already holds has a way in, and is told it")
+                    .endsWith("goes with every request as --auth "
+                            + "'header:Authorization=Bearer <token>'");
+            assertThat(refused.get("a basic").refusals()).singleElement().asString()
+                    .endsWith("--auth 'header:Authorization=Basic <user:password in Base64>'");
+            assertThat(refused.get("on its own, only a bearer declared").refusals())
+                    .singleElement().asString()
+                    .describedAs("a token typed the way a key would be is told how a token goes")
+                    .contains("--auth header:<name>=<key>")
+                    .endsWith("The document's bearerAuth is an HTTP bearer scheme, and one "
+                            + "already held goes with every request as --auth "
+                            + "'header:Authorization=Bearer <token>'");
+            assertThat(refused.get("a digest").refusals()).singleElement().asString()
+                    .describedAs("a digest is worked out afresh for every request, so no header "
+                            + "held already would do")
+                    .endsWith("so it cannot send this one");
             assertThat(refused.get("the cookie header").refusals()).singleElement().asString()
                     .contains("--auth cookie:<name>=<key>");
             assertThat(refused.get("following redirections").refusals()).singleElement()

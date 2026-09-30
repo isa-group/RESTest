@@ -203,10 +203,11 @@ document says — in a header, the query or a cookie — with the operations tha
 `special-key` on its own is enough when the document declares one key, as the pet shop does. With
 several, name the one it is for: `--auth api_key=special-key`. For a document that declares none,
 say where the key goes, and it goes with every request: `--auth header:X-API-Key=…`, or `query:` or
-`cookie:` in place of `header:`. Repeat `--auth` for several keys. `RESTEST_AUTH` holds the same as
-one `--auth`, so that a key need not be typed where a shell remembers it. It goes to whatever API a
-run tests while it is set, so set it for the run it is meant for — `RESTEST_AUTH=… ./restest run …`
-— rather than once for every run. Before its first request a run says where each key goes:
+`cookie:` in place of `header:`. That is also how a bearer token or a session cookie you already hold
+goes: `--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…`. Repeat `--auth` for
+several. `RESTEST_AUTH` holds the same as one `--auth`, so that a key need not be typed where a shell
+remembers it. It goes to whatever API a run tests while it is set, so set it for the run it is meant
+for — `RESTEST_AUTH=… ./restest run …` — rather than once for every run. Before its first request a run says where each key goes:
 
 ```
   the key given with --auth goes with 3 of them, in the header api_key; what the run writes says REDACTED-AUTH in its place
@@ -227,6 +228,8 @@ of that budget is used, reading the document included — the percentage the run
 of the time RESTest had nothing in flight, which is the number this project measures itself on.
 
 The command answers `0` when it found nothing wrong, `1` when it found a fault, and something else
-when it could not do its job; [ADR-0015](docs/adr/0015-command-line-contract.md) says exactly what
-each number means. The `./restest` script runs the build in this checkout — proper packaging comes
+when it could not do its job. `restest help run` lists every option and what each number means, and
+[docs/command-line.md](docs/command-line.md) has the same on one page, with the variables the tool
+reads and what stays the same across every 2.x version; `restest version` says which RESTest and
+which Java you have. The `./restest` script runs the build in this checkout — proper packaging comes
 later.

@@ -18,7 +18,8 @@ package io.restest.cli;
 import picocli.CommandLine.IVersionProvider;
 
 /**
- * Answers {@code restest --version}.
+ * Answers {@code restest version} and {@code restest --version}: which RESTest this is, and which
+ * Java it is running on.
  *
  * <p>The version is read off the packaged file the program was started from, which is the same place
  * a run's report reads it when it records which RESTest produced it. One source, so the two can
@@ -28,12 +29,18 @@ import picocli.CommandLine.IVersionProvider;
  * <p>Started from loose compiled classes rather than a packaged file, there is nothing to read and
  * the answer is {@code unknown}. That is the honest answer, and it is also a hint: a report from
  * such a run says {@code unknown} too.
+ *
+ * <p>The second line names the Java and the machine, because those are the first two questions
+ * about anything that behaves differently on somebody else's computer. The first line stays the
+ * version alone, so that a script reading one line reads the same line it always did.
  */
 final class ToolVersion implements IVersionProvider {
 
     @Override
     public String[] getVersion() {
-        return new String[] {"RESTest " + describing()};
+        return new String[] {"RESTest " + describing(), "Java " + System.getProperty("java.version")
+                + " (" + System.getProperty("java.vendor") + "), " + System.getProperty("os.name")
+                + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch")};
     }
 
     /** The version this copy of RESTest was built as, or {@code unknown}. */

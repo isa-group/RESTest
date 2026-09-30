@@ -92,7 +92,38 @@ import picocli.CommandLine.Spec;
                         + "to."},
         mixinStandardHelpOptions = true,
         versionProvider = ToolVersion.class,
-        sortOptions = false)
+        sortOptions = false,
+        exitCodeListHeading = "%nExit codes - the number the command ends with:%n",
+        exitCodeList = {
+                ExitCode.NO_FAULTS + ":The run finished and found nothing wrong.",
+                ExitCode.FAULTS_FOUND + ":The run finished and found at least one fault in the API.",
+                ExitCode.BAD_COMMAND_LINE + ":The command line was wrong, or a plan, a settings file "
+                        + "or a key it named could not be used. Nothing was sent.",
+                ExitCode.NOTHING_TO_TEST + ":Nothing was tested: the document describes no "
+                        + "operation that can be tried, there is no address to send requests to or "
+                        + "nowhere to write the results, or not one request was answered - none "
+                        + "could be built, the budget ran out before the first, or nothing at the "
+                        + "address replied. The run says which.",
+                ExitCode.TOOL_FAILED + ":RESTest itself went wrong, so what it printed may be "
+                        + "incomplete. The message and the stack trace are what to report."},
+        // Written out line by line, each short enough never to be broken by the framework, which
+        // breaks a long line after a colon or a full stop - in the middle of an address, or of the
+        // name of a setting, where a person copying it would copy half.
+        footerHeading = "%nEnvironment:%n",
+        footer = {
+                "  RESTEST_AUTH            What one --auth holds, so that a key need not be typed",
+                "                          where the shell's history keeps it. One typed with",
+                "                          --auth for the same place wins over it.",
+                "  RESTEST_<GROUP>_<KEY>   One setting: RESTEST_ENGINE_MAX_CONCURRENCY=1 is",
+                "                          engine.maxConcurrency=1. --set wins over it, and it",
+                "                          wins over --settings.",
+                "",
+                "Examples:",
+                "  restest run openapi.yaml --url http://localhost:8080 --budget 5m",
+                "  restest run openapi.yaml --auth special-key",
+                "  restest run openapi.yaml --auth 'header:Authorization=Bearer <token>'",
+                "  restest run openapi.yaml --set engine.maxConcurrency=1",
+                "  restest run --print-settings > settings.yaml"})
 final class RunCommand implements Callable<Integer> {
 
     /** How many unreadable parts of a document to name before saying how many are left. */
@@ -129,11 +160,10 @@ final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--url",
             paramLabel = "<base>",
-            description = "Which machine the API is running on, for instance "
-                    + "http://localhost:8080. Taken from the document when it names a usable "
-                    + "address and this is omitted. Given without a path, the directory the "
-                    + "document says the API is served from is kept; given with one, such as "
-                    + "http://localhost:8080/api/v3, that replaces it.")
+            description = "Which machine the API is running on, as a web address. Taken from the "
+                    + "document when it names a usable address and this is omitted. Given without "
+                    + "a path, the directory the document says the API is served from is kept; "
+                    + "given with a path of its own, that path is used instead.")
     private String baseUrl;
 
     @Option(
@@ -142,11 +172,12 @@ final class RunCommand implements Callable<Integer> {
             description = "A key the API asks for, sent where its document says - in a header, the "
                     + "query or a cookie - and only with the operations that ask for one. Where the "
                     + "document declares more than one kind of key, name the one this is for, as "
-                    + "api_key=<key>. Where it declares none, say where the key goes, and it goes "
-                    + "with every request: header:X-API-Key=<key>, query:<name>=<key> or "
-                    + "cookie:<name>=<key>. Repeat for several. RESTEST_AUTH may hold one instead, "
-                    + "which keeps it out of the shell's history; one typed here wins over it. "
-                    + "What the run writes shows REDACTED-AUTH where a key went, never the key.")
+                    + "api_key=<key>. Where it declares none, or for a token or a session cookie "
+                    + "you already hold, say where it goes, and it goes with every request: "
+                    + "header:<name>=<key>, query:<name>=<key> or cookie:<name>=<key>. A bearer "
+                    + "token goes as header:Authorization=Bearer <token>, in quotes for the space. "
+                    + "Repeat for several. RESTEST_AUTH may hold one instead. What the run writes "
+                    + "shows REDACTED-AUTH where one went, never the key itself.")
     private List<String> keysTyped = new ArrayList<>();
 
     @Option(
@@ -154,7 +185,8 @@ final class RunCommand implements Callable<Integer> {
             paramLabel = "<duration>",
             defaultValue = "60s",
             converter = BudgetDuration.class,
-            description = "How long to keep testing: 30s, 5m, 2h, or a plain number of seconds. "
+            description = "How long to keep testing: 500ms, 30s, 5m, 2h, or a plain number of "
+                    + "seconds. "
                     + "All of it is used, reading the document included. Default: ${DEFAULT-VALUE}.")
     private Duration budget;
 
@@ -172,8 +204,9 @@ final class RunCommand implements Callable<Integer> {
             names = "--out",
             paramLabel = "<directory>",
             defaultValue = "restest-out",
-            description = "Where to write this run's files. An earlier run in the same directory is "
-                    + "replaced. Default: ${DEFAULT-VALUE}.")
+            description = "Where to write this run's files: report.json, and run.sqlite with "
+                    + "--store. What an earlier run wrote there is replaced, and nothing else in "
+                    + "the directory is touched. Default: ${DEFAULT-VALUE}.")
     private Path outputDirectory;
 
     @Option(
@@ -192,7 +225,8 @@ final class RunCommand implements Callable<Integer> {
             description = "How much of the time to spend pushing at the API with values nobody "
                     + "sensible would send - empty text, enormous numbers, the wrong kind of value "
                     + "entirely. A healthy API takes them or turns them away; a fragile one falls "
-                    + "over. 0 sends none of them. Default: ${DEFAULT-VALUE}.")
+                    + "over. 0 sends none of them. Not with --campaign, whose plan says the same "
+                    + "thing. Default: ${DEFAULT-VALUE}.")
     private int fuzzingShare;
 
     @Option(
@@ -220,9 +254,10 @@ final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--set",
             paramLabel = "<group.key=value>",
-            description = "One setting, for instance --set engine.maxConcurrency=1 for an API too "
-                    + "fragile to be asked two things at once. Repeat for several. Wins over "
-                    + "--settings and over the environment.")
+            description = "One setting, named the way --print-settings names it. Setting "
+                    + "engine.maxConcurrency to 1 is the answer to an API too fragile to be asked "
+                    + "two things at once. Repeat for several. Wins over --settings and over the "
+                    + "environment.")
     private List<String> settingsTyped = new ArrayList<>();
 
     @Option(

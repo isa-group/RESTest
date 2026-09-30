@@ -8,8 +8,8 @@ and what was set aside to get there, is [ADR-0024](docs/adr/0024-the-competition
 
 One increment = one branch = one pull request into `v2`. Take them in [the order of work](#the-order-of-work),
 not in numerical order: the numbers are names, kept stable so that earlier pull requests and ADRs
-still read true, and the milestones were numbered before the plan was turned round. 78 increments in
-14 milestones: 36 delivered, 2 measured and not merged, 8 more in v2.0, 32 after it.
+still read true, and the milestones were numbered before the plan was turned round. 79 increments in
+14 milestones: 36 delivered, 2 measured and not merged, 9 more in v2.0, 32 after it.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
 
@@ -43,10 +43,10 @@ nothing in them is an increment of its own.
 | M10 | Break — more distinct server failures | all | 3 / 3 ✅ |
 | M11 | Settings and API keys — every number somebody decided, somewhere one can change it; and the key an API asks for, sent where its document says | all | 3 / 3 ✅ |
 | M8 | Evaluation | 8.3–8.6 before submission; 8.1 and 8.2 after it, for the paper | 2 / 6 |
-| M12 | Closing v2.0 | all | 0 / 5 |
+| M12 | Closing v2.0 | all | 0 / 6 |
 | M7 | Packaging and distribution | 7.2a only | 0 / 4 |
 | M13 | Safeguards — an API that refuses the run, asks it to slow down or stops answering is not flooded | none | 0 / 4 |
-| M3 | Oracles, faults and reporting | none; 3.1b's generator half moved to 10.1, 3.7 to 12.1 | 0 / 6 |
+| M3 | Oracles, faults and reporting | none; 3.1b's generator half moved to 10.1, 3.7 to 12.1b | 0 / 6 |
 | M4 | Stateful testing | none; the narrow version of 4.1 moved to 9.2 and 4.4's sequence operators to 10.3; the narrow versions of 4.2 and 4.4 were tried at 9.3, measured and not merged | 0 / 6 |
 | M5 | IDL and constraint-based generation | none | 0 / 5 |
 | M6 | Live updates and performance | none | 0 / 2 |
@@ -97,7 +97,7 @@ wider corpus, and the settings of M11 are the place a number goes, never a speci
 | Wed 23 Sep | Registered | The competition's submission system holds the tool's name and authors; the entry is updated freely until the deadline, so registering costs nothing and removes one thing that can go wrong on 8 October |
 | Sun 27 Sep | M9 measured | 2.9, 9.1 and 9.2 merged, 9.3 measured and not merged, 9.4 set aside on recorded runs; 8.4 running overnight |
 | Fri 2 Oct | M10 measured | 10.1–10.3 and 11.2 merged; 8.5 running overnight; which output of the manual to publish decided (12.3) |
-| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9 but 9.3 and 9.4, M10, M11, 12.1, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
+| Tue 6 Oct, noon | **Behaviour freeze** | 2.9, M9 but 9.3 and 9.4, M10, M11, 12.1a, 12.1b, 12.2 and 7.2a merged and measured; the harness repository's compliant image built from that commit and checked with the benchmark's own tooling; 8.6 starts |
 | Thu 8 Oct | **Submission** | 8.6 read; v2.0.0 tagged from the frozen commit (12.4); tool submitted, one day before the deadline |
 | Fri 9 Oct | Deadline | Anywhere on Earth. Nothing is submitted on this day by plan |
 | Mon 12 Oct | `master` replaced | 12.5, once the tag stands |
@@ -124,8 +124,9 @@ row of M8 names the rows written *while* it runs.
    containerised pet-clinic before it is merged (the way 2.5b was), and **8.4** measured the
    milestone as a whole on 27-28 September, on sixteen APIs.
 3. **10.1**, **10.2**, **10.3**, **11.2** — break, and the list of switches. **8.5** overnight.
-4. **11.3**, **12.1**, **7.2a**, **12.2** — API keys, the command line frozen, the image, the
-   documentation. 11.3 goes first because it adds to the command line that 12.1 freezes. Fixes from
+4. **11.3**, **12.1a**, **12.1b**, **7.2a**, **12.2** — API keys, the command line frozen, what a
+   run cut short leaves behind, the image, the documentation. 11.3 goes first because it adds to the
+   command line that 12.1a freezes. Fixes from
    8.4 and 8.5 land here, behind a switch when they change behaviour.
 5. **Freeze**, then **8.6** 🛑 for twenty-five hours, during which only **12.3** — the manual — is
    worked on, because it changes no behaviour.
@@ -571,8 +572,8 @@ away. The maintainer chose to record it instead.
 
 What would reopen it: an API where whole operations answer 401, 405 or 501 to every request while
 others answer. The competition's own authentication material — which the benchmark's proxy applies
-to the known APIs, and which 11.3's keys and 12.1's `--header` hand over wherever it comes to the
-tool instead — removes the likeliest source of 401 before this row could.
+to the known APIs, and which 11.3's keys hand over wherever it comes to the tool instead — a bearer
+token or a session cookie among them, given with its place (12.1a) — removes the likeliest source of 401 before this row could.
 
 **9.4 — what is not taken, still.** The reward-shaped version - go where it breaks - stays with
 the deferred list, and so do questions 2 and 3.
@@ -879,7 +880,8 @@ public. The tool can promise only what it writes itself.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 12.1 ▶ | **The command line frozen** (ADR-0015 amended). `restest version`; `--header name:value`, repeatable, for authentication material handed over out of band in a shape 11.3 does not read — a bearer token somebody already holds, a session cookie — and kept out of everything the run writes, the way 11.3 keeps a key; `--settings`, `--set` and `--print-settings` from 11.1, and the option for a key from 11.3; **Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not** (3.7, moved here — the third of the answers ADR-0015 lists is the one taken); `--help` complete and in plain words for every option; the exit codes as a table in the documentation. After this row, a change to the command line is a 2.x decision | The surface a user, a script and the benchmark adapter all depend on is complete and stops moving; and a run stopped early stops costing everything it had found |
+| 12.1a ▶ | **The command line frozen** (ADR-0015 amended). `restest version`, which adds the Java and the machine to what `--version` printed, on a second line; `restest help`; `--help` complete for every command, with the exit codes, the environment and examples in it — every number it lists the command answers, every option says what it does, and every example is a command the tool reads, printed whole on one line; every file of arguments read once, by the command-line framework's own rules, so that a pipe works and one that cannot be read answers `2` in a sentence rather than `4` with a stack trace; the row for exit code `3` saying what the code always answered it for, a run in which not one request was answered; and [`docs/command-line.md`](docs/command-line.md), every command, option, variable and exit code on one page, checked against the tool's own help on every build. `--settings`, `--set` and `--print-settings` from 11.1, and `--auth` from 11.3, are frozen as they were left. **Not taken: `--header`** — `--auth 'header:Authorization=Bearer …'` and `--auth cookie:…` already carry what it was for, and the maintainer took it out on 30 September (see the notes). Split from 12.1 on 30 September, with Ctrl-C in 12.1b | The surface a user, a script and the benchmark adapter all depend on is complete, written down in one place and checked against the tool, and stops moving: after this row, a change to the command line is a 2.x decision. Somebody holding a bearer token finds how to hand it over in the help, and in what the command says when it refuses one typed alone or under a bearer scheme's name |
+| 12.1b ▶ | **What a run cut short leaves behind** (3.7, moved here; ADR-0015 amended). Ctrl-C, `kill` and `docker stop` stop the run sending, wait a bounded time for what is in flight, and leave the summary, a `report.json` that says the run was cut short, and a closed store behind — **or say plainly that they could not**. That is the evidence of the first of the three answers ADR-0015's M1.8 amendment lists, with the number of the second: the conventional one for an interrupted program, which is Java's own, `130` for Ctrl-C and `143` for `kill`, so that a run cut short is never read as one that passed. Both chosen by the maintainer on 30 September, when 12.1 was split | A run stopped early stops costing everything it had found |
 | 12.2 ▶ | **The documentation of a finished tool.** `README.md` as the front door: install, run, read a report, write a plan, write a dictionary, change a setting, the exit codes, the container image. `docs/` consolidated: the plan format, the dictionary format, the settings and their keys, the report's JSON shape, the fault catalogue as we render it. `CONTRIBUTING.md` and `docs/DESIGN.md` say what v2.0 is and what 2.x will be. Every command in every document run from a clean checkout before it is pasted | Somebody who has never seen the repository can install the tool and get a report in ten minutes, and can find out what any line of that report means without reading Java |
 | 12.3 ▶ 🛑 | **The user manual.** Written once, in Markdown under `docs/manual/`, and built to both HTML and PDF from that one source by a script in the repository, so that the format decision is about what is *published*, not about what is written. Chapters: what the tool is for, install, the first run, reading the report, plans, dictionaries, settings, the container image, the exit codes, troubleshooting, and a glossary. The one-source-two-outputs approach was approved on 22 September; 🛑 **which output is linked from the README and the release — HTML, PDF, or both — is the maintainer's decision, due 2 October** | A manual a person reads from the beginning, rather than documentation a person searches |
 | 12.4 ▶ 🛑 | **v2.0.0 tagged and submitted.** The tag is on the commit 8.6 measured. **What the competition receives is the harness repository** — the tool's source at that commit and the benchmark-compliant `Dockerfile` that wraps 7.2a's image in the loop the benchmark expects — made public and checked with the benchmark's own compliance tooling before the freeze, not after; 8.6 runs that image and no other, so the artefact submitted is the artefact rehearsed. The submission is made on 8 October. If 12.3 is not merged by then, `v2.0.0-rc.1` is tagged and submitted instead, `v2.0.0` follows when the manual lands, and a check in the pull request that lands it shows the two commits differ in documentation files only — approved on 22 September. 🛑 The tag itself is a supervision point | The competition receives exactly what is published, under exactly the version the paper will cite |
@@ -887,13 +889,23 @@ public. The tool can promise only what it writes itself.
 
 ### Notes
 
-**12.1 — `--header` is a user's option, not a benchmark's.** The benchmark's proxy signs the tool
-in where one of the known APIs needs it, 11.3 sends a key where an API's document says one goes,
-and the rest of 2.6 — a sign-in the tool performs, OAuth2 — waits for 2.1. A header a person can
-pass is different: it is the smallest honest answer to "my API wants a token I already have", it is
-what every HTTP client offers, and it is how authentication material 11.3 does not read reaches the
-tool without the tool knowing what it is. Because that is what it is for, what it hands over is
-treated as a secret, like a key.
+**12.1a — why there is no `--header`.** The row asked for `--header name:value` for authentication
+material in a shape 11.3 does not read, a bearer token or a session cookie somebody already holds. It
+was written on 22 September, before 11.3, and 11.3 turned out to read both shapes: a value given with
+its place — `--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…` — goes with every
+request and is hidden in everything the run writes, which is all `--header` was to do. A second
+option would be the second vocabulary ADR-0029 rules out. The maintainer took it out of the row on
+30 September; the help and [`docs/command-line.md`](docs/command-line.md) show the two lines, and a
+key refused for an HTTP bearer or basic scheme names the line that sends one already held.
+
+**12.1a and 12.1b — why split.** The row held two things of different sizes. The surface — a
+command, the help, a page, a mistake answered as a mistake — changes no behaviour a measurement can
+see. What a run cut short leaves behind does: it changes what every stopped run writes, the drain,
+and the report, and ADR-0015's M1.8 amendment had already said it was an increment with a decision of
+its own rather than a hook added in passing. The maintainer split it on 30 September. The row
+called the answer to take "the third" of the three that amendment lists, while describing what the
+first leaves behind — the summary, the report and a closed store. What 12.1b takes is that, with the
+number the second names for an interrupted program.
 
 **12.3 — one source, two outputs.** Writing the manual twice would be the one way to make the
 format decision expensive, so it is not written twice. Markdown is the source; a script produces the
@@ -1074,7 +1086,7 @@ stops a benchmark run early protects nobody, and costs the next competition a ru
 
 | # | Increment | What it enables |
 |---|---|---|
-| 13.1 ⏭ | **Stop when the API refuses the run's credentials.** A rule about the whole API, never about one operation: once every answer over a stretch of the run — the opening lap's, and after it the last *N* — is 401, or 401 and 403, and nothing in it was accepted, the run stops sending, says which credentials it held and that the API refused them, and writes what a run cut short writes (12.1). The stretch, whether 403 counts, and the switch are settings. Once the rest of 2.6 lets the tool sign itself in, the requests before the sign-in do not count | A mistyped or forgotten key is found out in seconds, rather than after an hour of requests the API refused one by one; and an API whose owner revoked a key stops receiving them |
+| 13.1 ⏭ | **Stop when the API refuses the run's credentials.** A rule about the whole API, never about one operation: once every answer over a stretch of the run — the opening lap's, and after it the last *N* — is 401, or 401 and 403, and nothing in it was accepted, the run stops sending, says which credentials it held and that the API refused them, and writes what a run cut short writes (12.1b). The stretch, whether 403 counts, and the switch are settings. Once the rest of 2.6 lets the tool sign itself in, the requests before the sign-in do not count | A mistyped or forgotten key is found out in seconds, rather than after an hour of requests the API refused one by one; and an API whose owner revoked a key stops receiving them |
 | 13.2 ⏭ | **Wait when told to wait.** A 429, or a 503 that carries `Retry-After`, pauses every request to the API for as long as the header says — in either of its forms, a number of seconds or a date — or, where there is no header, for a wait that doubles each time up to a ceiling; the engine then starts again from its fewest requests in flight and climbs as it already does. The `RateLimit` fields being drafted at the IETF are read where an API sends them. A run still told to wait after *K* pauses, or told to wait past the end of its budget, stops as 13.1 does. The time spent waiting is reported as idle time, with its cause. Most of the related tools send the request that was turned away again after the wait; whether this one does is the row's to decide | An API that asks the tool to slow down is obeyed. Today a 429 is an ordinary answer, and a quick one, so the engine's limiter reads it as room to send *more* |
 | 13.3 ⏭ | **A ceiling on the rate.** The most requests a second the run may send, beside the most it may have in flight, which exists already: a setting, off by default | A person testing somebody else's staging server can promise its owner a rate, in one line |
 | 13.4 ⏭ | **Stop when the API stops answering.** When every request over a stretch goes unanswered — refused, reset, timed out — the engine keeps one in flight until one is answered, and the run stops once the API has been silent for a stated time, saying when it went silent. The limiter already falls to one request in flight as unanswered requests pile up; what is new is stopping, and saying so | A run that brought an API down stops making it worse, and the report says at what moment the API went silent — which is a finding in itself when the run is what silenced it |
@@ -1156,7 +1168,7 @@ exiting, and 13.1 — and 13.2's slowing down after the wait — are what none o
 | 3.4 ⏭ | Per-operation oracle configuration + published JSON Schema for the config file | False positives silenced per operation instead of the tool being switched off |
 | 3.5 ⏭ | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Every format renders both classifications of a fault — by catalogue number and by the class of status code that carried it (ADR-0016). Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
 | 3.6 ⏭ | Replies that no rule could judge counted, and said out loud in the summary, the JSON report and the exit code | A clean bill of health stops being ambiguous: a run that could not check something says so, instead of saying nothing was wrong |
-| 3.7 → [12.1](#m12--closing-v20) | What a run writes when it is cut short. Taken into the frozen command line, because a version that replaces `master` cannot lose a run to Ctrl-C | — |
+| 3.7 → [12.1b](#m12--closing-v20) | What a run writes when it is cut short. Taken into the frozen command line, because a version that replaces `master` cannot lose a run to Ctrl-C | — |
 
 ### Notes
 
