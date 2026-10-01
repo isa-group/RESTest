@@ -61,7 +61,11 @@ The commit tagged `v2.0.0` is the commit submitted. Closed means: the command li
 documented, with its exit codes; a README a stranger can install from; the plan, dictionary and
 settings formats documented; a user manual; a container image and a distribution archive published
 from the tag; Ctrl-C leaving a report behind; and `master` replaced by it. `ROADMAP.md`'s M12 is
-that list as increments.
+that list as increments. *Replanned by the maintainer on 1 October: the competition receives the
+harness repository pinned to the commit 8.6 rehearsed, which stays on `v2`, and `v2.0.0` is tagged
+on `master`, on a commit that differs from it in nothing under `src/main` and in no dependency, with
+documents about the tool alone. If that `master` or the image is not ready on 8 October, the tag
+goes on `v2` and both follow as 2.0.1 (ROADMAP 12.4, 12.5).*
 
 If the manual is not merged by the submission date, the submission is tagged `v2.0.0-rc.1` and
 `v2.0.0` is tagged when the manual lands, with a check that the two commits differ in documentation
@@ -104,9 +108,11 @@ its row and its number, and `restest-idl` ships in v2.0 as the module descriptor
   merged. Every M9 and M10 row is measured on the priority corpus and checked on the rest.
 - **The harness stays outside** (ADR-0011). What crosses the boundary is the published command line.
   The container image of 7.2a is the tool's own and knows nothing about being measured; the
-  benchmark-compliant image the competition asks for is the harness repository's, built on top of it,
-  and that repository — source and Dockerfile — is what is submitted and what the dress rehearsal
-  runs.
+  benchmark-compliant image the competition asks for is the harness repository's, built on top of
+  it, and that repository — source and Dockerfile — is what is submitted and what the dress
+  rehearsal runs. *Replanned by the maintainer on 1 October: the harness repository's image compiles
+  the tool from the frozen commit itself, as every campaign's has, so that the dress rehearsal can
+  start before 7.2a lands (ROADMAP 7.2a, 8.6).*
 - **The budget is the whole invocation** (ADR-0015, ADR-0017). The opening lap of 9.1 is charged to
   the clock like everything else. No preparation phase runs off it.
 - **The deferred list still needs approval.** This record asked for exactly one item from it — the
@@ -180,4 +186,5 @@ repository is made public as the replication package.
   favour of the release candidate, §1.
 - **Write the manual for one format and decide the format first.** Rejected: it makes the format
   decision expensive and puts it on the critical path. One Markdown source built to both HTML and
-  PDF was approved instead, and only the choice of which to publish is left, at no cost.
+  PDF was approved instead, and only the choice of which to publish is left, at no cost. *Taken on
+  1 October: the Markdown as GitHub shows it, and a PDF on the release (ROADMAP 12.3).*
