@@ -168,6 +168,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how long to wait for the API to answer once connected"),
             key("engine", "writeTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait while sending a request body"),
+            key("engine", "callTimeout", SettingKind.LENGTH_OF_TIME,
+                    "the longest one request may take, its whole reply included, however slowly "
+                            + "that arrives"),
             key("engine", "minConcurrency", SettingKind.WHOLE_NUMBER,
                     "the fewest requests kept in flight, however badly the API behaves"),
             key("engine", "initialConcurrency", SettingKind.WHOLE_NUMBER,
@@ -188,7 +191,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("schedule", "announcementsAllowedToPileUp", SettingKind.WHOLE_NUMBER,
                     "how many announcements may await the reports before the run pauses"),
             key("schedule", "stragglerGrace", SettingKind.LENGTH_OF_TIME,
-                    "how long past the deadline to wait for answers already asked for"),
+                    "how long, on top of callTimeout, to wait past the deadline for answers "
+                            + "already asked for"),
             key("schedule", "interruptGrace", SettingKind.LENGTH_OF_TIME,
                     "how long a run stopped from outside waits for answers already asked for"),
             key("schedule", "openingLap", SettingKind.YES_OR_NO,

@@ -152,9 +152,11 @@ public final class RandomTestCaseGenerator {
      * How much of the testing time goes on requests built from values chosen to be awkward, unless
      * somebody says otherwise.
      *
-     * <p>A quarter against three is a starting point rather than a measurement. It is the one
-     * number here that has to be settled by running campaigns rather than by argument, and it lives
-     * in one place so that settling it is a one-line change.
+     * <p>A quarter against three is a starting point rather than a measurement. The plan RESTest
+     * carries gives its strategies that push at the API this share between them, and this number is
+     * what the command line says its share of pushing is when nobody types one. The two are written
+     * in different places, so a test keeps them equal: changing one without the other would have the
+     * help promise a share the run does not use.
      */
     public static final int AWKWARD_SHARE = 25;
 

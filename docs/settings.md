@@ -86,6 +86,8 @@ engine:
   readTimeout: "30s"          # default
   # how long to wait while sending a request body
   writeTimeout: "10s"         # default
+  # the longest one request may take, its whole reply included, however slowly that arrives
+  callTimeout: "1m"           # default
   # the fewest requests kept in flight, however badly the API behaves
   minConcurrency: 1           # default
   # how many requests are in flight before anything is known about the API
@@ -106,7 +108,7 @@ schedule:
   workAheadFactor: 2          # default
   # how many announcements may await the reports before the run pauses
   announcementsAllowedToPileUp: 1000 # default
-  # how long past the deadline to wait for answers already asked for
+  # how long, on top of callTimeout, to wait past the deadline for answers already asked for
   stragglerGrace: "10s"       # default
   # how long a run stopped from outside waits for answers already asked for
   interruptGrace: "2s"        # default
@@ -293,11 +295,12 @@ And a run whose settings are not the ones RESTest ships says so on the screen, o
 environment variable is invisible in the command you typed and in the transcript you paste into a
 bug report.
 
-One source is worth knowing about: **worked out**. A few settings are places inside a range, and
-moving the range moves them. `--set engine.maxConcurrency=1` also moves where the engine starts,
-without you mentioning it, and that value is recorded as *worked out* rather than as a default —
-because it is not what the tool does by default, and two results directories would otherwise carry
-different values under the same word.
+One source is worth knowing about: **worked out**. A few settings follow others, and moving those
+moves them. `--set engine.maxConcurrency=1` also moves where the engine starts, and
+`--set engine.readTimeout=2m` how long a whole request may take, without you mentioning either.
+Such a value is recorded as *worked out* rather than as a default — because it is not what the tool
+does by default, and two results directories would otherwise carry different values under the same
+word.
 
 ## The lengths of time
 
@@ -314,6 +317,7 @@ spelling `--budget` takes.
 | `connectTimeout` | `10s` | how long to wait for the API to accept a connection at all |
 | `readTimeout` | `30s` | how long to wait for the API to answer once connected |
 | `writeTimeout` | `10s` | how long to wait while sending a request body |
+| `callTimeout` | `1m` | the longest one request may take, its whole reply included, however slowly that arrives |
 | `minConcurrency` | `1` | the fewest requests kept in flight, however badly the API behaves |
 | `initialConcurrency` | `4` | how many requests are in flight before anything is known about the API |
 | `maxConcurrency` | `16` | the most requests ever in flight at once. 1 for a fragile API |
@@ -328,7 +332,7 @@ spelling `--budget` takes.
 |---|---|---|
 | `workAheadFactor` | `2` | how many requests may await an answer, as a multiple of maxConcurrency |
 | `announcementsAllowedToPileUp` | `1000` | how many announcements may await the reports before the run pauses |
-| `stragglerGrace` | `10s` | how long past the deadline to wait for answers already asked for |
+| `stragglerGrace` | `10s` | how long, on top of callTimeout, to wait past the deadline for answers already asked for |
 | `interruptGrace` | `2s` | how long a run stopped from outside waits for answers already asked for |
 | `openingLap` | `true` | whether a run starts by sending every operation once, the request likeliest to work |
 | `openingLapPatience` | `2s` | how long each step of that opening lap waits for the answers to the one before |
@@ -437,7 +441,17 @@ switches](switches.md#switching-off-everything-one-increment-added) has that fil
 | `faultsShownOnTheConsole` | `50` | how many faults are printed in full before the screen stops being the place |
 | `skippedOperationsShownOnTheConsole` | `5` | how many operations that could not be tested are named on the screen |
 
-## Two things worth knowing
+## Three things worth knowing
+
+**A whole request is given twice the longest wait inside it.** `callTimeout` is the longest one
+request may take, from sending it to the last byte of its reply. It is what ends a reply that never
+stops arriving - an endpoint that streams, or sends a byte every few seconds, and so never lets
+`readTimeout` run out. When it is not given, it is twice the longest of `connectTimeout`,
+`readTimeout` and `writeTimeout`, so `--set engine.readTimeout=2m` for a slow API also gives each
+request four minutes, recorded as *worked out*. When it is given and the other three are not, they
+are shortened to fit inside it: `--set engine.callTimeout=5s` is one line. Naming both a wait and a
+whole request it cannot fit inside is refused. A run that has used its budget waits `callTimeout`,
+and `stragglerGrace` more, for the answers it is still owed.
 
 **Moving the concurrency range moves where the engine starts.** `initialConcurrency` is where to
 begin inside the range rather than a number of its own, so `--set engine.maxConcurrency=1` works as

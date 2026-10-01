@@ -18,9 +18,12 @@ package io.restest.core.settings;
 import io.restest.core.exec.EngineSettings;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Every number somebody decided about how RESTest behaves, in one place a run can be handed.
@@ -106,10 +109,23 @@ public record Settings(
         Given typed = new Given(given);
         int fewest = typed.wholeNumber("engine.minConcurrency", DEFAULTS.engine.minConcurrency());
         int most = typed.wholeNumber("engine.maxConcurrency", DEFAULTS.engine.maxConcurrency());
+        Optional<Duration> wholeRequestNamed = given.containsKey("engine.callTimeout")
+                ? Optional.of(typed.lengthOfTime("engine.callTimeout",
+                        DEFAULTS.engine.callTimeout()))
+                : Optional.empty();
+        Duration connect = typed.lengthOfTime("engine.connectTimeout",
+                fitting(DEFAULTS.engine.connectTimeout(), wholeRequestNamed));
+        Duration read = typed.lengthOfTime("engine.readTimeout",
+                fitting(DEFAULTS.engine.readTimeout(), wholeRequestNamed));
+        Duration write = typed.lengthOfTime("engine.writeTimeout",
+                fitting(DEFAULTS.engine.writeTimeout(), wholeRequestNamed));
+        Duration wholeRequest =
+                wholeRequestNamed.orElseGet(() -> twiceTheLongest(connect, read, write));
         EngineSettings engine = group("engine", () -> new EngineSettings(
-                typed.lengthOfTime("engine.connectTimeout", DEFAULTS.engine.connectTimeout()),
-                typed.lengthOfTime("engine.readTimeout", DEFAULTS.engine.readTimeout()),
-                typed.lengthOfTime("engine.writeTimeout", DEFAULTS.engine.writeTimeout()),
+                connect,
+                read,
+                write,
+                wholeRequest,
                 fewest,
                 typed.wholeNumber("engine.initialConcurrency", whereToStartWithin(fewest, most)),
                 most,
@@ -241,6 +257,34 @@ public record Settings(
     }
 
     /**
+     * How long one of the three waits inside a request is, when somebody said how long the whole
+     * request may take and said nothing about that wait.
+     *
+     * <p>{@code --set engine.callTimeout=5s} asks for no request to take longer than five seconds,
+     * and it has to work as typed: refusing it because the read timeout RESTest uses by default is
+     * longer would make the one thing it asks take four options instead of one. So a wait nobody
+     * named is shortened to fit, and recorded as worked out. A wait named outright that is longer
+     * than a whole request somebody also named is still refused, saying which one.
+     */
+    private static Duration fitting(Duration usual, Optional<Duration> wholeRequest) {
+        return wholeRequest.filter(whole -> usual.compareTo(whole) > 0).orElse(usual);
+    }
+
+    /**
+     * How long a whole request may take, when nobody said: twice the longest of the three waits
+     * inside it, which by default is twice the read timeout.
+     *
+     * <p>A reply that has started arriving gets as long again to finish. Raising the read timeout
+     * for a slow API therefore raises this with it - {@code engine.readTimeout: 2m} works as typed,
+     * rather than being cut short by a limit its author never heard of - and the value is recorded as
+     * worked out. Doubling a length too long to double leaves it as it is.
+     */
+    private static Duration twiceTheLongest(Duration connect, Duration read, Duration write) {
+        Duration longest = Collections.max(List.of(connect, read, write));
+        return longest.toMillis() > Long.MAX_VALUE / 2 ? longest : longest.multipliedBy(2);
+    }
+
+    /**
      * What one setting's value is here, written the way somebody would have typed it.
      *
      * @param key the setting
@@ -252,6 +296,7 @@ public record Settings(
             case "engine.connectTimeout" -> LengthOfTime.written(engine.connectTimeout());
             case "engine.readTimeout" -> LengthOfTime.written(engine.readTimeout());
             case "engine.writeTimeout" -> LengthOfTime.written(engine.writeTimeout());
+            case "engine.callTimeout" -> LengthOfTime.written(engine.callTimeout());
             case "engine.minConcurrency" -> String.valueOf(engine.minConcurrency());
             case "engine.initialConcurrency" -> String.valueOf(engine.initialConcurrency());
             case "engine.maxConcurrency" -> String.valueOf(engine.maxConcurrency());

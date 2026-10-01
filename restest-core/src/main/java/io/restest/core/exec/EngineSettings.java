@@ -31,9 +31,14 @@ import java.util.Objects;
  * side in the same program without either one noticing the other.
  *
  * @param connectTimeout how long to wait for the API to accept a connection at all
- * @param readTimeout how long to wait for the API to send something once connected. This is the one
- *     that decides how long a hung endpoint costs us
+ * @param readTimeout how long to wait for the API to send something once connected, each time it is
+ *     waited for. A reply that keeps sending a little at a time never runs out of it
  * @param writeTimeout how long to wait while sending a request body
+ * @param callTimeout the longest one request may take, from the moment it is sent to the last byte
+ *     of its reply. This is the one that decides how long a hung endpoint costs us: an endpoint
+ *     that streams, or sends a byte every few seconds, would otherwise hold its place among the
+ *     requests in flight for as long as the run lasts. None of the three waits above may be longer,
+ *     since the whole request is given up on when this runs out
  * @param minConcurrency the fewest requests the engine will keep in flight, however badly the API
  *     behaves. Never zero: at zero the engine would have stopped testing
  * @param initialConcurrency how many requests are in flight before anything is known about the
@@ -58,6 +63,7 @@ public record EngineSettings(
         Duration connectTimeout,
         Duration readTimeout,
         Duration writeTimeout,
+        Duration callTimeout,
         int minConcurrency,
         int initialConcurrency,
         int maxConcurrency,
@@ -73,6 +79,10 @@ public record EngineSettings(
             Duration.ofSeconds(10),
             Duration.ofSeconds(30),
             Duration.ofSeconds(10),
+            // Twice the read timeout: a reply that has started arriving gets as long again to
+            // finish, and only one still arriving after a minute - which is what a stream looks
+            // like - is cut off.
+            Duration.ofSeconds(60),
             1,
             4,
             16,
@@ -85,6 +95,10 @@ public record EngineSettings(
         positive(connectTimeout, "connectTimeout");
         positive(readTimeout, "readTimeout");
         positive(writeTimeout, "writeTimeout");
+        positive(callTimeout, "callTimeout");
+        notLongerThanTheWholeRequest(connectTimeout, "connectTimeout", callTimeout);
+        notLongerThanTheWholeRequest(readTimeout, "readTimeout", callTimeout);
+        notLongerThanTheWholeRequest(writeTimeout, "writeTimeout", callTimeout);
         Objects.requireNonNull(userAgent, "userAgent");
         if (minConcurrency < 1) {
             throw new IllegalArgumentException("minConcurrency must be at least 1, so that the "
@@ -127,19 +141,26 @@ public record EngineSettings(
     }
 
     public EngineSettings withConnectTimeout(Duration value) {
-        return new EngineSettings(value, readTimeout, writeTimeout, minConcurrency,
+        return new EngineSettings(value, readTimeout, writeTimeout, callTimeout, minConcurrency,
                 initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
                 followRedirects, userAgent);
     }
 
     public EngineSettings withReadTimeout(Duration value) {
-        return new EngineSettings(connectTimeout, value, writeTimeout, minConcurrency,
+        return new EngineSettings(connectTimeout, value, writeTimeout, callTimeout, minConcurrency,
                 initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
                 followRedirects, userAgent);
     }
 
     public EngineSettings withWriteTimeout(Duration value) {
-        return new EngineSettings(connectTimeout, readTimeout, value, minConcurrency,
+        return new EngineSettings(connectTimeout, readTimeout, value, callTimeout, minConcurrency,
+                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
+                followRedirects, userAgent);
+    }
+
+    /** The longest one request may take; each of the three other waits has to fit inside it. */
+    public EngineSettings withCallTimeout(Duration value) {
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, value, minConcurrency,
                 initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
                 followRedirects, userAgent);
     }
@@ -153,8 +174,9 @@ public record EngineSettings(
      * @return settings using that range
      */
     public EngineSettings withConcurrency(int minimum, int initial, int maximum) {
-        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minimum, initial,
-                maximum, slowdownFactor, maxRetainedResponseBytes, followRedirects, userAgent);
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout, minimum,
+                initial, maximum, slowdownFactor, maxRetainedResponseBytes, followRedirects,
+                userAgent);
     }
 
     /** One request at a time, for an API too fragile to be asked two questions at once. */
@@ -164,27 +186,52 @@ public record EngineSettings(
 
     /** How much slower than its best answer counts as the API struggling. Greater than one. */
     public EngineSettings withSlowdownFactor(double value) {
-        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, value, maxRetainedResponseBytes,
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
+                minConcurrency, initialConcurrency, maxConcurrency, value, maxRetainedResponseBytes,
                 followRedirects, userAgent);
     }
 
     public EngineSettings withMaxRetainedResponseBytes(long value) {
-        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, value, followRedirects,
-                userAgent);
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
+                minConcurrency, initialConcurrency, maxConcurrency, slowdownFactor, value,
+                followRedirects, userAgent);
     }
 
     public EngineSettings withFollowRedirects(boolean value) {
-        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
-                value, userAgent);
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
+                minConcurrency, initialConcurrency, maxConcurrency, slowdownFactor,
+                maxRetainedResponseBytes, value, userAgent);
     }
 
     public EngineSettings withUserAgent(String value) {
-        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
-                followRedirects, value);
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
+                minConcurrency, initialConcurrency, maxConcurrency, slowdownFactor,
+                maxRetainedResponseBytes, followRedirects, value);
+    }
+
+    /**
+     * Refuses a wait longer than the whole request may take. It could never be waited for, so a run
+     * that accepted it would be configured in a way nobody would get.
+     */
+    private static void notLongerThanTheWholeRequest(Duration value, String what,
+            Duration callTimeout) {
+        if (value.compareTo(callTimeout) > 0) {
+            throw new IllegalArgumentException(what + " (" + said(value) + ") is longer than "
+                    + "callTimeout (" + said(callTimeout) + "), the longest a whole request may "
+                    + "take, so it could never be waited for; raise callTimeout as well");
+        }
+    }
+
+    /** A length of time the way a person would write it in a settings file: in its largest unit. */
+    private static String said(Duration value) {
+        long millis = value.toMillis();
+        if (millis % 3_600_000 == 0) {
+            return millis / 3_600_000 + "h";
+        }
+        if (millis % 60_000 == 0) {
+            return millis / 60_000 + "m";
+        }
+        return millis % 1000 == 0 ? millis / 1000 + "s" : millis + "ms";
     }
 
     private static void positive(Duration value, String what) {

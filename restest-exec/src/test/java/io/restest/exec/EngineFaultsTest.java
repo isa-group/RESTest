@@ -163,6 +163,67 @@ class EngineFaultsTest {
         }
     }
 
+    /**
+     * A reply that never ends: an endpoint that streams, or keeps a connection alive by sending a
+     * byte every so often. Each byte arrives long before the read timeout runs out, so only a limit
+     * on the whole request ends it - and without one, the request would hold its place among those
+     * in flight for as long as the run lasts.
+     */
+    @Test
+    @DisplayName("a reply that never stops arriving is cut off once the whole request has taken as "
+            + "long as it may, keeping what arrived")
+    void a_reply_that_never_ends_is_cut_off() throws Exception {
+        try (ServerSocket streams = new ServerSocket(0)) {
+            Thread server = Thread.ofVirtual().start(() -> serveForEver(streams));
+            Duration wait = Duration.ofMillis(500);
+            EngineSettings settings = EngineSettings.defaults().withConnectTimeout(wait)
+                    .withReadTimeout(wait).withWriteTimeout(wait)
+                    .withCallTimeout(Duration.ofSeconds(1));
+            try (OkHttpEngine engine = new OkHttpEngine(settings)) {
+                long startedAt = System.nanoTime();
+                Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/events"),
+                        Requests.get("http://localhost:" + streams.getLocalPort() + "/events"));
+                Duration took = Duration.ofNanos(System.nanoTime() - startedAt);
+
+                assertThat(took)
+                        .describedAs("the server would go on sending for half a minute")
+                        .isLessThan(Duration.ofSeconds(15));
+                assertThat(interaction.outcome())
+                        .isInstanceOf(InteractionOutcome.MalformedResponse.class);
+                InteractionOutcome.MalformedResponse cut =
+                        (InteractionOutcome.MalformedResponse) interaction.outcome();
+                assertThat(cut.statusLine().orElseThrow().statusCode()).isEqualTo(200);
+                assertThat(new String(cut.partial().orElseThrow().content(),
+                        StandardCharsets.UTF_8)).startsWith("x");
+                assertThat(cut.reason()).contains("stopped after");
+            }
+            server.join(Duration.ofSeconds(35));
+        }
+    }
+
+    /**
+     * Answers one request with a reply that sends a byte every tenth of a second, for half a minute
+     * or until the client hangs up.
+     */
+    private static void serveForEver(ServerSocket socket) {
+        try (Socket connection = socket.accept()) {
+            connection.getInputStream().read(new byte[1024]);
+            OutputStream out = connection.getOutputStream();
+            out.write(("HTTP/1.1 200 OK\r\n"
+                    + "Content-Type: text/event-stream\r\n"
+                    + "Transfer-Encoding: chunked\r\n"
+                    + "\r\n").getBytes(StandardCharsets.UTF_8));
+            long until = System.nanoTime() + Duration.ofSeconds(30).toNanos();
+            while (System.nanoTime() < until) {
+                out.write("1\r\nx\r\n".getBytes(StandardCharsets.UTF_8));
+                out.flush();
+                Thread.sleep(100);
+            }
+        } catch (IOException | InterruptedException e) {
+            // The client hanging up is how this test is meant to end; nothing to do.
+        }
+    }
+
     /** Answers one request with a reply that promises a hundred bytes and sends four. */
     private static void serveHalfAReply(ServerSocket socket) {
         try (Socket connection = socket.accept()) {

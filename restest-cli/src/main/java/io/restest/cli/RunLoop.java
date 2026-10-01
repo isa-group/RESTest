@@ -107,8 +107,8 @@ final class RunLoop {
      * @param passes how many times the loop went round the whole list of operations, not counting
      *     the first round a run may begin with
      * @param stillOwed how many answers had still not arrived when the run stopped waiting for them.
-     *     Normally zero, because the engine gives up on a request of its own accord long before this
-     *     does
+     *     Normally zero, because the engine gives up on every request once it has taken as long as a
+     *     whole request may, and the loop waits that long and a little more
      * @param lost how many requests RESTest itself lost on the way to the API or back: the part of
      *     the tool that sends them failed, rather than the API or the network, so nothing about the
      *     API can be said from them. Normally zero

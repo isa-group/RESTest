@@ -443,3 +443,27 @@ zero means it writes at once. The five seconds a stopped run is then given to wr
 under §5's test: nobody wants a different value for a wait that only runs out when writing is stuck,
 and raising the grace raises the whole wait. [ADR-0015](0015-command-line-contract.md)'s M12.1b
 amendment says why. Seventy-one settings in eight groups.
+
+## Amendment (1 October 2026)
+
+**Date:** 2026-10-01
+
+**`engine.callTimeout`, one minute by default, is the longest one request may take, its whole reply
+included.** The engine had a limit on connecting, on sending and on each wait for the next bytes of
+a reply, and none on the whole. A reply that never ends - an endpoint that streams, or sends a byte
+every few seconds - kept its place among the requests in flight for as long as the run lasted, and
+enough of them would have stopped the run sending anything while it reported no idle time. The wait
+for the answers still owed at the deadline was the read timeout plus `schedule.stragglerGrace`,
+which assumed a limit that did not exist. It is now `callTimeout` plus the grace, so the engine has
+given up on every request before the run stops waiting for it.
+
+There were two defensible ways to choose its value: a fixed minute, refusing any wait inside a
+request that is longer; or a value worked out from those waits. The second is taken, following the
+M11.1 amendment's rule for where the engine starts: a default that would contradict a value somebody
+named is worked out from it, rather than refusing the line they typed. Unnamed, `callTimeout` is
+twice the longest of the connect, read and write timeouts - one minute by default, so a reply that
+has started arriving gets as long again to finish - and raising `engine.readTimeout` for a slow API
+raises it too. Named, it shortens the three waits nobody named to fit inside it, so
+`--set engine.callTimeout=5s` is one line. A wait named outright that is longer than a
+`callTimeout` named outright is refused, naming both. It is not a switch: a limit on how long a
+request may take is not a behaviour an experiment turns off. Seventy-two settings in eight groups.
