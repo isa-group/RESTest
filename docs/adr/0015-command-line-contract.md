@@ -360,6 +360,9 @@ promise files it did not finish writing. That is an increment with an ADR of its
 added in passing, and it is **M3.7** in the roadmap - after the reports increment, because what a
 run cut short should leave behind is a question about what a run writes.
 
+**Answered at M12.1b: the first answer's evidence, said to be a run cut short, with the second
+answer's number, Java's `130` or `143` — see that amendment.**
+
 
 
 ## Amendment (M2.7a)
@@ -884,7 +887,7 @@ answers the M1.8 amendment listed the first one's evidence - write what was foun
 was cut short, close the store - or says plainly that it could not; and it ends with the number the
 second one names, the conventional one for an interrupted program, which is Java's `130` or `143`.
 The maintainer chose both on 30 September, so that a run cut short is never read as one that
-passed.
+passed. *Done at M12.1b, below.*
 
 The two ways RESTest can go wrong without answering `4`, listed at the end of the amendment before
 this one, go to 12.1b too, with the answers the maintainer chose on 30 September. *They were split
@@ -984,3 +987,182 @@ v2.0 on 30 September, as row 3.8 of the roadmap:
   lost with the future it happened in. The request is counted as answered and no report hears of
   it.
 
+## Amendment (M12.1b)
+
+**Date:** 2026-09-30
+
+**A run stopped from outside - Ctrl-C, `kill`, `docker stop`, a terminal closed - makes no new
+requests, waits a short while for the answers it is owed, and writes what it found, said to be a
+run cut short: the summary, `report.json`, and a closed stored run. Or it says, before the program ends,
+what it did not leave behind. It ends with Java's number for the way it was stopped, `130` or
+`143`, which the help now lists.**
+
+### Why
+
+Until this amendment a run stopped from outside ended where it stood, with no summary, no
+`report.json`, and with `--store` a database beside its two working files. Everything it had paid
+for was lost, and the one number left, `130` or `143`, said nothing about what had been found. Of
+the three answers the M1.8 amendment listed, the maintainer chose on 30 September the evidence of
+the first - write what was found, say that the run was cut short, close the store - with the number
+of the second, the conventional one for an interrupted program, so that a run stopped half-way is
+never read as one that passed. And, the same day, how: with Java's shutdown hook, and a short wait,
+`schedule.interruptGrace`, 2 seconds by default.
+
+### How Java stops a program
+
+Ctrl-C, `kill`, `docker stop` and a closed terminal each send the program a signal - `INT`, `TERM`,
+`TERM` and `HUP`. Java answers each by beginning to end the program: it starts every shutdown hook
+the program registered, each on a thread of its own, while the rest of the program carries on; it
+waits for all of them; and it ends the program with 128 and the signal's number - `130`, `143`, `129`.
+Once it has begun, a second Ctrl-C, and the `System.exit` that `main` reaches at the end of a run,
+wait on the first for ever. Read in the JDK's own source, `Shutdown.exit` and `Terminator`, rather
+than assumed. Two consequences follow. What a hook does with its thread is how long a stopped
+program takes to end. And nothing but the hook's own limit ends that wait, since pressing Ctrl-C
+again does nothing.
+
+### What it does now
+
+- **A hook is registered for as long as a run lasts**, from the moment it begins reading the
+  document until everything is written and said, and removed afterwards. Each run registers and
+  removes its own, so two runs in one program are each stopped on their own (the sixth principle).
+- **A run stopped before it begins testing does not begin.** Until then it has sent nothing and
+  written nothing, and it has not yet cleared its directory of what an earlier run left there. So
+  the hook says so - *the run was stopped before it began testing, so it sent nothing and wrote
+  nothing, and* the directory *is as it was, with whatever an earlier run left there* - and lets
+  the program end at once. Which of the two came first, the stop or the start of testing, is
+  settled under one lock, so a run is never told it may begin once the hook has said it will not.
+  Found by the review: with the hook registered only once testing began, as the plan approved on 30
+  September had it, a stop while the document was read ended with `130` or `143` and no word, beside
+  the complete report of an earlier run that a script could read as this one's. The maintainer
+  approved the change on 1 October. Inside one program, a run stopped before it began testing
+  answers `130` even when it goes on to find something else to answer, a key refused or nothing to
+  test, since a program stopped from outside ends with Java's number whatever it answers.
+- **The hook asks the run to stop and waits for it.** The loop looks between one decision and the
+  next, and at least every fifty milliseconds while it waits for room to send, for the steps of the
+  opening lap or for the reports to catch up. Once stopped, it hands nothing more to the engine; an
+  opening lap still going is announced as cut short, as it already was when the time ran out. The
+  requests it had already handed over still go out, those waiting their turn inside the engine
+  included: the engine sends as many at once as its limit allows, and the loop hands it up to twice
+  that, so up to half of them, and more once the limit has come down for a struggling API, are
+  waiting when the stop comes. They are never more than may be waiting for an answer at once, 32
+  by default.
+- **It waits for the answers it is owed for `schedule.interruptGrace` from the moment it was
+  stopped** - two seconds by default, where the end of a budget waits the engine's read timeout and
+  the straggler grace, forty seconds. That includes a stop that comes while the run is already
+  waiting after its deadline: that wait is shortened the same way.
+- **An answer that comes after that wait is not announced, however the run ends.** It counts as never
+  answered, and the run says how many there were. Before this amendment such an answer could still
+  reach the stored run after the report had been written - rare at the end of a budget, where the
+  wait is long, and common after a stop, where it is not - so the two could disagree about how many
+  requests there were. The number still owed is now the requests sent less those counted when the
+  loop stopped listening, exact where the count of free slots could be off by an answer being
+  announced at that moment.
+- **The run then writes what it found, as at the end of its budget.** `RunFinished` carries
+  `cutShort`; the first line of the summary ends in `, cut short`; `report.json` has a member of its
+  own, `"cutShort": true`, straight after `"api"`, the word the opening lap's row already used; the
+  stored run is closed. Where problems go, the run says how long it ran of its budget and that what
+  it reports is what it found until then, and how many answers were still owed, naming the setting.
+- **When it is done, the hook returns and Java ends the program** with `130` or `143`.
+- **When it is not done `schedule.interruptGrace` and five seconds after the stop, the hook says so**
+  and returns all the same: *the run was stopped from outside and had not finished writing what it
+  found 7s later, so it ends here*, followed by what is missing - `report.json` not written, or
+  `run.sqlite` not closed. A stored run commits what it holds in groups, so one that was not closed
+  has lost the last interactions it had not yet saved, and keeps some of what it did save in
+  `run.sqlite-wal` beside it; the sentence says both, and that the three files go together. What
+  is missing is read from the directory, not from the run, and it can be, because of the next
+  point. The look is made on a thread of its own and given a second: writing may have run out of
+  time because the directory stopped answering, and a look that waited on it would keep the program
+  from ending when a second Ctrl-C does nothing. A directory that does not answer is said to.
+- **`report.json` is written whole or not at all:** into `report.json.partial` first and then renamed
+  in one step, so a program ended while writing it leaves no half of a report under the report's
+  name. The next run in the directory clears the partial file with the rest.
+
+### The numbers
+
+`130` and `143` are Java's and are kept, not replaced: every shell and every build server already
+reads them as "interrupted". The help now lists both, with what a run stopped that way leaves behind,
+and the page's table gives them rows of their own; `129`, a closed terminal, stays among the numbers
+RESTest does not choose. Inside one program - a test, or a program running RESTest inside itself -
+there is no signal to tell Ctrl-C from `kill`, and a run stopped through the hook answers `130`.
+That number is asked about before anything else in `ExitCode.of`, lost requests and broken reports
+included, because a program stopped from outside ends with Java's number whatever the run would
+have answered, and a test reading the run must read what a script would.
+
+A run is cut short when the stop comes before it has stopped waiting for its answers. One stopped
+later - while it writes - reports a complete run, with `"cutShort": false`, and the program still ends
+with `130` or `143`: nothing was cut but the few lines after the report.
+
+### The two waits, and why only one is a setting
+
+The grace for answers is a setting, because a reasonable user changes it: Kubernetes gives a stopped
+container thirty seconds, `docker stop` ten. The five seconds for writing are a constant beside the
+code that uses them. They are not a pause anybody waits through - writing takes a fraction of a
+second, the reports catching up, the report file, the last group of interactions - but how long to
+wait for writing that has got stuck before saying so, and the reason for the number is `docker
+stop`'s ten seconds: two for the answers, five for the writing and one for the look at the directory
+leave two in hand. Anybody who raises the grace raises the whole wait with it. A grace longer than
+anybody could wait - `--set schedule.interruptGrace=2600000h` - is waited like any other, until the
+run is done; the review found that it made the hook fail at once, and every wait of the loop's and
+the hook's now counts a length too long for the clock's own units as the longest wait there is. A
+second setting for them was considered and not taken: one more number to freeze, for a wait that
+in practice never runs out.
+
+### What it cannot do
+
+- **A stop before a run is testing** writes nothing, which is right: nothing was found yet. It says
+  so, and leaves the directory as it was.
+- **Requests already handed to the engine** still go out after a stop, as above. Dropping the ones
+  still waiting their turn needs a way to tell the engine to send nothing more without cutting off
+  what it has in flight, and the engine has none; it would be a change to it of its own.
+- **`kill -9`, a container's memory limit, and `docker stop` once its ten seconds are up** end the
+  program without running anything. Nothing can be written, and `137` is the answer.
+- **Java started with `-Xrs`** does not install its handlers, so the signals end it outright, with
+  nothing written.
+- **A program started in the background by a shell that is not a terminal's** is started with
+  Ctrl-C ignored, and Java leaves an ignored signal ignored. `kill -INT` then does nothing at all;
+  `kill` does what it always does. Found while checking this amendment by hand, and the reason the
+  test that sends Ctrl-C to a real program steps aside, rather than fails, when the signal is
+  ignored where the tests run.
+- **Windows** has no signals to send. Ctrl-C in a console and closing the console stop a run this
+  way; `taskkill /F` is `kill -9`. The test with real signals does not run there.
+- **A container image** has to start Java as the container's own process - `exec java`, or an
+  `ENTRYPOINT` in its exec form - or `docker stop` reaches a shell that does not pass it on. The
+  `restest` script already does; the image of 7.2a must too.
+
+Measured on the pet clinic of the local setup, stopped twelve seconds into a sixty-second run with
+`--store`: Ctrl-C ended the program 0.4 seconds later with `130`, `kill` in 0.7 seconds with `143`,
+and `docker stop` on a Java 21 container in a second with `143`; each time the report said
+`"cutShort": true`, the stored run was closed with nothing beside it, and the report and the stored
+run held the same number of requests - 16,306 after Ctrl-C.
+
+### Consequences
+
+- A run stopped from outside costs what it had not yet done, and nothing it had already found.
+- A script reading the number still reads a run stopped half-way as one that did not pass; a
+  harness reading `report.json` instead can now tell it too.
+- The run command is handed where it hears a stop, as it is handed its engine since 12.1c: Java's
+  hook, except in a test that stops a run at a moment it chooses. Nothing a person types reaches it.
+
+### Still open
+
+`report.json` still does not say that a run broke, as distinct from being cut short; that stays the
+question of its own the maintainer kept on 30 September. The three cases of row 3.8 are unchanged.
+
+### Alternatives considered
+
+- **Catching the signals directly**, through the part of Java that lets a program replace its
+  handlers. RESTest could then choose the number and let a second Ctrl-C end the program at once.
+  Not taken: that part of Java is outside its supported interface, and the maintainer chose the
+  standard way on 30 September.
+- **Interrupting the loop's thread** instead of having it look every fifty milliseconds. Java's
+  interruption stays on the thread, and would cut short the waits that have to happen after the
+  stop: for the answers owed, and for the reports to finish. Looking costs a wake-up every fifty
+  milliseconds while the loop waits, and changes nothing in a run nobody stops.
+- **Answering the ordinary number inside one program**, `0` to `4`, and leaving `130` to Java.
+  Rejected: a test, or a program running RESTest inside itself, would read a run stopped half-way as
+  one that passed.
+- **Writing `report.json` in place.** A program ended while writing it would leave half a report
+  under its name, and the sentence saying it was not written would have nothing true to say.
+- **Registering the hook only once testing begins**, as first planned and built. Rejected after the
+  review, by the maintainer on 1 October: a stop while the document was read then said nothing, and
+  left an earlier run's files to be read as this one's.

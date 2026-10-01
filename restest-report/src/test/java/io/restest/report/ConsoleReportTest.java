@@ -277,6 +277,23 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("a run stopped from outside says so on the first line of its summary, and only then")
+    void a_run_stopped_from_outside_says_so() {
+        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine(),
+                true));
+
+        java.util.List<String> lines = screen.toString().lines().toList();
+        assertThat(lines)
+                .contains("1 requests to 1 operations in 10.0s, 30% of it idle, cut short")
+                .describedAs("what it found until then is said as it would have been")
+                .contains("no faults found");
+        assertThat(lines).filteredOn(line -> line.contains("cut short")).hasSize(1);
+    }
+
+    @Test
     @DisplayName("a first round that ended before it was done says so")
     void an_opening_lap_cut_short_says_so() {
         io.restest.core.execution.TestCase only = io.restest.core.execution.TestCase.of(

@@ -86,7 +86,7 @@ class RunOrderTest {
         ApiModel model = petClinic();
         RandomTestCaseGenerator generator = withoutSeries(model);
         ScheduleSettings noFirstRound = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
-                false, Duration.ofSeconds(2));
+                Duration.ofSeconds(2), false, Duration.ofSeconds(2));
         Instant now = Instant.parse("2026-09-23T10:00:00Z");
         Scheduler scheduler = new Scheduler(generator, noFirstRound, now.plusSeconds(60),
                 InstantSource.fixed(now), announced -> { });

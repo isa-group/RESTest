@@ -23,13 +23,15 @@ import java.util.Objects;
  * begins.
  *
  * <p>A run invents a request, sends it, and moves on to the next one without waiting for the reply.
- * The first three numbers are the brakes on that. The first says how many requests may be waiting
- * for an answer at once, so the tool cannot run so far ahead that it is inventing requests nobody
- * will have time to send. The second says how many announcements - "this request went out", "this
- * reply came back" - may be waiting to reach the reports before the run pauses to let them catch up,
- * which is what stops a long run against a fast API ending in an out-of-memory failure rather than
- * a report. The third says how long, after the time is up, to keep waiting for answers to requests
- * that had already gone out.
+ * The first four numbers are the brakes on that, and on how long it waits. The first says how many
+ * requests may be waiting for an answer at once, so the tool cannot run so far ahead that it is
+ * inventing requests nobody will have time to send. The second says how many announcements - "this
+ * request went out", "this reply came back" - may be waiting to reach the reports before the run
+ * pauses to let them catch up, which is what stops a long run against a fast API ending in an
+ * out-of-memory failure rather than a report. The third says how long, after the time is up, to
+ * keep waiting for answers to requests that had already gone out. The fourth says the same for a
+ * run somebody stops from outside - with Ctrl-C, say - which waits much less, because whoever
+ * stopped it is waiting too.
  *
  * <p>The last two are about how a run begins. Before anything is chosen by chance, a run can send
  * every operation once, each with the request the API is most likely to accept: it first asks for
@@ -49,6 +51,10 @@ import java.util.Objects;
  *     for answers to requests that had already gone out. The engine gives up on a request by
  *     itself, so this only has to outlast that; it exists so a run cannot hang for ever on an API
  *     that never replies
+ * @param interruptGrace how long a run stopped from outside waits, from the moment it is stopped,
+ *     for answers to requests that had already gone out. What has not come back by then counts as
+ *     never answered, and the run goes on to write what it found. Short, because a run stopped that
+ *     way has only a few seconds before it is ended outright - ten, when a container is stopped
  * @param openingLap whether a run begins by sending every operation once, each with the request
  *     most likely to be accepted, before anything is chosen by chance
  * @param openingLapPatience how long one step of that first round waits for the answers to the step
@@ -58,14 +64,16 @@ public record ScheduleSettings(
         int workAheadFactor,
         int announcementsAllowedToPileUp,
         Duration stragglerGrace,
+        Duration interruptGrace,
         boolean openingLap,
         Duration openingLapPatience) {
 
     private static final ScheduleSettings DEFAULTS = new ScheduleSettings(2, 1_000,
-            Duration.ofSeconds(10), true, Duration.ofSeconds(2));
+            Duration.ofSeconds(10), Duration.ofSeconds(2), true, Duration.ofSeconds(2));
 
     public ScheduleSettings {
         Objects.requireNonNull(stragglerGrace, "stragglerGrace");
+        Objects.requireNonNull(interruptGrace, "interruptGrace");
         Objects.requireNonNull(openingLapPatience, "openingLapPatience");
         if (workAheadFactor < 1) {
             throw new IllegalArgumentException("workAheadFactor must be at least 1, since a run "
@@ -79,6 +87,10 @@ public record ScheduleSettings(
         if (stragglerGrace.isNegative()) {
             throw new IllegalArgumentException("stragglerGrace cannot be negative; zero means the "
                     + "run stops waiting the moment the time is up: " + stragglerGrace);
+        }
+        if (interruptGrace.isNegative()) {
+            throw new IllegalArgumentException("interruptGrace cannot be negative; zero means a run "
+                    + "stopped from outside stops waiting at once: " + interruptGrace);
         }
         if (openingLapPatience.isNegative()) {
             throw new IllegalArgumentException("openingLapPatience cannot be negative; zero means "

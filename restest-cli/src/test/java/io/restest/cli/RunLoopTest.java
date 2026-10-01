@@ -86,6 +86,12 @@ class RunLoopTest {
     /** Long enough that a healthy run always drains, short enough that a stuck one does not hang. */
     private static final Duration PATIENT = Duration.ofSeconds(5);
 
+    /**
+     * How long a run stopped from outside waits for its answers here: far less than the wait for
+     * stragglers above, so that a run that waited the one rather than the other is told apart.
+     */
+    private static final Duration GRACE = Duration.ofMillis(300);
+
     /** How many announcements the loop under test lets pile up before it pauses for the reports. */
     private static final int ANNOUNCEMENTS_ALLOWED =
             ScheduleSettings.defaults().announcementsAllowedToPileUp();
@@ -96,7 +102,8 @@ class RunLoopTest {
     /** The same, with no first round, for what is only about the ordinary rounds after it. */
     private static final ScheduleSettings WITHOUT_A_FIRST_ROUND = new ScheduleSettings(
             WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
-            WITH_A_FIRST_ROUND.stragglerGrace(), false, WITH_A_FIRST_ROUND.openingLapPatience());
+            WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), false,
+            WITH_A_FIRST_ROUND.openingLapPatience());
 
     private final ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
     private final ApiEngine engine = new ApiEngine();
@@ -313,7 +320,7 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, PATIENT, engine, events);
+                    ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
 
         assertThat(outcome.lost()).describedAs("list reads were sent and lost: %s", outcome)
@@ -446,7 +453,7 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITH_A_FIRST_ROUND,
                     Instant.now().plusSeconds(3), InstantSource.system(), events::publish);
             RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
-                    PATIENT, engine, events);
+                    PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
 
         // The step straight after the list: the creation's body fills its name from the name
@@ -495,7 +502,7 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
-                    PATIENT, engine, events);
+                    PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
 
         // Each series by its creation's exchange, which every later step names first.
@@ -538,7 +545,8 @@ class RunLoopTest {
         engine.takes(request -> engine.asked() <= 1 ? Duration.ofSeconds(30) : Duration.ofMillis(1));
         ScheduleSettings patientForAFifth = new ScheduleSettings(
                 WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
-                WITH_A_FIRST_ROUND.stragglerGrace(), true, Duration.ofMillis(200));
+                WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), true,
+                Duration.ofMillis(200));
 
         long began = System.nanoTime();
         RunLoop.Outcome outcome = run(Duration.ofMillis(2500), patientForAFifth, listening -> { });
@@ -554,6 +562,178 @@ class RunLoopTest {
         assertThat(outcome.stillOwed())
                 .describedAs("the one that never came back is reported rather than waited out")
                 .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a run stopped from outside makes no new requests, and says it was cut short")
+    void a_stop_from_outside_ends_the_run_at_once() {
+        StopFromOutside stop = stoppedAfter(Duration.ofMillis(400));
+
+        long began = System.nanoTime();
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                WITHOUT_A_FIRST_ROUND, stop, listening -> { });
+        Duration took = Duration.ofNanos(System.nanoTime() - began);
+
+        assertThat(outcome.cutShort()).describedAs("%s", outcome).isTrue();
+        assertThat(took)
+                .describedAs("thirty seconds were given, and the run stopped when it was told to")
+                .isGreaterThanOrEqualTo(Duration.ofMillis(400))
+                .isLessThan(Duration.ofSeconds(3));
+        assertThat(outcome.sent()).describedAs("it had been sending until then").isPositive();
+        assertThat(engine.asked())
+                .describedAs("every request the engine was handed is one the run counted")
+                .isEqualTo(outcome.sent());
+        assertThat(outcome.answered())
+                .describedAs("the API answered at once, so nothing was left owed: %s", outcome)
+                .isEqualTo(outcome.sent());
+        assertThat(outcome.stillOwed()).isZero();
+    }
+
+    @Test
+    @DisplayName("a run stopped from outside waits its grace for the answers still owed, and no longer")
+    void a_stop_waits_for_the_answers_owed_for_its_grace_only() {
+        // After the first few, every request takes longer than the whole run: the slots fill with
+        // them and stay full, which is what a run stopped with requests in flight looks like.
+        engine.takes(request -> engine.asked() <= 20 ? Duration.ofMillis(1)
+                : Duration.ofSeconds(30));
+        StopFromOutside stop = stoppedAfter(Duration.ofMillis(600));
+
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                WITHOUT_A_FIRST_ROUND, stop, listening -> { });
+        Duration afterTheStop = Duration.between(stop.askedAt().orElseThrow(), Instant.now());
+
+        assertThat(outcome.cutShort()).isTrue();
+        assertThat(afterTheStop)
+                .describedAs("it waited the grace a stopped run is given, not the %s a run at its "
+                        + "deadline waits", PATIENT)
+                .isGreaterThanOrEqualTo(GRACE.minusMillis(20))
+                .isLessThan(Duration.ofSeconds(2));
+        assertThat(outcome.stillOwed())
+                .describedAs("every slot was held by a request that never came back: %s", outcome)
+                .isEqualTo(WORK_AHEAD);
+        assertThat(outcome.answered() + outcome.stillOwed()).isEqualTo(outcome.sent());
+    }
+
+    @Test
+    @DisplayName("a stop that comes while the run waits for its answers after the deadline shortens that wait")
+    void a_stop_after_the_deadline_shortens_the_wait_for_stragglers() {
+        engine.takes(request -> Duration.ofSeconds(30));
+        StopFromOutside stop = stoppedAfter(Duration.ofMillis(1200));
+
+        long began = System.nanoTime();
+        RunLoop.Outcome outcome = run(Duration.ofMillis(500), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                WITHOUT_A_FIRST_ROUND, stop, listening -> { });
+        Duration took = Duration.ofNanos(System.nanoTime() - began);
+
+        assertThat(took)
+                .describedAs("the run would have waited %s past its deadline; it was stopped "
+                        + "during that wait and waited its grace from then", PATIENT)
+                .isGreaterThanOrEqualTo(Duration.ofMillis(1200))
+                .isLessThan(Duration.ofMillis(500).plus(PATIENT).minusSeconds(2));
+        assertThat(outcome.cutShort())
+                .describedAs("what was cut short was the wait for evidence already paid for")
+                .isTrue();
+        assertThat(outcome.stillOwed()).isEqualTo(outcome.sent()).isPositive();
+    }
+
+    @Test
+    @DisplayName("a run stopped during its first round ends that round, cut short, without waiting it out")
+    void a_stop_during_the_first_round_cuts_it_short() {
+        // Every answer is slower than the round is willing to wait, so the round sits in a wait.
+        engine.takes(request -> Duration.ofSeconds(20));
+        ScheduleSettings patient = new ScheduleSettings(WITH_A_FIRST_ROUND.workAheadFactor(),
+                ANNOUNCEMENTS_ALLOWED, WITH_A_FIRST_ROUND.stragglerGrace(),
+                WITH_A_FIRST_ROUND.interruptGrace(), true, Duration.ofSeconds(10));
+        List<RunEvent.PhaseFinished> ended = new CopyOnWriteArrayList<>();
+        StopFromOutside stop = stoppedAfter(Duration.ofMillis(400));
+
+        long began = System.nanoTime();
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                patient, stop, listening -> listening.subscribe(event -> {
+                    if (event instanceof RunEvent.PhaseFinished finished) {
+                        ended.add(finished);
+                    }
+                }));
+        Duration took = Duration.ofNanos(System.nanoTime() - began);
+
+        assertThat(took).describedAs("the step would have waited ten seconds for its answers")
+                .isLessThan(Duration.ofSeconds(3));
+        assertThat(outcome.cutShort()).isTrue();
+        assertThat(ended).singleElement()
+                .satisfies(round -> assertThat(round.cutShort()).isTrue());
+    }
+
+    @Test
+    @DisplayName("an answer that arrives after the run stopped waiting for it is never announced")
+    void an_answer_after_the_wait_is_not_announced() throws InterruptedException {
+        // Slower than the grace and quicker than the test: the answers are still on their way when
+        // the loop stops waiting, and arrive while everybody is still listening.
+        engine.takes(request -> Duration.ofMillis(900));
+        StopFromOutside stop = stoppedAfter(Duration.ofMillis(200));
+        Counting heard = new Counting();
+
+        RunLoop.Outcome outcome;
+        try (EventStream events = new EventStream()) {
+            events.subscribe(heard);
+            Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
+            outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
+                    ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE, stop, engine, events);
+            Thread.sleep(1500);
+            events.awaitDelivery(PATIENT);
+        }
+
+        assertThat(outcome.stillOwed()).describedAs("%s", outcome).isPositive();
+        assertThat(heard.completed.get())
+                .describedAs("what the reports and the stored run hear is what the run counted as "
+                        + "answered, and the rest counts as never answered: %s", outcome)
+                .isEqualTo(outcome.answered());
+    }
+
+    @Test
+    @DisplayName("a loop that fails stops listening too, so nothing is announced after the run says it is over")
+    void a_loop_that_fails_announces_nothing_afterwards() throws InterruptedException {
+        // Four requests on their way, then an engine that will take no more: the loop fails while
+        // their answers are still coming.
+        engine.takes(request -> Duration.ofMillis(600));
+        engine.refusesFrom = 5;
+        Counting heard = new Counting();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(heard);
+            Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> RunLoop.run(scheduler,
+                    "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE,
+                    new StopFromOutside(), engine, events))
+                    .isInstanceOf(IllegalStateException.class);
+            Thread.sleep(1200);
+            events.awaitDelivery(PATIENT);
+        }
+
+        assertThat(engine.asked()).describedAs("the premise: four went out").isEqualTo(4);
+        assertThat(heard.completed.get())
+                .describedAs("their answers came after the loop had failed, and the run had gone "
+                        + "on to say it was over")
+                .isZero();
+    }
+
+    @Test
+    @DisplayName("a wait for stragglers longer than the clock can count is waited like any other")
+    void a_wait_too_long_to_count_is_still_a_wait() {
+        RunLoop.Outcome outcome;
+        try (EventStream events = new EventStream()) {
+            Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plusMillis(300), InstantSource.system(), events::publish);
+            outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
+                    ANNOUNCEMENTS_ALLOWED, Duration.ofMillis(Long.MAX_VALUE),
+                    Duration.ofMillis(Long.MAX_VALUE), new StopFromOutside(), engine, events);
+        }
+
+        assertThat(outcome.sent()).isPositive();
+        assertThat(outcome.stillOwed())
+                .describedAs("every answer came back, so the endless wait ended when they had")
+                .isZero();
     }
 
     private RunLoop.Outcome run(Duration budget, java.util.function.Consumer<EventStream> setUp) {
@@ -574,13 +754,34 @@ class RunLoopTest {
 
     private RunLoop.Outcome run(Duration budget, int workAhead, int announcementsAllowed,
             ScheduleSettings schedule, java.util.function.Consumer<EventStream> setUp) {
+        return run(budget, workAhead, announcementsAllowed, schedule, new StopFromOutside(), setUp);
+    }
+
+    /** The same, hearing a stop from outside wherever this test sets one off. */
+    private RunLoop.Outcome run(Duration budget, int workAhead, int announcementsAllowed,
+            ScheduleSettings schedule, StopFromOutside stop,
+            java.util.function.Consumer<EventStream> setUp) {
         try (EventStream events = new EventStream()) {
             setUp.accept(events);
             Scheduler scheduler = new Scheduler(generator(), schedule, Instant.now().plus(budget),
                     InstantSource.system(), events::publish);
             return RunLoop.run(scheduler, "https://api.example", workAhead, announcementsAllowed,
-                    PATIENT, engine, events);
+                    PATIENT, GRACE, stop, engine, events);
         }
+    }
+
+    /** A stop from outside, set off this long from now on a thread of its own. */
+    private static StopFromOutside stoppedAfter(Duration after) {
+        StopFromOutside stop = new StopFromOutside();
+        Thread.ofPlatform().daemon().start(() -> {
+            try {
+                Thread.sleep(after);
+            } catch (InterruptedException notToday) {
+                return;
+            }
+            stop.ask();
+        });
+        return stop;
     }
 
     /** A run against an address of this test's choosing, with thirty seconds to spare. */
@@ -589,7 +790,7 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), schedule,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
             return RunLoop.run(scheduler, baseUrl, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT,
-                    engine, events);
+                    GRACE, new StopFromOutside(), engine, events);
         }
     }
 
@@ -676,6 +877,9 @@ class RunLoopTest {
         /** Whether a lost request comes back as nothing at all rather than as a failure. */
         private volatile boolean losesWithoutSaying = false;
 
+        /** From which request on the engine refuses to take any more, as a closed one does. */
+        private volatile int refusesFrom = Integer.MAX_VALUE;
+
         void takes(Function<HttpRequestRecord, Duration> perRequest) {
             this.howLong = perRequest;
         }
@@ -693,6 +897,9 @@ class RunLoopTest {
         @Override
         public CompletableFuture<Interaction> sendAsync(TestCase testCase,
                 HttpRequestRecord request) {
+            if (sent.get() + 1 >= refusesFrom) {
+                throw new IllegalStateException("this engine is closed and cannot send anything else");
+            }
             mostAtOnce.accumulateAndGet(inFlight.incrementAndGet(), Math::max);
             sent.incrementAndGet();
             String operation = testCase.operation().value();

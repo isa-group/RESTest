@@ -32,6 +32,12 @@ package io.restest.cli;
  * <p>An operation that had to be skipped is none of these. Documents are written by people about
  * software that has changed since, so skipping part of one is ordinary; the run says what it
  * skipped and carries on.
+ *
+ * <p>Two more numbers are Java's rather than RESTest's, and are kept rather than replaced: the ones
+ * a program stopped from outside ends with, which every shell and every build server already reads
+ * as "interrupted". A run stopped that way writes what it found before it ends, and says it was cut
+ * short; ending with 0 or 1 afterwards would let a run that was stopped half-way pass for one that
+ * finished.
  */
 final class ExitCode {
 
@@ -64,6 +70,20 @@ final class ExitCode {
      */
     static final int TOOL_FAILED = 4;
 
+    /**
+     * The run was stopped from outside with Ctrl-C, and wrote what it had found until then. This is
+     * the number Java ends such a program with, and the one it answers when the order to stop was
+     * not a signal at all - in a test, or in a program running RESTest inside itself.
+     */
+    static final int INTERRUPTED = 130;
+
+    /**
+     * The run was stopped from outside with {@code kill} or {@code docker stop}, and wrote what it
+     * had found until then. Java ends the program with this number itself; RESTest never answers it,
+     * because nothing but the signal tells the two apart.
+     */
+    static final int TERMINATED = 143;
+
     private ExitCode() {
     }
 
@@ -72,10 +92,11 @@ final class ExitCode {
      *
      * <p>Kept as one decision in one place rather than spread through the command, because it is the
      * part of RESTest other people's scripts depend on, and because the order the questions are
-     * asked in is the whole of the meaning. "Did anything break on our side" comes before "did we
-     * actually test anything", which comes before "was anything wrong with the API" - so a broken
-     * report can never be reported as a clean bill of health, and neither can a run that sent
-     * nothing.
+     * asked in is the whole of the meaning. "Was the run stopped from outside" comes first, because
+     * a program stopped that way ends with Java's number whatever this says. "Did anything break on
+     * our side" comes next, before "did we actually test anything", which comes before "was anything
+     * wrong with the API" - so a broken report can never be reported as a clean bill of health, and
+     * neither can a run that sent nothing.
      *
      * @param outcome what the loop did with the time
      * @param whatFailedOnOurSide how many things RESTest itself got wrong: listeners that threw
@@ -92,6 +113,9 @@ final class ExitCode {
      */
     static int of(RunLoop.Outcome outcome, long whatFailedOnOurSide, long eventsNeverHeard,
             long keptWithoutTheirDetails, int faults) {
+        if (outcome != null && outcome.cutShort()) {
+            return INTERRUPTED;
+        }
         if (whatFailedOnOurSide > 0 || eventsNeverHeard > 0 || keptWithoutTheirDetails > 0) {
             return TOOL_FAILED;
         }

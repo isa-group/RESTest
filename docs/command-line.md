@@ -99,6 +99,44 @@ On the command line, `@@` stands for a word that begins with `@`, and a name tha
 RESTest may read is taken as a word as it is. A file that is there and cannot be read — a directory
 named by mistake — answers `2`, with a sentence saying which.
 
+## Stopping a run
+
+Ctrl-C, `kill` and `docker stop` stop a run without losing what it found. The run makes no new
+requests, waits for the answers to the requests it had already made for up to
+`schedule.interruptGrace` — 2 seconds unless [set](settings.md) otherwise — and then writes what it
+found, as it would at the end of its budget: the summary, `report.json` with `"cutShort": true`, and
+with `--store` a closed `run.sqlite`. It ends with `130` for Ctrl-C and `143` for the other two.
+Requests it had made and not yet sent, waiting their turn behind the ones in flight, still go out
+while it waits: never more than may be waiting for an answer at once, 32 unless set otherwise.
+
+```
+$ restest run openapi.yaml --url http://localhost:9966/petclinic/api --budget 60s --store
+...
+^C
+16306 requests to 35 operations in 11.9s, 9% of it idle, cut short
+...
+restest: the run was stopped from outside after 11.8s of its 60s budget; what is reported above, and in report.json, is what it found until then
+report written to restest-out/report.json (382.8 KiB)
+run stored in restest-out/run.sqlite (117.8 MiB)
+$ echo $?
+130
+```
+
+An answer that has not come back by the end of that wait counts as never answered, and the run
+says how many there were. A second Ctrl-C does nothing: the run is already stopping, and is done in
+a few seconds. If it has not finished writing `schedule.interruptGrace` and five seconds after it
+was stopped — a report that got stuck, say — it says what it did not leave behind, and ends.
+`report.json` is only ever there whole. A `run.sqlite` that was not closed has lost the last
+interactions it had not yet saved, and keeps some of what it did save in `run.sqlite-wal` beside
+it, so the three files go together. If the directory itself does not answer, the run says that
+instead, a second later.
+
+A run stopped while it is still reading the document writes nothing, since it has found nothing
+yet, and says so: the directory it would have written to is left as it was, with whatever an
+earlier run left there. `kill -9`, and `docker stop` once its ten seconds are up, end the program on
+the spot, with nothing written. So does Ctrl-C or `kill` to a Java started with `-Xrs`. On
+Windows, Ctrl-C and closing the console stop a run this way, and `taskkill /F` is `kill -9`.
+
 ## Exit codes
 
 The number the command ends with, which is what a build server or a script acts on.
@@ -110,10 +148,13 @@ The number the command ends with, which is what a build server or a script acts 
 | `2` | The command line was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent. A file of arguments that cannot be read is one of these |
 | `3` | Nothing was tested: the document describes no operation that can be tried, there is no address to send requests to or nowhere to write the results, or not one request was answered - none could be built, the budget ran out before the first, or nothing at the address replied. The run says which. A script that starts the API and RESTest together meets the last one when RESTest is quicker |
 | `4` | RESTest itself went wrong - it lost requests on their way, had to keep exchanges without their details, or broke outright - so what it printed may be incomplete. The message and the stack trace are what to report, with what `restest version` says. A run in which RESTest lost requests answers `4` even when nothing at all was answered; if the address looks wrong as well, the run says so beside it. An exchange kept without its details is one a key could not be picked out of, so everything in it that could hold the key was blanked: the key is hidden, not leaked |
+| `130` | The run was stopped with Ctrl-C. What it found until then was printed and written, and report.json says it was cut short - or the run says what it did not leave behind: a run stopped while it still read the document wrote nothing, and one that could not finish writing in time says what is missing. [Stopping a run](#stopping-a-run) has the details. The number is Java's, the one every shell reads as "interrupted", and it is kept whatever the run found |
+| `143` | The run was stopped with kill or docker stop. What it found until then was printed and written, and report.json says it was cut short - or the run says what it did not leave behind, the same as for `130`. Java gives this number itself |
 
 A fault found is `1` rather than `0` because the usual use is a gate that should go red when the API
 is broken. An operation RESTest had to skip is not an error: a run says what it skipped and carries
-on, and only a run in which nothing at all was tested answers `3`.
+on, and only a run in which nothing at all was tested answers `3`. A run stopped from outside never
+answers `0` or `1`, so that one stopped half-way never passes for one that finished.
 [ADR-0015](adr/0015-command-line-contract.md) has the reasoning.
 
 ### Numbers RESTest does not choose
@@ -121,8 +162,8 @@ on, and only a run in which nothing at all was tested answers `3`.
 | Number | When |
 |---|---|
 | `127` | The `restest` script at the root of a checkout, when the checkout has not been built yet |
-| `130`, `143` | The run was stopped from outside: Ctrl-C gives `130`, and `kill` or `docker stop` gives `143`. Java answers these. Today a run stopped that way leaves no summary and no `report.json`; what it leaves behind is the next increment's |
-| `137` | The run was killed outright — `kill -9`, or a container's memory limit — and nothing of RESTest ran after it |
+| `129` | The terminal the run was started from was closed. The run stops as it does for Ctrl-C and writes what it found; what it prints has nowhere to go |
+| `137` | The run was killed outright — `kill -9`, a container's memory limit, or `docker stop` once its ten seconds are up — and nothing of RESTest ran after it |
 | `1` | Java itself could not start: no RESTest on its class path, or an option it does not know. Nothing of RESTest ran, so this `1` says nothing about the API |
 | `3` | Java was started with `-XX:+ExitOnOutOfMemoryError`, as some container images do through `JAVA_TOOL_OPTIONS`, and ran out of memory |
 

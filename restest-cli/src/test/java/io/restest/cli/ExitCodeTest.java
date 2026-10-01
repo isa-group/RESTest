@@ -121,12 +121,35 @@ class ExitCodeTest {
         assertThat(ExitCode.of(A_REAL_RUN, 0, 0, 3, 12)).isEqualTo(ExitCode.TOOL_FAILED);
     }
 
+    @Test
+    @DisplayName("a run stopped from outside answers 130, whatever it found and whatever else went wrong")
+    void a_run_stopped_from_outside_answers_what_java_would() {
+        assertThat(ExitCode.of(cutShort(120, 120, 0), 0, 0, 0, 0))
+                .describedAs("a run stopped half-way that found nothing has not passed")
+                .isEqualTo(ExitCode.INTERRUPTED).isEqualTo(130);
+        assertThat(ExitCode.of(cutShort(120, 120, 0), 0, 0, 0, 7))
+                .isEqualTo(ExitCode.INTERRUPTED);
+        assertThat(ExitCode.of(cutShort(0, 0, 0), 0, 0, 0, 0))
+                .describedAs("stopped before it sent anything: not 3, which says look at the address")
+                .isEqualTo(ExitCode.INTERRUPTED);
+        assertThat(ExitCode.of(cutShort(32, 0, 32), 1, 2, 3, 0))
+                .describedAs("a program stopped from outside ends with Java's number whatever this "
+                        + "says, so a test must read the same")
+                .isEqualTo(ExitCode.INTERRUPTED);
+        assertThat(ExitCode.TERMINATED).isEqualTo(143);
+    }
+
     private static RunLoop.Outcome outcome(long sent, long answered) {
-        return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, 0, Optional.empty());
+        return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, 0, Optional.empty(), false);
     }
 
     private static RunLoop.Outcome lost(long sent, long answered, long lost) {
         return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, lost,
-                Optional.of(new StackOverflowError()));
+                Optional.of(new StackOverflowError()), false);
+    }
+
+    private static RunLoop.Outcome cutShort(long sent, long answered, long lost) {
+        return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, lost,
+                lost > 0 ? Optional.of(new StackOverflowError()) : Optional.empty(), true);
     }
 }

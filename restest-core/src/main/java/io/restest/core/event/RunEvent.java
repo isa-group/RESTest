@@ -206,8 +206,17 @@ public sealed interface RunEvent {
     /**
      * The run is over. Carries how long it took and what the engine saw, so that a report can say
      * how much of the time was spent waiting for the API rather than working.
+     *
+     * @param at       when it ended
+     * @param elapsed  how long it took
+     * @param engine   what the engine saw
+     * @param cutShort whether it was stopped from outside - with Ctrl-C, say - before it had
+     *                 finished: before its time was up, or while it was still waiting for answers
+     *                 to requests it had sent. What it reports is then what it found until it was
+     *                 stopped
      */
-    record RunFinished(Instant at, Duration elapsed, EngineStatistics engine) implements RunEvent {
+    record RunFinished(Instant at, Duration elapsed, EngineStatistics engine, boolean cutShort)
+            implements RunEvent {
         public RunFinished {
             Objects.requireNonNull(at, "at");
             Objects.requireNonNull(elapsed, "elapsed");
@@ -216,6 +225,11 @@ public sealed interface RunEvent {
                 throw new IllegalArgumentException("a run cannot take less time than none: "
                         + elapsed);
             }
+        }
+
+        /** A run that ended by itself, the way nearly every run does. */
+        public RunFinished(Instant at, Duration elapsed, EngineStatistics engine) {
+            this(at, elapsed, engine, false);
         }
     }
 }
