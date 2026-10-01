@@ -18,6 +18,7 @@ package io.restest.core.settings;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.restest.core.exec.EngineSettings;
 import java.lang.reflect.RecordComponent;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -164,6 +165,73 @@ class SettingsTest {
             assertThat(changed.engine().userAgent()).isEqualTo("mine/1.0");
             assertThat(changed.engine().slowdownFactor()).isEqualTo(1.5);
             assertThat(changed.generation().roomAboveIt().doubleValue()).isEqualTo(12345.5);
+        }
+
+        @Test
+        @DisplayName("a whole request is given twice the longest wait inside it unless somebody "
+                + "says otherwise, so raising the read timeout for a slow API works as typed")
+        void the_whole_request_follows_the_waits_inside_it() {
+            assertThat(Settings.from(Map.of()).engine().callTimeout())
+                    .isEqualTo(Settings.defaults().engine().callTimeout())
+                    .isEqualTo(Duration.ofSeconds(60));
+            assertThat(Settings.from(Map.of("engine.readTimeout", "2m")).engine().callTimeout())
+                    .isEqualTo(Duration.ofMinutes(4));
+            assertThat(Settings.from(Map.of("engine.connectTimeout", "45s")).engine()
+                    .callTimeout())
+                    .describedAs("the longest of the three, whichever it is")
+                    .isEqualTo(Duration.ofSeconds(90));
+        }
+
+        @Test
+        @DisplayName("and a shorter whole request is one line too: the waits nobody named shrink to "
+                + "fit inside it")
+        void a_short_whole_request_is_one_line() {
+            EngineSettings quick = Settings.from(Map.of("engine.callTimeout", "5s")).engine();
+
+            assertThat(quick.callTimeout()).isEqualTo(Duration.ofSeconds(5));
+            assertThat(quick.readTimeout()).isEqualTo(Duration.ofSeconds(5));
+            assertThat(quick.connectTimeout()).isEqualTo(Duration.ofSeconds(5));
+            assertThat(quick.writeTimeout()).isEqualTo(Duration.ofSeconds(5));
+            assertThat(Settings.from(Map.of("engine.callTimeout", "20s")).engine()
+                    .connectTimeout())
+                    .describedAs("a wait that already fits is left as it is")
+                    .isEqualTo(Duration.ofSeconds(10));
+        }
+
+        @Test
+        @DisplayName("a whole request of no time at all is refused in its own name, not in the name "
+                + "of a wait nobody typed")
+        void a_whole_request_of_no_time_names_itself() {
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.callTimeout", "0s")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("callTimeout must be greater than zero");
+        }
+
+        @Test
+        @DisplayName("a wait the HTTP engine cannot count to is refused, and twice a long wait stops "
+                + "at the longest the engine can wait")
+        void waits_stay_within_what_the_engine_can_hold() {
+            assertThat(Settings.from(Map.of("engine.readTimeout", "300h")).engine().callTimeout())
+                    .describedAs("twice 300 hours is more than the engine can count")
+                    .isEqualTo(EngineSettings.LONGEST_WAIT);
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.callTimeout", "1000h")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("callTimeout (1000h) is longer than the HTTP engine can "
+                            + "wait");
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.readTimeout", "1000h")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("readTimeout (1000h) is longer than the HTTP engine can "
+                            + "wait");
+        }
+
+        @Test
+        @DisplayName("but a wait named outright that is longer than a whole request named outright "
+                + "is refused, naming both")
+        void a_wait_that_cannot_fit_is_refused() {
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.callTimeout", "1m",
+                    "engine.readTimeout", "2m")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("readTimeout (2m) is longer than callTimeout (1m)");
         }
 
         @Test

@@ -443,3 +443,48 @@ zero means it writes at once. The five seconds a stopped run is then given to wr
 under §5's test: nobody wants a different value for a wait that only runs out when writing is stuck,
 and raising the grace raises the whole wait. [ADR-0015](0015-command-line-contract.md)'s M12.1b
 amendment says why. Seventy-one settings in eight groups.
+
+## Amendment (1 October 2026)
+
+**Date:** 2026-10-01
+
+**`engine.callTimeout`, one minute by default, is the longest one request may take, its whole reply
+included.** The engine had a limit on connecting, on sending and on each wait for the next bytes of
+a reply, and none on the whole. A reply that never ends - an endpoint that streams, or sends a byte
+every few seconds - kept its place among the requests in flight for as long as the run lasted, and
+enough of them stopped the run sending anything while it reported no idle time.
+
+This bounds what such an endpoint costs; it does not avoid the cost. Each request to it still holds
+its place for a whole `callTimeout`, and the engine keeps fewer requests in flight while replies are
+that slow, so a run against an API with one such endpoint goes on sending, slowly, where before it
+stopped. Sending less to an operation whose replies never end would be a decision about what to
+send next, of the kind roadmap row 9.4 was set aside from, and is not taken here.
+
+There were two defensible ways to choose its value: a fixed minute, refusing any wait inside a
+request that is longer; or a value worked out from those waits. The second is taken, following the
+M11.1 amendment's rule for where the engine starts: a default that would contradict a value somebody
+named is worked out from it, rather than refusing the line they typed. Unnamed, `callTimeout` is
+twice the longest of the connect, read and write timeouts - one minute by default, so a reply that
+has started arriving gets as long again to finish - and raising `engine.readTimeout` for a slow API
+raises it too. Named, it shortens the three waits nobody named to fit inside it, so
+`--set engine.callTimeout=5s` is one line. A wait named outright that is longer than a
+`callTimeout` named outright is refused, naming both. It is not a switch: a limit on how long a
+request may take is not a behaviour an experiment turns off.
+
+**A printed file leaves a worked-out setting to follow the others.** `--print-settings` writes every
+value, so a printed file would name `callTimeout` outright, and raising `readTimeout` in it would be
+refused - which breaks M11.1's own way of changing a setting: print, change a line, hand it back.
+The same was already true of `initialConcurrency`: `maxConcurrency: 1` typed into a printed file was
+refused because the file also said `initialConcurrency: 4`. Both are now written as comments while
+nobody has given them and leaving them out gives the same value, and the file's header says what
+such a line means. Handing the file straight back still changes nothing.
+
+**The wait at the end of a run is unchanged**: the read timeout plus `schedule.stragglerGrace`,
+which is what [ADR-0015](0015-command-line-contract.md) promises a run goes past its budget by. A
+reply still arriving after that is counted as never answered, as before. Waiting `callTimeout`
+instead would let a run with defaults go seventy seconds past its budget rather than forty, and
+would still not cover requests waiting for their turn in the engine, which have not been sent.
+
+**No wait can be longer than the HTTP engine can count to**, about 24 days, and is refused, naming
+it, rather than ending the run as a failure of RESTest's own. Twice a long wait stops there.
+Seventy-two settings in eight groups.

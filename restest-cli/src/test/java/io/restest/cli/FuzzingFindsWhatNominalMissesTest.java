@@ -237,6 +237,32 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     @Test
+    @DisplayName("a share that is not a percentage is refused as soon as it is read, before the "
+            + "document is looked for")
+    void a_share_out_of_range_is_refused_before_anything_is_read(@TempDir Path directory) {
+        StringWriter screen = new StringWriter();
+        int code;
+        int withoutADocument;
+        try (PrintWriter writer = new PrintWriter(screen, true)) {
+            code = Restest.run(new String[] {"run",
+                    directory.resolve("not-there.yaml").toString(), "--fuzzing", "150"},
+                    writer, writer);
+            withoutADocument = Restest.run(new String[] {"run", "--fuzzing", "-1"}, writer,
+                    writer);
+        }
+
+        assertThat(code).isEqualTo(2);
+        assertThat(withoutADocument).isEqualTo(2);
+        assertThat(screen.toString())
+                .describedAs("the mistake typed is the one named, rather than a document that "
+                        + "could not be found or was not given")
+                .contains("between 0 and 100: 150")
+                .contains("between 0 and 100: -1")
+                .doesNotContain("not-there.yaml")
+                .doesNotContain("Missing required parameter");
+    }
+
+    @Test
     @DisplayName("every request can be built to be refused, which is the other end of the same dial")
     void the_whole_run_can_be_built_to_be_refused(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);

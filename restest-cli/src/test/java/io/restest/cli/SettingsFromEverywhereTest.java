@@ -133,6 +133,49 @@ class SettingsFromEverywhereTest {
         }
 
         @Test
+        @DisplayName("and so does how long a whole request may take, or a wait inside it, moved by "
+                + "somebody naming the other")
+        void the_waits_of_a_request_are_worked_out_from_one_another() {
+            SettingKey wholeRequest = SettingKey.named("engine.callTimeout").orElseThrow();
+
+            SettingsInEffect slow = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),
+                    List.of("engine.readTimeout=2m"));
+            SettingsInEffect quick = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),
+                    List.of("engine.callTimeout=5s"));
+
+            assertThat(slow.sourceOf(wholeRequest)).isEqualTo(SettingSource.WORKED_OUT);
+            assertThat(slow.sourceOf(READ_TIMEOUT)).isEqualTo(SettingSource.COMMAND_LINE);
+            assertThat(quick.sourceOf(READ_TIMEOUT)).isEqualTo(SettingSource.WORKED_OUT);
+            assertThat(quick.sourceOf(wholeRequest)).isEqualTo(SettingSource.COMMAND_LINE);
+        }
+
+        @Test
+        @DisplayName("and a printed file with one of the others changed moves it the way --set "
+                + "would, since the file leaves it to follow them")
+        void a_printed_file_edited_and_handed_back_moves_what_follows(@TempDir Path directory)
+                throws Exception {
+            String printed = SettingsFromEverywhere.gather(Optional.empty(), Map.of(), List.of())
+                    .asAFile();
+            Path slow = fileSaying(directory, printed.replace("readTimeout: \"30s\"",
+                    "readTimeout: \"2m\""));
+            Path careful = fileSaying(directory, printed.replace("maxConcurrency: 16",
+                    "maxConcurrency: 1"));
+
+            assertThat(SettingsFromEverywhere.gather(Optional.of(slow), Map.of(), List.of())
+                    .settings().engine().callTimeout())
+                    .describedAs("raising the read timeout in the file raises the whole request")
+                    .isEqualTo(Duration.ofMinutes(4));
+            assertThat(SettingsFromEverywhere.gather(Optional.of(careful), Map.of(), List.of())
+                    .settings().engine().initialConcurrency())
+                    .describedAs("one request at a time, written in the file, works as written")
+                    .isEqualTo(1);
+            assertThat(SettingsFromEverywhere.gather(Optional.of(slow), Map.of(),
+                    List.of("engine.writeTimeout=3m")).settings().engine().callTimeout())
+                    .describedAs("and so does a layer above the file")
+                    .isEqualTo(Duration.ofMinutes(6));
+        }
+
+        @Test
         @DisplayName("and a value somebody did give says where they gave it, never worked out")
         void a_given_value_is_never_called_worked_out() {
             SettingsInEffect given = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),
@@ -188,6 +231,28 @@ class SettingsFromEverywhereTest {
                     .isEqualTo(Duration.ofMinutes(2));
             assertThat(gathered.sourceOf(READ_TIMEOUT)).isEqualTo(SettingSource.FILE);
             assertThat(gathered.sourceOf(MAX_CONCURRENCY)).isEqualTo(SettingSource.COMMAND_LINE);
+        }
+
+        @Test
+        @DisplayName("a variable set to nothing counts as not set, which is what a container "
+                + "passing on a variable its machine never set hands over")
+        void an_empty_variable_is_not_set(@TempDir Path directory) throws Exception {
+            Path file = fileSaying(directory, """
+                    engine:
+                      maxConcurrency: 8
+                    """);
+
+            SettingsInEffect gathered = SettingsFromEverywhere.gather(Optional.of(file),
+                    Map.of("RESTEST_ENGINE_MAX_CONCURRENCY", "",
+                            "RESTEST_ENGINE_READ_TIMEOUT", "  "),
+                    List.of());
+
+            assertThat(gathered.settings().engine().maxConcurrency())
+                    .describedAs("the file's value stands, rather than the run being refused "
+                            + "for a number nobody wrote")
+                    .isEqualTo(8);
+            assertThat(gathered.sourceOf(MAX_CONCURRENCY)).isEqualTo(SettingSource.FILE);
+            assertThat(gathered.sourceOf(READ_TIMEOUT)).isEqualTo(SettingSource.DEFAULT);
         }
 
         @Test

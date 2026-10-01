@@ -39,11 +39,14 @@ import java.util.Objects;
  * @param hardNestingDepth where everything stops, however insistent the description is
  * @param usualLongestString the longest word invented when the description does not demand more
  * @param longestString beyond this, a demanded length is declined rather than built
- * @param lowestNumber where an invented number starts, when the description states no bottom.
- *     Kept with its trailing zeros stripped, so {@code 1000} and {@code 1E+3} are one value
+ * @param lowestNumber where an invented number starts, when the description states no bottom -
+ *     unless the only limit it states is a top lower than this, in which case numbers end at that
+ *     top instead. Kept with its trailing zeros stripped, so {@code 1000} and {@code 1E+3} are one
+ *     value
  * @param roomAboveIt how far above that it may go, when the description states no top. A width
  *     rather than a ceiling: a description that states a bottom of its own gets this much room
- *     above that bottom, so the room to move in is the same wherever the numbers begin
+ *     above that bottom, and one that states only a top lower than {@code lowestNumber} gets this
+ *     much room below it, so the room to move in is the same wherever the numbers begin
  * @param decimalPlaces decimal places for a number that is allowed to have them
  * @param usualMostItems the most items put in a list when the description does not demand more
  * @param mostItems beyond this, a demanded number of items is declined rather than built

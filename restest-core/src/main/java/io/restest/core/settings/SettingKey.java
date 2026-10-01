@@ -168,6 +168,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how long to wait for the API to answer once connected"),
             key("engine", "writeTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait while sending a request body"),
+            key("engine", "callTimeout", SettingKind.LENGTH_OF_TIME,
+                    "the longest one request may take, its whole reply included, however slowly "
+                            + "that arrives"),
             key("engine", "minConcurrency", SettingKind.WHOLE_NUMBER,
                     "the fewest requests kept in flight, however badly the API behaves"),
             key("engine", "initialConcurrency", SettingKind.WHOLE_NUMBER,
@@ -205,9 +208,11 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("generation", "longestString", SettingKind.WHOLE_NUMBER,
                     "beyond this, a demanded length is declined rather than built"),
             key("generation", "lowestNumber", SettingKind.NUMBER,
-                    "where an invented number starts, when the description states no bottom"),
+                    "where an invented number starts, when the description states no bottom, "
+                            + "unless its top is lower"),
             key("generation", "roomAboveIt", SettingKind.NUMBER,
-                    "how far above that it may go, when the description states no top"),
+                    "how far above that it may go, when the description states no top; and below "
+                            + "a top beneath lowestNumber"),
             key("generation", "decimalPlaces", SettingKind.WHOLE_NUMBER,
                     "decimal places for a number allowed to have them"),
             key("generation", "usualMostItems", SettingKind.WHOLE_NUMBER,

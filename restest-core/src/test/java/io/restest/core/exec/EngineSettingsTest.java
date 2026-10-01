@@ -33,6 +33,10 @@ class EngineSettingsTest {
         assertThat(settings.connectTimeout()).isEqualTo(Duration.ofSeconds(10));
         assertThat(settings.readTimeout()).isEqualTo(Duration.ofSeconds(30));
         assertThat(settings.writeTimeout()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(settings.callTimeout())
+                .describedAs("twice the read timeout, so a reply that has started arriving gets as "
+                        + "long again to finish")
+                .isEqualTo(Duration.ofSeconds(60));
         assertThat(settings.minConcurrency()).isEqualTo(1);
         assertThat(settings.initialConcurrency()).isEqualTo(4);
         assertThat(settings.maxConcurrency()).isEqualTo(16);
@@ -85,6 +89,24 @@ class EngineSettingsTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> EngineSettings.defaults().withConcurrency(2, 9, 4))
                 .withMessageContaining("outside the range");
+    }
+
+    @Test
+    @DisplayName("a wait longer than a whole request may take is refused, since it could never be "
+            + "waited for")
+    void a_wait_longer_than_the_whole_request_is_refused() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EngineSettings.defaults().withReadTimeout(Duration.ofMinutes(2)))
+                .withMessageContaining("readTimeout (2m) is longer than callTimeout (1m)");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EngineSettings.defaults().withCallTimeout(Duration.ofSeconds(5)))
+                .withMessageContaining("connectTimeout (10s) is longer than callTimeout (5s)");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EngineSettings.defaults().withCallTimeout(Duration.ZERO))
+                .withMessageContaining("callTimeout");
+        assertThat(EngineSettings.defaults().withCallTimeout(Duration.ofSeconds(30)).callTimeout())
+                .describedAs("as long as the longest wait inside it is long enough")
+                .isEqualTo(Duration.ofSeconds(30));
     }
 
     @Test

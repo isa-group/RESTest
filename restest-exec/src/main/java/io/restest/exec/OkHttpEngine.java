@@ -119,6 +119,11 @@ public final class OkHttpEngine implements HttpEngine {
                 .connectTimeout(settings.connectTimeout())
                 .readTimeout(settings.readTimeout())
                 .writeTimeout(settings.writeTimeout())
+                // The read timeout is waited for afresh after every few bytes, so a reply that
+                // keeps sending a little at a time never runs out of it, and would be read for as
+                // long as the run lasts. This one counts from the moment the request is sent to the
+                // last byte of the reply.
+                .callTimeout(settings.callTimeout())
                 .followRedirects(settings.followRedirects())
                 .followSslRedirects(settings.followRedirects())
                 // A retried request is a second request the caller never asked for: it doubles the

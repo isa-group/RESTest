@@ -72,6 +72,22 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
     }
 
     /**
+     * Checks that a share of pushing is one a plan can be given: a percentage, from 0 to 100.
+     *
+     * @param share what was asked for
+     * @return the same share
+     * @throws IllegalArgumentException if it is not a percentage, saying so in the words a person
+     *     who typed it would need
+     */
+    public static int aShareOfPushing(int share) {
+        if (share < 0 || share > WHOLE) {
+            throw new IllegalArgumentException("the share of requests built to be refused is a "
+                    + "percentage, so it is between 0 and " + WHOLE + ": " + share);
+        }
+        return share;
+    }
+
+    /**
      * The same plan with a different amount of its time spent pushing at the API.
      *
      * <p>What {@code --fuzzing} does. The strategies that push share the amount asked for, the
@@ -88,10 +104,7 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
      * @throws IllegalArgumentException if that is not a percentage, or if it leaves nothing to run
      */
     public Campaign withTheShareOfPushingSetTo(int share) {
-        if (share < 0 || share > WHOLE) {
-            throw new IllegalArgumentException("the share of requests built to be refused is a "
-                    + "percentage, so it is between 0 and " + WHOLE + ": " + share);
-        }
+        aShareOfPushing(share);
         List<PlannedStrategy> pushing =
                 strategies.stream().filter(PlannedStrategy::pushesAtTheApi).toList();
         List<PlannedStrategy> rest =

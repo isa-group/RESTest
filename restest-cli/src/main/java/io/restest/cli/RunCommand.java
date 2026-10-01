@@ -261,6 +261,7 @@ final class RunCommand implements Callable<Integer> {
             names = "--fuzzing",
             paramLabel = "<percentage>",
             defaultValue = "" + RandomTestCaseGenerator.AWKWARD_SHARE,
+            converter = FuzzingShare.class,
             description = "How much of the time to spend pushing at the API with values nobody "
                     + "sensible would send - empty text, enormous numbers, the wrong kind of value "
                     + "entirely. A healthy API takes them or turns them away; a fragile one falls "

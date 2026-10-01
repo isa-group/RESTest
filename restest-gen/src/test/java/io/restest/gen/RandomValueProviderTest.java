@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
@@ -140,6 +141,119 @@ class RandomValueProviderTest {
                 Optional.of(BigDecimal.valueOf(10)), Optional.empty());
 
         assertThat(provider.offer(Schemas.asking(nothingFits))).isEmpty();
+    }
+
+    @Nested
+    @DisplayName("the limits of a number are values a run sends, not only values it stays inside")
+    class TheLimitsOfANumber {
+
+        @ParameterizedTest(name = "from {0} to {1}")
+        @CsvSource({"1, 3", "-3, -1", "-1, 1", "7, 7"})
+        @DisplayName("both ends of a range of whole numbers are sent, the top one included")
+        void both_ends_of_a_range_are_sent(int bottom, int top) {
+            NumberSchema schema = NumberSchema.between(NumberKind.INTEGER,
+                    BigDecimal.valueOf(bottom), BigDecimal.valueOf(top));
+
+            assertThat(seen(schema))
+                    .describedAs("a limit is where an API is likeliest to get its own rule wrong")
+                    .containsExactlyInAnyOrderElementsOf(IntStream.rangeClosed(bottom, top)
+                            .mapToObj(String::valueOf).toList());
+        }
+
+        @Test
+        @DisplayName("a number allowed decimals reaches its top as well")
+        void the_top_of_a_range_of_decimals_is_sent() {
+            NumberSchema schema = NumberSchema.between(NumberKind.NUMBER, BigDecimal.ZERO,
+                    new BigDecimal("0.03"));
+
+            assertThat(seen(schema)).containsExactlyInAnyOrder("0", "0.01", "0.02", "0.03");
+        }
+
+        @Test
+        @DisplayName("a whole number whose limits are not whole is still found, every time")
+        void limits_that_are_not_whole_still_leave_whole_numbers() {
+            NumberSchema schema = NumberSchema.between(NumberKind.INTEGER, new BigDecimal("0.5"),
+                    new BigDecimal("2.5"));
+
+            assertThat(seen(schema))
+                    .describedAs("1 and 2 are both at least 0.5 and at most 2.5; an operation "
+                            + "needing this value must never be reported as impossible")
+                    .containsExactlyInAnyOrder("1", "2");
+        }
+
+        @Test
+        @DisplayName("a step and a limit the value must stay strictly above give the first "
+                + "multiple past that limit, not the limit plus a whole step")
+        void a_step_starts_at_the_first_multiple_past_an_exclusive_limit() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                    Optional.empty(), Optional.of(BigDecimal.valueOf(4)),
+                    Optional.of(BigDecimal.valueOf(7)), Optional.empty(),
+                    Optional.of(BigDecimal.valueOf(5)), Optional.empty());
+
+            assertThat(seen(schema))
+                    .describedAs("5 is a multiple of 5, above 4 and not above 7")
+                    .containsExactly("5");
+        }
+
+        @Test
+        @DisplayName("limits the value must stay strictly inside, falling between two whole "
+                + "numbers, leave the whole numbers nearest them")
+        void exclusive_limits_between_whole_numbers_keep_the_nearest_ones() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                    Optional.empty(), Optional.of(new BigDecimal("0.5")),
+                    Optional.empty(), Optional.of(new BigDecimal("3.5")),
+                    Optional.empty(), Optional.empty());
+
+            assertThat(seen(schema)).containsExactlyInAnyOrder("1", "2", "3");
+        }
+
+        @Test
+        @DisplayName("two limits a hundredth apart that the value must stay strictly inside still "
+                + "leave numbers between them")
+        void close_exclusive_limits_still_leave_decimals() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.NUMBER,
+                    Optional.empty(), Optional.of(BigDecimal.ZERO),
+                    Optional.empty(), Optional.of(new BigDecimal("0.01")),
+                    Optional.empty(), Optional.empty());
+
+            assertThat(seen(schema)).isNotEmpty().allSatisfy(value ->
+                    assertThat(new BigDecimal(value))
+                            .isGreaterThan(BigDecimal.ZERO)
+                            .isLessThan(new BigDecimal("0.01")));
+        }
+
+        @Test
+        @DisplayName("a whole number with a step that is not whole is a whole multiple of it")
+        void a_step_that_is_not_whole_gives_whole_multiples() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                    Optional.of(BigDecimal.ZERO), Optional.empty(),
+                    Optional.of(BigDecimal.TEN), Optional.empty(),
+                    Optional.of(new BigDecimal("1.5")), Optional.empty());
+
+            assertThat(seen(schema))
+                    .describedAs("the multiples of 1.5 up to 10 that are whole numbers")
+                    .containsExactlyInAnyOrder("0", "3", "6", "9");
+        }
+
+        @Test
+        @DisplayName("a number whose only limit is a top below zero is found below that top")
+        void a_top_below_zero_with_no_bottom_is_satisfied() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                    Optional.empty(), Optional.empty(), Optional.of(BigDecimal.valueOf(-5)),
+                    Optional.empty(), Optional.empty(), Optional.empty());
+
+            assertThat(seen(schema)).isNotEmpty().allSatisfy(value ->
+                    assertThat(new BigDecimal(value)).isBetween(BigDecimal.valueOf(-1005),
+                            BigDecimal.valueOf(-5)));
+        }
+
+        /** What two hundred values invented for the schema are, written out. */
+        private Set<String> seen(NumberSchema schema) {
+            return IntStream.range(0, 200)
+                    .mapToObj(i -> ((JsonValue.JsonNumber) invent(schema)).value()
+                            .stripTrailingZeros().toPlainString())
+                    .collect(java.util.stream.Collectors.toSet());
+        }
     }
 
     @RepeatedTest(20)

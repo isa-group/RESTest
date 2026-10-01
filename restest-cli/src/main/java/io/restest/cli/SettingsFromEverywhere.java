@@ -219,12 +219,16 @@ final class SettingsFromEverywhere {
      * for: the tool asks the environment about each of the settings it has, so a variable that
      * begins {@code RESTEST_} and is not a setting - one belonging to a wrapper script, or to some
      * later version of the tool - is left alone rather than refused.
+     *
+     * <p>A variable set to nothing counts as not set. A container's configuration often passes a
+     * variable on from the machine it starts on, and one the machine never set arrives empty; a run
+     * that refused it would fail for something nobody wrote.
      */
     private static Map<String, String> fromTheEnvironment(Map<String, String> environment) {
         Map<String, String> values = new LinkedHashMap<>();
         SettingKey.all().forEach(key -> {
             String said = environment.get(key.environmentName());
-            if (said != null) {
+            if (said != null && !said.isBlank()) {
                 values.put(key.fullName(), said);
             }
         });

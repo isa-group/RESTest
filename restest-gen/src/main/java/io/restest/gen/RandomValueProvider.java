@@ -37,6 +37,7 @@ import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import io.restest.core.settings.GenerationSettings;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
+import java.util.stream.Stream;
 
 /**
  * Invents a value from the shape the specification describes.
@@ -315,39 +317,113 @@ public final class RandomValueProvider implements ValueProvider {
     /**
      * A number inside every bound the schema states, and on its step if it has one.
      *
+     * <p>The numbers a schema allows lie on a ladder: whole numbers for a whole number, multiples
+     * of the step when there is one, and otherwise numbers with as many decimal places as the
+     * settings ask for, or as the bounds themselves are written with - one more, when two limits
+     * the value must stay strictly inside leave nothing between them at that many. The lowest rung
+     * inside the bounds and the highest are found first, and then one of the rungs from the one to
+     * the other is chosen, both ends included. A limit is where an API is likeliest to get its own
+     * rule wrong, so a value at either limit has to be one a run can send.
+     *
      * <p>A schema may state both an inclusive and an exclusive bound on the same side, and the
      * tighter of the two is the one that has to be obeyed - a value no smaller than 1 but strictly
      * greater than 10 is a value of at least 11, not of at least 1.
+     *
+     * <p>A side the schema says nothing about is filled in from the settings: numbers start at
+     * {@code lowestNumber} and run {@code roomAboveIt} above the bottom - or, when the only limit
+     * stated is a top below where numbers usually start, they run that far below it instead.
      *
      * <p>Empty when the bounds and the step leave nothing to choose - a whole number strictly between
      * 1 and 2, or a multiple of 10 between 3 and 7. The specification permits that combination and no
      * value satisfies it, so saying so is the only honest answer.
      */
     private Optional<JsonValue> number(NumberSchema schema) {
-        boolean whole = schema.kind() == NumberKind.INTEGER;
-        BigDecimal step = schema.multipleOf().orElse(whole ? BigDecimal.ONE : null);
-
-        BigDecimal lowest = tighter(schema.minimum(),
-                schema.exclusiveMinimum().map(bound -> nextAbove(bound, step, whole)), true)
-                .orElse(settings.lowestNumber());
-        BigDecimal highest = tighter(schema.maximum(),
-                schema.exclusiveMaximum().map(bound -> nextBelow(bound, step, whole)), false)
-                .orElseGet(() -> lowest.max(settings.lowestNumber()).add(settings.roomAboveIt()));
-        if (lowest.compareTo(highest) > 0) {
+        BigDecimal rung = rungOf(schema);
+        Optional<Ends> ends = ends(schema, rung);
+        boolean decimalsWithoutAStep =
+                schema.kind() != NumberKind.INTEGER && schema.multipleOf().isEmpty();
+        if (ends.isEmpty() && decimalsWithoutAStep) {
+            // Two limits that must both be passed, say 0 and 0.01, leave no hundredth between
+            // them but do leave a thousandth. One more place is enough for any two that differ.
+            rung = rung.movePointLeft(1);
+            ends = ends(schema, rung);
+        }
+        if (ends.isEmpty()) {
             return Optional.empty();
         }
 
-        BigDecimal chosen = between(lowest, highest, whole);
-        if (step != null) {
-            chosen = onStep(chosen, step, lowest, highest);
-            if (chosen == null) {
-                return Optional.empty();
-            }
-        }
-        return Optional.of(JsonValue.of(chosen));
+        // Both ends are rungs, so the distance between them is a whole number of rungs. One draw
+        // picks one of them, the top one included, each as likely as any other.
+        BigDecimal lowest = ends.get().lowest();
+        BigDecimal rungs = ends.get().highest().subtract(lowest)
+                .divide(rung, 0, RoundingMode.UNNECESSARY).add(BigDecimal.ONE);
+        BigDecimal chosen = rungs.multiply(BigDecimal.valueOf(random.nextDouble()))
+                .setScale(0, RoundingMode.FLOOR);
+        return Optional.of(JsonValue.of(lowest.add(chosen.multiply(rung))));
     }
 
-    /** The stricter of two bounds on the same side, when the schema states both. */
+    /** The lowest and the highest rung a number may take. */
+    private record Ends(BigDecimal lowest, BigDecimal highest) {
+    }
+
+    /** The lowest and the highest rung inside every limit, or empty when there is none. */
+    private Optional<Ends> ends(NumberSchema schema, BigDecimal rung) {
+        Optional<BigDecimal> bottom = tighter(
+                schema.minimum().map(bound -> atOrAbove(bound, rung)),
+                schema.exclusiveMinimum().map(bound -> atOrBelow(bound, rung).add(rung)), true);
+        Optional<BigDecimal> top = tighter(
+                schema.maximum().map(bound -> atOrBelow(bound, rung)),
+                schema.exclusiveMaximum().map(bound -> atOrAbove(bound, rung).subtract(rung)),
+                false);
+        BigDecimal usualStart = settings.lowestNumber();
+        boolean onlyATopBelowTheUsualStart =
+                bottom.isEmpty() && top.isPresent() && top.get().compareTo(usualStart) < 0;
+        BigDecimal lowest = bottom.orElseGet(() -> atOrAbove(onlyATopBelowTheUsualStart
+                ? top.get().subtract(settings.roomAboveIt()) : usualStart, rung));
+        BigDecimal highest = top.orElseGet(() ->
+                atOrBelow(lowest.max(usualStart).add(settings.roomAboveIt()), rung));
+        return lowest.compareTo(highest) > 0 ? Optional.empty()
+                : Optional.of(new Ends(lowest, highest));
+    }
+
+    /**
+     * How far apart two neighbouring numbers the schema allows are.
+     *
+     * <p>For a whole number with a step that is not whole - a multiple of 1.5 - only the multiples
+     * that are themselves whole will do, so the distance is the smallest of those: 3.
+     */
+    private BigDecimal rungOf(NumberSchema schema) {
+        boolean whole = schema.kind() == NumberKind.INTEGER;
+        if (schema.multipleOf().isPresent()) {
+            BigDecimal step = schema.multipleOf().get().stripTrailingZeros();
+            if (!whole || step.scale() <= 0) {
+                return step;
+            }
+            BigInteger digits = step.unscaledValue();
+            return new BigDecimal(digits.divide(digits.gcd(BigInteger.TEN.pow(step.scale()))));
+        }
+        if (whole) {
+            return BigDecimal.ONE;
+        }
+        int places = Stream.of(schema.minimum(), schema.exclusiveMinimum(), schema.maximum(),
+                        schema.exclusiveMaximum())
+                .flatMap(Optional::stream)
+                .mapToInt(BigDecimal::scale)
+                .reduce(settings.decimalPlaces(), Math::max);
+        return BigDecimal.ONE.movePointLeft(places);
+    }
+
+    /** The lowest rung at or above a value. */
+    private static BigDecimal atOrAbove(BigDecimal value, BigDecimal rung) {
+        return value.divide(rung, 0, RoundingMode.CEILING).multiply(rung);
+    }
+
+    /** The highest rung at or below a value. */
+    private static BigDecimal atOrBelow(BigDecimal value, BigDecimal rung) {
+        return value.divide(rung, 0, RoundingMode.FLOOR).multiply(rung);
+    }
+
+    /** The stricter of two limits on the same side, when the schema states both. */
     private static Optional<BigDecimal> tighter(Optional<BigDecimal> inclusive,
             Optional<BigDecimal> fromExclusive, boolean lowerSide) {
         if (inclusive.isEmpty() || fromExclusive.isEmpty()) {
@@ -356,42 +432,6 @@ public final class RandomValueProvider implements ValueProvider {
         return Optional.of(lowerSide
                 ? inclusive.get().max(fromExclusive.get())
                 : inclusive.get().min(fromExclusive.get()));
-    }
-
-    private BigDecimal between(BigDecimal lowest, BigDecimal highest, boolean whole) {
-        BigDecimal span = highest.subtract(lowest);
-        BigDecimal offset = span.multiply(BigDecimal.valueOf(random.nextDouble()));
-        BigDecimal chosen = lowest.add(offset);
-        return whole
-                ? chosen.setScale(0, RoundingMode.DOWN)
-                // A number allowed to have decimals gets them: an API that stores a price or a
-                // latitude is never exercised by a tool that only ever sends whole numbers.
-                : chosen.setScale(Math.max(settings.decimalPlaces(), lowest.scale()), RoundingMode.DOWN);
-    }
-
-    /** The nearest value on the step at or below the choice, or above it if that falls out of range. */
-    private static BigDecimal onStep(BigDecimal chosen, BigDecimal step, BigDecimal lowest,
-            BigDecimal highest) {
-        BigDecimal down = chosen.divide(step, 0, RoundingMode.FLOOR).multiply(step);
-        if (down.compareTo(lowest) >= 0 && down.compareTo(highest) <= 0) {
-            return down;
-        }
-        BigDecimal up = chosen.divide(step, 0, RoundingMode.CEILING).multiply(step);
-        return up.compareTo(highest) <= 0 && up.compareTo(lowest) >= 0 ? up : null;
-    }
-
-    /** The smallest value strictly above an exclusive bound, on the step when there is one. */
-    private BigDecimal nextAbove(BigDecimal bound, BigDecimal step, boolean whole) {
-        return bound.add(step != null ? step : smallestStep(bound, whole));
-    }
-
-    private BigDecimal nextBelow(BigDecimal bound, BigDecimal step, boolean whole) {
-        return bound.subtract(step != null ? step : smallestStep(bound, whole));
-    }
-
-    private BigDecimal smallestStep(BigDecimal bound, boolean whole) {
-        return whole ? BigDecimal.ONE
-                : BigDecimal.ONE.movePointLeft(Math.max(bound.scale(), settings.decimalPlaces()));
     }
 
     private Optional<JsonValue> list(ValueRequest request, ArraySchema schema, int depth) {

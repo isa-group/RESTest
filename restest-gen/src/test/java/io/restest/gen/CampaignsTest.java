@@ -281,6 +281,21 @@ class CampaignsTest {
     }
 
     @Test
+    @DisplayName("the share of pushing the command line promises when nobody types one is the "
+            + "share the plan RESTest carries gives it")
+    void the_promised_default_share_is_the_shipped_one() throws IOException {
+        int pushing = Campaigns.shipped().strategies().stream()
+                .filter(Campaign.PlannedStrategy::pushesAtTheApi)
+                .mapToInt(Campaign.PlannedStrategy::share)
+                .sum();
+
+        assertThat(pushing)
+                .describedAs("--fuzzing's help shows this number as its default, and a run without "
+                        + "--fuzzing follows the plan: change one, and change the other with it")
+                .isEqualTo(RandomTestCaseGenerator.AWKWARD_SHARE);
+    }
+
+    @Test
     @DisplayName("asking for a different amount of pushing changes that and nothing else")
     void the_share_of_pushing_can_be_set() throws IOException {
         Campaign carried = Campaigns.shipped();
