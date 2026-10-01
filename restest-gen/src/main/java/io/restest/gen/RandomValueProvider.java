@@ -319,10 +319,11 @@ public final class RandomValueProvider implements ValueProvider {
      *
      * <p>The numbers a schema allows lie on a ladder: whole numbers for a whole number, multiples
      * of the step when there is one, and otherwise numbers with as many decimal places as the
-     * settings ask for, or as the bounds themselves are written with. The lowest rung inside the
-     * bounds and the highest are found first, and then one of the rungs from the one to the other
-     * is chosen, both ends included. A limit is where an API is likeliest to get its own rule
-     * wrong, so a value at either limit has to be one a run can send.
+     * settings ask for, or as the bounds themselves are written with - one more, when two limits
+     * the value must stay strictly inside leave nothing between them at that many. The lowest rung
+     * inside the bounds and the highest are found first, and then one of the rungs from the one to
+     * the other is chosen, both ends included. A limit is where an API is likeliest to get its own
+     * rule wrong, so a value at either limit has to be one a run can send.
      *
      * <p>A schema may state both an inclusive and an exclusive bound on the same side, and the
      * tighter of the two is the one that has to be obeyed - a value no smaller than 1 but strictly
@@ -338,7 +339,35 @@ public final class RandomValueProvider implements ValueProvider {
      */
     private Optional<JsonValue> number(NumberSchema schema) {
         BigDecimal rung = rungOf(schema);
+        Optional<Ends> ends = ends(schema, rung);
+        boolean decimalsWithoutAStep =
+                schema.kind() != NumberKind.INTEGER && schema.multipleOf().isEmpty();
+        if (ends.isEmpty() && decimalsWithoutAStep) {
+            // Two limits that must both be passed, say 0 and 0.01, leave no hundredth between
+            // them but do leave a thousandth. One more place is enough for any two that differ.
+            rung = rung.movePointLeft(1);
+            ends = ends(schema, rung);
+        }
+        if (ends.isEmpty()) {
+            return Optional.empty();
+        }
 
+        // Both ends are rungs, so the distance between them is a whole number of rungs. One draw
+        // picks one of them, the top one included, each as likely as any other.
+        BigDecimal lowest = ends.get().lowest();
+        BigDecimal rungs = ends.get().highest().subtract(lowest)
+                .divide(rung, 0, RoundingMode.UNNECESSARY).add(BigDecimal.ONE);
+        BigDecimal chosen = rungs.multiply(BigDecimal.valueOf(random.nextDouble()))
+                .setScale(0, RoundingMode.FLOOR);
+        return Optional.of(JsonValue.of(lowest.add(chosen.multiply(rung))));
+    }
+
+    /** The lowest and the highest rung a number may take. */
+    private record Ends(BigDecimal lowest, BigDecimal highest) {
+    }
+
+    /** The lowest and the highest rung inside every limit, or empty when there is none. */
+    private Optional<Ends> ends(NumberSchema schema, BigDecimal rung) {
         Optional<BigDecimal> bottom = tighter(
                 schema.minimum().map(bound -> atOrAbove(bound, rung)),
                 schema.exclusiveMinimum().map(bound -> atOrBelow(bound, rung).add(rung)), true);
@@ -353,17 +382,8 @@ public final class RandomValueProvider implements ValueProvider {
                 ? top.get().subtract(settings.roomAboveIt()) : usualStart, rung));
         BigDecimal highest = top.orElseGet(() ->
                 atOrBelow(lowest.max(usualStart).add(settings.roomAboveIt()), rung));
-        if (lowest.compareTo(highest) > 0) {
-            return Optional.empty();
-        }
-
-        // Both ends are rungs, so the distance between them is a whole number of rungs. One draw
-        // picks one of them, the top one included, each as likely as any other.
-        BigDecimal rungs = highest.subtract(lowest).divide(rung, 0, RoundingMode.UNNECESSARY)
-                .add(BigDecimal.ONE);
-        BigDecimal chosen = rungs.multiply(BigDecimal.valueOf(random.nextDouble()))
-                .setScale(0, RoundingMode.FLOOR);
-        return Optional.of(JsonValue.of(lowest.add(chosen.multiply(rung))));
+        return lowest.compareTo(highest) > 0 ? Optional.empty()
+                : Optional.of(new Ends(lowest, highest));
     }
 
     /**

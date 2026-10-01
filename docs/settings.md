@@ -78,6 +78,10 @@ Save it, change the lines you care about, delete the rest or leave them, and han
 #
 # These are settings of the tool. Where a run's values come from, and which
 # operations it may touch, is a plan instead: --print-campaign writes one out.
+#
+# A setting written as a comment, such as "# callTimeout", follows others until
+# somebody gives it: change one of those and it moves with them. Take away the #
+# in front of its name to fix it at that value instead.
 
 engine:
   # how long to wait for the API to accept a connection at all
@@ -87,11 +91,11 @@ engine:
   # how long to wait while sending a request body
   writeTimeout: "10s"         # default
   # the longest one request may take, its whole reply included, however slowly that arrives
-  callTimeout: "1m"           # default
+  # callTimeout: "1m"         # default
   # the fewest requests kept in flight, however badly the API behaves
   minConcurrency: 1           # default
   # how many requests are in flight before anything is known about the API
-  initialConcurrency: 4       # default
+  # initialConcurrency: 4     # default
   # the most requests ever in flight at once. 1 for a fragile API
   maxConcurrency: 16          # default
   # how much slower than its best answer so far counts as the API struggling
@@ -108,7 +112,7 @@ schedule:
   workAheadFactor: 2          # default
   # how many announcements may await the reports before the run pauses
   announcementsAllowedToPileUp: 1000 # default
-  # how long, on top of callTimeout, to wait past the deadline for answers already asked for
+  # how long past the deadline to wait for answers already asked for
   stragglerGrace: "10s"       # default
   # how long a run stopped from outside waits for answers already asked for
   interruptGrace: "2s"        # default
@@ -126,9 +130,9 @@ generation:
   usualLongestString: 64      # default
   # beyond this, a demanded length is declined rather than built
   longestString: 10000        # default
-  # where an invented number starts, when the description states no bottom
+  # where an invented number starts, when the description states no bottom, unless its top is lower
   lowestNumber: 0             # default
-  # how far above that it may go, when the description states no top
+  # how far above that it may go, when the description states no top; and below a top beneath lowestNumber
   roomAboveIt: 1000           # default
   # decimal places for a number allowed to have them
   decimalPlaces: 2            # default
@@ -274,6 +278,8 @@ numbers would answer a question nobody put, so RESTest stops before it sends any
 - **A value outside its range** is refused with the range, and with the other setting it disagrees
   with when there is one.
 - **A file that cannot be read** is refused, naming the file.
+- **A wait longer than the HTTP engine can count to**, about 24 days, is refused, naming the
+  setting.
 - **A value the tool could not write back out** is refused: a length of time finer than a
   millisecond or longer than milliseconds can count, a number too large for the machine to hold, a
   number that would take more than a thousand characters to write out. Every setting has to survive
@@ -332,7 +338,7 @@ spelling `--budget` takes.
 |---|---|---|
 | `workAheadFactor` | `2` | how many requests may await an answer, as a multiple of maxConcurrency |
 | `announcementsAllowedToPileUp` | `1000` | how many announcements may await the reports before the run pauses |
-| `stragglerGrace` | `10s` | how long, on top of callTimeout, to wait past the deadline for answers already asked for |
+| `stragglerGrace` | `10s` | how long past the deadline to wait for answers already asked for |
 | `interruptGrace` | `2s` | how long a run stopped from outside waits for answers already asked for |
 | `openingLap` | `true` | whether a run starts by sending every operation once, the request likeliest to work |
 | `openingLapPatience` | `2s` | how long each step of that opening lap waits for the answers to the one before |
@@ -345,8 +351,8 @@ spelling `--budget` takes.
 | `hardNestingDepth` | `8` | where building stops, however insistent the description is |
 | `usualLongestString` | `64` | the longest word invented when the description does not demand more |
 | `longestString` | `10000` | beyond this, a demanded length is declined rather than built |
-| `lowestNumber` | `0` | where an invented number starts, when the description states no bottom |
-| `roomAboveIt` | `1000` | how far above that it may go, when the description states no top |
+| `lowestNumber` | `0` | where an invented number starts, when the description states no bottom, unless its top is lower |
+| `roomAboveIt` | `1000` | how far above that it may go, when the description states no top; and below a top beneath lowestNumber |
 | `decimalPlaces` | `2` | decimal places for a number allowed to have them |
 | `usualMostItems` | `4` | the most items put in a list when the description does not demand more |
 | `mostItems` | `100` | beyond this, a demanded number of items is declined rather than built |
@@ -450,8 +456,9 @@ stops arriving - an endpoint that streams, or sends a byte every few seconds, an
 `readTimeout` and `writeTimeout`, so `--set engine.readTimeout=2m` for a slow API also gives each
 request four minutes, recorded as *worked out*. When it is given and the other three are not, they
 are shortened to fit inside it: `--set engine.callTimeout=5s` is one line. Naming both a wait and a
-whole request it cannot fit inside is refused. A run that has used its budget waits `callTimeout`,
-and `stragglerGrace` more, for the answers it is still owed.
+whole request it cannot fit inside is refused. `--print-settings` writes `callTimeout` as a comment
+until somebody gives it, and `initialConcurrency` too, so a printed file with `readTimeout` or
+`maxConcurrency` changed moves them the same way; take away the `#` to fix one of them instead.
 
 **Moving the concurrency range moves where the engine starts.** `initialConcurrency` is where to
 begin inside the range rather than a number of its own, so `--set engine.maxConcurrency=1` works as
@@ -461,7 +468,8 @@ range is still refused.
 **`roomAboveIt` is a width, not a ceiling.** When a description states no bounds for a number,
 RESTest invents one between `lowestNumber` and `lowestNumber + roomAboveIt`. When the description
 states a bottom of its own, that bottom is used and the same room is allowed above it, so the room
-to move in is the same wherever the numbers begin.
+to move in is the same wherever the numbers begin. When the only limit it states is a top lower
+than `lowestNumber`, the same room is allowed below that top instead.
 
 ## What is not a setting
 

@@ -15,23 +15,24 @@
  */
 package io.restest.cli;
 
+import io.restest.gen.Campaign;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
 
 /**
  * Reads the percentage a person typed after {@code --fuzzing}: how much of a run goes on values
- * chosen to be awkward.
+ * chosen to be awkward, such as empty text or enormous numbers.
  *
- * <p>Anything from 0 to 100 is a share a run can be given. Anything else is refused here, while the
- * command line is read, the way a word typed where a number belongs is refused - and so before
- * the API's description is fetched or a single request is built. Accepting it and finding out
- * later would make somebody wait for a large description to download only to be told they made a
- * typing mistake, and a missing description would be reported instead of the mistake they made.
+ * <p>The run command hands that percentage to the plan the run follows, which shares it among the
+ * plan's strategies that push at the API; {@link Campaign#aShareOfPushing} is where a share is
+ * judged, so the command line and the plan refuse the same values in the same words. This class
+ * only makes that judgement happen while the command line is read, the way a word typed where a
+ * number belongs is refused - and so before the API's description is fetched or a single request
+ * is built. Accepting the mistake and finding out later would make somebody wait for a large
+ * description to download only to be told they made a typing mistake, and a missing description
+ * would be reported instead of the mistake they made.
  */
 final class FuzzingShare implements ITypeConverter<Integer> {
-
-    /** The most a share can be: all of the run. */
-    static final int WHOLE = 100;
 
     @Override
     public Integer convert(String value) {
@@ -40,12 +41,12 @@ final class FuzzingShare implements ITypeConverter<Integer> {
             share = Integer.parseInt(value.strip());
         } catch (NumberFormatException notAWholeNumber) {
             throw new TypeConversionException("'" + value + "' is not a percentage; give a whole "
-                    + "number between 0 and " + WHOLE + ", such as 25");
+                    + "number between 0 and " + Campaign.WHOLE + ", such as 25");
         }
-        if (share < 0 || share > WHOLE) {
-            throw new TypeConversionException("the share of requests built to be refused is a "
-                    + "percentage, so it is between 0 and " + WHOLE + ": " + share);
+        try {
+            return Campaign.aShareOfPushing(share);
+        } catch (IllegalArgumentException notAPercentage) {
+            throw new TypeConversionException(notAPercentage.getMessage());
         }
-        return share;
     }
 }

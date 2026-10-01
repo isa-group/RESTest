@@ -199,6 +199,32 @@ class SettingsTest {
         }
 
         @Test
+        @DisplayName("a whole request of no time at all is refused in its own name, not in the name "
+                + "of a wait nobody typed")
+        void a_whole_request_of_no_time_names_itself() {
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.callTimeout", "0s")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("callTimeout must be greater than zero");
+        }
+
+        @Test
+        @DisplayName("a wait the HTTP engine cannot count to is refused, and twice a long wait stops "
+                + "at the longest the engine can wait")
+        void waits_stay_within_what_the_engine_can_hold() {
+            assertThat(Settings.from(Map.of("engine.readTimeout", "300h")).engine().callTimeout())
+                    .describedAs("twice 300 hours is more than the engine can count")
+                    .isEqualTo(EngineSettings.LONGEST_WAIT);
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.callTimeout", "1000h")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("callTimeout (1000h) is longer than the HTTP engine can "
+                            + "wait");
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.readTimeout", "1000h")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("readTimeout (1000h) is longer than the HTTP engine can "
+                            + "wait");
+        }
+
+        @Test
         @DisplayName("but a wait named outright that is longer than a whole request named outright "
                 + "is refused, naming both")
         void a_wait_that_cannot_fit_is_refused() {

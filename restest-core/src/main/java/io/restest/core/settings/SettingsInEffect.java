@@ -114,6 +114,10 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
                 #
                 # These are settings of the tool. Where a run's values come from, and which
                 # operations it may touch, is a plan instead: --print-campaign writes one out.
+                #
+                # A setting written as a comment, such as "# callTimeout", follows others until
+                # somebody gives it: change one of those and it moves with them. Take away the #
+                # in front of its name to fix it at that value instead.
                 """);
         Map<String, List<Row>> byGroup = new LinkedHashMap<>();
         rows().forEach(row ->
@@ -122,13 +126,37 @@ public record SettingsInEffect(Settings settings, Map<String, SettingSource> sou
             written.append('\n').append(group).append(":\n");
             rows.forEach(row -> {
                 written.append("  # ").append(row.key().meaning()).append('\n');
-                String stated = "  " + row.key().name() + ": " + quoted(row);
+                String stated = (leftToFollow(row) ? "  # " : "  ") + row.key().name() + ": "
+                        + quoted(row);
                 written.append(stated);
                 written.append(" ".repeat(Math.max(1, VALUE_COLUMN - stated.length())));
                 written.append("# ").append(row.source().written()).append('\n');
             });
         });
         return written.toString();
+    }
+
+    /**
+     * Whether a row is written as a comment, so that a file handed back leaves its setting to
+     * follow the others.
+     *
+     * <p>Only a setting that follows others, only when nobody gave it, and only when leaving it out
+     * gives it the value it has now - so handing the file straight back still changes nothing, and
+     * a value set some other way, by a program that builds its own settings, is never lost.
+     */
+    private boolean leftToFollow(Row row) {
+        if (!Settings.followsOthers(row.key()) || (row.source() != SettingSource.DEFAULT
+                && row.source() != SettingSource.WORKED_OUT)) {
+            return false;
+        }
+        Map<String, String> others = new LinkedHashMap<>();
+        rows().stream().filter(other -> !other.key().equals(row.key()))
+                .forEach(other -> others.put(other.key().fullName(), other.value()));
+        try {
+            return Settings.from(others).written(row.key()).equals(row.value());
+        } catch (SettingsException notOnItsOwn) {
+            return false;
+        }
     }
 
     /** Whether YAML refuses to carry this letter as itself. */

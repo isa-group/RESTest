@@ -196,6 +196,33 @@ class RandomValueProviderTest {
         }
 
         @Test
+        @DisplayName("limits the value must stay strictly inside, falling between two whole "
+                + "numbers, leave the whole numbers nearest them")
+        void exclusive_limits_between_whole_numbers_keep_the_nearest_ones() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                    Optional.empty(), Optional.of(new BigDecimal("0.5")),
+                    Optional.empty(), Optional.of(new BigDecimal("3.5")),
+                    Optional.empty(), Optional.empty());
+
+            assertThat(seen(schema)).containsExactlyInAnyOrder("1", "2", "3");
+        }
+
+        @Test
+        @DisplayName("two limits a hundredth apart that the value must stay strictly inside still "
+                + "leave numbers between them")
+        void close_exclusive_limits_still_leave_decimals() {
+            NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.NUMBER,
+                    Optional.empty(), Optional.of(BigDecimal.ZERO),
+                    Optional.empty(), Optional.of(new BigDecimal("0.01")),
+                    Optional.empty(), Optional.empty());
+
+            assertThat(seen(schema)).isNotEmpty().allSatisfy(value ->
+                    assertThat(new BigDecimal(value))
+                            .isGreaterThan(BigDecimal.ZERO)
+                            .isLessThan(new BigDecimal("0.01")));
+        }
+
+        @Test
         @DisplayName("a whole number with a step that is not whole is a whole multiple of it")
         void a_step_that_is_not_whole_gives_whole_multiples() {
             NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,

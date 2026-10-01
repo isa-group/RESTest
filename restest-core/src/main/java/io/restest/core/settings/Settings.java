@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Every number somebody decided about how RESTest behaves, in one place a run can be handed.
@@ -241,6 +242,24 @@ public record Settings(
     }
 
     /**
+     * Whether a setting nobody names is worked out from others rather than fixed: where the engine
+     * starts, which follows the concurrency range, and how long a whole request may take, which
+     * follows the waits inside it.
+     *
+     * <p>A printed file leaves such a setting to go on following them, unless somebody gave it, so
+     * that changing one of the others in the file moves it the way {@code --set} would.
+     *
+     * @param key the setting
+     * @return whether its value, when nobody names it, comes from other settings
+     */
+    static boolean followsOthers(SettingKey key) {
+        return FOLLOWING_OTHERS.contains(key.fullName());
+    }
+
+    private static final Set<String> FOLLOWING_OTHERS =
+            Set.of("engine.initialConcurrency", "engine.callTimeout");
+
+    /**
      * Where the engine starts, when somebody moved the range and said nothing about the start.
      *
      * <p>{@code --set engine.maxConcurrency=1} is the answer to "my API falls over when asked two
@@ -277,11 +296,16 @@ public record Settings(
      * <p>A reply that has started arriving gets as long again to finish. Raising the read timeout
      * for a slow API therefore raises this with it - {@code engine.readTimeout: 2m} works as typed,
      * rather than being cut short by a limit its author never heard of - and the value is recorded as
-     * worked out. Doubling a length too long to double leaves it as it is.
+     * worked out. Twice is never more than the engine can wait for: past that, it is the longest
+     * the engine can wait.
      */
     private static Duration twiceTheLongest(Duration connect, Duration read, Duration write) {
         Duration longest = Collections.max(List.of(connect, read, write));
-        return longest.toMillis() > Long.MAX_VALUE / 2 ? longest : longest.multipliedBy(2);
+        if (longest.compareTo(EngineSettings.LONGEST_WAIT) >= 0) {
+            return longest;
+        }
+        Duration twice = longest.multipliedBy(2);
+        return twice.compareTo(EngineSettings.LONGEST_WAIT) > 0 ? EngineSettings.LONGEST_WAIT : twice;
     }
 
     /**

@@ -253,8 +253,36 @@ class SettingsInEffectTest {
     @MethodSource("everySetting")
     @DisplayName("every setting comes back out of the printed file with the value it went in with")
     void every_value_survives_the_round_trip(SettingKey key) {
-        assertThat(readBack(SettingsInEffect.of(Settings.defaults())).get(key.fullName()))
-                .isEqualTo(Settings.defaults().written(key));
+        SettingsInEffect printed = SettingsInEffect.of(Settings.defaults());
+        if (Settings.followsOthers(key)) {
+            assertThat(printed.asAFile())
+                    .describedAs("a setting that follows others is written as a comment, so that "
+                            + "a file handed back leaves it to follow them")
+                    .contains("  # " + key.name() + ": ");
+            assertThat(Settings.from(readBack(printed)).written(key))
+                    .isEqualTo(Settings.defaults().written(key));
+        } else {
+            assertThat(readBack(printed).get(key.fullName()))
+                    .isEqualTo(Settings.defaults().written(key));
+        }
+    }
+
+    @Test
+    @DisplayName("a setting that follows others is written as itself once somebody gives it, or "
+            + "once its value is one the others would not give it")
+    void a_following_setting_is_written_out_when_it_no_longer_follows() {
+        SettingsInEffect given = new SettingsInEffect(
+                Settings.from(Map.of("engine.callTimeout", "1m")),
+                Map.of("engine.callTimeout", SettingSource.COMMAND_LINE));
+        SettingsInEffect builtByAProgram = SettingsInEffect.of(
+                Settings.from(Map.of("engine.initialConcurrency", "2")));
+
+        assertThat(readBack(given))
+                .describedAs("named outright, so a file handed back keeps it named")
+                .containsEntry("engine.callTimeout", "1m");
+        assertThat(readBack(builtByAProgram))
+                .describedAs("leaving it out would give 4, so leaving it out would lose it")
+                .containsEntry("engine.initialConcurrency", "2");
     }
 
     /** What a printed file says, read back the way the command line reads one. */

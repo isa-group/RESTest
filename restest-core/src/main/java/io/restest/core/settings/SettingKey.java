@@ -191,8 +191,7 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("schedule", "announcementsAllowedToPileUp", SettingKind.WHOLE_NUMBER,
                     "how many announcements may await the reports before the run pauses"),
             key("schedule", "stragglerGrace", SettingKind.LENGTH_OF_TIME,
-                    "how long, on top of callTimeout, to wait past the deadline for answers "
-                            + "already asked for"),
+                    "how long past the deadline to wait for answers already asked for"),
             key("schedule", "interruptGrace", SettingKind.LENGTH_OF_TIME,
                     "how long a run stopped from outside waits for answers already asked for"),
             key("schedule", "openingLap", SettingKind.YES_OR_NO,
@@ -209,9 +208,11 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("generation", "longestString", SettingKind.WHOLE_NUMBER,
                     "beyond this, a demanded length is declined rather than built"),
             key("generation", "lowestNumber", SettingKind.NUMBER,
-                    "where an invented number starts, when the description states no bottom"),
+                    "where an invented number starts, when the description states no bottom, "
+                            + "unless its top is lower"),
             key("generation", "roomAboveIt", SettingKind.NUMBER,
-                    "how far above that it may go, when the description states no top"),
+                    "how far above that it may go, when the description states no top; and below "
+                            + "a top beneath lowestNumber"),
             key("generation", "decimalPlaces", SettingKind.WHOLE_NUMBER,
                     "decimal places for a number allowed to have them"),
             key("generation", "usualMostItems", SettingKind.WHOLE_NUMBER,

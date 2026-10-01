@@ -72,6 +72,12 @@ public record EngineSettings(
         boolean followRedirects,
         String userAgent) {
 
+    /**
+     * The longest any of the four waits can be: about 24 days, which is as far as the HTTP engine
+     * can count in milliseconds. A wait longer than that is refused rather than started.
+     */
+    public static final Duration LONGEST_WAIT = Duration.ofMillis(Integer.MAX_VALUE);
+
     /** One mebibyte: generous for an API reply, small enough to hold thousands of them. */
     public static final long DEFAULT_MAX_RETAINED_RESPONSE_BYTES = 1024L * 1024L;
 
@@ -92,10 +98,18 @@ public record EngineSettings(
             "RESTest/2.0");
 
     public EngineSettings {
+        // The whole request first: a short one shortens the waits nobody named, so a whole request
+        // of no time at all would otherwise be refused in the name of a wait nobody typed.
+        positive(callTimeout, "callTimeout");
         positive(connectTimeout, "connectTimeout");
         positive(readTimeout, "readTimeout");
         positive(writeTimeout, "writeTimeout");
-        positive(callTimeout, "callTimeout");
+        // The three waits before the whole request: one too long makes the whole request it is
+        // worked out from too long as well, and the wait is the one somebody typed.
+        notLongerThanTheEngineCanWait(connectTimeout, "connectTimeout");
+        notLongerThanTheEngineCanWait(readTimeout, "readTimeout");
+        notLongerThanTheEngineCanWait(writeTimeout, "writeTimeout");
+        notLongerThanTheEngineCanWait(callTimeout, "callTimeout");
         notLongerThanTheWholeRequest(connectTimeout, "connectTimeout", callTimeout);
         notLongerThanTheWholeRequest(readTimeout, "readTimeout", callTimeout);
         notLongerThanTheWholeRequest(writeTimeout, "writeTimeout", callTimeout);
@@ -219,6 +233,13 @@ public record EngineSettings(
             throw new IllegalArgumentException(what + " (" + said(value) + ") is longer than "
                     + "callTimeout (" + said(callTimeout) + "), the longest a whole request may "
                     + "take, so it could never be waited for; raise callTimeout as well");
+        }
+    }
+
+    private static void notLongerThanTheEngineCanWait(Duration value, String what) {
+        if (value.compareTo(LONGEST_WAIT) > 0) {
+            throw new IllegalArgumentException(what + " (" + said(value) + ") is longer than the "
+                    + "HTTP engine can wait, which is about 24 days");
         }
     }
 

@@ -718,7 +718,7 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().workAheadFactor() * settings.engine()
                                     .maxConcurrency(),
                             settings.schedule().announcementsAllowedToPileUp(),
-                            settings.engine().callTimeout()
+                            settings.engine().readTimeout()
                                     .plus(settings.schedule().stragglerGrace()),
                             settings.schedule().interruptGrace(), stop, sending, drained);
                 } finally {
