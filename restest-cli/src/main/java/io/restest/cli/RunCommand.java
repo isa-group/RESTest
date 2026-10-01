@@ -58,6 +58,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -77,8 +81,8 @@ import picocli.CommandLine.Spec;
  * describing the faults, for a program to read. Asked to, it also keeps every request and reply, so
  * the run can be examined afterwards without asking the API anything - but only when asked, because
  * a minute against a fast API is hundreds of megabytes that almost nothing reads back. Stopped
- * before its time is up - with Ctrl-C, say - it stops sending and still leaves all of that behind,
- * said to be what a run cut short found.
+ * before its time is up - with Ctrl-C, say - it makes no new requests and still leaves all of that
+ * behind, said to be what a run cut short found.
  *
  * <p>It holds no cleverness of its own. Reading, inventing, sending, judging and reporting each
  * belong to a different part of the tool; what is decided here is the order they happen in, how long
@@ -113,10 +117,11 @@ import picocli.CommandLine.Spec;
                         + "so what it printed may be incomplete. The message and the stack trace "
                         + "are what to report.",
                 ExitCode.INTERRUPTED + ":The run was stopped with Ctrl-C. What it found until then "
-                        + "was printed and written, and report.json says it was cut short.",
+                        + "was printed and written, and report.json says it was cut short - or "
+                        + "the run says what it did not leave behind.",
                 ExitCode.TERMINATED + ":The run was stopped with kill or docker stop. What it "
                         + "found until then was printed and written, and report.json says it was "
-                        + "cut short."},
+                        + "cut short - or the run says what it did not leave behind."},
         // Written out line by line, each short enough never to be broken by the framework, which
         // breaks a long line after a colon or a full stop - in the middle of an address, or of the
         // name of a setting, where a person copying it would copy half.
@@ -169,9 +174,16 @@ final class RunCommand implements Callable<Integer> {
      * progress, a disk that stopped answering - before saying so, because the program will be ended
      * outright soon after whoever stopped it runs out of patience: ten seconds after
      * {@code docker stop}, with nothing said. With the two seconds a stopped run waits for its
-     * answers by default, this leaves three in hand.
+     * answers by default, and the moment {@link #LOOKING_ALLOWED} takes, this leaves two in hand.
      */
     private static final Duration WRITING_ALLOWED = Duration.ofSeconds(5);
+
+    /**
+     * How long a run stopped from outside that ran out of time to write gives its directory to say
+     * what is in it, before saying that it did not answer. A directory answers at once, unless it
+     * is the reason the writing ran out of time.
+     */
+    private static final Duration LOOKING_ALLOWED = Duration.ofSeconds(1);
 
     @Parameters(
             index = "0",
@@ -419,6 +431,36 @@ final class RunCommand implements Callable<Integer> {
             return ExitCode.BAD_COMMAND_LINE;
         }
 
+        // From here until everything is written, being told to stop is heard. A run told while it
+        // is still reading the document does not begin; one told while it tests is given the time
+        // to leave behind what it found - and no more.
+        StopFromOutside stop = new StopFromOutside();
+        Duration grace = settings.schedule().interruptGrace();
+        try (StopsFromOutside.Arrangement heard = stops.whenStopped(
+                () -> stoppedFromOutside(stop, grace, err))) {
+            try {
+                int answer = readAndTest(configuration, stop, out, err);
+                // Stopped while it was still reading, a run can go on to find something else to
+                // answer - a key refused, nothing to test. A program stopped from outside ends with
+                // Java's number whatever it answers, and so, here, does the command.
+                return stop.stoppedBeforeTesting() ? ExitCode.INTERRUPTED : answer;
+            } finally {
+                // Before saying it is done, since the program may end the moment it has: what was
+                // printed has to have reached the screen by then.
+                out.flush();
+                err.flush();
+                stop.wrappedUp();
+            }
+        }
+    }
+
+    /**
+     * The run itself, once what was typed has been taken in: reads the document, builds what the
+     * run needs, and tests - unless it is stopped from outside before it begins testing.
+     */
+    private int readAndTest(SettingsInEffect configuration, StopFromOutside stop, PrintWriter out,
+            PrintWriter err) {
+        Settings settings = configuration.settings();
         Instant startedAt = Instant.now();
         // The engine is built before a single line of the document has been read, and that ordering
         // is the point rather than an accident. The engine starts its own clock when it is built,
@@ -501,61 +543,86 @@ final class RunCommand implements Callable<Integer> {
             Path directory;
             try {
                 address = BaseAddress.resolve(baseUrl, model);
+                // Settled before anything in the directory is touched: a run stopped before this
+                // leaves what an earlier run wrote there as it was, and has been told so.
+                if (!stop.beginTesting()) {
+                    return ExitCode.INTERRUPTED;
+                }
                 directory = prepared(outputDirectory);
             } catch (IllegalArgumentException | IOException cannotStart) {
                 err.println("restest: " + cannotStart.getMessage());
                 return ExitCode.NOTHING_TO_TEST;
             }
-            // From here until everything is written, being told to stop is heard, and the run is
-            // given the time to leave behind what it found - and no more. Before it, a run that is
-            // stopped has sent nothing and written nothing, and ends the way Java ends any program.
-            StopFromOutside stop = new StopFromOutside();
-            Duration grace = settings.schedule().interruptGrace();
-            try (StopsFromOutside.Arrangement heard = stops.whenStopped(
-                    () -> stoppedFromOutside(stop, grace, directory, err))) {
-                try {
-                    return testing(model, generator, found, testable, address, directory,
-                            startedAt, engine, credentials, configuration, stop, out, err);
-                } finally {
-                    // Before saying it is done, since the program may end the moment it has: what
-                    // was printed has to have reached the screen by then.
-                    out.flush();
-                    err.flush();
-                    stop.wrappedUp();
-                }
-            }
+            return testing(model, generator, found, testable, address, directory, startedAt,
+                    engine, credentials, configuration, stop, out, err);
         }
     }
 
     /**
-     * What the program does, on a thread of its own, once it has been told to stop while a run is
-     * testing: it tells the run, and waits for it to leave behind what it found. When the run is
-     * done, this returns and the program ends. When it is not done in time, this says what it has
-     * not left behind, and the program ends all the same: whoever stopped it is about to end it
-     * outright.
-     *
-     * <p>What is missing is read from the directory rather than from the run. The report is given
-     * its name only once it is written whole, so there being none is the answer; and the stored run
-     * keeps its last interactions in a file beside it until it is closed.
+     * What the program does, on a thread of its own, once it has been told to stop: it tells the
+     * run, and waits for it to leave behind what it found. When the run is done, this returns and
+     * the program ends. When it is not done in time, this says what it has not left behind, and
+     * the program ends all the same: whoever stopped it is about to end it outright. A run stopped
+     * before it began testing is not waited for, and this says it wrote nothing.
      */
-    private void stoppedFromOutside(StopFromOutside stop, Duration grace, Path directory,
-            PrintWriter err) {
+    private void stoppedFromOutside(StopFromOutside stop, Duration grace, PrintWriter err) {
         Duration atMost = grace.plus(WRITING_ALLOWED);
-        if (stop.askAndWait(atMost)) {
-            return;
+        switch (stop.askAndWait(atMost)) {
+            case DONE -> {
+                return;
+            }
+            case NOTHING_BEGUN -> {
+                err.println("restest: the run was stopped before it began testing, so it sent "
+                        + "nothing and wrote nothing, and " + outputDirectory + " is as it was, "
+                        + "with whatever an earlier run left there");
+                err.flush();
+                return;
+            }
+            case NOT_DONE -> {
+                // Said below.
+            }
         }
-        List<String> missing = new ArrayList<>();
-        if (!Files.exists(directory.resolve("report.json"))) {
-            missing.add("report.json was not written");
-        }
-        if (keepTheRun && Files.exists(directory.resolve("run.sqlite-wal"))) {
-            missing.add("run.sqlite was not closed, and its last interactions are in "
-                    + "run.sqlite-wal beside it, so keep the three files together");
+        // Looked at on a thread of its own, and for a moment at most. Writing may have run out of
+        // time because the directory stopped answering, and a look that waited on it for ever
+        // would keep the program from ending, when a second Ctrl-C does nothing.
+        FutureTask<List<String>> look = new FutureTask<>(this::whatWasNotLeftBehind);
+        Thread.ofVirtual().name("restest-looking").start(look);
+        String missing;
+        try {
+            List<String> found = look.get(StopFromOutside.nanosIn(LOOKING_ALLOWED),
+                    TimeUnit.NANOSECONDS);
+            missing = found.isEmpty() ? "" : ": " + String.join("; ", found);
+        } catch (TimeoutException notAnswering) {
+            missing = ": " + outputDirectory + " did not answer, so what of it was written is not "
+                    + "known";
+        } catch (ExecutionException couldNotLook) {
+            missing = "";
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+            missing = "";
         }
         err.println("restest: the run was stopped from outside and had not finished writing what "
-                + "it found " + human(atMost) + " later, so it ends here"
-                + (missing.isEmpty() ? "" : ": " + String.join("; ", missing)));
+                + "it found " + human(atMost) + " later, so it ends here" + missing);
         err.flush();
+    }
+
+    /**
+     * What a run stopped from outside has not left behind, read from its directory rather than from
+     * the run. The report is given its name only once it is written whole, so there being none is
+     * the answer. The stored run keeps a working file beside it until it is closed; what it had not
+     * yet saved when the program ends is lost, and some of what it did save is in that file.
+     */
+    private List<String> whatWasNotLeftBehind() {
+        List<String> missing = new ArrayList<>();
+        if (!Files.exists(outputDirectory.resolve("report.json"))) {
+            missing.add("report.json was not written");
+        }
+        if (keepTheRun && Files.exists(outputDirectory.resolve("run.sqlite-wal"))) {
+            missing.add("run.sqlite was not closed, so the last interactions it had not yet saved "
+                    + "are lost, and some of what it did save is in run.sqlite-wal beside it: keep "
+                    + "the three files together");
+        }
+        return missing;
     }
 
     private int testing(ApiModel model, RandomTestCaseGenerator generator,

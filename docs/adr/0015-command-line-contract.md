@@ -991,9 +991,9 @@ v2.0 on 30 September, as row 3.8 of the roadmap:
 
 **Date:** 2026-09-30
 
-**A run stopped from outside - Ctrl-C, `kill`, `docker stop`, a terminal closed - stops sending,
-waits a short while for the answers it is owed, and writes what it found, said to be a run cut
-short: the summary, `report.json`, and a closed stored run. Or it says, before the program ends,
+**A run stopped from outside - Ctrl-C, `kill`, `docker stop`, a terminal closed - makes no new
+requests, waits a short while for the answers it is owed, and writes what it found, said to be a
+run cut short: the summary, `report.json`, and a closed stored run. Or it says, before the program ends,
 what it did not leave behind. It ends with Java's number for the way it was stopped, `130` or
 `143`, which the help now lists.**
 
@@ -1022,15 +1022,30 @@ again does nothing.
 
 ### What it does now
 
-- **A hook is registered for as long as a run is testing**, from just before the stored run is
-  opened until everything is written and said, and removed afterwards. A run stopped before - while
-  it reads the document - has sent nothing and written nothing, and ends the way Java ends any
-  program. Each run registers and removes its own, so two runs in one program are each stopped on
-  their own (the sixth principle).
+- **A hook is registered for as long as a run lasts**, from the moment it begins reading the
+  document until everything is written and said, and removed afterwards. Each run registers and
+  removes its own, so two runs in one program are each stopped on their own (the sixth principle).
+- **A run stopped before it begins testing does not begin.** Until then it has sent nothing and
+  written nothing, and it has not yet cleared its directory of what an earlier run left there. So
+  the hook says so - *the run was stopped before it began testing, so it sent nothing and wrote
+  nothing, and* the directory *is as it was, with whatever an earlier run left there* - and lets
+  the program end at once. Which of the two came first, the stop or the start of testing, is
+  settled under one lock, so a run is never told it may begin once the hook has said it will not.
+  Found by the review: with the hook registered only once testing began, as the plan approved on 30
+  September had it, a stop while the document was read ended with `130` or `143` and no word, beside
+  the complete report of an earlier run that a script could read as this one's. The maintainer
+  approved the change on 1 October. Inside one program, a run stopped before it began testing
+  answers `130` even when it goes on to find something else to answer, a key refused or nothing to
+  test, since a program stopped from outside ends with Java's number whatever it answers.
 - **The hook asks the run to stop and waits for it.** The loop looks between one decision and the
   next, and at least every fifty milliseconds while it waits for room to send, for the steps of the
-  opening lap or for the reports to catch up. Once stopped, it sends nothing more; an opening lap
-  still going is announced as cut short, as it already was when the time ran out.
+  opening lap or for the reports to catch up. Once stopped, it hands nothing more to the engine; an
+  opening lap still going is announced as cut short, as it already was when the time ran out. The
+  requests it had already handed over still go out, those waiting their turn inside the engine
+  included: the engine sends as many at once as its limit allows, and the loop hands it up to twice
+  that, so up to half of them, and more once the limit has come down for a struggling API, are
+  waiting when the stop comes. They are never more than may be waiting for an answer at once, 32
+  by default.
 - **It waits for the answers it is owed for `schedule.interruptGrace` from the moment it was
   stopped** - two seconds by default, where the end of a budget waits the engine's read timeout and
   the straggler grace, forty seconds. That includes a stop that comes while the run is already
@@ -1051,8 +1066,13 @@ again does nothing.
 - **When it is not done `schedule.interruptGrace` and five seconds after the stop, the hook says so**
   and returns all the same: *the run was stopped from outside and had not finished writing what it
   found 7s later, so it ends here*, followed by what is missing - `report.json` not written, or
-  `run.sqlite` not closed, with its last interactions in `run.sqlite-wal` beside it. What is missing
-  is read from the directory, not from the run, and it can be, because of the next point.
+  `run.sqlite` not closed. A stored run commits what it holds in groups, so one that was not closed
+  has lost the last interactions it had not yet saved, and keeps some of what it did save in
+  `run.sqlite-wal` beside it; the sentence says both, and that the three files go together. What
+  is missing is read from the directory, not from the run, and it can be, because of the next
+  point. The look is made on a thread of its own and given a second: writing may have run out of
+  time because the directory stopped answering, and a look that waited on it would keep the program
+  from ending when a second Ctrl-C does nothing. A directory that does not answer is said to.
 - **`report.json` is written whole or not at all:** into `report.json.partial` first and then renamed
   in one step, so a program ended while writing it leaves no half of a report under the report's
   name. The next run in the directory clears the partial file with the rest.
@@ -1079,16 +1099,25 @@ container thirty seconds, `docker stop` ten. The five seconds for writing are a 
 code that uses them. They are not a pause anybody waits through - writing takes a fraction of a
 second, the reports catching up, the report file, the last group of interactions - but how long to
 wait for writing that has got stuck before saying so, and the reason for the number is `docker
-stop`'s ten seconds: two for the answers and five for the writing leave three in hand. Anybody who
-raises the grace raises the whole wait with it. A second setting for them was considered and not
-taken: one more number to freeze, for a wait that in practice never runs out.
+stop`'s ten seconds: two for the answers, five for the writing and one for the look at the directory
+leave two in hand. Anybody who raises the grace raises the whole wait with it. A grace longer than
+anybody could wait - `--set schedule.interruptGrace=2600000h` - is waited like any other, until the
+run is done; the review found that it made the hook fail at once, and every wait of the loop's and
+the hook's now counts a length too long for the clock's own units as the longest wait there is. A
+second setting for them was considered and not taken: one more number to freeze, for a wait that
+in practice never runs out.
 
 ### What it cannot do
 
-- **A stop before a run is testing** writes nothing, which is right: nothing was found yet.
+- **A stop before a run is testing** writes nothing, which is right: nothing was found yet. It says
+  so, and leaves the directory as it was.
+- **Requests already handed to the engine** still go out after a stop, as above. Dropping the ones
+  still waiting their turn needs a way to tell the engine to send nothing more without cutting off
+  what it has in flight, and the engine has none; it would be a change to it of its own.
 - **`kill -9`, a container's memory limit, and `docker stop` once its ten seconds are up** end the
   program without running anything. Nothing can be written, and `137` is the answer.
-- **Java started with `-Xrs`** does not install its handlers, so the signals end it outright.
+- **Java started with `-Xrs`** does not install its handlers, so the signals end it outright, with
+  nothing written.
 - **A program started in the background by a shell that is not a terminal's** is started with
   Ctrl-C ignored, and Java leaves an ignored signal ignored. `kill -INT` then does nothing at all;
   `kill` does what it always does. Found while checking this amendment by hand, and the reason the
@@ -1134,3 +1163,6 @@ question of its own the maintainer kept on 30 September. The three cases of row 
   one that passed.
 - **Writing `report.json` in place.** A program ended while writing it would leave half a report
   under its name, and the sentence saying it was not written would have nothing true to say.
+- **Registering the hook only once testing begins**, as first planned and built. Rejected after the
+  review, by the maintainer on 1 October: a stop while the document was read then said nothing, and
+  left an earlier run's files to be read as this one's.

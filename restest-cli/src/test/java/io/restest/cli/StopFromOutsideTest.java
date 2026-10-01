@@ -54,9 +54,35 @@ class StopFromOutsideTest {
     }
 
     @Test
+    @DisplayName("a run stopped before it began testing is not waited for, and may not begin")
+    void a_run_stopped_before_it_began_is_not_waited_for() {
+        StopFromOutside stop = new StopFromOutside();
+
+        long began = System.nanoTime();
+        StopFromOutside.Waited waited = stop.askAndWait(Duration.ofSeconds(30));
+
+        assertThat(waited).isEqualTo(StopFromOutside.Waited.NOTHING_BEGUN);
+        assertThat(Duration.ofNanos(System.nanoTime() - began)).isLessThan(Duration.ofSeconds(5));
+        assertThat(stop.beginTesting())
+                .describedAs("told it would not begin, it does not, and its directory is untouched")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("a run that has begun testing is waited for")
+    void a_run_that_has_begun_is_waited_for() {
+        StopFromOutside stop = new StopFromOutside();
+
+        assertThat(stop.beginTesting()).isTrue();
+        assertThat(stop.askAndWait(Duration.ofMillis(100)))
+                .isEqualTo(StopFromOutside.Waited.NOT_DONE);
+    }
+
+    @Test
     @DisplayName("the wait ends as soon as the run says it is done")
     void the_wait_ends_when_the_run_is_done() {
         StopFromOutside stop = new StopFromOutside();
+        assertThat(stop.beginTesting()).isTrue();
         Thread.ofPlatform().daemon().start(() -> {
             while (!stop.asked()) {
                 Thread.onSpinWait();
@@ -65,9 +91,9 @@ class StopFromOutsideTest {
         });
 
         long began = System.nanoTime();
-        boolean done = stop.askAndWait(Duration.ofSeconds(30));
+        StopFromOutside.Waited waited = stop.askAndWait(Duration.ofSeconds(30));
 
-        assertThat(done).isTrue();
+        assertThat(waited).isEqualTo(StopFromOutside.Waited.DONE);
         assertThat(Duration.ofNanos(System.nanoTime() - began)).isLessThan(Duration.ofSeconds(5));
     }
 
@@ -75,11 +101,12 @@ class StopFromOutsideTest {
     @DisplayName("the wait ends when its time is up, and says the run was not done")
     void the_wait_has_an_end() {
         StopFromOutside stop = new StopFromOutside();
+        assertThat(stop.beginTesting()).isTrue();
 
         long began = System.nanoTime();
-        boolean done = stop.askAndWait(Duration.ofMillis(200));
+        StopFromOutside.Waited waited = stop.askAndWait(Duration.ofMillis(200));
 
-        assertThat(done).isFalse();
+        assertThat(waited).isEqualTo(StopFromOutside.Waited.NOT_DONE);
         assertThat(stop.asked()).describedAs("the run was asked all the same").isTrue();
         assertThat(Duration.ofNanos(System.nanoTime() - began))
                 .isGreaterThanOrEqualTo(Duration.ofMillis(190));
@@ -89,9 +116,26 @@ class StopFromOutsideTest {
     @DisplayName("a run that was done before it was stopped lets the program end at once")
     void done_before_it_was_stopped() {
         StopFromOutside stop = new StopFromOutside();
+        assertThat(stop.beginTesting()).isTrue();
         stop.wrappedUp();
 
-        assertThat(stop.askAndWait(Duration.ofSeconds(30))).isTrue();
+        assertThat(stop.askAndWait(Duration.ofSeconds(30)))
+                .isEqualTo(StopFromOutside.Waited.DONE);
+    }
+
+    @Test
+    @DisplayName("a wait longer than the clock can count is waited like any other")
+    void a_wait_too_long_to_count_is_still_a_wait() {
+        StopFromOutside stop = new StopFromOutside();
+        assertThat(stop.beginTesting()).isTrue();
+        stop.wrappedUp();
+
+        assertThat(stop.askAndWait(Duration.ofMillis(Long.MAX_VALUE)))
+                .describedAs("a grace of millions of years, which the settings accept")
+                .isEqualTo(StopFromOutside.Waited.DONE);
+        assertThat(StopFromOutside.nanosIn(Duration.ofMillis(Long.MAX_VALUE)))
+                .isEqualTo(Long.MAX_VALUE);
+        assertThat(StopFromOutside.nanosIn(Duration.ofSeconds(-1))).isZero();
     }
 
     @Test

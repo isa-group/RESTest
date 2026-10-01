@@ -565,7 +565,7 @@ class RunLoopTest {
     }
 
     @Test
-    @DisplayName("a run stopped from outside sends nothing more, and says it was cut short")
+    @DisplayName("a run stopped from outside makes no new requests, and says it was cut short")
     void a_stop_from_outside_ends_the_run_at_once() {
         StopFromOutside stop = stoppedAfter(Duration.ofMillis(400));
 
@@ -688,6 +688,52 @@ class RunLoopTest {
                 .describedAs("what the reports and the stored run hear is what the run counted as "
                         + "answered, and the rest counts as never answered: %s", outcome)
                 .isEqualTo(outcome.answered());
+    }
+
+    @Test
+    @DisplayName("a loop that fails stops listening too, so nothing is announced after the run says it is over")
+    void a_loop_that_fails_announces_nothing_afterwards() throws InterruptedException {
+        // Four requests on their way, then an engine that will take no more: the loop fails while
+        // their answers are still coming.
+        engine.takes(request -> Duration.ofMillis(600));
+        engine.refusesFrom = 5;
+        Counting heard = new Counting();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(heard);
+            Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> RunLoop.run(scheduler,
+                    "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE,
+                    new StopFromOutside(), engine, events))
+                    .isInstanceOf(IllegalStateException.class);
+            Thread.sleep(1200);
+            events.awaitDelivery(PATIENT);
+        }
+
+        assertThat(engine.asked()).describedAs("the premise: four went out").isEqualTo(4);
+        assertThat(heard.completed.get())
+                .describedAs("their answers came after the loop had failed, and the run had gone "
+                        + "on to say it was over")
+                .isZero();
+    }
+
+    @Test
+    @DisplayName("a wait for stragglers longer than the clock can count is waited like any other")
+    void a_wait_too_long_to_count_is_still_a_wait() {
+        RunLoop.Outcome outcome;
+        try (EventStream events = new EventStream()) {
+            Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
+                    Instant.now().plusMillis(300), InstantSource.system(), events::publish);
+            outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
+                    ANNOUNCEMENTS_ALLOWED, Duration.ofMillis(Long.MAX_VALUE),
+                    Duration.ofMillis(Long.MAX_VALUE), new StopFromOutside(), engine, events);
+        }
+
+        assertThat(outcome.sent()).isPositive();
+        assertThat(outcome.stillOwed())
+                .describedAs("every answer came back, so the endless wait ended when they had")
+                .isZero();
     }
 
     private RunLoop.Outcome run(Duration budget, java.util.function.Consumer<EventStream> setUp) {
@@ -831,6 +877,9 @@ class RunLoopTest {
         /** Whether a lost request comes back as nothing at all rather than as a failure. */
         private volatile boolean losesWithoutSaying = false;
 
+        /** From which request on the engine refuses to take any more, as a closed one does. */
+        private volatile int refusesFrom = Integer.MAX_VALUE;
+
         void takes(Function<HttpRequestRecord, Duration> perRequest) {
             this.howLong = perRequest;
         }
@@ -848,6 +897,9 @@ class RunLoopTest {
         @Override
         public CompletableFuture<Interaction> sendAsync(TestCase testCase,
                 HttpRequestRecord request) {
+            if (sent.get() + 1 >= refusesFrom) {
+                throw new IllegalStateException("this engine is closed and cannot send anything else");
+            }
             mostAtOnce.accumulateAndGet(inFlight.incrementAndGet(), Math::max);
             sent.incrementAndGet();
             String operation = testCase.operation().value();

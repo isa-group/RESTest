@@ -54,8 +54,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * A run stopped from outside - Ctrl-C, {@code kill}, {@code docker stop} - stops sending, waits a
- * little for the answers it is owed, and leaves behind what it found: the summary, a report that
+ * A run stopped from outside - Ctrl-C, {@code kill}, {@code docker stop} - makes no new requests,
+ * waits a little for the answers it is owed, and leaves behind what it found: the summary, a report that
  * says the run was cut short, and a stored run that was closed. Or it says, before the program
  * ends, what it could not leave behind.
  *
@@ -178,10 +178,66 @@ class ARunCutShortTest {
         assertThat(problems.toString())
                 .contains("restest: the run was stopped from outside and had not finished writing "
                         + "what it found 5s later, so it ends here: report.json was not written; "
-                        + "run.sqlite was not closed, and its last interactions are in "
-                        + "run.sqlite-wal beside it, so keep the three files together");
+                        + "run.sqlite was not closed, so the last interactions it had not yet saved "
+                        + "are lost, and some of what it did save is in run.sqlite-wal beside it: "
+                        + "keep the three files together");
         // A real program would have ended there. This one is a test, so the run finishes after all.
         assertThat(answer).isEqualTo(130);
+    }
+
+    @Test
+    @DisplayName("a run stopped before it began testing sends nothing, touches nothing an earlier run left, and says so")
+    void a_run_stopped_before_it_began_leaves_the_directory_as_it_was(@TempDir Path directory)
+            throws IOException {
+        startTheApi(Duration.ZERO);
+        Path earlier = directory.resolve("report.json");
+        Files.writeString(earlier, "{\"an\": \"earlier run\"}");
+        // Stopped at once: while the document is still being read.
+        StopWhen stop = new StopWhen(() -> true);
+
+        int answer = run(OkHttpEngine::new, stop, "run", "pet-shelter.yaml", "--url",
+                api.baseUrl(), "--budget", BUDGET, "--seed", "7", "--out", directory.toString());
+        stop.awaitDone();
+
+        assertThat(answer).describedAs("%s%n%s", screen, problems).isEqualTo(130);
+        assertThat(problems.toString())
+                .contains("restest: the run was stopped before it began testing, so it sent "
+                        + "nothing and wrote nothing, and " + directory + " is as it was, with "
+                        + "whatever an earlier run left there");
+        assertThat(asked()).describedAs("not one request went out").isZero();
+        assertThat(Files.readString(earlier))
+                .describedAs("an earlier run's report is left for whoever stopped this one to "
+                        + "judge, rather than cleared away by a run that never began")
+                .isEqualTo("{\"an\": \"earlier run\"}");
+        assertThat(Duration.between(stop.setOffAt, stop.doneAt))
+                .describedAs("there was nothing to wait for")
+                .isLessThan(Duration.ofSeconds(2));
+    }
+
+    @Test
+    @DisplayName("a run stopped before it began testing answers 130 even when it finds something else to answer on its way out")
+    void a_run_stopped_before_it_began_answers_as_a_stopped_program(@TempDir Path directory)
+            throws IOException {
+        startTheApi(Duration.ZERO);
+        Path nothingToTest = directory.resolve("empty.yaml");
+        Files.writeString(nothingToTest, """
+                openapi: 3.0.3
+                info: {title: Nothing, version: '1'}
+                paths: {}
+                """);
+        StopWhen stop = new StopWhen(() -> true);
+
+        int answer = run(OkHttpEngine::new, stop, "run", nothingToTest.toString(), "--url",
+                api.baseUrl(), "--budget", BUDGET, "--out", directory.resolve("out").toString());
+
+        assertThat(problems.toString())
+                .describedAs("the premise: the document has nothing to test, which answers 3")
+                .contains("the document describes no operation that could be tested")
+                .contains("the run was stopped before it began testing");
+        assertThat(answer)
+                .describedAs("a program stopped from outside ends with 130 or 143, so a test must "
+                        + "read the same")
+                .isEqualTo(130);
     }
 
     private void startTheApi(Duration sheltersTake) {
@@ -253,6 +309,15 @@ class ARunCutShortTest {
 
         @Override
         public Arrangement whenStopped(Runnable stop) {
+            if (when.getAsBoolean()) {
+                // Due already, so carried out before the run takes another step: the order came
+                // while the command was still starting. A thread of its own would leave when it
+                // lands to chance.
+                setOffAt = Instant.now();
+                stop.run();
+                doneAt = Instant.now();
+                return () -> wasUndone = true;
+            }
             carriedOut = Thread.ofPlatform().daemon().name("stop-when").start(() -> {
                 while (!when.getAsBoolean()) {
                     if (wasUndone) {
@@ -275,7 +340,9 @@ class ARunCutShortTest {
 
         void awaitDone() {
             try {
-                carriedOut.join(Duration.ofSeconds(30));
+                if (carriedOut != null) {
+                    carriedOut.join(Duration.ofSeconds(30));
+                }
             } catch (InterruptedException stopped) {
                 Thread.currentThread().interrupt();
             }

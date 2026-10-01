@@ -23,14 +23,15 @@ import java.util.Objects;
  * begins.
  *
  * <p>A run invents a request, sends it, and moves on to the next one without waiting for the reply.
- * The first three numbers are the brakes on that. The first says how many requests may be waiting
- * for an answer at once, so the tool cannot run so far ahead that it is inventing requests nobody
- * will have time to send. The second says how many announcements - "this request went out", "this
- * reply came back" - may be waiting to reach the reports before the run pauses to let them catch up,
- * which is what stops a long run against a fast API ending in an out-of-memory failure rather than
- * a report. The third says how long, after the time is up, to keep waiting for answers to requests
- * that had already gone out. The fourth says the same for a run somebody stops from outside - with
- * Ctrl-C, say - which waits much less, because whoever stopped it is waiting too.
+ * The first four numbers are the brakes on that, and on how long it waits. The first says how many
+ * requests may be waiting for an answer at once, so the tool cannot run so far ahead that it is
+ * inventing requests nobody will have time to send. The second says how many announcements - "this
+ * request went out", "this reply came back" - may be waiting to reach the reports before the run
+ * pauses to let them catch up, which is what stops a long run against a fast API ending in an
+ * out-of-memory failure rather than a report. The third says how long, after the time is up, to
+ * keep waiting for answers to requests that had already gone out. The fourth says the same for a
+ * run somebody stops from outside - with Ctrl-C, say - which waits much less, because whoever
+ * stopped it is waiting too.
  *
  * <p>The last two are about how a run begins. Before anything is chosen by chance, a run can send
  * every operation once, each with the request the API is most likely to accept: it first asks for

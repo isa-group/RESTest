@@ -23,9 +23,9 @@ import java.util.Objects;
  * <p>The order comes from outside the program: Ctrl-C in a terminal, {@code kill} from a script,
  * {@code docker stop} for a container. Java passes it on, before it ends the program, to every part
  * of the program that asked to hear it, each on a thread of its own - which is what
- * {@link #shutdownHook()} asks for. The program ends once all of them are done, so what each one does
- * with its thread is the time a stopped program takes to end. A run uses it to stop sending and
- * write what it found; see {@link StopFromOutside}.
+ * {@link #shutdownHook()} asks for. The program ends once all of them are done, so what each one
+ * does with its thread is the time a stopped program takes to end. A run uses it to make no new
+ * requests and write what it found; see {@link StopFromOutside}.
  *
  * <p>A test hands a run something else in its place, which the test sets off itself at a moment it
  * chooses: a real order to stop, sent to the program running the tests, would end the tests too.

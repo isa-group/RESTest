@@ -102,7 +102,7 @@ public final class Restest {
      * wrong. A failure that would otherwise be thrown out of the command - running out of memory
      * included - is answered with 4 instead, and said where problems go, with the stack trace
      * somebody needs to report it. A run the program is told to stop while it runs - Ctrl-C, say -
-     * stops sending, writes what it found and answers 130; the program then ends with the number
+     * makes no new requests, writes what it found and answers 130; the program then ends with the number
      * Java gives for the way it was stopped, 130 or 143.
      *
      * @param arguments what was typed after {@code restest}

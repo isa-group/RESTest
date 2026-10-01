@@ -73,10 +73,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * <p>A run can also be stopped from outside - Ctrl-C, {@code kill}, a container being stopped - at
  * any moment, and {@link StopFromOutside} is where the loop hears it. It looks there between one
  * decision and the next and at least every few hundredths of a second while it waits, and when it
- * has been stopped it sends nothing more, waits a short while for the answers it is still owed, and
- * hands back what it did, as it would at the end of its time. However a run ends, an answer that
- * arrives after the loop has stopped waiting for it is not announced: it counts as never answered,
- * so that what the reports say and what the stored run keeps are the same requests.
+ * has been stopped it hands nothing more to the part of the tool that sends, waits a short while for
+ * the answers it is still owed, and hands back what it did, as it would at the end of its time. The
+ * requests it had already handed over go out all the same, those waiting their turn in the sending
+ * part included - never more than may be waiting for an answer at once.
+ *
+ * <p>However a run ends, an answer that arrives after the loop has stopped waiting for it is not
+ * announced: it counts as never answered, so that what the reports say and what the stored run
+ * keeps are the same requests.
  */
 final class RunLoop {
 
@@ -185,8 +189,8 @@ final class RunLoop {
         try {
             deciding:
             while (true) {
-                // Before anything else is decided: a run stopped from outside sends nothing more,
-                // whatever the scheduler had in mind.
+                // Before anything else is decided: a run stopped from outside hands nothing more to
+                // the engine, whatever the scheduler had in mind.
                 if (stop.asked()) {
                     break deciding;
                 }
@@ -265,6 +269,11 @@ final class RunLoop {
                     }
                 }
             }
+        } catch (Throwable broken) {
+            // The run goes on to say it is over all the same, so whatever arrives from here on is
+            // not announced, as it would not be had the loop ended well.
+            answers.stopListening();
+            throw broken;
         } finally {
             // However the deciding ended, a first round still going is announced as cut short, so
             // the reports never hear of one that began and did not end.
@@ -383,7 +392,9 @@ final class RunLoop {
      */
     private static void waitForTheStep(Semaphore answered, int sent, Duration atMost,
             EventStream events, StopFromOutside stop) {
-        long giveUpAt = System.nanoTime() + atMost.toNanos();
+        // Counted in the clock's own units, which go round rather than overflow: however far off the
+        // end is, the time left is the end less now.
+        long giveUpAt = System.nanoTime() + StopFromOutside.nanosIn(atMost);
         try {
             while (!answered.tryAcquire(sent, aLookAtMost(giveUpAt - System.nanoTime()),
                     TimeUnit.NANOSECONDS)) {
@@ -414,7 +425,7 @@ final class RunLoop {
                 return false;
             }
             try {
-                if (slots.tryAcquire(aLookAtMost(left.toNanos()), TimeUnit.NANOSECONDS)) {
+                if (slots.tryAcquire(aLookAtMost(left), TimeUnit.NANOSECONDS)) {
                     return true;
                 }
             } catch (InterruptedException stopped) {
@@ -441,8 +452,7 @@ final class RunLoop {
                 return;
             }
             try {
-                if (slots.tryAcquire(workAhead, aLookAtMost(left.toNanos()),
-                        TimeUnit.NANOSECONDS)) {
+                if (slots.tryAcquire(workAhead, aLookAtMost(left), TimeUnit.NANOSECONDS)) {
                     return;
                 }
             } catch (InterruptedException stopped) {
@@ -452,9 +462,18 @@ final class RunLoop {
         }
     }
 
-    /** How long one wait of the loop may last, given how long is left in all. */
+    /** How long one wait of the loop may last, in nanoseconds, given how many are left in all. */
     private static long aLookAtMost(long nanosLeft) {
         return Math.max(0, Math.min(nanosLeft, LOOK_AGAIN_AFTER.toNanos()));
+    }
+
+    /**
+     * The same, given how long is left in all - which may be longer than can be counted in
+     * nanoseconds, for a deadline or a wait somebody set centuries away.
+     */
+    private static long aLookAtMost(Duration left) {
+        return aLookAtMost(left.compareTo(LOOK_AGAIN_AFTER) < 0 ? left.toNanos()
+                : LOOK_AGAIN_AFTER.toNanos());
     }
 
     private static void pauseWhileTheReportsCatchUp(EventStream events, Instant deadline,
