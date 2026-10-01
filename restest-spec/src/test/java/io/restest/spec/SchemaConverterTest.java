@@ -223,7 +223,7 @@ class SchemaConverterTest {
     }
 
     @Test
-    @DisplayName("what this increment leaves out still says so, naming which construct it was")
+    @DisplayName("what the converter leaves out still says so, naming which construct it was")
     void the_constructs_left_out_still_say_so() {
         Schema<Object> option = new Schema<>();
         option.setType("string");

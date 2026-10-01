@@ -15,7 +15,7 @@
     <name>RESTest :: Architecture tests</name>
     <description>
         Verification only. Holds the ArchUnit rules that enforce ADR-0004, and the source-tree
-        rules that enforce invariants no bytecode can express. See ADR-0004, Amendment (M0.2).
+        rules that enforce invariants no bytecode can express.
 
         This module has no src/main. It depends on all nine production modules because ArchUnit
         reads bytecode: a rule such as "io.swagger appears only in restest-spec" can only run

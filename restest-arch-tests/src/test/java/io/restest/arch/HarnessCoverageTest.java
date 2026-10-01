@@ -66,8 +66,8 @@ class HarnessCoverageTest {
         assertThat(compiled)
                 .describedAs("No module has compiled a class beyond its module descriptor, so this "
                         + "comparison would assert emptiness against emptiness and look like "
-                        + "evidence while proving nothing. Since M1.1a restest-core holds the "
-                        + "domain model, so an empty map here means the reactor was not built, not "
+                        + "evidence while proving nothing. restest-core holds the domain "
+                        + "model, so an empty map here means the reactor was not built, not "
                         + "that there is nothing to check")
                 .isNotEmpty();
 

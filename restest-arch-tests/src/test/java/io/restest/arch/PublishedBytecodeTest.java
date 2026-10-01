@@ -78,8 +78,8 @@ class PublishedBytecodeTest {
 
         assertThat(classFiles)
                 .describedAs("Nothing was examined, so a pass here would read as evidence that the "
-                        + "published bytecode is Java 21 when nothing was measured. Since M1.1a the "
-                        + "domain model is compiled, so an empty scan means the reactor was not "
+                        + "published bytecode is Java 21 when nothing was measured. The domain "
+                        + "model is compiled, so an empty scan means the reactor was not "
                         + "built rather than that there is nothing to scan")
                 .isNotEmpty();
 

@@ -55,8 +55,8 @@ class MatchLengthTest {
 
         /**
          * Rules chosen for the constructs whose length is easy to get wrong, alongside the ones the
-         * corpus actually states. Every one of the first six was an undercount at some point in this
-         * increment's life, and three of them ended the run.
+         * corpus actually states. Every one of the first six was an undercount at some point while
+         * the count was being written, and three of them ended the run.
          */
         private static final List<String> AWKWARD = List.of(
                 "(?=[a-z]{40})x",
@@ -141,7 +141,7 @@ class MatchLengthTest {
          *
          * <p>Wide on purpose, and wider than the constructs the count knows how to read. A fuzzer
          * drawing only from what its author has already thought about re-confirms the bugs already
-         * fixed and finds nothing; the ones that ended a run in this increment were all in
+         * fixed and finds nothing; the ones that ended a run while it was written were all in
          * constructs missing from an earlier version of this list. So everything goes in - the marks
          * for where a value begins and ends, quotations, characters written as numbers, the
          * reluctant and possessive quantifiers, sets holding sets - and a rule the count declines is

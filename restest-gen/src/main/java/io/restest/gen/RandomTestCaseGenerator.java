@@ -983,9 +983,8 @@ public final class RandomTestCaseGenerator {
         }
         if (ways.isEmpty()) {
             // Every strategy in the plan pushes, and there is nothing to push with. Running some
-            // other plan instead is what this increment spent a review learning not to do: the
-            // person asked for something specific and would be told, in the summary, that they
-            // got it.
+            // other plan instead is what a review taught this code not to do: the person asked
+            // for something specific and would be told, in the summary, that they got it.
             throw new IllegalArgumentException("every strategy in this plan pushes at the API "
                     + "with a list of values called '" + PUSHES_AT_THE_API + "', and no list of "
                     + "that name was handed over, so there is nothing for the run to do");

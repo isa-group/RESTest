@@ -55,14 +55,14 @@
         <module>restest-oracles</module>
         <module>restest-report</module>
         <module>restest-cli</module>
-        <!-- Verification only: not published, depends on all nine. See ADR-0004, Amendment (M0.2). -->
+        <!-- Verification only: not published, depends on all nine. See ADR-0004. -->
         <module>restest-arch-tests</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <!-- Every module targets Java 21, restest-cli included (ADR-0003, Amendment (M0.2)). -->
+        <!-- Every module targets Java 21, restest-cli included (ADR-0003). -->
         <maven.compiler.release>21</maven.compiler.release>
 
         <!-- Versions fixed by the stack table in docs/DESIGN.md. -->
@@ -310,8 +310,7 @@
                                   the default, and its absence is not cosmetic: a run's JSON report
                                   says which RESTest produced it by reading this, and with nothing
                                   to read it says "unknown". A report that cannot name its own
-                                  version is no use for comparing one milestone's campaign with
-                                  another's, which is what M8 exists to do.
+                                  version is no use for comparing the runs of two versions.
                                 -->
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>

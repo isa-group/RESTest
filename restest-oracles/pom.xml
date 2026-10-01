@@ -38,9 +38,9 @@
     <build>
         <plugins>
             <!--
-              The blocking coverage gate, promised as TODO(M1.6) in the root POM and in docs/ci.md.
-              It is here, on this module, rather than at the root, because only two modules carry a
-              minimum: this one and the other named under "Quality gates" in docs/DESIGN.md.
+              The blocking coverage gate. It is here, on this module, rather than at the root,
+              because only two modules carry a minimum: this one and the other named under
+              "Quality gates" in docs/DESIGN.md.
 
               The figures are floors, set below what the module actually measures so that they fail
               on a real loss of testing rather than on rounding. They are never to be lowered to make

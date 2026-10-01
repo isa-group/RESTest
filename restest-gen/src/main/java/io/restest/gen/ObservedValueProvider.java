@@ -300,10 +300,10 @@ public final class ObservedValueProvider implements ValueProvider {
      * <p>Cut down first, exactly as a whole thing is. What is kept under a name is not only words
      * and numbers: an owner inside a reply is kept under {@code owner}, and an owner the API
      * returns is not an owner it accepts - it carries the identifier the API allots and whatever
-     * else that API sends and never receives. Sending it back whole would put those on the wire
-     * under the one rule this increment has: that a property a document says is only ever returned
-     * is never sent. Both ways of asking go through the same cutting down, so there is one set of
-     * rules rather than one set and an exception.
+     * else that API sends and never receives. Sending it back whole would put those on the wire,
+     * against the one rule a value seen in a reply obeys: that a property a document says is only
+     * ever returned is never sent. Both ways of asking go through the same cutting down, so there
+     * is one set of rules rather than one set and an exception.
      */
     private Optional<GeneratedValue> oneValueSeenUnderThisName(ValueRequest request) {
         List<Sendable> usable = new ArrayList<>();

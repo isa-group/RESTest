@@ -50,9 +50,9 @@ import org.junit.jupiter.api.Test;
  * what decides how much work is worth doing: JSON and web forms between them cover all but a
  * handful, and the handful is named one operation at a time rather than counted. The third is the
  * one that could go wrong quietly - that no operation anywhere in the corpus is now turned away for
- * want of a body, which is what this increment exists to end. Not one is, the two unwritable bodies
- * included: both of those documents say the body may be left out, so those operations are tested
- * without one.
+ * want of a body, which is what building bodies exists to end. Not one is, the two unwritable
+ * bodies included: both of those documents say the body may be left out, so those operations are
+ * tested without one.
  *
  * <p>One more count is pinned because it is zero. The client that sends requests refuses to build a
  * {@code GET} or a {@code HEAD} carrying a body, so an operation that insists on one there is named

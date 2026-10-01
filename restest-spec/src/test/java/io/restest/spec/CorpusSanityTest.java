@@ -73,7 +73,7 @@ class CorpusSanityTest {
 
         assertThat(declaring32)
                 .describedAs("only fixtures/unsupported-version/ should declare OAS 3.2 "
-                        + "(ADR-0007, reversed at M1.2: the corpus has no real 3.2 documents)")
+                        + "(ADR-0007: the corpus has no real 3.2 documents)")
                 .hasSize(1)
                 .allSatisfy(file -> assertThat(file.toString()).contains("unsupported-version"));
     }

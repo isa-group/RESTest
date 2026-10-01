@@ -22,7 +22,7 @@
           and back here, and there is no use for a library that maps Java objects to JSON. It lives
           in this module because three others need it and none of them may see the other two - the
           stored run, the report written at the end of a run, and the schema location an oracle
-          hands to the validator. See ADR-0006, Amendment (M1.6).
+          hands to the validator. See ADR-0006.
         -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -33,7 +33,7 @@
           The second, and for the same reason as the first. Three files are written by hand for
           RESTest - a list of values, a plan, and a file of settings - and they are read by three
           parts of the tool that cannot see one another. One answer to "what does a hand-written
-          file say" is worth more than three. See ADR-0006, Amendment (M11.1).
+          file say" is worth more than three. See ADR-0006.
         -->
         <dependency>
             <groupId>org.yaml</groupId>
@@ -44,9 +44,9 @@
     <build>
         <plugins>
             <!--
-              The blocking coverage gate, promised as TODO(M1.6) in the root POM and in docs/ci.md.
-              It is here, on this module, rather than at the root, because only two modules carry a
-              minimum: this one and the other named under "Quality gates" in docs/DESIGN.md.
+              The blocking coverage gate. It is here, on this module, rather than at the root,
+              because only two modules carry a minimum: this one and the other named under
+              "Quality gates" in docs/DESIGN.md.
 
               The figures are floors, set below what the module actually measures so that they fail
               on a real loss of testing rather than on rounding. They are never to be lowered to make

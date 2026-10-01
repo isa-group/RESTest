@@ -229,7 +229,7 @@ class StockJreRunTest {
                 .describedAs("A seed is worth printing only if it means the same run wherever it "
                         + "is used. Two runtimes, two different sets of Java modules, one number - "
                         + "and the requests have to match request for request and value for value. "
-                        + "This is the assertion the whole increment rests on; everything else says "
+                        + "This is the assertion the whole test rests on; everything else says "
                         + "the tool starts, and this says a seed still means something once it "
                         + "has.%nInside:  %s%nOutside: %s", inTheContainer, onThisMachine)
                 .isEqualTo(onThisMachine)
