@@ -148,18 +148,6 @@ public final class RandomTestCaseGenerator {
      */
     static final String PUSHES_AT_THE_API = "fuzzing";
 
-    /**
-     * How much of the testing time goes on requests built from values chosen to be awkward, unless
-     * somebody says otherwise.
-     *
-     * <p>A quarter against three is a starting point rather than a measurement. The plan RESTest
-     * carries gives its strategies that push at the API this share between them, and this number is
-     * what the command line says its share of pushing is when nobody types one. The two are written
-     * in different places, so a test keeps them equal: changing one without the other would have the
-     * help promise a share the run does not use.
-     */
-    public static final int AWKWARD_SHARE = 25;
-
     private final ApiModel model;
     private final Settings settings;
     private final long seed;
@@ -214,34 +202,14 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * A generator for this API using these lists of values, with the usual share of its requests
-     * built to be refused.
+     * A generator for this API using these lists of values, following the plan RESTest carries.
      *
      * @param model the API to test
      * @param seed the number the whole run's randomness is derived from
      * @param dictionaries the lists of values to draw on
      */
     public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries) {
-        this(model, seed, dictionaries, AWKWARD_SHARE);
-    }
-
-    /**
-     * A generator for this API, using these lists of values and spending this much of its time on
-     * requests built to be refused.
-     *
-     * <p>A way of saying one thing about the plan RESTest carries without writing a plan: how much
-     * of the run goes on pushing at the API. Everything else about it is left as it is.
-     *
-     * @param model the API to test
-     * @param seed the number the whole run's randomness is derived from
-     * @param dictionaries the lists of values to draw on
-     * @param awkwardShare how much of the time, as a percentage, goes on requests built entirely
-     *     from values meant to be refused. Nought sends none of them
-     * @throws IllegalArgumentException if that is not a percentage
-     */
-    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
-            int awkwardShare) {
-        this(model, seed, dictionaries, carriedPlanPushing(awkwardShare));
+        this(model, seed, dictionaries, Campaigns.carried());
     }
 
     /**
@@ -976,21 +944,6 @@ public final class RandomTestCaseGenerator {
                 .flatMap(entry -> entry.sources().stream())
                 .anyMatch(source -> source instanceof Campaign.Source.Builtin builtin
                         && builtin.which() == Campaign.Builtin.OBSERVED);
-    }
-
-    /**
-     * The plan RESTest carries, with one thing said about it: how much of the run goes on pushing.
-     *
-     * <p>What {@code --fuzzing} means. Rather than a second way of arranging sources, it adjusts
-     * the shares of the plan already there - so the option and the file cannot come to disagree
-     * about anything except the one number the option is about.
-     */
-    private static Campaign carriedPlanPushing(int awkwardShare) {
-        if (awkwardShare < 0 || awkwardShare > Campaign.WHOLE) {
-            throw new IllegalArgumentException("the share of requests built to be refused is a "
-                    + "percentage, so it is between 0 and " + Campaign.WHOLE + ": " + awkwardShare);
-        }
-        return Campaigns.carried().withTheShareOfPushingSetTo(awkwardShare);
     }
 
     /**

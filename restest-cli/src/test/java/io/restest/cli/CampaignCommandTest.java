@@ -237,50 +237,16 @@ class CampaignCommandTest {
     }
 
     @Test
-    @DisplayName("naming both a plan and a share of pushing is refused, since the plan already "
-            + "sets the share of every strategy it has")
-    void a_plan_and_a_share_of_pushing_cannot_both_be_named(@TempDir Path directory)
-            throws Exception {
-        Path plan = planIn(directory, "");
-
+    @DisplayName("how much of a run pushes at the API is said in a plan: --fuzzing is not an "
+            + "option, and answers the way any option that does not exist answers")
+    void a_share_of_pushing_is_said_in_a_plan(@TempDir Path directory) throws Exception {
         assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
-                "--campaign", plan.toString(), "--fuzzing", "10",
-                "--out", directory.resolve("out").toString()))
+                "--fuzzing", "10", "--out", directory.resolve("out").toString()))
                 .isEqualTo(2);
-        assertThat(problems.toString())
-                .contains("--fuzzing sets how much of a run pushes at the API")
-                .contains("Name one or the other");
-    }
-
-    @Test
-    @DisplayName("a plan's own shares decide the run: leaving --fuzzing alone does not quietly "
-            + "put them back to what this command defaults to")
-    void a_plan_keeps_its_own_shares(@TempDir Path directory) throws Exception {
-        // A plan every strategy of which pushes at the API. It is the one shape that cannot
-        // survive having a share of pushing imposed on it - there would be nothing to give the
-        // rest of the run to - so if this runs, the file's shares were left alone. Asserted this
-        // way rather than by counting requests, because how many of a run's requests can be
-        // counted as pushing depends on how many of a document's operations take a parameter the
-        // awkward list can fill, which for this document is two of the four.
-        Path everythingPushes = directory.resolve("plan.yaml");
-        Files.writeString(everythingPushes, """
-                version: 1
-                strategies:
-                  - name: fuzzing
-                    share: 100
-                    sources:
-                      - dictionary: fuzzing
-                      - source: random
-                """);
-
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
-                "--campaign", everythingPushes.toString(),
-                "--out", directory.resolve("out").toString()))
-                .describedAs("applying this command's default share whatever the file said would "
-                        + "leave three quarters of the run with no strategy to build it")
-                .isBetween(0, 1);
-        assertThat(problems.toString()).doesNotContain("nothing to give");
-        assertThat(screen.toString()).contains("were pushing at the API");
+        assertThat(problems.toString()).contains("Unknown option: --fuzzing");
+        assertThat(Files.exists(directory.resolve("out")))
+                .describedAs("a command line nobody could act on sends nothing and writes nothing")
+                .isFalse();
     }
 
     @Test

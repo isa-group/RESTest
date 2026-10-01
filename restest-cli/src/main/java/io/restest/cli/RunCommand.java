@@ -32,7 +32,6 @@ import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
 import io.restest.core.store.InteractionStore;
-import io.restest.gen.Campaign;
 import io.restest.gen.Campaigns;
 import java.util.Optional;
 import io.restest.gen.Dictionaries;
@@ -232,11 +231,13 @@ final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--seed",
             paramLabel = "<number>",
-            description = "Fixes the random choices, so the same command makes the same requests. "
-                    + "One is chosen, and printed, when this is omitted. A plan drawing on what "
-                    + "the API has already returned is the exception: what it sends depends on "
-                    + "what came back, so the same number makes a similar run rather than the "
-                    + "same one. --store keeps every request and reply of it.")
+            description = "With the plan RESTest carries, the same number gives a similar run "
+                    + "rather than the same one, because what a run sends also depends on what "
+                    + "the API answers; --store keeps every request and reply of the run you had. "
+                    + "The number fixes every random choice, and one is chosen, and printed, when "
+                    + "this is omitted. It repeats a run exactly only with a plan that leaves out "
+                    + "'observed', mutation.violations set to false, and every sequences setting "
+                    + "set to false.")
     private Long seed;
 
     @Option(
@@ -256,18 +257,6 @@ final class RunCommand implements Callable<Integer> {
                     + "specification they were worked out for. RESTest always uses its own list of "
                     + "values to push with on top of whatever is given here.")
     private List<Path> dictionaries = new ArrayList<>();
-
-    @Option(
-            names = "--fuzzing",
-            paramLabel = "<percentage>",
-            defaultValue = "" + RandomTestCaseGenerator.AWKWARD_SHARE,
-            converter = FuzzingShare.class,
-            description = "How much of the time to spend pushing at the API with values nobody "
-                    + "sensible would send - empty text, enormous numbers, the wrong kind of value "
-                    + "entirely. A healthy API takes them or turns them away; a fragile one falls "
-                    + "over. 0 sends none of them. Not with --campaign, whose plan says the same "
-                    + "thing. Default: ${DEFAULT-VALUE}.")
-    private int fuzzingShare;
 
     @Option(
             names = "--campaign",
@@ -355,12 +344,6 @@ final class RunCommand implements Callable<Integer> {
     @Spec
     private CommandSpec spec;
 
-    /** Whether a share of pushing was typed, as against left at what this command defaults to. */
-    private boolean askedForAShareOfPushing() {
-        return spec.commandLine().getParseResult().hasMatchedOption("--fuzzing");
-    }
-
-
     @Override
     public Integer call() {
         PrintWriter out = spec.commandLine().getOut();
@@ -420,15 +403,6 @@ final class RunCommand implements Callable<Integer> {
         if (specification == null) {
             err.println("Missing required parameter: '<specification>'");
             spec.commandLine().usage(err);
-            return ExitCode.BAD_COMMAND_LINE;
-        }
-        if (campaignFile != null && askedForAShareOfPushing()) {
-            // Two ways of saying one thing. A plan sets the share of every strategy it names, and
-            // --fuzzing sets one of them, so honouring both would mean deciding which of the two
-            // the person meant - and the answer they get would depend on a rule nobody wrote down.
-            err.println("restest: --fuzzing sets how much of a run pushes at the API, and so does "
-                    + "the 'share' of a plan's strategies. Name one or the other, not both: the "
-                    + "share belongs in " + campaignFile + " now");
             return ExitCode.BAD_COMMAND_LINE;
         }
 
@@ -508,21 +482,16 @@ final class RunCommand implements Callable<Integer> {
             plan.problems().forEach(problem -> err.println("restest: " + problem));
             RandomTestCaseGenerator generator;
             try {
-                // Only when somebody typed it. Applying the default share regardless would
-                // renormalise every plan back to it, so the 'share' lines of the file RESTest
-                // ships - and of any file copied from it - would decide nothing at all.
-                Campaign campaign = askedForAShareOfPushing()
-                        ? plan.campaign().withTheShareOfPushingSetTo(fuzzingShare)
-                        : plan.campaign();
                 // The one part of the run that sees the API without the inputs a key fills, so that
                 // nothing is invented for them; everything else keeps the document as it is.
                 generator = new RandomTestCaseGenerator(credentials.modelToFillIn(model),
                         seed == null ? new java.util.SplittableRandom().nextLong() : seed,
-                        found.dictionaries(), campaign, settings);
-            } catch (IllegalArgumentException outOfRange) {
-                // Asking for something the command line does not offer, which is the same kind of
-                // mistake as misspelling an option and answers with the same number.
-                err.println("restest: " + outOfRange.getMessage());
+                        found.dictionaries(), plan.campaign(), settings);
+            } catch (IllegalArgumentException cannotBeFollowed) {
+                // A plan that cannot be followed with the lists this run holds - a strategy whose
+                // every source is a list nobody handed over. Running some other plan instead would
+                // answer a question nobody put, so nothing is sent.
+                err.println("restest: " + cannotBeFollowed.getMessage());
                 return ExitCode.BAD_COMMAND_LINE;
             }
             // Only about lists somebody handed over. RESTest's own going unused is not news to
@@ -532,10 +501,8 @@ final class RunCommand implements Callable<Integer> {
             generator.listsGivenButNotUsed().stream().filter(theirs::contains)
                     .forEach(unused -> err.println("restest: the list of values called '" + unused
                             + "' is one this run pushes at the API with, and "
-                            + (campaignFile == null
-                                    ? "--fuzzing 0 asks for no pushing"
-                                    : campaignFile + " gives no strategy that pushes")
-                            + ", so nothing in it will be sent"));
+                            + (campaignFile == null ? "the plan" : campaignFile)
+                            + " gives no strategy that pushes, so nothing in it will be sent"));
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {
                 return nothingToTest(err, model, generator);

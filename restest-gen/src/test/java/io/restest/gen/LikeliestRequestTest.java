@@ -241,7 +241,7 @@ class LikeliestRequestTest {
             + "request to offer")
     void a_plan_that_only_pushes_cannot_build_it() {
         RandomTestCaseGenerator onlyPushes = new RandomTestCaseGenerator(model(SEARCH), SEED,
-                Dictionaries.fuzzing().map(List::of).orElse(List.of()), 100);
+                Dictionaries.fuzzing().map(List::of).orElse(List.of()), Plans.onlyPushing());
 
         assertThat(onlyPushes.canBuildTheLikeliestRequest()).isFalse();
         assertThat(onlyPushes.likeliestRequest(SEARCH)).isEmpty();

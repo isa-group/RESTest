@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a and M12.1c, and in #314 and #344
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1 October 2026
 **Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30)
 
 ## Context
@@ -1166,3 +1166,38 @@ question of its own the maintainer kept on 30 September. The three cases of row 
 - **Registering the hook only once testing begins**, as first planned and built. Rejected after the
   review, by the maintainer on 1 October: a stop while the document was read then said nothing, and
   left an earlier run's files to be read as this one's.
+
+## Amendment (`--fuzzing` removed before the freeze applies)
+
+**Date:** 2026-10-01
+
+**`--fuzzing` is gone, and `--campaign` is the one way to say how much of a run pushes at the API.**
+The surface the M12.1a amendment froze loses one option:
+
+```
+restest run <specification> [--url=<base>] [--auth=<key>]... [--budget=<duration>]
+            [--seed=<number>] [--out=<directory>] [--dictionary=<file-or-directory>]...
+            [--campaign=<file>] [--print-campaign]
+            [--settings=<file>] [--set=<group.key=value>]... [--print-settings] [--store]
+```
+
+The freeze holds from v2.0, which is not tagged yet, so this is the last point at which an option can
+go without waiting for 3.0. Three reasons, any one of which would have been enough:
+
+- **It says nothing a plan cannot.** It was added at M2.7a, before there was a plan file, because
+  there was then no other way to stop sending awkward values. Since [ADR-0023](0023-the-campaign-file.md)
+  it has been a second way of setting one number of the plan RESTest carries, refused beside
+  `--campaign`, with code of its own to share out the rest of the run.
+- **What it said had stopped being true.** Its help promised that `0` sends none of the values
+  nobody sensible would send. Since 10.1, a fifth of the run changes accepted requests into ones the
+  document forbids: a word where a number belongs, nothing where something is required, a number past
+  its limit. A run against a stand-in API with `--fuzzing 0` sent `count=abc` 1,798 times in three
+  seconds. The switch for those is `mutation.violations`, and no share of pushing touches it.
+- **Nothing depends on it.** The evaluation harness passes plans, never this option.
+
+Naming it now answers `2`, as an option that does not exist, followed by the usage; a test holds
+that. The refusal to name it beside `--campaign`, from the M2.10a amendment, goes with it.
+
+The help of `--seed` is rewritten, as wording rather than contract: it now says first that, with the
+plan RESTest carries, the same number gives a similar run rather than the same one, and where to
+read how to make it repeat a run exactly.

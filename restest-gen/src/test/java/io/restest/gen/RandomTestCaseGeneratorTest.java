@@ -873,7 +873,8 @@ class RandomTestCaseGeneratorTest {
                 .map(Dictionary.class::cast)
                 .toList();
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
-                ApiModel.of("Pets", "1.0", List.of(search)), 20260918L, awkward, share);
+                ApiModel.of("Pets", "1.0", List.of(search)), 20260918L, awkward,
+                Plans.pushing(share));
         java.util.Set<String> refusing = generator.sourcesThatPushAtTheApi();
 
         return (int) IntStream.range(0, 1000)
@@ -984,7 +985,7 @@ class RandomTestCaseGeneratorTest {
         // is not advice, though: it is the whole set of values the API takes, and sending anything
         // else is sending a value the document says is not allowed.
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("name", "not on the list")), 0);
+                List.of(keyed("name", "not on the list")), Plans.neverPushing());
 
         for (int draw = 0; draw < 50; draw++) {
             assertThat(sent(generator, search, "status")).isIn("available", "sold");
@@ -1002,7 +1003,8 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
-                         "values": {"POST /owners": {"body.city": ["Seville"]}}}""", "ours")), 0);
+                         "values": {"POST /owners": {"body.city": ["Seville"]}}}""", "ours")),
+                Plans.neverPushing());
 
         for (int draw = 0; draw < 10; draw++) {
             JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow()
@@ -1024,7 +1026,7 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "name",
-                         "values": {"city": ["Seville"]}}""", "ours")), 0);
+                         "values": {"city": ["Seville"]}}""", "ours")), Plans.neverPushing());
 
         JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
 
@@ -1068,7 +1070,8 @@ class RandomTestCaseGeneratorTest {
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
                          "values": {"GET /pets": {
-                            "tags[]": ["urgent"], "filter.city": ["Seville"]}}}""", "ours")), 0);
+                            "tags[]": ["urgent"], "filter.city": ["Seville"]}}}""", "ours")),
+                Plans.neverPushing());
 
         TestCase testCase = generator.generate(search).orElseThrow();
 
@@ -1096,7 +1099,7 @@ class RandomTestCaseGeneratorTest {
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
                          "values": {"POST /owners": {"body.tags[].label": ["urgent"]}}}""",
-                        "ours")), 0);
+                        "ours")), Plans.neverPushing());
 
         JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
 
@@ -1124,7 +1127,8 @@ class RandomTestCaseGeneratorTest {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(pets, 4242L,
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
-                         "values": {"POST /pets": {"body.status": ["neverSent"]}}}""", "ours")), 0);
+                         "values": {"POST /pets": {"body.status": ["neverSent"]}}}""", "ours")),
+                Plans.neverPushing());
 
         for (int draw = 0; draw < 20; draw++) {
             JsonValue body = generator.generate(addPet).orElseThrow().body().orElseThrow().value();
@@ -1179,7 +1183,7 @@ class RandomTestCaseGeneratorTest {
                 List.of(DictionaryDocument.read("""
                         {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
                          "values": {"POST /deep": {"body.a.b.c.d": ["from the list"]}}}""",
-                        "ours")), 0);
+                        "ours")), Plans.neverPushing());
 
         assertThat(generator.untestableOperations())
                 .describedAs("being too deep to invent anything more is not a reason to stop "
@@ -1383,14 +1387,15 @@ class RandomTestCaseGeneratorTest {
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
         ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
 
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), 0)
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)),
+                Plans.neverPushing())
                 .listsGivenButNotUsed())
                 .describedAs("two things were asked for that cancel, and one of them is probably a "
                         + "mistake")
                 .containsExactly("fuzzing");
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), 25)
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)))
                 .listsGivenButNotUsed()).isEmpty();
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(), 0)
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(), Plans.neverPushing())
                 .listsGivenButNotUsed()).isEmpty();
     }
 

@@ -129,8 +129,9 @@ A quarter of the requests in a run are not meant to work. They are built from va
 would send — an empty word, a number one past the end of a 32-bit integer, text where a number
 belongs — because an API that falls over on one of those is a fault whatever was sent, and ordinary
 requests never ask. The summary says how many requests were of that kind, so their refusals do not
-read as the API turning away ordinary traffic. `--fuzzing 40` changes the share and `--fuzzing 0`
-sends none of them.
+read as the API turning away ordinary traffic. The quarter is a line of the plan RESTest carries,
+which `restest run --print-campaign` writes out: a copy handed back with `--campaign` can give it
+another share, or leave that strategy out.
 
 Another fifth take a request the API has already accepted and send it again with exactly one thing
 changed: something it requires left out, a number one past the largest it allows, a word where it

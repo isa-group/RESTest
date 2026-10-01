@@ -1,6 +1,6 @@
 # ADR-0020: A dictionary is a named list of values with one key, and the plan decides what each list is for
 
-**Status:** Accepted, amended at M2.7c, M2.4, M2.10a and M8.3
+**Status:** Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1 October 2026
 **Date:** 2026-09-18
 
 ## Context
@@ -618,3 +618,15 @@ help. The campaign scored the tool with its shipped plan under each dictionary's
 - **A switch.** ADR-0025 asks for one on every behaviour lever. This is not one: it decides whether
   a file is read, not how a request is made, and there is no experiment in which refusing an empty
   operation is the variant worth measuring.
+
+## Amendment (`--fuzzing` removed)
+
+**Date:** 2026-10-01
+
+**§6's way to say otherwise is now the plan, not an option.** §6 gave the share of awkward values a
+command-line option, `--fuzzing`, because there was then no other way to stop sending them. The plan
+file of [ADR-0023](0023-the-campaign-file.md) has since become that way, and the option is removed
+before v2.0 is tagged, for the reasons in [ADR-0015](0015-command-line-contract.md)'s amendment of
+the same date. The quarter itself stands, as a line of the plan RESTest carries. Where the M8.3
+amendment's fourth point gives "a run told `--fuzzing 0`" as a run that holds a list and never asks
+it, a plan with no strategy that pushes at the API is now the example.

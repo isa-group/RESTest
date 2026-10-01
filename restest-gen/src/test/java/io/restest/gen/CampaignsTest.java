@@ -225,39 +225,6 @@ class CampaignsTest {
     }
 
     @Test
-    @DisplayName("however the shares divide, they still add up to a hundred afterwards")
-    void the_shares_always_add_up_again() {
-        // The cases a review found by trying them: a share that does not divide evenly among the
-        // strategies on its side, and a side with more strategies in it than share to go round.
-        Campaign three = planOf(way("a", 33), way("b", 33), way("c", 33), pushing("p", 1));
-        for (int asked = 0; asked <= Campaign.WHOLE; asked++) {
-            Campaign divided = three.withTheShareOfPushingSetTo(asked);
-            assertThat(divided.strategies()).extracting(Campaign.PlannedStrategy::share)
-                    .describedAs("asked for %d", asked)
-                    .allMatch(share -> share > 0);
-            assertThat(divided.strategies().stream()
-                    .mapToInt(Campaign.PlannedStrategy::share).sum())
-                    .describedAs("asked for %d", asked)
-                    .isEqualTo(Campaign.WHOLE);
-            assertThat(divided.strategies().stream()
-                    .filter(Campaign.PlannedStrategy::pushesAtTheApi)
-                    .mapToInt(Campaign.PlannedStrategy::share).sum())
-                    .describedAs("what was asked for is what the pushing side gets, exactly")
-                    .isEqualTo(asked);
-        }
-
-        Campaign crowded = planOf(way("a", 19), way("b", 19), way("c", 19), way("d", 19),
-                way("e", 19), pushing("p", 5));
-        Campaign squeezed = crowded.withTheShareOfPushingSetTo(97);
-        assertThat(squeezed.strategies().stream()
-                .mapToInt(Campaign.PlannedStrategy::share).sum())
-                .describedAs("three left over between five: the two that get nothing do not run, "
-                        + "and the plan still adds up rather than refusing itself")
-                .isEqualTo(Campaign.WHOLE);
-        assertThat(squeezed.strategies()).hasSize(4);
-    }
-
-    @Test
     @DisplayName("two strategies of a plan cannot share a name, because a report names them")
     void two_strategies_cannot_share_a_name() {
         org.assertj.core.api.Assertions
@@ -273,51 +240,5 @@ class CampaignsTest {
     private static Campaign.PlannedStrategy way(String name, int share) {
         return new Campaign.PlannedStrategy(name, share, List.of(new Campaign.Entry.Single(
                 new Campaign.Source.Builtin(Campaign.Builtin.RANDOM))));
-    }
-
-    private static Campaign.PlannedStrategy pushing(String name, int share) {
-        return new Campaign.PlannedStrategy(name, share, List.of(
-                new Campaign.Entry.Single(new Campaign.Source.OneList("fuzzing"))));
-    }
-
-    @Test
-    @DisplayName("the share of pushing the command line promises when nobody types one is the "
-            + "share the plan RESTest carries gives it")
-    void the_promised_default_share_is_the_shipped_one() throws IOException {
-        int pushing = Campaigns.shipped().strategies().stream()
-                .filter(Campaign.PlannedStrategy::pushesAtTheApi)
-                .mapToInt(Campaign.PlannedStrategy::share)
-                .sum();
-
-        assertThat(pushing)
-                .describedAs("--fuzzing's help shows this number as its default, and a run without "
-                        + "--fuzzing follows the plan: change one, and change the other with it")
-                .isEqualTo(RandomTestCaseGenerator.AWKWARD_SHARE);
-    }
-
-    @Test
-    @DisplayName("asking for a different amount of pushing changes that and nothing else")
-    void the_share_of_pushing_can_be_set() throws IOException {
-        Campaign carried = Campaigns.shipped();
-
-        Campaign tenth = carried.withTheShareOfPushingSetTo(10);
-        assertThat(tenth.strategies()).extracting(Campaign.PlannedStrategy::share)
-                .describedAs("the other three keep their proportion to one another, 45 to 10 to 20")
-                .containsExactly(54, 12, 24, 10);
-        assertThat(tenth.strategies()).extracting(Campaign.PlannedStrategy::mutatesAccepted)
-                .describedAs("and the one that changes accepted requests still does")
-                .containsExactly(false, false, true, false);
-        assertThat(tenth.strategies()).extracting(Campaign.PlannedStrategy::sendsSequences)
-                .describedAs("and the one that sends series still does")
-                .containsExactly(false, true, false, false);
-        assertThat(tenth.strategies().get(0).sources())
-                .describedAs("the shares move; what each strategy draws on does not")
-                .isEqualTo(carried.strategies().get(0).sources());
-
-        assertThat(carried.withTheShareOfPushingSetTo(0).strategies())
-                .describedAs("a strategy given none of the time would never run, so asking for "
-                        + "no pushing takes it out rather than listing a run nobody will get")
-                .extracting(Campaign.PlannedStrategy::name)
-                .containsExactly("nominal", "sequences", "mutation");
     }
 }

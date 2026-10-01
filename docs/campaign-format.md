@@ -392,13 +392,12 @@ best it can. A plan is different because of what a plan can say — one of the t
 keeping a run away from everything that writes, and carrying on with a plan that says nothing of
 the kind would answer "only read from this API" by writing to it.
 
-## `--fuzzing` and `--campaign`
+## How much of a run pushes at the API
 
-`--fuzzing <percentage>` changes how much of the run pushes at the API, and nothing else about the
-plan RESTest carries. `--fuzzing 0` leaves the pushing strategy out altogether.
-
-Naming both `--fuzzing` and `--campaign` is refused: your plan sets the share of every strategy it
-names, including that one, so there is nothing left for the option to mean.
+The plan RESTest carries gives a quarter of the run to the strategy that pushes. To change that,
+change its `share` in a copy of the plan, and the shares of the others so that they still add up to
+a hundred. To push at the API not at all, leave the strategy out and share its quarter among the
+others. There is no option for it on the command line: the plan is the one place a share is said.
 
 ## What this version refuses
 
