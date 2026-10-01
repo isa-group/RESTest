@@ -138,8 +138,7 @@ class RunOrderTest {
     private static RandomTestCaseGenerator withoutSeries(ApiModel model) {
         return new RandomTestCaseGenerator(model, SEED,
                 Dictionaries.fuzzing().map(List::of).orElse(List.of()),
-                Campaigns.carried().withTheShareOfPushingSetTo(
-                        RandomTestCaseGenerator.AWKWARD_SHARE),
+                Campaigns.carried(),
                 Settings.defaults().withSequences(SequenceSettings.noneSent()));
     }
 

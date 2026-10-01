@@ -1,6 +1,6 @@
 # ADR-0023: A plan is an ordered list of named sources, and the order is the preference
 
-**Status:** Accepted
+**Status:** Accepted, amended at M9.1, M10.1, M10.3 and on 1 October 2026
 **Date:** 2026-09-22
 
 ## Context
@@ -293,3 +293,14 @@ values came from. Pushing itself is still worked out from what a strategy draws 
 what the file says. Two strategies building from the same sources separately parted company the
 first time either read a spelling rule, so a strategy meant to fall back on what nominal builds did
 not quite build it (ADR-0028 §8).
+
+## Amendment (`--fuzzing` removed)
+
+**Date:** 2026-10-01
+
+**§7's second paragraph no longer holds: a share is said in a plan and nowhere else.** `--fuzzing`
+adjusted the share of the pushing strategy in the plan RESTest carries, and was refused beside
+`--campaign`. It is removed before v2.0 is tagged, for the reasons in
+[ADR-0015](0015-command-line-contract.md)'s amendment of the same date. To push more, less or not
+at all, a person prints the plan with `--print-campaign`, changes the shares, and hands it back. The
+code that shared out the rest of a run when one share was set goes with the option.

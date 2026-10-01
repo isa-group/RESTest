@@ -26,7 +26,6 @@ import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.StringSchema;
-import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,11 +73,11 @@ class FuzzingFallbackTest {
     @Test
     @DisplayName("so the strategy that pushes still sends something, because invention follows "
             + "the list rather than standing beside it")
-    void invention_after_the_list_keeps_the_operation_under_test() throws IOException {
+    void invention_after_the_list_keeps_the_operation_under_test() {
         ApiModel pets = ApiModel.of("Pets", "1.0", List.of(GET_PET));
         RandomTestCaseGenerator pushing = new RandomTestCaseGenerator(pets, 4242L,
                 List.of(Dictionaries.fuzzing().orElseThrow()),
-                Campaigns.shipped().withTheShareOfPushingSetTo(100));
+                Plans.onlyPushing());
 
         for (int draw = 0; draw < 50; draw++) {
             assertThat(pushing.generate(GET_PET))

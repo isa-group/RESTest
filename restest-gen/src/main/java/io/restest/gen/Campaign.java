@@ -15,10 +15,7 @@
  */
 package io.restest.gen;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,109 +66,6 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
                     + "divides the run's time between them, so they add up to " + WHOLE
                     + "; these add up to " + shares);
         }
-    }
-
-    /**
-     * Checks that a share of pushing is one a plan can be given: a percentage, from 0 to 100.
-     *
-     * @param share what was asked for
-     * @return the same share
-     * @throws IllegalArgumentException if it is not a percentage, saying so in the words a person
-     *     who typed it would need
-     */
-    public static int aShareOfPushing(int share) {
-        if (share < 0 || share > WHOLE) {
-            throw new IllegalArgumentException("the share of requests built to be refused is a "
-                    + "percentage, so it is between 0 and " + WHOLE + ": " + share);
-        }
-        return share;
-    }
-
-    /**
-     * The same plan with a different amount of its time spent pushing at the API.
-     *
-     * <p>What {@code --fuzzing} does. The strategies that push share the amount asked for, the
-     * rest share what is left, and each keeps its place relative to the others on its own side -
-     * so saying "a tenth" changes one thing about a plan rather than replacing it.
-     *
-     * <p>Nought takes the pushing strategies out altogether. A strategy given none of the time
-     * would never run, and a plan that still listed it would be describing a run nobody was going
-     * to get.
-     *
-     * @param share how much of the run's time goes on pushing, out of a hundred
-     * @return the plan, or this one unchanged when it has no strategy that pushes and so nothing
-     *     to give the share to
-     * @throws IllegalArgumentException if that is not a percentage, or if it leaves nothing to run
-     */
-    public Campaign withTheShareOfPushingSetTo(int share) {
-        aShareOfPushing(share);
-        List<PlannedStrategy> pushing =
-                strategies.stream().filter(PlannedStrategy::pushesAtTheApi).toList();
-        List<PlannedStrategy> rest =
-                strategies.stream().filter(way -> !way.pushesAtTheApi()).toList();
-        if (pushing.isEmpty()) {
-            return this;
-        }
-        if (rest.isEmpty()) {
-            if (share != WHOLE) {
-                throw new IllegalArgumentException("every strategy in this plan pushes at the API, "
-                        + "so there is nothing to give the other " + (WHOLE - share) + " to");
-            }
-            return this;
-        }
-        // Each side is divided on its own and made to add up on its own, so that what was asked
-        // for is what the pushing strategies get, exactly, whatever the rounding does inside
-        // either side. Correcting across the two - which an earlier version did - could hand the
-        // difference to the very strategy whose share had just been set, or drive another
-        // negative.
-        Map<String, Integer> shares = new LinkedHashMap<>();
-        shares.putAll(divide(pushing, share));
-        shares.putAll(divide(rest, WHOLE - share));
-        List<PlannedStrategy> divided = new ArrayList<>();
-        // The order of the file is kept rather than pushing strategies being collected at the end:
-        // a plan read back should look like the plan that was written.
-        for (PlannedStrategy way : strategies) {
-            int given = shares.get(way.name());
-            if (given > 0) {
-                divided.add(new PlannedStrategy(way.name(), given, way.sources(),
-                        way.mutatesAccepted(), way.sendsSequences()));
-            }
-        }
-        return new Campaign(divided, operations);
-    }
-
-    /**
-     * How much of what one side of a plan was given goes to each strategy in it.
-     *
-     * <p>In proportion to what the plan already gave them, and adding up to exactly the amount
-     * asked for. Whole numbers do not divide evenly, so each gets its floor and whatever is left
-     * over goes one at a time to the strategies with the largest fractions - which is how every
-     * seat-allocation problem is solved, and the only way the total comes out right.
-     *
-     * <p>A strategy can come out with nothing. That happens when the side has more strategies in
-     * it than it has share to divide, and when the amount asked for is nothing at all; both mean
-     * the same thing, which is that the strategy does not run.
-     */
-    private static Map<String, Integer> divide(List<PlannedStrategy> side, int between) {
-        Map<String, Integer> shares = new LinkedHashMap<>();
-        int total = side.stream().mapToInt(PlannedStrategy::share).sum();
-        int handedOut = 0;
-        for (PlannedStrategy way : side) {
-            int floor = between * way.share() / total;
-            shares.put(way.name(), floor);
-            handedOut += floor;
-        }
-        // The remainder, to whoever was rounded down hardest. Recomputed rather than kept in a
-        // second list, because a strategy that has already had one of these is no longer the
-        // hardest done by.
-        List<PlannedStrategy> byRemainder = new ArrayList<>(side);
-        byRemainder.sort(java.util.Comparator.comparingInt(
-                (PlannedStrategy way) -> between * way.share() % total).reversed());
-        for (int at = 0; handedOut < between; at++, handedOut++) {
-            String name = byRemainder.get(at % byRemainder.size()).name();
-            shares.put(name, shares.get(name) + 1);
-        }
-        return shares;
     }
 
     /**

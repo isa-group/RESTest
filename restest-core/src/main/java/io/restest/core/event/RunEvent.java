@@ -90,7 +90,7 @@ public sealed interface RunEvent {
      * <p>Said of every list the run holds - the one RESTest carries as well as the ones somebody
      * handed over - so that a report shows what a run was working with. Holding a list is not the
      * same as drawing on it: a plan decides which lists each kind of request asks, and one that
-     * asks none of them, or a run told to do no pushing, holds a list and sends nothing from it.
+     * asks none of them holds a list and sends nothing from it.
      * What this does settle is that the file was read, which a run that lost it could not claim.
      *
      * @param at   when it was said

@@ -134,7 +134,7 @@ class SchedulerTest {
             + "anybody believes in")
     void a_plan_that_only_pushes_has_no_first_round() {
         RandomTestCaseGenerator onlyPushes = new RandomTestCaseGenerator(PETS, 1L,
-                Dictionaries.fuzzing().map(List::of).orElse(List.of()), 100);
+                Dictionaries.fuzzing().map(List::of).orElse(List.of()), Plans.onlyPushing());
         Scheduler scheduler = new Scheduler(onlyPushes, ScheduleSettings.defaults(),
                 START.plusSeconds(60), clock, this::heard);
 

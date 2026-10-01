@@ -331,11 +331,11 @@ in `--dictionary <file>`, and the plan does not change.
 
 ### Values nobody sensible would send
 
-`--fuzzing 0` leaves out the strategy that pushes at the API and gives its quarter of the run to the
-others, in proportion to their shares. `--fuzzing 40` gives it more. It cannot be combined with
-`--campaign`, because a plan states every share itself. With the plan above, change the shares
-there instead, so that they still add up to a hundred; to push at the API not at all, leave the
-pushing strategy out and share its quarter among the others.
+The strategy that pushes at the API has a quarter of the run. To give it more or less, change its
+share in the plan, and the shares of the others so that they still add up to a hundred; to push at
+the API not at all, leave the pushing strategy out and share its quarter among the others. The
+changes to accepted requests also send values the document forbids, and are switched off with
+`mutation.violations` rather than in the plan.
 
 ### What the document writes down
 

@@ -15,7 +15,8 @@ restest run api.yaml --url https://api.example --dictionary ids.yaml --dictionar
 
 `--dictionary` takes a file or a directory, and may be repeated. A directory contributes every
 `.yaml`, `.yml` and `.json` file in it, read in name order. RESTest always uses its own list of
-values to push at an API with on top of whatever you give it; `--fuzzing 0` turns that off.
+values to push at an API with on top of whatever you give it; a plan without the strategy that
+pushes at the API leaves it unasked.
 
 A file that cannot be read costs the values in it and is reported — as the run starts, again at
 the end of its summary, and in `report.json` (see [What a run says about your file](#what-a-run-says-about-your-file)).
@@ -319,9 +320,9 @@ file it came from, beside every one it refused:
 
 Anything that runs RESTest with a file of yours and compares the results can check that the file is
 under `read` and nothing is under `refused` before it believes them. Being read is not the same as
-being used — which lists each kind of request asks is the plan's to decide, and `--fuzzing 0`, for
-one, leaves the list RESTest carries held and unasked — but a file that was never read was certainly
-not used.
+being used — which lists each kind of request asks is the plan's to decide, and a plan without the
+strategy that pushes, for one, leaves the list RESTest carries held and unasked — but a file that was
+never read was certainly not used.
 
 A file that is read and holds not a single value — every entry commented out, say — is not refused,
 since nothing in it is wrong, but it is said as the run starts, and so is an operation written with

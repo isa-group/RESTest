@@ -44,10 +44,10 @@ import org.junit.jupiter.api.io.TempDir;
  * the document never look like that, because the document says a search term is text and a word is
  * text; only a list of deliberately awkward values goes there.
  *
- * <p>The comparison is the point. The same command, against the same API, with the same number to
- * start from, finds nothing when it has no such list and finds the server error when it has one.
- * Both runs have the changes to accepted requests switched off, so that the list is the only thing
- * that differs between them.
+ * <p>The comparison is the point. Against the same API, a run with the plan RESTest carries finds
+ * the server error, and a run with a plan that has no strategy pushing at the API finds nothing.
+ * Both have the changes to accepted requests switched off, so that what differs between them is
+ * whether the list of awkward values is asked at all.
  */
 class FuzzingFindsWhatNominalMissesTest {
 
@@ -65,6 +65,38 @@ class FuzzingFindsWhatNominalMissesTest {
                       schema: {type: string}
                   responses:
                     "200": {description: results}
+            """;
+
+    /** A plan with no strategy that pushes at the API: every request is built to work. */
+    private static final String NEVER_PUSHES = """
+            version: 1
+            strategies:
+              - name: nominal
+                share: 100
+                sources:
+                  - source: enum
+                  - weighted:
+                      - source: example
+                        weight: 15
+                      - source: random
+                        weight: 20
+                      - source: observed
+                        weight: 20
+                      - dictionaries: given
+                        weight: 40
+                      - source: default
+                        weight: 5
+            """;
+
+    /** A plan whose only strategy pushes at the API: every request is built to be refused. */
+    private static final String ONLY_PUSHES = """
+            version: 1
+            strategies:
+              - name: fuzzing
+                share: 100
+                sources:
+                  - dictionary: fuzzing
+                  - source: random
             """;
 
     /**
@@ -109,9 +141,10 @@ class FuzzingFindsWhatNominalMissesTest {
 
         // The changes made to accepted requests switched off in both runs, so that the list of
         // awkward values is the only thing that differs between them.
-        String withAwkwardValues = run(directory.resolve("with"), document, "--fuzzing", "25",
+        String withAwkwardValues = run(directory.resolve("with"), document,
                 "--set", "mutation.violations=false");
-        String withoutThem = run(directory.resolve("without"), document, "--fuzzing", "0",
+        String withoutThem = run(directory.resolve("without"), document,
+                "--campaign", plan(directory, NEVER_PUSHES).toString(),
                 "--set", "mutation.violations=false");
 
         assertThat(withAwkwardValues)
@@ -140,8 +173,7 @@ class FuzzingFindsWhatNominalMissesTest {
                   q: [ZZMINEZZ]
                 """);
 
-        run(directory.resolve("out"), document, "--fuzzing", "0",
-                "--dictionary", mine.toString());
+        run(directory.resolve("out"), document, "--dictionary", mine.toString());
 
         // Being read, validated and listed is not the same as being used, and only this says which.
         com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
@@ -159,7 +191,7 @@ class FuzzingFindsWhatNominalMissesTest {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
         Path broken = Files.writeString(directory.resolve("broken.yaml"), "values: [unclosed");
 
-        String screen = run(directory.resolve("out"), document, "--fuzzing", "0",
+        String screen = run(directory.resolve("out"), document,
                 "--dictionary", broken.toString());
 
         assertThat(screen).contains("broken.yaml");
@@ -176,7 +208,7 @@ class FuzzingFindsWhatNominalMissesTest {
                 .member("dictionaries").orElseThrow();
         assertThat(((JsonValue.JsonArray) dictionaries.member("read").orElseThrow()).elements())
                 .describedAs("a run that went without a list can be told apart by reading the "
-                        + "file: only RESTest's own is held, which --fuzzing 0 leaves unasked")
+                        + "file: only RESTest's own is held")
                 .extracting(read -> ((JsonValue.JsonObject) read).member("name").orElseThrow())
                 .containsExactly(JsonValue.of("fuzzing"));
         assertThat(((JsonValue.JsonArray) dictionaries.member("refused").orElseThrow()).elements())
@@ -202,7 +234,7 @@ class FuzzingFindsWhatNominalMissesTest {
                     q: [ZZEMPTYBLOCKZZ]
                 """);
 
-        String screen = run(directory.resolve("out"), document, "--fuzzing", "0",
+        String screen = run(directory.resolve("out"), document,
                 "--dictionary", mine.toString());
 
         assertThat(screen).doesNotContain("could not be read");
@@ -216,66 +248,21 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     @Test
-    @DisplayName("asking for a share that is not a percentage is a mistake in the command line, "
-            + "and answers the way every other mistake in the command line answers")
-    void a_share_that_is_not_a_percentage_is_a_command_line_mistake(@TempDir Path directory)
-            throws IOException {
-        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
-        StringWriter screen = new StringWriter();
-        int code;
-        try (PrintWriter writer = new PrintWriter(screen, true)) {
-            code = Restest.run(new String[] {"run", document.toString(), "--url", api.baseUrl(),
-                    "--budget", "1s", "--out", directory.resolve("out").toString(),
-                    "--fuzzing", "200"}, writer, writer);
-        }
-
-        assertThat(code)
-                .describedAs("2 is what a command line nobody could act on answers; 3 means the "
-                        + "document held nothing to test, which is a different thing entirely")
-                .isEqualTo(2);
-        assertThat(screen.toString()).contains("between 0 and 100");
-    }
-
-    @Test
-    @DisplayName("a share that is not a percentage is refused as soon as it is read, before the "
-            + "document is looked for")
-    void a_share_out_of_range_is_refused_before_anything_is_read(@TempDir Path directory) {
-        StringWriter screen = new StringWriter();
-        int code;
-        int withoutADocument;
-        try (PrintWriter writer = new PrintWriter(screen, true)) {
-            code = Restest.run(new String[] {"run",
-                    directory.resolve("not-there.yaml").toString(), "--fuzzing", "150"},
-                    writer, writer);
-            withoutADocument = Restest.run(new String[] {"run", "--fuzzing", "-1"}, writer,
-                    writer);
-        }
-
-        assertThat(code).isEqualTo(2);
-        assertThat(withoutADocument).isEqualTo(2);
-        assertThat(screen.toString())
-                .describedAs("the mistake typed is the one named, rather than a document that "
-                        + "could not be found or was not given")
-                .contains("between 0 and 100: 150")
-                .contains("between 0 and 100: -1")
-                .doesNotContain("not-there.yaml")
-                .doesNotContain("Missing required parameter");
-    }
-
-    @Test
-    @DisplayName("every request can be built to be refused, which is the other end of the same dial")
+    @DisplayName("a plan can build every request to be refused, which is the other end of the "
+            + "plan that builds none that way")
     void the_whole_run_can_be_built_to_be_refused(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
 
-        String screen = run(directory.resolve("out"), document, "--fuzzing", "100");
+        String screen = run(directory.resolve("out"), document,
+                "--campaign", plan(directory, ONLY_PUSHES).toString());
 
         assertThat(screen)
-                .describedAs("0 turns them off, so 100 is the symmetric request and has to work")
+                .describedAs("a plan with no ordinary strategy is a plan like any other")
                 .contains("answered 500");
     }
 
     @Test
-    @DisplayName("turning pushing off names the list of yours that then goes unused, and stays "
+    @DisplayName("a plan with no pushing names the list of yours that then goes unused, and stays "
             + "quiet about lists that had nothing to do with pushing")
     void what_goes_unused_is_named_and_nothing_else_is(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
@@ -294,22 +281,24 @@ class FuzzingFindsWhatNominalMissesTest {
                   q: [kitten]
                 """);
 
-        assertThat(run(directory.resolve("a"), document, "--fuzzing", "0",
+        String noPushing = plan(directory, NEVER_PUSHES).toString();
+
+        assertThat(run(directory.resolve("a"), document, "--campaign", noPushing,
                 "--dictionary", pushes.toString()))
                 .describedAs("two things were asked for that cancel, and one is probably a mistake")
                 .contains("the list of values called 'fuzzing'")
-                .containsOnlyOnce("--fuzzing 0 asks for no pushing");
+                .containsOnlyOnce("gives no strategy that pushes");
 
-        assertThat(run(directory.resolve("b"), document, "--fuzzing", "0",
+        assertThat(run(directory.resolve("b"), document, "--campaign", noPushing,
                 "--dictionary", ordinary.toString()))
                 .describedAs("my own good values and nothing strange at somebody else's API is the "
                         + "most sensible way to use these two together, and warning about a file "
                         + "they never wrote is a message they could not act on")
-                .doesNotContain("asks for no pushing");
+                .doesNotContain("gives no strategy that pushes");
 
-        assertThat(run(directory.resolve("c"), document, "--fuzzing", "0"))
+        assertThat(run(directory.resolve("c"), document, "--campaign", noPushing))
                 .describedAs("asking for no pushing, on its own, is a plain request")
-                .doesNotContain("asks for no pushing");
+                .doesNotContain("gives no strategy that pushes");
     }
 
     @Test
@@ -340,13 +329,19 @@ class FuzzingFindsWhatNominalMissesTest {
                         "200": {description: results}
                 """);
 
-        String screen = run(directory.resolve("out"), document, "--fuzzing", "100");
+        String screen = run(directory.resolve("out"), document,
+                "--campaign", plan(directory, ONLY_PUSHES).toString());
 
         assertThat(screen)
                 .describedAs("a request that could not be assembled is not a reply the API failed "
                         + "to give, and none should have been attempted")
                 .doesNotContain("no reply");
         assertThat(screen).contains("were pushing at the API");
+    }
+
+    /** A plan written to a file of its own in the directory, for {@code --campaign}. */
+    private static Path plan(Path directory, String text) throws IOException {
+        return Files.writeString(Files.createTempFile(directory, "plan", ".yaml"), text);
     }
 
     private static String run(Path out, Path document, String... extra) {
