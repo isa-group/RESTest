@@ -132,7 +132,8 @@ class RestestTest {
     void the_directory_the_document_declares_is_where_the_requests_go(@TempDir Path directory) {
         // Only under the directory. Anything asked for anywhere else on this server is answered the
         // way a real server answers a path it has never heard of, so a run that lost the directory
-        // produces exactly what the benchmark produced before this was fixed: everything refused.
+        // produces exactly what runs against pet-clinic produced before this was fixed: everything
+        // refused.
         api.stubFor(get(urlMatching("/shelter/api/pets")).willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")

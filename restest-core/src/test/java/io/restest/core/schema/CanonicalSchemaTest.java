@@ -37,7 +37,7 @@ class CanonicalSchemaTest {
             ArraySchema.of(StringSchema.of()),
             ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")),
             SchemaReference.to("Pet"),
-            UnsupportedSchema.of("oneOf is not folded in until M2.1"));
+            UnsupportedSchema.of("a keyword this model does not read"));
 
     @Test
     @DisplayName("every kind of schema can be told apart without a default case")
@@ -99,11 +99,11 @@ class CanonicalSchemaTest {
     @DisplayName("an unreadable construct can sit anywhere a schema can, not only at the top")
     void an_unsupported_schema_nests() {
         ObjectSchema pet = ObjectSchema.of(Map.of("tags",
-                ArraySchema.of(UnsupportedSchema.of("oneOf with 3 alternatives, M2.1"))));
+                ArraySchema.of(UnsupportedSchema.of("an unread keyword, in an array"))));
 
         ArraySchema tags = (ArraySchema) pet.property("tags").orElseThrow();
         assertThat(tags.items()).isInstanceOf(UnsupportedSchema.class);
-        assertThat(((UnsupportedSchema) tags.items()).reason()).contains("M2.1");
+        assertThat(((UnsupportedSchema) tags.items()).reason()).contains("in an array");
     }
 
     @Test

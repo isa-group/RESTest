@@ -1,5 +1,5 @@
 # The Pet Shelter again, described the way plenty of real APIs describe themselves: served from
-# under a directory rather than from the top of a server. The 2027 REST League's pet-clinic is one
+# under a directory rather than from the top of a server. The priority corpus's pet-clinic is one
 # of these, and testing it against an address that named only the machine used to send every
 # request to a path that did not exist.
 openapi: 3.0.3

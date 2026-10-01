@@ -303,7 +303,7 @@ class ObservedValueProviderTest {
                     .containsEntry("tag", JsonValue.of("small"));
             assertThat(((ValueOrigin.Derived) offered.origin()).description())
                     .describedAs("what is stored about a run has to be true of the run: this is "
-                            + "the evidence a later increment's work gets read against")
+                            + "the evidence later work gets read against")
                     .contains("unchanged")
                     .describedAs("and it does not name a value as having been changed, which is "
                             + "what the wording for a real change looks like")

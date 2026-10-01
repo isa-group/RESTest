@@ -23,8 +23,8 @@ import picocli.CommandLine.IVersionProvider;
  *
  * <p>The version is read off the packaged file the program was started from, which is the same place
  * a run's report reads it when it records which RESTest produced it. One source, so the two can
- * never disagree - and comparing one milestone's results against another's is only possible if a
- * report can name the version that wrote it.
+ * never disagree - and comparing the results of two versions is only possible if a report can name
+ * the version that wrote it.
  *
  * <p>Started from loose compiled classes rather than a packaged file, there is nothing to read and
  * the answer is {@code unknown}. That is the honest answer, and it is also a hint: a report from

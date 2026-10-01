@@ -3,8 +3,8 @@
 # Runs RESTest from this checkout.
 #
 # This is the developer's and the reviewer's shortcut, not how RESTest is distributed: installing it
-# properly - a package, a container image, a standalone binary - is a later milestone's job, and this
-# script goes away when that lands.
+# properly - a package, a container image, a standalone binary - is a job for later, and this script
+# goes away when that lands.
 #
 # The class path rather than the module path, deliberately: two versions of the OpenAPI parser's
 # module end up on the runtime path and a module path refuses to start with both. The built jars

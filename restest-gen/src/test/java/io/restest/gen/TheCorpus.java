@@ -32,7 +32,7 @@ final class TheCorpus {
     private TheCorpus() {
     }
 
-    /** One of the five APIs the competition names, read the way a run reads it. */
+    /** One of the five APIs of the priority corpus, read the way a run reads it. */
     static ApiModel priority(String api) {
         Path document = specifications().resolve("restleague-2027").resolve(api)
                 .resolve("openapi.yaml");

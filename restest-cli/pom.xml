@@ -18,7 +18,7 @@
     <!--
       No maven.compiler.release override here. The CLI targets Java 21 like every other
       module, so a single reactor build works on any JDK from 21 upwards, and no toolchain
-      configuration is needed. See ADR-0003, Amendment (M0.2).
+      configuration is needed. See ADR-0003.
     -->
 
     <dependencies>

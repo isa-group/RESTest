@@ -142,8 +142,8 @@ class DeclaredSamplesAcrossTheCorpusTest {
      *
      * <p>This test used to demand the document's own identifier on every single request, and that
      * demand was wrong in a way only a real API showed. An identifier a document writes down is
-     * real until the run deletes that row - and a run does delete rows, from the increment that
-     * gave it request bodies onwards. A generator that cannot vary the value then sends the same
+     * real until the run deletes that row - and a run does delete rows, now that it sends request
+     * bodies. A generator that cannot vary the value then sends the same
      * 404 for the rest of the run, and the three operations that take an owner never recover.
      *
      * <p>Measured against a containerised pet-clinic, restarting it before every run, five seeds

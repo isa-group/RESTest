@@ -6,12 +6,12 @@ data, no credentials. Three sub-directories, in the order new tests should reach
 
 ## `restleague-2027/` — test against this first
 
-The five APIs named in the [2027 REST League benchmark](https://seunivr.github.io/RestLeague/2027/):
-`flight-search`, `gestao-hospital`, `kafka-rest-proxy`, `notebook-manager` and `pet-clinic`. These are
-what the tool is actually evaluated against, so this is the priority corpus — new parser, generation
-and oracle tests should exercise it before reaching into `community/`. All five declare
-`openapi: 3.0.x`. Exact provenance (upstream project, pinned commit, fetch date) is recorded in
-`ROADMAP.md` rather than duplicated here, so there is one place to update if a file is re-fetched.
+Five real APIs: `flight-search`, `gestao-hospital`, `kafka-rest-proxy`, `notebook-manager` and
+`pet-clinic`. These are what the tool is evaluated against first, so this is the priority corpus —
+new parser, generation and oracle tests should exercise it before reaching into `community/`. All
+five declare `openapi: 3.0.x`. Exact provenance (upstream project, pinned commit, fetch date) is
+recorded in `ROADMAP.md` rather than duplicated here, so there is one place to update if a file is
+re-fetched.
 
 One licensing note worth carrying alongside the files themselves: of the five upstream projects, only
 `spring-petclinic/spring-petclinic-rest` (`pet-clinic`) is Apache-2.0. `confluentinc/kafka-rest`
@@ -42,8 +42,8 @@ that no single real-world document in `community/` was found to exercise cleanly
   never defined. For asserting that a dangling reference degrades a run rather than crashing it
   (design principle 2), without also losing the operations around it.
 - `unsupported-version/openapi.yaml` — an otherwise ordinary document declaring `openapi: 3.2.0`. For
-  the "unsupported version, skipped and reported" path specifically (ADR-0007, reversed at M1.2),
-  distinct from a malformed document within a supported version.
+  the "unsupported version, skipped and reported" path specifically (ADR-0007), distinct from a
+  malformed document within a supported version.
 - `oas31-traps/openapi.yaml` — the 3.0-to-3.1 differences ADR-0007 names as silent traps: `nullable`
   as a JSON Schema type-array member instead of a sibling keyword, and a numeric `exclusiveMinimum`
   instead of a boolean flag.

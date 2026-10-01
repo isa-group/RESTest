@@ -75,7 +75,7 @@ class ProductionArchitectureTest {
 
     // The library that turns JSON into text and back moved to restest-core when a third part of the
     // tool came to need it, and the rule moved with it rather than being dropped. It is still one
-    // module's business; it is simply a different module now. See ADR-0006, Amendment (M1.6).
+    // module's business; it is simply a different module now. See ADR-0006.
     @Test
     @DisplayName("only restest-core references the JSON library (ADR-0004)")
     void only_restest_core_references_the_json_library() {
@@ -86,7 +86,7 @@ class ProductionArchitectureTest {
     // same way the JSON library did, and the rule moved with it rather than being dropped. It also
     // arrives through the specification parser, which is why the rule names two modules rather than
     // one: leaking it anywhere else would put a second document reader into a module that already
-    // has one. See ADR-0006, Amendment (M11.1), and ADR-0020.
+    // has one. See ADR-0006 and ADR-0020.
     @Test
     @DisplayName("only restest-core and restest-spec reference the YAML reader (ADR-0004)")
     void only_restest_core_and_restest_spec_reference_the_yaml_reader() {

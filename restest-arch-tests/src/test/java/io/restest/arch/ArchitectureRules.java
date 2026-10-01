@@ -255,21 +255,22 @@ final class ArchitectureRules {
      * writable contents, so it passes the rule while remaining exactly the cross-run channel
      * design principle 6 forbids.
      *
-     * It is not a one-line addition, which is why M0.2 does not attempt it. The declared type
-     * cannot decide it: `new ArrayList<>()` and `List.of(...)` are both declared `List`, so a rule
-     * reading only `field.getRawType()` either misses the first or falsely reports the second - and
-     * a rule with false positives gets switched off, at which point it guards nothing. Doing it
-     * properly means inspecting each class's static initializer for the constructor it calls.
+     * It is not a one-line addition, which is why the rule does not attempt it yet. The declared
+     * type cannot decide it: `new ArrayList<>()` and `List.of(...)` are both declared `List`, so a
+     * rule reading only `field.getRawType()` either misses the first or falsely reports the
+     * second - and a rule with false positives gets switched off, at which point it guards nothing.
+     * Doing it properly means inspecting each class's static initializer for the constructor it
+     * calls.
      *
-     * M1.1b introduced the first record holding a mutable component,
-     * `io.restest.core.execution.Payload`'s `byte[]`, expecting that increment to be the occasion
-     * for this TODO. It was not: the array is an *instance* component, so it was never within this
-     * rule's reach in the first place - `noStaticMutableState` only ever looked at static fields.
-     * `Payload` defends itself by convention instead (clone on the way in, clone on the way out,
-     * `equals`/`hashCode` written by hand), checked by `PayloadTest`, not by ArchUnit; the ADR-0005
-     * amendment records why no static-analysis rule can tell "copies the array" from "keeps the
-     * reference" by reading a compact constructor. This TODO remains open, waiting for the first
-     * `static final` field of a mutable type to actually appear.
+     * The first record holding a mutable component, `io.restest.core.execution.Payload`'s
+     * `byte[]`, was expected to be the occasion for this TODO. It was not: the array is an
+     * *instance* component, so it was never within this rule's reach in the first place -
+     * `noStaticMutableState` only ever looked at static fields. `Payload` defends itself by
+     * convention instead (clone on the way in, clone on the way out, `equals`/`hashCode` written by
+     * hand), checked by `PayloadTest`, not by ArchUnit; ADR-0005 records why no static-analysis
+     * rule can tell "copies the array" from "keeps the reference" by reading a compact
+     * constructor. This TODO remains open, waiting for the first `static final` field of a mutable
+     * type to actually appear.
      */
 
     /**

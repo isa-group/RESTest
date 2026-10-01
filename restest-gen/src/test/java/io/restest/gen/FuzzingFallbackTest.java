@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
  */
 class FuzzingFallbackTest {
 
-    /** A pet is fetched by a number or by a name, which is the shape M2.1b added support for. */
+    /** A pet is fetched by a number or by a name: a choice between two shapes. */
     private static final Operation GET_PET = Operation.of(HttpMethod.GET, "/pets/{petId}",
             List.of(Parameter.of("petId", ParameterLocation.PATH, true,
                     ChoiceSchema.of(List.of(

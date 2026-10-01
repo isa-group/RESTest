@@ -154,10 +154,10 @@ class SourceTreeRulesTest {
     }
 
     /**
-     * The rule above is the one thing this increment added, and a rule nobody has watched fail is a
-     * rule nobody knows works. This gives it a small repository of its own: an innocent file, a file
-     * that names the platform, a directory named after the platform holding a file that never spells
-     * it out, and a document that is allowed to name it.
+     * A rule nobody has watched fail is a rule nobody knows works. This gives the rule above a
+     * small repository of its own: an innocent file, a file that names the platform, a directory
+     * named after the platform holding a file that never spells it out, and a document that is
+     * allowed to name it.
      */
     @Test
     @DisplayName("the rule reports a file that names the benchmark, and a directory named after it")
@@ -507,8 +507,8 @@ class SourceTreeRulesTest {
     private static List<Path> actionDefinitions() {
         Path github = RepositoryRoot.locate().resolve(".github");
         assertThat(github.resolve("workflows"))
-                .describedAs("M0.2 introduced the workflow directory; if it is gone, continuous "
-                        + "integration is gone with it")
+                .describedAs("if the workflow directory is gone, continuous integration is gone "
+                        + "with it")
                 .isDirectory();
         try (Stream<Path> tree = Files.walk(github)) {
             return tree.filter(Files::isRegularFile)

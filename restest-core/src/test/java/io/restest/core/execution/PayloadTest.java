@@ -179,7 +179,7 @@ class PayloadTest {
     @DisplayName("deliveredLength(), not size(), stays correct when the store truncated the body")
     void delivered_length_accounts_for_store_truncation() {
         // The API genuinely delivered all 900 bytes it declared via Content-Length - nothing is
-        // wrong with this response - but our own store (M1.4) only retained the first 100. size()
+        // wrong with this response - but our own store only retained the first 100. size()
         // would understate delivery and make an oracle blame the API for our retention policy;
         // deliveredLength() reports the confirmed original length instead.
         Payload storeTruncated = Payload.partial(new byte[100], Payload.UNKNOWN_MEDIA_TYPE, 900L);
