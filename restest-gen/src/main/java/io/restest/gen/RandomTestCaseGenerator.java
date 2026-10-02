@@ -275,7 +275,8 @@ public final class RandomTestCaseGenerator {
                 && Mutations.anythingSwitchedOn(settings.mutation())
                 ? new AcceptedRequests(model, settings.mutation()) : null;
         this.mutations = this.accepted == null ? null
-                : new Mutations(model, settings.mutation(), settings.generation(), random);
+                : new Mutations(model, settings.mutation(), settings.generation(), random,
+                        Mutations.awkwardValuesIn(dictionaries));
         // Whether an operation can be tested at all is asked of an ordinary way of building a
         // request, never of one built to push at the API: a list of awkward values answers for
         // almost anything, so asking it would count an operation testable and then leave it with

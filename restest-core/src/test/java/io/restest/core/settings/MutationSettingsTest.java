@@ -39,6 +39,9 @@ class MutationSettingsTest {
                 .describedAs("the changes to a body as a whole each have a switch of their own, "
                         + "on")
                 .isTrue();
+        assertThat(defaults.breakAFormat())
+                .describedAs("a word that only looks like the format named is sent too")
+                .isTrue();
     }
 
     @Test
@@ -71,7 +74,7 @@ class MutationSettingsTest {
     @DisplayName("keeping none of the accepted requests, or oversizing to nothing, is refused")
     void sizes_are_at_least_one() {
         assertThatIllegalArgumentException().isThrownBy(() -> new MutationSettings(true, true,
-                true, true, true, true, true, true, true, true, true, true, true, true, true,
+                true, true, true, true, true, true, true, true, true, true, true, true, true, true,
                 0, 1, 1))
                 .withMessageContaining("acceptedKept");
         assertThatExceptionOfType(SettingsException.class)

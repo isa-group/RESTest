@@ -259,6 +259,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "send a value that is not on the closed list the description states"),
             key("mutation", "breakAPattern", SettingKind.YES_OR_NO,
                     "send a word the stated pattern refuses"),
+            key("mutation", "breakAFormat", SettingKind.YES_OR_NO,
+                    "send a word that looks like the stated format but is not, such as 2021-02-30 "
+                            + "for a date"),
             key("mutation", "sendNull", SettingKind.YES_OR_NO,
                     "send null for a body property that may not be null"),
             key("mutation", "sendEmpty", SettingKind.YES_OR_NO,
@@ -271,7 +274,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("mutation", "emptyBody", SettingKind.YES_OR_NO,
                     "send a body of no bytes at all where the description requires one"),
             key("mutation", "notJson", SettingKind.YES_OR_NO,
-                    "send a body that is not JSON: the accepted one cut off halfway, or plain words"),
+                    "send a body that is not JSON: the accepted one cut off or broken, or plain "
+                            + "words"),
             key("mutation", "wrongContentType", SettingKind.YES_OR_NO,
                     "send the accepted body under a media type the description does not offer"),
             key("mutation", "beyondItsWidth", SettingKind.YES_OR_NO,

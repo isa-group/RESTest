@@ -229,6 +229,13 @@ one RESTest ships, and any of yours called the same — for the requests that pu
 asks for every other list you handed over when building requests meant to work. In a plan of your
 own, one list can feed two kinds of request, or two lists one kind.
 
+One more thing reads the lists called `fuzzing`, and no plan names it. When a request the API
+accepted is sent again with one value of the wrong kind in it — see [the campaign
+file](campaign-format.md#changing-one-thing-in-a-request-that-worked) — that value is drawn from
+those lists as well as from a few RESTest keeps for it. There one odd value goes among good ones on
+purpose, since what is asked is what the API does with that one value. Only the values the document
+refuses for the place they go to are sent there, so a list of yours called `fuzzing` adds to both.
+
 Among the lists feeding ordinary requests, the order is how much each one knows about the value:
 
 ```

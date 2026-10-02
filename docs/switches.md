@@ -55,6 +55,7 @@ of change is made only when its own switch and `mutation.violations` are both on
 | `mutation.outsideABound` | `true` | 10.1 | never sends a value one step past a limit the description states |
 | `mutation.breakAnEnumeration` | `true` | 10.1 | never sends a value that is not on a closed list the description states |
 | `mutation.breakAPattern` | `true` | 10.1 | never sends a word its stated pattern refuses |
+| `mutation.breakAFormat` | `true` | 10.6 | never sends a word that only looks like its declared format, such as `2021-02-30` for a `date` or `a@b.` for an `email` |
 | `mutation.sendNull` | `true` | 10.1 | never sends `null` for a body property that may not be null |
 | `mutation.sendEmpty` | `true` | 10.1 | never sends an empty word, list or object where the description forbids one |
 | `mutation.oversize` | `true` | 10.1 | never sends a word or list far longer than the longest the description allows |
@@ -175,6 +176,13 @@ mutation:
   sendNull: false
   sendEmpty: false
   oversize: false
+```
+
+**10.6, words that only look like their format**
+
+```yaml
+mutation:
+  breakAFormat: false
 ```
 
 **10.2, bodies of the wrong shape, and numbers too wide for their format.** 10.1's changes are still

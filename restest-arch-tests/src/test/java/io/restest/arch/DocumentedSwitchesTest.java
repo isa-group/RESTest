@@ -282,21 +282,21 @@ class DocumentedSwitchesTest {
     }
 
     @Test
-    @DisplayName("the files for 10.1 and 10.2 turn off every kind of change between them, and no "
-            + "kind in both")
+    @DisplayName("the files for 10.1, 10.2 and 10.6 turn off every kind of change between them, "
+            + "and no kind in two of them")
     void the_files_for_the_changes_turn_off_every_kind_between_them() {
-        Map<String, String> oneValue = valuesIn(labelled("10.1"));
-        Map<String, String> theRest = valuesIn(labelled("10.2"));
-
-        assertThat(oneValue.keySet())
-                .describedAs("a kind of change came with one increment or the other, so it is in "
-                        + "one of the two files")
-                .doesNotContainAnyElementsOf(theRest.keySet());
-        Map<String, String> between = new TreeMap<>(oneValue);
-        between.putAll(theRest);
+        Map<String, String> between = new TreeMap<>();
+        for (String increment : List.of("10.1", "10.2", "10.6")) {
+            Map<String, String> its = valuesIn(labelled(increment));
+            assertThat(its.keySet().stream().filter(between::containsKey).toList())
+                    .describedAs("a kind of change came with one increment, so it is in one file "
+                            + "only, and %s's shares none with the files before it", increment)
+                    .isEmpty();
+            between.putAll(its);
+        }
         assertThat(between)
-                .describedAs("between them, the files for 10.1 and 10.2 are supposed to turn off "
-                        + "every kind of change the tool can make to an accepted request")
+                .describedAs("between them, the files for 10.1, 10.2 and 10.6 are supposed to turn "
+                        + "off every kind of change the tool can make to an accepted request")
                 .isEqualTo(allOff(kindsOfChange()));
     }
 

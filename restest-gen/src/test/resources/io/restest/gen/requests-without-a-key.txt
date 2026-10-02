@@ -23,49 +23,49 @@ GET http://localhost:8080/travel-intelligence/top-destinations?period=2016-09&or
 GET http://localhost:8080/travel-intelligence/top-searches?period=2016-09&origin=BOS&country=US | Accept: application/json
 GET http://localhost:8080/travel-record/YB8SPK?last_name=LOPEZ | Accept: application/json
 GET http://localhost:8080/airports/autocomplete?term=Ban | Accept: application/json
-GET http://localhost:8080/airports/nearest-relevant?latitude=&longitude=%20 | Accept: application/json
+GET http://localhost:8080/airports/nearest-relevant?latitude=%7B%7B7%2A7%7D%7D&longitude=%27 | Accept: application/json
 GET http://localhost:8080/cars/search-airport?location=haOz&pick_up=uFVFDmso7ttxHmnY1JONSGTo0C3B4CQleiygZPa608k5sLJfG&drop_off=p&lang=d4xdWlvwrxybX02taoKJYf | Accept: application/json
 GET http://localhost:8080/cars/search-circle?latitude=100.3&longitude=776.19&radius=540&pick_up=zJWq1AEQpQrbzgDuvCBMbG5BKS49CQGQ5p6S5Gvoc9YCRkp1cB61x8Gj&drop_off=SgIJb2rAcZHyfylLp5CAVjvB9Imlf | Accept: application/json
-GET http://localhost:8080/flights/affiliate-search?origin=%3C%3E&destination=%0A&departure_date=%3C%3E | Accept: application/json
-GET http://localhost:8080/flights/extensive-search?origin=%20%20%20surrounded%20by%20spaces%20%20%20&destination=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7&departure_date=NaN&max_price=..%2F.. | Accept: application/json
+GET http://localhost:8080/flights/affiliate-search?origin=the%20quick%20brown%20fox%20jumps%20over%20the%20lazy%20dog%20while%20five%20boxing%20wizards%20jump%20quickly&destination=%F0%9F%91%A8%E2%80%8D%F0%9F%91%A9%E2%80%8D%F0%9F%91%A7&departure_date=..%2F.. | Accept: application/json
+GET http://localhost:8080/flights/extensive-search?origin=%7B%7B7%2A7%7D%7D&destination=true&departure_date=%25s%25s%25s%25n&max_price=%0A | Accept: application/json
 GET http://localhost:8080/flights/inspiration-search?origin=6WKvvMcWIPCr8&max_price=XmpRjuvY | Accept: application/json
-GET http://localhost:8080/flights/low-fare-search?origin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&destination=%2500&departure_date=null&arrive_by=%0A&adults=2147483647 | Accept: application/json
+GET http://localhost:8080/flights/low-fare-search?origin=-0&destination=a%20sentence%20of%20many%20words%2C%20separated%20by%20spaces%2C%20commas%3B%20and%20other%20punctuation%3A%20does%20it%20survive%3F&departure_date=0&arrive_by=the%20quick%20brown%20fox%20jumps%20over%20the%20lazy%20dog%20while%20five%20boxing%20wizards%20jump%20quickly&adults=abc | Accept: application/json
 GET http://localhost:8080/hotels/search-airport?location=AXvdnRh9X1hkuwn9IUOUTlQymMD01PhgmEttDocZ4lU4JFYP217GXSsc5T8ge&check_in=2017-08-15&check_out=IqAbN8xAqfx6gR2Z1bz8uTl8N3tMgAoocZ0Ewyk3D4Jvkez6T&lang=TARzCozzW&max_rate=644.17 | Accept: application/json
 GET http://localhost:8080/hotels/search-box?south_west_corner=k46ckXYBXJ5VxDTl5haRGOYZVbnGgI9VeWZ&north_east_corner=xxy1fDBC1TL3QcXdTZHVs31NsRKFURD4YAsRhRPEK&check_in=0eMOFhp2Yx1Zj2rv1SkhvGnDDJRK2Z8udxWj0lZn4BIYVpwec4&check_out=jZC4B3azYRCESS02 | Accept: application/json
 GET http://localhost:8080/hotels/search-circle?latitude=130.97&longitude=-115.1541&radius=835&check_in=Bq6NPVpRIS7CiAXxH&check_out=KGeGR&lang=n5fZh2Vg7ZNN2vBsO6xlAuM3ulJixPmk&max_rate=500 | Accept: application/json
 GET http://localhost:8080/hotels/Qlf88K8WLlGl6MVCfcwE2ywyUT7OMZ7fnBf2H3M2ennY?check_in=QqALojwZCdWUvOoEoyYYodioTlnAdgGmhkO2C4&check_out=2017-08-15 | Accept: application/json
 GET http://localhost:8080/location/yLW4rE9Ljio2yfFcYcMbDN | Accept: application/json
 GET http://localhost:8080/points-of-interest/yapq-search-circle?latitude=453.51&longitude=-114.57632&radius=725&category=UAXefVUzcoV2eMhgORLgsCMyrRjR1GLfM3ighaoUggUB&number_of_images=491 | Accept: application/json
-GET http://localhost:8080/points-of-interest/yapq-search-text?city_name=undefined&image_size=0 | Accept: application/json
-GET http://localhost:8080/rail-station/..%2F.. | Accept: application/json
-GET http://localhost:8080/rail-stations/autocomplete?term=%0A | Accept: application/json
+GET http://localhost:8080/points-of-interest/yapq-search-text?city_name=%1B%5B31m&image_size=..%2F.. | Accept: application/json
+GET http://localhost:8080/rail-station/Lorem%20ipsum%20dolor%20sit%20amet%2C%20consectetur%20adipiscing%20elit%2C%20sed%20do%20eiusmod%20tempor%20incididunt%20ut%20labore | Accept: application/json
+GET http://localhost:8080/rail-stations/autocomplete?term=null | Accept: application/json
 GET http://localhost:8080/trains/extensive-search?origin=7171801&destination=8768600&departure_date=dmbcycgZpT47RtPwo5ANxUrXg1mPlJS23yT5vz75q4AVDH2KbZ6zV | Accept: application/json
 GET http://localhost:8080/trains/schedule-search?origin=VzE5rvVQ8&departure_date=2029-02-01 | Accept: application/json
 GET http://localhost:8080/travel-intelligence/flight-traffic?period=kclakTc9V6lyER1b&origin=8Fm0otVVBM0q9bWHh4Mijl0uNHVRVtDHg7T3LrjogLBGfufKnXk5Z1f2 | Accept: application/json
 GET http://localhost:8080/travel-intelligence/top-destinations?period=2016-09&origin=BOS | Accept: application/json
 GET http://localhost:8080/travel-intelligence/top-searches?period=FekaUWmuMr6b04oHBwA3P9mBVJNdaw6cJuAMcHRhf&origin=g1DzZyKMx1zTn8rmZqEQNeTw&destination=HIh7m6&country=PfCvxQMZDoeFCoeryQNdnOLhR3&number_of_results=20 | Accept: application/json
 GET http://localhost:8080/travel-record/YB8SPK?last_name=LOPEZ | Accept: application/json
-GET http://localhost:8080/airports/autocomplete?term=%09 | Accept: application/json
+GET http://localhost:8080/airports/autocomplete?term=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7 | Accept: application/json
 GET http://localhost:8080/airports/nearest-relevant?latitude=46.6734&longitude=-71.7412 | Accept: application/json
 GET http://localhost:8080/cars/search-airport?location=iOelyS8dCCm81HyNzCxc2G5zqyioDObEWrNL&pick_up=fajY1SlrUsCSngCr3ids1QD8oPNaznCWFnk8ABu3kmQNe7RQN5ApWEfhhFR6Mlb&drop_off=N4f2iKRMgryLDgnl3sQZ8itm&currency=nx6QzAurUlT7V8rJDruOElyA6nqChS54439tj3BN&provider=mnpzyBnDg2wIIWKUCsQ3Mic&rate_class=kx25HXWpDFJutm8YAVKVfok1uQeqAjOgFQiT3rCeLVuLIlRnfNq0F&rate_plan=X0U44Ls4akVaCjuXLoRbwING3bll4wQoN29hS1Tz5v3sZop2&rate_filter=ESTIMATED&vehicle=ypvzdI8Imw8ecy7X4B&vehicle=fXFMDEpKBHgqobhdXNc2sBhbjX | Accept: application/json
-GET http://localhost:8080/cars/search-circle?latitude=0&longitude=2147483648&radius=-2147483649&pick_up=%20&drop_off=%0A | Accept: application/json
+GET http://localhost:8080/cars/search-circle?latitude=0.0000000001&longitude=&radius=0&pick_up=1e400&drop_off=the%20quick%20brown%20fox%20jumps%20over%20the%20lazy%20dog%20while%20five%20boxing%20wizards%20jump%20quickly | Accept: application/json
 GET http://localhost:8080/flights/affiliate-search?origin=rEPXTeU3Uw1kCBAYHQ&destination=Mudcc6&departure_date=rG8jNankRqVmyxdMs2RmsdlXEIzBqu6bI6BxLUrvJ&include_merchants=nnPVdj9QwhNFbX6lq38lSDn%2C8LSGRiaWMMdKjqcSEAriy9oP7k6gZPHqiL0IepPqIWG5BuzP65E%2CycHhsC | Accept: application/json
-GET http://localhost:8080/flights/extensive-search?origin=%2500&destination=%00&departure_date=%2500&one-way=&duration=..%2F..&direct=yes | Accept: application/json
+GET http://localhost:8080/flights/extensive-search?origin=&destination=%7B%7B7%2A7%7D%7D&departure_date=%22&one-way=false&duration=%C2%85&direct= | Accept: application/json
 GET http://localhost:8080/flights/inspiration-search?origin=ylo1bQCzBDdhAOcEU2xCTDVrvsRB024tvGjFURY6vOOQT&departure_date=tOQYQx37iLa8uyFIk&duration=rB1WL2QcelBvzFuUd2EbxMii5FIwKZteH20Lb7&max_price=m3Nya2O9n2WjyqGXpvRE8F5XQCttE&aggregation_mode=3WovJsozFyANwVFvvIVDTax36DvR1qVOgSx7tUbq | Accept: application/json
-GET http://localhost:8080/flights/low-fare-search?origin=%00&destination=true&departure_date=..%2F.. | Accept: application/json
+GET http://localhost:8080/flights/low-fare-search?origin=%E2%80%AEabc&destination=%20%20%20surrounded%20by%20spaces%20%20%20&departure_date=%24%7B7%2A7%7D | Accept: application/json
 GET http://localhost:8080/hotels/search-airport?location=BOS&check_in=qln3U0lvsNjf076hZvzSKcTC2rql6W7LJhdfkio&check_out=Qa6DsPVKd4k5lFVSZFvZ4Jr9h | Accept: application/json
 GET http://localhost:8080/hotels/search-box?south_west_corner=72VnIHNQtuJa8wg5x1AKW0DaUaYDbOQcB9cnl&north_east_corner=seVsGfvbyy3y&check_in=qvCyX18UcSXmq8KaLHjwk9CYWw73ANNPHVz5u&check_out=gSaAHqKoVXpb2ufgnEvvkbGqBQKZTsnq6snoZF5OsOMhbvFPiV4ut&currency=bDZhvrWj4O3EA465ILzaJz&chain=3uI5Y8ODt&max_rate=854.83&number_of_results=20&show_sold_out=true&amenity=sI5NxjQHo0hGaPatBWR7K58UNKaAz&amenity=eaAQaAmWAJpBi7Imc4bEsMRNFynXZ0nGuuFsaAOxe08yI9Kop3wrBD2NE | Accept: application/json
 GET http://localhost:8080/hotels/search-circle?latitude=98.96&longitude=-115.1541&radius=232&check_in=TwDlns34nVHdSjZkulWVrhdXKfPVLEaXUaUcLkin1BeNK&check_out=8K6xdwyA | Accept: application/json
-GET http://localhost:8080/hotels/%1B%5B31m?check_in=undefined&check_out=-1 | Accept: application/json
-GET http://localhost:8080/location/%22 | Accept: application/json
+GET http://localhost:8080/hotels/%1B%5B31m?check_in=%24%7B7%2A7%7D&check_out=%3Cscript%3Ealert%281%29%3C%2Fscript%3E | Accept: application/json
+GET http://localhost:8080/location/%3Cscript%3Ealert%281%29%3C%2Fscript%3E | Accept: application/json
 GET http://localhost:8080/points-of-interest/yapq-search-circle?latitude=442.16&longitude=422.92&radius=898 | Accept: application/json
 GET http://localhost:8080/points-of-interest/yapq-search-text?city_name=pcAA7M06E8C5WWEPGEcbYNYQfeDaXc7Zk | Accept: application/json
 GET http://localhost:8080/rail-station/kjF | Accept: application/json
-GET http://localhost:8080/rail-stations/autocomplete?term=-1 | Accept: application/json
+GET http://localhost:8080/rail-stations/autocomplete?term=-0 | Accept: application/json
 GET http://localhost:8080/trains/extensive-search?origin=JmwWsUbestdIAo0KCj461kKYGU70C7HrxLhLD3nCDEx4q2kE5hBvuYfltL&destination=I2Rp1kUzXzmWfFlQlZxMPEmDmBOxTzp6fb74u23zAeGMETQ&departure_date=2017-04-25 | Accept: application/json
 GET http://localhost:8080/trains/schedule-search?origin=PQoVUGb7K04ETM1RWatnd&departure_date=2017-04-25 | Accept: application/json
-GET http://localhost:8080/travel-intelligence/flight-traffic?period=&origin=%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82&destination=%20%20%20surrounded%20by%20spaces%20%20%20&number_of_results_per_period=-2147483648 | Accept: application/json
-GET http://localhost:8080/travel-intelligence/top-destinations?period=%3C%3E&origin=%20%20%20surrounded%20by%20spaces%20%20%20&number_of_results=2147483648 | Accept: application/json
+GET http://localhost:8080/travel-intelligence/flight-traffic?period=%09&origin=%E2%80%8B&destination=%7B%7B7%2A7%7D%7D&number_of_results_per_period=99999999999999999999999999999999 | Accept: application/json
+GET http://localhost:8080/travel-intelligence/top-destinations?period=0&origin=%7B%7B7%2A7%7D%7D&number_of_results=2147483648 | Accept: application/json
 GET http://localhost:8080/travel-intelligence/top-searches?period=HwUxVye4HBUxIFPSRjQQGSn7r8A3&origin=IBxL8VTbNCKGRSE0d8rG9bQ3LbkyBYRENJy9D1UHs0Wp&country=US | Accept: application/json
 GET http://localhost:8080/travel-record/XDGBO14Gk0CgzQxNkQE4Gb5RgnhRzr95OjtThBaMnmY8AvMTFljx4DlNVzIP?last_name=qp3W9KcJonlHMC6J&env=TEST | Accept: application/json
 # community/BigOven/openapi.yaml
@@ -132,7 +132,7 @@ GET http://localhost:8080/recipes | Accept: application/json, text/json;q=0.5, a
 GET http://localhost:8080/recipes/random | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipes/raves | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipes/recentviews | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/article/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | Accept: */*
+GET http://localhost:8080/article/%E2%80%A8 | Accept: */*
 PUT http://localhost:8080/article/uRAftSkULY6SxKrUmziCi7xgU6IAklsbCFzzUKsM32LFekaUWmuMr6b04oHBw | Content-Type: application/json | Accept: */* | body {}
 GET http://localhost:8080/collection/311?rpp=430 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/collection/982/meta | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
@@ -148,7 +148,7 @@ PUT http://localhost:8080/grocerylist/item/jALx8ALEE6riIVheeAf8RzxdDkq0Pa | Cont
 DELETE http://localhost:8080/grocerylist/item/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/grocerylist/line | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {}
 POST http://localhost:8080/grocerylist/recipe | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"recipeId":178,"scale":119.68}
-POST http://localhost:8080/grocerylist/sync | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"":null}
+POST http://localhost:8080/grocerylist/sync | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"a":null}
 POST http://localhost:8080/image/avatar | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/me | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/me | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"Accounting":{"CreditBalance":852},"BOAuthToken":"ApWEfhhFR6MlbYGN4f2iKRMgryLD","Personal":{"Location":{}},"Preferences":{},"Profile":{"AboutMe":"tmZPnnx6QzAurUlT7V8rJDruOElyA6nqChS54439tj3BNoHmnpzyBn","BackgroundUrl":"2wIIWKUCsQ3Mic2Gkx25HXWpDFJutm8YAVKVfok1uQeqA","LastName":"T3rCeLVuLIlRnfNq0FhrX0U44Ls4akVaCjuXLoRbwING3bll4wQoN29hS1Tz5v3"}}
@@ -171,12 +171,12 @@ PUT http://localhost:8080/recipe/review/GEcbYNYQfeDaXc7ZkNlpkjFBR8q6JmwWsUbestdI
 GET http://localhost:8080/recipe/review/wI2Rp1kUzXzmWfFlQlZxMPEmDmBOxTzp6fb74u23zAeGMETQI2Z3lKZ76skJTsOz/replies | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/recipe/review/pSwrFeh74oGYsUPhK4F9tehWL3Hg2YdklokZ9o/replies | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"Comment":"VUGb7K04ETM1RWatndYy1BZrU"}
 POST http://localhost:8080/recipe/scan | Accept: */*
-GET http://localhost:8080/recipe/0?prefetch=0 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/-2147483649?prefetch=true | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 DELETE http://localhost:8080/recipe/155 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/-1/zap | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/recipe/440/feedback | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {}
 POST http://localhost:8080/recipe/UxIFPSRjQQGSn7r8A3cFIBxL8VTbNCKGRSE0d8rG9bQ3LbkyBYRENJ/image?caption=1UHs0WpTYDQn7vQeMBjk | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/recipe/-9223372036854775808/images | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/-2147483648/images | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/recipe/774/note | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"CreationDate":"2027-03-15T17:55:43Z","Date":"2018-01-08T18:48:02Z","GUID":"k0CgzQxNkQE4Gb5RgnhRzr95OjtThBaMnmY8AvMTFljx4DlNVzIPJfqp3W9KcJo","Notes":"MC6JrL6ssDWYqzbzwzX2D3g","People":"6dI9VclCFYFCuAwO5Q"}
 GET http://localhost:8080/recipe/288/note/40 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/recipe/920/note/315 | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"CreationDate":"2016-12-17T15:12:11Z","Date":"2021-08-08T04:46:48Z","DateDT":"OBsNoFiZoOf3hR08Ld9NJUbtavmxwI44jFdqfU4d7tJStxtpVgYPXMU","GUID":"DJBejt9YTeZyDrnnna"}
@@ -189,23 +189,23 @@ POST http://localhost:8080/recipe/155/review | Content-Type: application/json | 
 GET http://localhost:8080/recipe/943/review/942 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/recipe/592/review/222 | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"ActiveMinutes":323,"Comment":"s2LyuRtbii5Rx5Qx9Cf4u1LiL63RDPejv9yqAPduraAarHyjR84PpV","TotalMinutes":832}
 DELETE http://localhost:8080/recipe/yxj9VbvODw8vTewtNg3iqfLiJweKdG6IcTNk52UEm/review/S84iY4MAYDBGkodyfYHtxqvBMbavQc26cxxq3WRzNz | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/recipe/2147483647/reviews?pg=2147483648 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/recipe/2147483647/scans | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/1/reviews?pg=1.5 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/99999999999999999999999999999999/scans | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipes?exclude_cat=hGnWEOiiUh7ZaPvvxZE5vhhCWM0DLANmxI5X&glf=149&dyf=504&synonyms=true | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipes/random | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipes/raves | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/recipes/recentviews?pg=-2147483648&rpp=2147483648 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipes/recentviews?pg=10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000&rpp=1.5 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/article/NK3btcOfUG4961 | Accept: */*
-PUT http://localhost:8080/article/null | Content-Type: application/json | Accept: */* | body null
+PUT http://localhost:8080/article/%E2%80%8B | Content-Type: application/json | Accept: */* | body {"a":{"b":{"c":{}}}}
 GET http://localhost:8080/collection/293?sessionForLogging=iK5v | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/collection/931/meta | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/collections?test=GovI | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/glossary/byterm/V2yXPk8OwXYCcZs7OPnPTfnXbKuCJRF3qLIrG | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/glossary/2147483647 | Accept: */*
+GET http://localhost:8080/glossary/-9223372036854775808 | Accept: */*
 GET http://localhost:8080/grocerylist | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 DELETE http://localhost:8080/grocerylist | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/grocerylist/clearcheckedlines | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-POST http://localhost:8080/grocerylist/department | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body null
+POST http://localhost:8080/grocerylist/department | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"a":{"b":{"c":{}}}}
 POST http://localhost:8080/grocerylist/item | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"name":"pUOrp3ucqrGuBqgvXClXR3uNjdEhR4miuwXAxcMlMmoQTUDUTG2tYN","quantity":"VKvzVXBWAE6gzZuOP3EoeXD4ayzGkudp3e697W3w5HIp4yI3Z3lmq"}
 PUT http://localhost:8080/grocerylist/item/B9MHxBYfigsJuE81XlGT0PjNNQPl6lVzt | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"department":"LLRoBeXsyrxkufqDFsA8SRn9OyP1Sxm3ja","ischecked":false,"notes":"v81eTSMbRODGCQ87Hv3Yf1tU16XLS7sfHZm4zui1dFY","quantity":"x15aZietO1108R"}
 DELETE http://localhost:8080/grocerylist/item/U6fLRNrzNnWQ6cDZXnd9M15cdVYTbQJzJrsEXpiFjfjiJj8dEQCFzNM | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
@@ -216,7 +216,7 @@ POST http://localhost:8080/image/avatar | Accept: application/json, text/json;q=
 GET http://localhost:8080/me | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/me | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"LastChangeLogID":"UDqci2gEM1cQRVxvO7nqCeVI2ik9YxKjyLq1LW8aitQE2Zh","Preferences":{}}
 PUT http://localhost:8080/me/personal | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"Email":"5JXxEHhwryfWSrZ","Location":{"City":"GYdV0BQNeVXr","Country":"j3XT5zcipKtlM61beX"}}
-PUT http://localhost:8080/me/preferences | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"":null}
+PUT http://localhost:8080/me/preferences | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"a":null}
 GET http://localhost:8080/me/preferences/options | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/me/profile | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"BackgroundUrl":"FeCSQCXCnaSUAXred9Z9eYqq4sYd0Q6XGRwjmKX5RdOmGZd","Counts":{"AddedCount":917,"FollowingCount":562},"FirstName":"PKjMRJNyOo9P1B49zfd11p","HomeUrl":"sVtO2ZPXFhy5osgxLbI0ebx3enm0a2f","LastName":"RPZv04p9k7XIezpUDBhlqqbk6yo3EtmENd9D7js50bdTlxeh","UserID":436,"UserName":"GVgNgEXXm5TzJFkG4bmp1jhUcxFUjFihfoeNXpg"}
 GET http://localhost:8080/me/skinny | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
@@ -235,23 +235,23 @@ GET http://localhost:8080/recipe/review/%22/replies | Accept: application/json, 
 POST http://localhost:8080/recipe/review/4KIQ0CZVnkBgToz8AooqcZx6EILNctkgWh5AvDLnmZWlwCAGlqxK7YJbcMUkUlr/replies | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {}
 POST http://localhost:8080/recipe/scan | Accept: */*
 GET http://localhost:8080/recipe/120?prefetch=true | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-DELETE http://localhost:8080/recipe/0 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+DELETE http://localhost:8080/recipe/-9223372036854775808 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/460/zap | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/recipe/578/feedback | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {}
 POST http://localhost:8080/recipe/iWgnIRtV/image?lat=135.94&lng=811.84 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/215/images | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-POST http://localhost:8080/recipe/9223372036854775807/note | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {}
+POST http://localhost:8080/recipe/2147483647/note | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"__proto__":{"polluted":true}}
 GET http://localhost:8080/recipe/472/note/205 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/recipe/157/note/556 | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"ID":518,"Notes":"TpcCSAQh0po0eD1qDvip1kRDaac6usUk","People":"4sQSKG8h6YvMpzt54UJYlowyx5zZag23ICwsx","Variations":"9Z1WGCHVinx2k7ZE8GDxQtmwROSJpMFbXVA7h11uq9mRDqsHZ"}
 DELETE http://localhost:8080/recipe/245/note/513 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/907/notes?pg=573&rpp=976 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/recipe/-2147483649/photos | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000/photos | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/206/related?pg=980&rpp=231 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
-GET http://localhost:8080/recipe/99999999999999999999999999999999/review | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/0/review | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 POST http://localhost:8080/recipe/225/review | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"Comment":"T1MLSaPo1re8fbowm","MakeAgain":"nAqHFktrpS2C0PAx1wDQFgc"}
-GET http://localhost:8080/recipe/2147483647/review/-9223372036854775808 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+GET http://localhost:8080/recipe/99999999999999999999999999999999/review/1.5 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 PUT http://localhost:8080/recipe/185/review/287 | Content-Type: application/json | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5 | body {"ActiveMinutes":805,"Comment":"3JkHCH8fC9C2t","GUID":"GWSav772Vf2vHl7NGMJUjOtrTj","MakeAgain":"PE5g4mXRqp01MSJ6k9xtNz8IgwiPm6bUqELmdluCg","ParentID":768,"TotalMinutes":568}
-DELETE http://localhost:8080/recipe/%27/review/%22 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
+DELETE http://localhost:8080/recipe/%27%20OR%20%271%27%3D%271/review/%3Cscript%3Ealert%281%29%3C%2Fscript%3E | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/329/reviews?pg=655&rpp=136 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipe/87/scans | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
 GET http://localhost:8080/recipes?username=6qldFecemgrXvb4JwQL6GPiHEKL6KSKCsA3FRw7ocZeC&photos=false&include_cat=KATiaBNyJD1k&glf=430&wmf=835 | Accept: application/json, text/json;q=0.5, application/xml;q=0.5, text/xml;q=0.5
@@ -268,7 +268,7 @@ GET http://localhost:8080/find-by-geo?latitude=50.7169763&longitude=7.1329916 | 
 GET http://localhost:8080/find-by-keyword-id?keywordId=502&countryCode=DE&postalCode=53113 | Accept: application/json
 GET http://localhost:8080/locations/8007-401067103 | Accept: application/json
 GET http://localhost:8080/find-by-address?countryCode=DE&addressLocality=zjS8RyiyrQhNxZZDNP7fLmXrLHzciWM&providerType=express&locationType=postbank | Accept: application/json
-GET http://localhost:8080/find-by-geo?latitude=%3C%3E&longitude=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | Accept: application/json
+GET http://localhost:8080/find-by-geo?latitude=null&longitude=%E2%80%AEabc | Accept: application/json
 GET http://localhost:8080/find-by-keyword-id?keywordId=502&countryCode=KCKwx4KNIVmabaDGdSARPrpk8y4skUAM93eyAeNqY21JVnredMx5qMrhyix&postalCode=rOSIAkDFTAbLF7mhbqXUGpFMU64d84pqH8PZv | Accept: application/json
 GET http://localhost:8080/locations/KLKzruwc6aouueoGOHEa9HbZccOIAe9DsVMRfgvsp7prevMllCm5C0qgLK | Accept: application/json
 GET http://localhost:8080/find-by-address?countryCode=S0UBfG27SvOaAYcYjyErlz | Accept: application/json
@@ -283,7 +283,7 @@ GET http://localhost:8080/isochrone?point=gNvGSGNT9Uoe6mdjQqUPFJkit3ayz6Vkyv4FBg
 GET http://localhost:8080/route?point= | Accept: application/json
 POST http://localhost:8080/route | Accept: application/json
 GET http://localhost:8080/route/info | Accept: application/json
-GET http://localhost:8080/isochrone?point=%20%20%20surrounded%20by%20spaces%20%20%20&time_limit=-1 | Accept: application/json
+GET http://localhost:8080/isochrone?point=%E2%80%AEabc&time_limit=2147483647 | Accept: application/json
 GET http://localhost:8080/route?point=vZd59J6MGmUOhkqWn98BnhhToOQDXcxpZmUFT4VgJrJYHbU2&point=qEeCWnBeg5V2vruf2PjxTKObAS5B2p&point=x1S08cR5qgK7dvanBM5vwv8wCpZORHMAmRdioeSpGkzc8PcFrfYf0tRhe&point=5tNaJaGdOaC03UM1pSjRFXyq71qJI8sG | Accept: application/json
 POST http://localhost:8080/route | Content-Type: application/json | Accept: application/json | body {"$ref":"examples/routeRequest.json"}
 GET http://localhost:8080/route/info | Accept: application/json
@@ -297,8 +297,8 @@ POST http://localhost:8080/words/delete | Content-Type: application/x-www-form-u
 POST http://localhost:8080/check | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body language=8PZv5TGmKLKzruwc6aouueoGOHEa9HbZccOIAe9DsVMRf&altLanguages=7prevMllCm5C0qgLKqJ90PS0UBfG27SvOaAY&motherTongue=rlzI7lyVV8MdSvhToiG2AVMa2th8BSIwcJDP8RcaVpJfaoHA&enabledCategories=I2FxBK3uJEv8&disabledCategories=gxVBcLr6PfMoMvoTSfKpsN2Ei7CoqMjbRlKFUfyWbeGk&level=picky
 GET http://localhost:8080/languages | Accept: application/json
 GET http://localhost:8080/words?username=hb78V1ZhRDb8tDPSOF7GlW1A1fNmTGeY&apiKey=9RBLeXGCcx6d1uDd29Fj9AfoqcEBCaqlqAqST0sZ | Accept: application/json
-POST http://localhost:8080/words/add | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body =
-POST http://localhost:8080/words/delete | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body =
+POST http://localhost:8080/words/add | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body b=c%2C
+POST http://localhost:8080/words/delete | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body a=
 POST http://localhost:8080/check | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body language=NASC&altLanguages=nOJzwgCxtzFMXa8cmPSpOPbzmSleApPTa4j4kY5pMNRTmrbywEE6FQoL&apiKey=3KfFvKiIqbwFi75o8o2aHYvynIS6YZ1Arg3MOozd2aEWqIRx7&enabledRules=TF4YZOkewA3kHpwFn4a8i29kRSBcqHM3Y9GQyT7SenNqcL8BXUpXvf45DYs0UA&disabledRules=CUC07SZRoooDMGc0W04j0WdROlZP5nfLkVhXnyFZfzGh6fl9TTTjK5uf6Y8A1R&disabledCategories=44gjuAQXJy2GoxE2E4Agmy36e6YpZQDGcv5N9mNT6xaczGe1&enabledOnly=false
 GET http://localhost:8080/languages | Accept: application/json
 GET http://localhost:8080/words?offset=461&limit=286&username=VWMi9I0XQhkLPvDCjReRWBD4ooskHLPNTRcdu3TLGar6hoqTGjljGh6MTQQAlSXH&apiKey=1LjHk605EOSNcGfLAB7anUr0824LP9nYQeSrY4fd9fGMiJOeLgFB | Accept: application/json
@@ -306,7 +306,7 @@ POST http://localhost:8080/words/add | Content-Type: application/x-www-form-urle
 POST http://localhost:8080/words/delete | Content-Type: application/x-www-form-urlencoded | Accept: application/json | body word=jOORQnosaZkep6BQacPUj3i47qM55Q9QjttKy1wzvty4gblU1hJYI25BB7p5Snx&username=ZAMa8splw8Pvo&apiKey=XIwB9ulAOS9gY4bNkRyVD9p
 # community/OMDb/openapi.yaml
 GET http://localhost:8080/ | Accept: */*
-GET http://localhost:8080/?t=null | Accept: */*
+GET http://localhost:8080/?t=the%20quick%20brown%20fox%20jumps%20over%20the%20lazy%20dog%20while%20five%20boxing%20wizards%20jump%20quickly | Accept: */*
 GET http://localhost:8080/?i=ODdZ5N82O16WEm8KToCrz4T6kTBJfd9eQrNPLue7CJvmPsj9e&type=episode&plot=full | Accept: */*
 # community/Petstore/openapi.yaml
 PUT http://localhost:8080/pet | Content-Type: application/json | Accept: */* | body {"name":"doggie","photoUrls":["uyTZfmMgZPzUuqqTXwJUlrSxROS"],"id":813,"tags":[{},{"name":"3pLnu5aIioaSOyw9Wo9QF"}],"status":"sold"}
@@ -331,26 +331,26 @@ PUT http://localhost:8080/user/6P58u2gtb2T11CMDAipX2GeJBgw4LdDDQRMvSZqkyifvhfPFF
 DELETE http://localhost:8080/user/d6jns6wwuDaHiaJX9hZEuZBYn23J5SdtDF1yWHPj8brseLG7Yc9OOU1xCdXJ3G | Accept: */*
 PUT http://localhost:8080/pet | Content-Type: application/json | Accept: */* | body {"name":"doggie","photoUrls":["KVODpjXgs0bO28T4YWCHWa2FbobnzOzyzTfcdJ1LE1fRb3oSRvfzlipF7atbI","28","ic24p00kCHwF","Clc5xay2nOsnXwithaOzEFuFVFDmso7ttxHmnY1J"]}
 POST http://localhost:8080/pet | Content-Type: application/json | Accept: */* | body {"name":"doggie","photoUrls":["4CQleiygZP","608k5sLJfG6","p"],"id":90,"category":{},"tags":[{},{"name":"xybX02taoKJYfad5GHFh13fzJWq1AEQpQrbzgDuvCB"},{"name":"5BKS49CQGQ5p6S5Gvoc9YCRkp1cB61x8GjkPSgIJb2rAcZHy"}]}
-GET http://localhost:8080/pet/findByStatus?status=&status=&status= | Accept: application/json, application/xml;q=0.5
+GET http://localhost:8080/pet/findByStatus?status=1&status=a&status=true&status=&status=&status= | Accept: application/json, application/xml;q=0.5
 GET http://localhost:8080/pet/findByTags?tags=AVjvB9ImlfbZ4NlPW&tags=zl6ILQ8XbE1XoSr6WKvvMcWIPCr8MRanJAqaXmpRjuvYRLYkZuMLQxnnvkE&tags=cLqAXv | Accept: application/json, application/xml;q=0.5
 GET http://localhost:8080/pet/234 | Accept: application/json, application/xml;q=0.5
-POST http://localhost:8080/pet/-9223372036854775808 | Accept: */*
+POST http://localhost:8080/pet/0 | Accept: */*
 DELETE http://localhost:8080/pet/184 | Accept: */*
 POST http://localhost:8080/pet/99999999999999999999999999999999/uploadImage | Accept: application/json
 GET http://localhost:8080/store/inventory | Accept: application/json
-POST http://localhost:8080/store/order | Content-Type: application/json | Accept: application/json, application/xml;q=0.5 | body null
+POST http://localhost:8080/store/order | Content-Type: application/json | Accept: application/json, application/xml;q=0.5 | body {"a":{"b":{"c":{}}}}
 GET http://localhost:8080/store/order/5 | Accept: application/json, application/xml;q=0.5
 DELETE http://localhost:8080/store/order/339 | Accept: */*
 POST http://localhost:8080/user | Content-Type: application/json | Accept: */* | body {"id":778,"firstName":"mEttDocZ4lU4JFYP217GXSsc5T8geDVrCibyFVKyewPDxU","lastName":"lKEdkAeJ5y0","email":"5PtDeITEXh","phone":"8m0V9WIqAbN8xAqfx6gR2Z1bz8uTl8N3tMgAoocZ0Ewyk3D4Jvkez6","userStatus":618}
-POST http://localhost:8080/user/createWithArray | Content-Type: application/json | Accept: */* | body ["","",""]
+POST http://localhost:8080/user/createWithArray | Content-Type: application/json | Accept: */* | body [1,"a",true,null,{},[]]
 POST http://localhost:8080/user/createWithList | Content-Type: application/json | Accept: */* | body [{"id":291,"username":"zzWiUfAfAuiTk46ckXYBXJ5VxDTl5haRGOYZVbnGgI9VeWZsyxxy1fDBC1TL3Qc"}]
-GET http://localhost:8080/user/login?username=%20&password=..%2F.. | Accept: application/json, application/xml;q=0.5
+GET http://localhost:8080/user/login?username=%24%7B7%2A7%7D&password=0 | Accept: application/json, application/xml;q=0.5
 GET http://localhost:8080/user/logout | Accept: */*
 GET http://localhost:8080/user/%20 | Accept: application/json, application/xml;q=0.5
 PUT http://localhost:8080/user/RD4Y | Content-Type: application/json | Accept: */* | body {"firstName":"PEKze0eMOFhp2Yx1Zj2rv1SkhvGnDDJRK2Z8udxWj0lZn4BIYVp","email":"4WZjZC4B3azYRCESS02OFlZx9G2m6M8Bq6NP"}
 DELETE http://localhost:8080/user/CiAXxHpfKGeGRSuOn | Accept: */*
 PUT http://localhost:8080/pet | Content-Type: application/json | Accept: */* | body null
-POST http://localhost:8080/pet | Content-Type: application/json | Accept: */* | body null
+POST http://localhost:8080/pet | Content-Type: application/json | Accept: */* | body {"a":{"b":{"c":{}}}}
 GET http://localhost:8080/pet/findByStatus?status=sold&status=pending | Accept: application/json, application/xml;q=0.5
 GET http://localhost:8080/pet/findByTags | Accept: application/json, application/xml;q=0.5
 GET http://localhost:8080/pet/65 | Accept: application/json, application/xml;q=0.5
