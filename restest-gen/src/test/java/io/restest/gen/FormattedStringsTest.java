@@ -191,6 +191,63 @@ class FormattedStringsTest {
         return value.orElseThrow();
     }
 
+    @Nested
+    @DisplayName("the kinds a name or a description implies, and nothing real among them")
+    class ImpliedKinds {
+
+        @RepeatedTest(20)
+        @DisplayName("a card number passes the check every card number carries, and is one the "
+                + "card companies publish for testing")
+        void a_card_number_is_a_test_card() {
+            String card = FormattedStrings.testCardNumber(RANDOM);
+
+            assertThat(passesLuhn(card)).isTrue();
+            assertThat(card).isIn("4111111111111111", "4242424242424242", "5555555555554444",
+                    "378282246310005", "6011111111111117");
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("a telephone number is one set aside for fiction, written the international way")
+        void a_phone_is_fictional() {
+            assertThat(FormattedStrings.phone(RANDOM))
+                    .matches("\\+447700900\\d{3}|\\+120255501\\d{2}");
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("currency, country and language codes are written as their standards write them")
+        void codes_are_written_the_standard_way() {
+            assertThat(FormattedStrings.currency(RANDOM)).matches("[A-Z]{3}");
+            assertThat(FormattedStrings.country(RANDOM)).matches("[A-Z]{2}");
+            assertThat(FormattedStrings.language(RANDOM)).matches("[a-z]{2}(-[A-Z]{2})?");
+        }
+
+        @RepeatedTest(20)
+        @DisplayName("a moment the web's way, and as seconds or milliseconds since 1970")
+        void moments_written_other_ways() {
+            assertThatCode(() -> java.time.ZonedDateTime.parse(FormattedStrings.httpDate(RANDOM),
+                    java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME))
+                    .doesNotThrowAnyException();
+            assertThat(Long.parseLong(FormattedStrings.epochSeconds(RANDOM)))
+                    .isBetween(631_152_000L, 2_208_988_800L);
+            assertThat(FormattedStrings.epochMillis(RANDOM)).matches("\\d{12,13}");
+        }
+
+        private static boolean passesLuhn(String number) {
+            int sum = 0;
+            for (int at = 0; at < number.length(); at++) {
+                int digit = number.charAt(number.length() - 1 - at) - '0';
+                if (at % 2 == 1) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+                sum += digit;
+            }
+            return sum % 10 == 0;
+        }
+    }
+
     /** One source for the whole class, so repeated runs of a test see different draws. */
     private static final SplittableRandom RANDOM = new SplittableRandom(20260920L);
 }

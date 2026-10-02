@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
@@ -110,8 +111,11 @@ class RequestsWithoutAKeyTest {
         Dictionaries.Found found = Dictionaries.gather(List.of(), model);
         Campaigns.Found plan = Campaigns.gather(Optional.empty(), model,
                 found.dictionaries().stream().map(Dictionary::name).collect(Collectors.toSet()));
+        // With the kinds a name implies left out, which came later and change what is invented:
+        // the file holds what the tool sent before it read anything about keys, and this test is
+        // about keys alone. What the implied kinds send is held by tests of their own.
         return new RandomTestCaseGenerator(model, SEED, found.dictionaries(), plan.campaign(),
-                Settings.defaults());
+                Settings.from(Map.of("generation.impliedFormats", "false")));
     }
 
     /** One request as one line: what would go over the wire, headers and body included. */

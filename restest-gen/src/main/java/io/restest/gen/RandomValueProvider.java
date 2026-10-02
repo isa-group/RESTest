@@ -20,6 +20,7 @@ import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
@@ -96,6 +97,15 @@ public final class RandomValueProvider implements ValueProvider {
     /** How long, how deep and how many: what an invented value is allowed to look like. */
     private final GenerationSettings settings;
     private final Map<Spelling, Optional<MatchingStrings>> spellings = new LinkedHashMap<>();
+
+    /**
+     * What each place's name and description were found to imply, worked out once per place. The
+     * same place is asked about thousands of times in a run, and its description does not change.
+     */
+    private final Map<Clues, Optional<ImpliedFormats.Implied>> implied = new LinkedHashMap<>();
+
+    private record Clues(String name, String description) {
+    }
 
     /**
      * A provider that invents values, asking the specification's own declared values for anything
@@ -191,7 +201,7 @@ public final class RandomValueProvider implements ValueProvider {
             return Optional.of(JsonValue.NULL);
         }
         return switch (schema) {
-            case StringSchema string -> text(string);
+            case StringSchema string -> text(Optional.of(request), string);
             case NumberSchema number -> number(number);
             case BooleanSchema ignored -> Optional.of(JsonValue.of(random.nextBoolean()));
             case NullSchema ignored -> Optional.of(JsonValue.NULL);
@@ -215,8 +225,11 @@ public final class RandomValueProvider implements ValueProvider {
      * of value comes first - a date, an e-mail address, an identifier - because it describes the
      * whole value and not merely its characters. A spelling rule comes next, and it is also what
      * keeps or rejects the kind: where a specification states both, the value has to satisfy both.
-     * When neither is stated, or neither could be honoured, what is left is an ordinary word, which
-     * is what every string used to be.
+     * Where it names no kind, the kind the value's name or description implies - an e-mail address
+     * for {@code billing_email}, a date in the form a description writes out - is tried some of the
+     * time, and the spelling rule holds it to the same account. When none of these is stated, or
+     * none could be honoured, what is left is an ordinary word, which is what every string used to
+     * be.
      *
      * <p>Not being able to honour a rule means two different things and they end differently. A rule
      * nobody could read is treated as though it had not been written, because refusing to test a
@@ -229,7 +242,7 @@ public final class RandomValueProvider implements ValueProvider {
      * {@code 2147483647} characters is ordinary - that is what a Java {@code @Size} annotation
      * produces - and computing the range of lengths in {@code int}s would overflow and end the run.
      */
-    private Optional<JsonValue> text(StringSchema schema) {
+    private Optional<JsonValue> text(Optional<ValueRequest> asked, StringSchema schema) {
         long stated = schema.maxLength().map(Integer::longValue).orElse(Long.MAX_VALUE);
         // One character unless the specification says otherwise - an empty value is legal almost
         // everywhere and useful almost nowhere - but never more than it allows: a string that must
@@ -259,10 +272,65 @@ public final class RandomValueProvider implements ValueProvider {
             return ofTheKindNamed.map(JsonValue::of);
         }
 
+        Optional<String> ofTheKindImplied = asked.flatMap(request ->
+                ofTheKindImplied(request, schema, lowest, stated, spelling));
+        if (ofTheKindImplied.isPresent()) {
+            return ofTheKindImplied.map(JsonValue::of);
+        }
+
         if (spelling.isPresent()) {
             return spelling.get().next(random).map(JsonValue::of);
         }
         return Optional.of(JsonValue.of(word(lowest, stated)));
+    }
+
+    /**
+     * A value of the kind the place's name or description implies, where the document declares no
+     * kind of its own - and only some of the time.
+     *
+     * <p>Only where the document leaves the value open: no kind named, no closed list, no sample of
+     * its own, any of which says more than a name could. A spelling rule and the lengths still hold,
+     * and a value they refuse is not sent: what is sent instead is what would have been sent
+     * anyway. And only as often as the settings say, because the API's answer to an ordinary word
+     * in an e-mail address's place is worth having too.
+     *
+     * <p>Nothing is drawn where nothing is implied, so that a place no rule recognises is invented
+     * exactly as it was before any of this existed.
+     */
+    private Optional<String> ofTheKindImplied(ValueRequest request, StringSchema schema,
+            long lowest, long stated, Optional<MatchingStrings> spelling) {
+        if (!settings.impliedFormats() || schema.format().isPresent()
+                || !schema.metadata().enumeration().isEmpty()
+                || !schema.metadata().examples().isEmpty() || !request.examples().isEmpty()) {
+            return Optional.empty();
+        }
+        Clues clues = new Clues(request.name(), descriptionOf(request, schema));
+        Optional<ImpliedFormats.Implied> kind = implied.computeIfAbsent(clues,
+                ignored -> ImpliedFormats.of(clues.name(), clues.description()));
+        if (kind.isEmpty() || random.nextDouble() >= settings.impliedFormatChance()) {
+            return Optional.empty();
+        }
+        return Optional.of(kind.get().valueFor(random))
+                .filter(value -> value.length() >= lowest && value.length() <= stated)
+                .filter(value -> spelling.map(rule -> rule.allows(value)).orElse(true));
+    }
+
+    /**
+     * What the document says this value is: the description beside its shape, or, for a parameter
+     * whose shape says nothing, the description of the parameter itself.
+     */
+    private String descriptionOf(ValueRequest request, StringSchema schema) {
+        Optional<String> beside = schema.metadata().description();
+        if (beside.isPresent() || request.location() == ParameterLocation.BODY) {
+            return beside.orElse("");
+        }
+        return model.operation(request.operation())
+                .flatMap(operation -> operation.parameters().stream()
+                        .filter(parameter -> parameter.name().equals(request.name())
+                                && parameter.location() == request.location())
+                        .findFirst())
+                .flatMap(Parameter::description)
+                .orElse("");
     }
 
     /**
@@ -545,7 +613,8 @@ public final class RandomValueProvider implements ValueProvider {
         return switch (random.nextInt(4)) {
             case 0 -> JsonValue.of(random.nextBoolean());
             case 1 -> JsonValue.of(random.nextInt(1000));
-            default -> text(StringSchema.of()).orElse(JsonValue.of("value"));
+            // A word with no place to imply anything from.
+            default -> text(Optional.empty(), StringSchema.of()).orElse(JsonValue.of("value"));
         };
     }
 

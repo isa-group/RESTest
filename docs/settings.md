@@ -156,6 +156,10 @@ generation:
   sendableAttempts: 8         # default
   # how many bodies are drawn while looking for one its media type can carry
   writableBodyAttempts: 8     # default
+  # whether an invented word takes the kind its name or description implies, such as an e-mail address for email, where none is declared
+  impliedFormats: true        # default
+  # how often it does where a kind is implied, between 0 and 1; the rest are ordinary invented words
+  impliedFormatChance: 0.5    # default
 
 mutation:
   # whether accepted requests are changed in ways the description forbids
@@ -364,6 +368,8 @@ spelling `--budget` takes.
 | `uniqueAttempts` | `8` | how many times a fresh element is attempted for a list of distinct items |
 | `sendableAttempts` | `8` | how many times a value is invented again after an unsendable one |
 | `writableBodyAttempts` | `8` | how many bodies are drawn while looking for one its media type can carry |
+| `impliedFormats` | `true` | whether an invented word takes the kind its name or description implies, such as an e-mail address for email, where none is declared |
+| `impliedFormatChance` | `0.5` | how often it does where a kind is implied, between 0 and 1; the rest are ordinary invented words |
 
 ### `mutation.*`
 

@@ -238,6 +238,12 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many times a value is invented again after an unsendable one"),
             key("generation", "writableBodyAttempts", SettingKind.WHOLE_NUMBER,
                     "how many bodies are drawn while looking for one its media type can carry"),
+            key("generation", "impliedFormats", SettingKind.YES_OR_NO,
+                    "whether an invented word takes the kind its name or description implies, "
+                            + "such as an e-mail address for email, where none is declared"),
+            key("generation", "impliedFormatChance", SettingKind.NUMBER,
+                    "how often it does where a kind is implied, between 0 and 1; the rest are "
+                            + "ordinary invented words"),
 
             key("mutation", "violations", SettingKind.YES_OR_NO,
                     "whether accepted requests are changed in ways the description forbids"),

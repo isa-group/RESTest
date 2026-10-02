@@ -36,6 +36,7 @@ import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.restest.core.settings.GenerationSettings;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -740,6 +741,151 @@ class RandomValueProviderTest {
 
         private String text(StringSchema schema) {
             return ((JsonValue.JsonString) invent(schema)).value();
+        }
+    }
+
+    @Nested
+    @DisplayName("the kind a name or a description implies, some of the time")
+    class ImpliedKinds {
+
+        private static final io.restest.core.model.OperationId ADD_USER =
+                io.restest.core.model.OperationId.of("addUser");
+
+        @RepeatedTest(10)
+        @DisplayName("where a name implies a kind and it is drawn, the value is of that kind")
+        void a_name_implies_a_kind() {
+            assertThat(word(implying(true, 1.0), "billing_email", StringSchema.of(), 1L))
+                    .endsWith("@example.com");
+        }
+
+        @Test
+        @DisplayName("it is drawn as often as the settings say, and otherwise the word is ordinary")
+        void the_chance_is_honoured() {
+            RandomValueProvider half = provider(EMPTY, implying(true, 0.5), 7L);
+            long addresses = java.util.stream.IntStream.range(0, 400)
+                    .mapToObj(ignored -> text(half, "email", StringSchema.of()))
+                    .filter(value -> value.endsWith("@example.com"))
+                    .count();
+
+            assertThat(addresses).isBetween(140L, 260L);
+        }
+
+        @Test
+        @DisplayName("a spelling rule holds the implied value to account, and what it refuses is "
+                + "built from the rule instead")
+        void the_spelling_rule_holds() {
+            StringSchema fourDigits = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.empty(), Optional.of("^[0-9]{4}$"), Optional.empty());
+            StringSchema marketCard = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.empty(), Optional.of("\\b(?:\\d[ -]*?){13,16}\\b"), Optional.empty());
+
+            assertThat(word(implying(true, 1.0), "ccNumber", fourDigits, 3L)).matches("[0-9]{4}");
+            assertThat(word(implying(true, 1.0), "ccNumber", marketCard, 3L))
+                    .describedAs("market's own rule for a card number accepts a test card")
+                    .isIn("4111111111111111", "4242424242424242", "5555555555554444",
+                            "378282246310005", "6011111111111117");
+        }
+
+        @RepeatedTest(10)
+        @DisplayName("a value too long for its place is not sent")
+        void the_lengths_hold() {
+            StringSchema short5 = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.of(5), Optional.empty(), Optional.empty());
+
+            assertThat(word(implying(true, 1.0), "email", short5, 5L)).doesNotContain("@")
+                    .hasSizeLessThanOrEqualTo(5);
+        }
+
+        @Test
+        @DisplayName("a kind, a closed list or a sample the document states wins over the name")
+        void what_the_document_says_wins() {
+            StringSchema aUuid = StringSchema.ofFormat("uuid");
+            StringSchema closed = new StringSchema(SchemaMetadata.none().withEnumeration(
+                    List.of(JsonValue.of("a"), JsonValue.of("b"))), Optional.empty(),
+                    Optional.empty(), Optional.empty(), Optional.empty());
+            StringSchema sampled = new StringSchema(SchemaMetadata.none().withExamples(
+                    List.of(JsonValue.of("someone"))), Optional.empty(), Optional.empty(),
+                    Optional.empty(), Optional.empty());
+
+            assertThat(word(implying(true, 1.0), "email", aUuid, 9L)).doesNotContain("@");
+            assertThat(word(implying(true, 1.0), "email", closed, 9L)).doesNotContain("@");
+            assertThat(word(implying(true, 1.0), "email", sampled, 9L)).doesNotContain("@");
+        }
+
+        @Test
+        @DisplayName("switched off, invention draws exactly what it drew before, number for number")
+        void off_is_as_before() {
+            RandomValueProvider off = provider(EMPTY, implying(false, 1.0), 11L);
+            RandomValueProvider nothingImplied = provider(EMPTY, implying(true, 1.0), 11L);
+            for (int draw = 0; draw < 30; draw++) {
+                assertThat(text(off, "email", StringSchema.of()))
+                        .isEqualTo(text(nothingImplied, "widgetName", StringSchema.of()));
+            }
+        }
+
+        @RepeatedTest(5)
+        @DisplayName("a property deep inside a body is given its kind too")
+        void inside_a_body() {
+            ObjectSchema user = ObjectSchema.of(java.util.Map.of("contact",
+                    ObjectSchema.of(java.util.Map.of("email", StringSchema.of()),
+                            java.util.Set.of("email"))), java.util.Set.of("contact"));
+            JsonValue body = provider(EMPTY, implying(true, 1.0), 13L).offer(
+                    new io.restest.core.gen.ValueRequest(ADD_USER, "body", "body",
+                            ParameterLocation.BODY, user, List.of(), Optional.empty()))
+                    .orElseThrow().value();
+
+            JsonValue email = ((JsonValue.JsonObject) ((JsonValue.JsonObject) body).members()
+                    .get("contact")).members().get("email");
+            assertThat(((JsonValue.JsonString) email).value()).endsWith("@example.com");
+        }
+
+        @RepeatedTest(5)
+        @DisplayName("a parameter's own description is read when its shape has none")
+        void a_parameter_description_is_read() {
+            io.restest.core.model.Operation search = io.restest.core.model.Operation.of(
+                    io.restest.core.model.HttpMethod.GET, "/search", List.of(
+                            new io.restest.core.model.Parameter("cc", ParameterLocation.QUERY,
+                                    false, StringSchema.of(),
+                                    io.restest.core.model.ParameterStyle.FORM, true,
+                                    Optional.empty(), Optional.of("A 2-character country code"),
+                                    List.of())))
+                    .withId(io.restest.core.model.OperationId.of("search"));
+            ApiModel bing = ApiModel.of("search", "1", List.of(search));
+
+            String value = ((JsonValue.JsonString) provider(bing, implying(true, 1.0), 17L).offer(
+                    io.restest.core.gen.ValueRequest.of(io.restest.core.model.OperationId.of(
+                            "search"), "cc", ParameterLocation.QUERY, StringSchema.of()))
+                    .orElseThrow().value()).value();
+            assertThat(value).matches("[A-Z]{2}");
+        }
+
+        private String word(GenerationSettings settings, String name, StringSchema schema,
+                long seed) {
+            return text(provider(EMPTY, settings, seed), name, schema);
+        }
+
+        private String text(RandomValueProvider inventing, String name, StringSchema schema) {
+            return ((JsonValue.JsonString) inventing.offer(io.restest.core.gen.ValueRequest.of(
+                    ADD_USER, name, ParameterLocation.QUERY, schema)).orElseThrow().value())
+                    .value();
+        }
+
+        private RandomValueProvider provider(ApiModel model, GenerationSettings settings,
+                long seed) {
+            java.util.SplittableRandom random = new java.util.SplittableRandom(seed);
+            return new RandomValueProvider(model, random, new DeclaredValueProvider(random),
+                    settings);
+        }
+
+        private static GenerationSettings implying(boolean on, double chance) {
+            GenerationSettings d = GenerationSettings.defaults();
+            return new GenerationSettings(d.optionalNestingDepth(), d.hardNestingDepth(),
+                    d.usualLongestString(), d.longestString(), d.lowestNumber(), d.roomAboveIt(),
+                    d.decimalPlaces(), d.usualMostItems(), d.mostItems(),
+                    d.optionalPropertyChance(), d.optionalBodyChance(),
+                    d.optionalParameterContinueChance(), d.optionalParametersBySize(),
+                    d.nullInOneIn(), d.uniqueAttempts(), d.sendableAttempts(),
+                    d.writableBodyAttempts(), on, chance);
         }
     }
 

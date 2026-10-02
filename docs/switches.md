@@ -37,6 +37,7 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 | `schedule.openingLap` | `true` | 9.1 | starts drawing requests at once, instead of first sending every operation once with the request it is likeliest to accept |
 | `memory.identifiersByResource` | `true` | 9.2 | fills a gap such as `{petTypeId}` in `/pettypes/{petTypeId}` only with a value some reply carried under that very name, and no longer with the `id` of one of the pet types `GET /pettypes` listed |
 | `memory.identifiersByResourceFirst` | `true` | 9.2 | asks for a value carrying the gap's own name first, and for the things of its kind only when there is none. It changes nothing while `memory.identifiersByResource` is off |
+| `generation.impliedFormats` | `true` | 9.6 | invents an ordinary word where a name or a description implies a kind the document does not declare — an e-mail address for `billing_email`, a test card number for `ccNumber`, a country code where the description says "ISO 3166", a date in the form the description writes out — as it did before 9.6. How often it sends the implied kind when on is `generation.impliedFormatChance`, a number rather than a switch |
 | `generation.optionalParametersBySize` | `true` | 2.9 | decides each optional parameter on a coin of its own, so the request carrying only what the API requires is drawn once in 2ⁿ attempts for an operation with n optional parameters, rather than about half the time. That coin is weighted by `generation.optionalBodyChance`, so 2ⁿ holds at its default of 0.5; [the settings](settings.md#four-things-worth-knowing) say why |
 
 ### Breaking things in more ways
@@ -98,6 +99,7 @@ repository.
 | 9.1, the opening lap | The first seconds of the run: one request for each operation, in five steps, each waiting up to `schedule.openingLapPatience` for the answers to the one before. Paid out of the budget like everything else | 8.4: without it, ten fewer operations answered 2XX across the sixteen APIs, and less area under both curves on thirteen of them |
 | 9.2, identifiers by resource | A second memory beside the first — the things each kind of address returned — held to the same `memory.*` limits | 8.4: the first minute of gestao-hospital, five operations covered at ten seconds without it and fifteen to seventeen in every other variant; little elsewhere |
 | 9.2's order | Nothing | 8.4: nothing measurable |
+| 9.6, implied kinds | Half the invented words at places whose name or description implies a kind, which would otherwise be ordinary words — the share `generation.impliedFormatChance` sets | MEASURED_9_6 |
 | 2.9, optional parameters by number | Nothing | 8.4: nothing measurable, as the increment predicted, since few of the APIs measured have more than one optional parameter anywhere. Left on by the maintainer's decision, for the 232 operations of the wider corpus that have four or more |
 | 10.1, one value changed | Its part of the fifth of the run given to the strategy that changes accepted requests; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) | 8.5: 108 unique server failures without it and 147 with it. It also gives branch coverage its early lead, 17.9% at ten seconds against 15.2% |
 | 10.2, bodies of the wrong shape | Its part of the same fifth, and the seed | 8.5: 113 unique server failures without it and 147 with it |
@@ -135,6 +137,13 @@ memory:
 ```yaml
 memory:
   identifiersByResourceFirst: false
+```
+
+**9.6, the kinds a name or a description implies**
+
+```yaml
+generation:
+  impliedFormats: false
 ```
 
 **2.9, how many optional parameters drawn first**
@@ -188,7 +197,7 @@ sequences:
 These three, beside the tool as shipped, are the four ways of running it that an ablation by
 milestone compares.
 
-**Reach: 2.9, 9.1 and 9.2**
+**Reach: 2.9, 9.1, 9.2 and 9.6**
 
 ```yaml
 schedule:
@@ -196,6 +205,7 @@ schedule:
 
 generation:
   optionalParametersBySize: false
+  impliedFormats: false
 
 memory:
   identifiersByResource: false
@@ -226,6 +236,7 @@ schedule:
 
 generation:
   optionalParametersBySize: false
+  impliedFormats: false
 
 memory:
   identifiersByResource: false
