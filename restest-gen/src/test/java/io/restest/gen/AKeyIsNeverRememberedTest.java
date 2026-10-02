@@ -83,9 +83,12 @@ class AKeyIsNeverRememberedTest {
     @DisplayName("a key handed over is in no memory, though the API accepted the request it went "
             + "with and repeated it back")
     void the_key_is_never_remembered() {
-        CredentialedEngine door = new CredentialedEngine(new Echoing(),
-                CredentialPlan.gather(List.of(AuthGiven.typed("header:X-API-Key=" + KEY, 1)), API,
-                        false).plan());
+        CredentialPlan.Found plan = CredentialPlan.gather(
+                List.of(AuthGiven.typed("header:X-API-Key=" + KEY, 1)), API, false);
+        assertThat(plan.refusals()).describedAs("the key has to be taken for the test to mean "
+                + "anything").isEmpty();
+        Echoing api = new Echoing();
+        CredentialedEngine door = new CredentialedEngine(api, plan.plan());
         TestCase sent = TestCase.of(REGISTER, List.of(ParameterValue.of("X-API-Key",
                         ParameterLocation.HEADER, JsonValue.of("made up"),
                         new ValueOrigin.Generated("random"))),
@@ -96,6 +99,10 @@ class AKeyIsNeverRememberedTest {
                 "https://api.example/users", List.of(Header.of("X-API-Key", "made up")),
                 Optional.of(Payload.text("{\"email\":\"ana@example.com\"}", "application/json"))));
         ObservedValues seen = new ObservedValues(API);
+        assertThat(api.lastKeySeen).describedAs("the key went to the API").isEqualTo(KEY);
+        assertThat(exchange.response().orElseThrow().body().orElseThrow().content())
+                .asString().describedAs("and came back from it, hidden").contains("REDACTED-AUTH")
+                .doesNotContain(KEY);
 
         seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, exchange));
 
@@ -111,8 +118,32 @@ class AKeyIsNeverRememberedTest {
                 .contains(JsonValue.of("ana@example.com"));
     }
 
+    @Test
+    @DisplayName("nor is a key that found its way into the request RESTest built")
+    void a_key_inside_the_test_case_is_never_remembered() {
+        CredentialPlan.Found plan = CredentialPlan.gather(
+                List.of(AuthGiven.typed("header:X-API-Key=" + KEY, 1)), API, false);
+        CredentialedEngine door = new CredentialedEngine(new Echoing(), plan.plan());
+        TestCase carryingIt = TestCase.of(REGISTER, List.of(),
+                new BodyValue("application/json", JsonValue.object(Map.of(
+                        "apiKey", JsonValue.of(KEY), "email", JsonValue.of("ana@example.com"))),
+                        new ValueOrigin.Generated("random")));
+        Interaction exchange = door.send(carryingIt, new HttpRequestRecord(HttpMethod.POST,
+                "https://api.example/users", List.of(),
+                Optional.of(Payload.text("{\"apiKey\":\"" + KEY + "\"}", "application/json"))));
+        ObservedValues seen = new ObservedValues(API);
+
+        seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, exchange));
+
+        assertThat(seen.underTheirOwnNames().valuesFor(ValueRequest.of(REGISTER, "apiKey",
+                ParameterLocation.BODY, StringSchema.of())))
+                .allSatisfy(value -> assertThat(JsonText.write(value)).doesNotContain(KEY));
+    }
+
     /** An API that accepts everything and repeats back the key it was sent. */
     private static final class Echoing implements HttpEngine {
+
+        private String lastKeySeen = "";
 
         @Override
         public CompletableFuture<Interaction> sendAsync(TestCase testCase,
@@ -120,6 +151,7 @@ class AKeyIsNeverRememberedTest {
             String key = request.headers().stream()
                     .filter(header -> header.name().equalsIgnoreCase("X-API-Key"))
                     .map(Header::value).findFirst().orElse("");
+            lastKeySeen = key;
             return CompletableFuture.completedFuture(Interaction.answered(testCase, request,
                     new HttpResponseRecord(StatusLine.of(201),
                             List.of(Header.of("Content-Type", "application/json")),

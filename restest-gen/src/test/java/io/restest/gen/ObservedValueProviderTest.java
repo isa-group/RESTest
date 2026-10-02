@@ -500,6 +500,83 @@ class ObservedValueProviderTest {
         }
     }
 
+    @Nested
+    @DisplayName("what the API accepted")
+    class WhatTheApiAccepted {
+
+        private static final OperationId REGISTER = OperationId.of("register");
+        private static final OperationId LOGIN = OperationId.of("login");
+
+        private final ApiModel users = ApiModel.of("users", "1", List.of(
+                Operation.of(HttpMethod.POST, "/register").withId(REGISTER)
+                        .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                                "username", StringSchema.of(), "password", StringSchema.of())),
+                                true)),
+                Operation.of(HttpMethod.POST, "/login").withId(LOGIN)
+                        .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                                "username", StringSchema.of(), "password", StringSchema.of())),
+                                true))));
+
+        @Test
+        @DisplayName("a login is sent the password a registration was accepted with, and says so")
+        void a_login_gets_the_registered_password() {
+            ObservedValueProvider source = new ObservedValueProvider(users, registered(),
+                    new SplittableRandom(1L), null);
+
+            GeneratedValue offered = source.offer(ValueRequest.of(LOGIN, "password",
+                    ParameterLocation.BODY, StringSchema.of())).orElseThrow();
+
+            assertThat(offered.value()).isEqualTo(JsonValue.of("Tr0ub4dor&3"));
+            assertThat(((ValueOrigin.Derived) offered.origin()).description())
+                    .isEqualTo("the 'password' sent in an earlier request the API accepted");
+        }
+
+        @Test
+        @DisplayName("but not back to the registration it came from, which would ask for the same "
+                + "account twice")
+        void not_back_to_its_own_operation() {
+            ObservedValueProvider source = new ObservedValueProvider(users, registered(),
+                    new SplittableRandom(1L), null);
+
+            assertThat(source.offer(ValueRequest.of(REGISTER, "username", ParameterLocation.BODY,
+                    StringSchema.of()))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a value a reply showed is still told apart as a reply's")
+        void a_reply_is_still_a_reply() {
+            ObservedValues seen = new ObservedValues(users);
+            seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Interaction.answered(
+                    TestCase.of(LOGIN, List.of()),
+                    HttpRequestRecord.of(HttpMethod.POST, "https://api.example/login"),
+                    new HttpResponseRecord(StatusLine.of(200),
+                            List.of(Header.of("Content-Type", "application/json")),
+                            Optional.of(Payload.of("{\"username\": \"ana\"}"
+                                    .getBytes(StandardCharsets.UTF_8), "application/json"))),
+                    Instant.EPOCH, Duration.ofMillis(3))));
+            ObservedValueProvider source = new ObservedValueProvider(users, seen,
+                    new SplittableRandom(1L), null);
+
+            assertThat(((ValueOrigin.Derived) source.offer(ValueRequest.of(REGISTER, "username",
+                    ParameterLocation.BODY, StringSchema.of())).orElseThrow().origin())
+                    .description()).isEqualTo("the 'username' of an earlier reply");
+        }
+
+        private ObservedValues registered() {
+            ObservedValues seen = new ObservedValues(users);
+            seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Interaction.answered(
+                    TestCase.of(REGISTER, List.of(), new io.restest.core.execution.BodyValue(
+                            "application/json", JsonValue.object(Map.of(
+                                    "username", JsonValue.of("ana"),
+                                    "password", JsonValue.of("Tr0ub4dor&3"))),
+                            new ValueOrigin.Generated("random"))),
+                    HttpRequestRecord.of(HttpMethod.POST, "https://api.example/register"),
+                    new HttpResponseRecord(StatusLine.of(201), List.of(), Optional.empty()),
+                    Instant.EPOCH, Duration.ofMillis(3))));
+            return seen;
+        }
+    }
+
     /** A source that has seen this one reply, with the given supplier of the one changed value. */
     private static ObservedValueProvider sourceKnowing(String reply, ValueProvider fresh) {
         return sourceKnowing(reply, fresh, "Pet", PET_AS_RETURNED);

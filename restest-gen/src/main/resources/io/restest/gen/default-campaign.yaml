@@ -53,10 +53,11 @@ strategies:
           - source: random
             weight: 20
 
-          # What this API itself has already sent back, earlier in this run. An identifier that
-          # came out of the API is one that exists, where an invented one reaches a 404 - and a
-          # whole thing the API returned is one it can be asked to accept again with a single
-          # value in it changed.
+          # What this API itself has already sent back, earlier in this run, and what it accepted
+          # in a request to another operation - the password a registration went with, for a
+          # login. An identifier that came out of the API is one that exists, where an invented
+          # one reaches a 404 - and a whole thing the API returned is one it can be asked to accept
+          # again with a single value in it changed.
           #
           # It is here, weighted rather than asked first, because it knows nothing until the API
           # has answered something, and because pinning a value to the first thing ever seen for

@@ -522,7 +522,7 @@ class SequencesTest {
         MemorySettings readsNothing = MemorySettings.defaults();
         readsNothing = new MemorySettings(readsNothing.mostValuesUnderOneName(),
                 readsNothing.mostNames(), 0, 0, 0, readsNothing.identifiersByResource(),
-                readsNothing.identifiersByResourceFirst(), readsNothing.rememberAcceptedRequests());
+                readsNothing.identifiersByResourceFirst(), false);
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PET_CLINIC, SEED,
                 List.of(), onlySeries(), Settings.defaults().withMemory(readsNothing)
                         .withSequences(only(Sequences.Shape.DELETE_TWICE)));

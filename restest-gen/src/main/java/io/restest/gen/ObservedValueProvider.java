@@ -43,14 +43,15 @@ import java.util.UUID;
 import java.util.random.RandomGenerator;
 
 /**
- * Suggests what the API itself has already sent back.
+ * Suggests what the API itself has already sent back, or has already accepted.
  *
  * <p>Two different suggestions, and which one applies depends on what is being asked for.
  *
  * <p>Asked about <b>one value</b> - a pet's identifier, an owner's e-mail address - it offers one
- * seen under that name in an earlier reply. This is the common case and the useful one: an
- * identifier that came out of the API is one that exists, where an invented number is one that
- * almost certainly does not.
+ * seen under that name in an earlier reply, or sent under it in an earlier request the API accepted
+ * for another operation: the password a registration went with, for a login. This is the common
+ * case and the useful one: an identifier that came out of the API is one that exists, where an
+ * invented number is one that almost certainly does not.
  *
  * <p>Asked about a <b>whole thing</b> the document gives a name to - "send me an Owner" - it offers
  * an owner the API itself produced, with one value inside it changed. Two things happen to that
@@ -96,7 +97,7 @@ public final class ObservedValueProvider implements ValueProvider {
      * A source drawing on what this run has seen.
      *
      * @param model the API being tested, which is what says what shape anything has
-     * @param seen the memory of what the API has sent back
+     * @param seen the memory of what the API has sent back and accepted
      * @param random where the choice among several remembered values comes from
      * @param fillsTheChangedValue what supplies the one fresh value put into a remembered thing -
      *     the whole strategy, so that a value the document states a closed list for is one of
@@ -312,6 +313,11 @@ public final class ObservedValueProvider implements ValueProvider {
         List<Sendable> usable = new ArrayList<>();
         List<ObservedValues.Observation> heard = new ArrayList<>();
         for (ObservedValues.Observation what : seen.underTheirOwnNames().observationsFor(request)) {
+            // A value an accepted request carried goes to the other operations, not back to its
+            // own: the same username sent to the same creation again asks for the same account.
+            if (what.sentTo().filter(request.operation()::equals).isPresent()) {
+                continue;
+            }
             keptOf(what.value(), request.schema(), 0)
                     .filter(fits -> canGoThere(fits, request))
                     .ifPresent(fits -> {

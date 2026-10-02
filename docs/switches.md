@@ -37,8 +37,8 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 | `schedule.openingLap` | `true` | 9.1 | starts drawing requests at once, instead of first sending every operation once with the request it is likeliest to accept |
 | `memory.identifiersByResource` | `true` | 9.2 | fills a gap such as `{petTypeId}` in `/pettypes/{petTypeId}` only with a value some reply carried under that very name, and no longer with the `id` of one of the pet types `GET /pettypes` listed |
 | `memory.identifiersByResourceFirst` | `true` | 9.2 | asks for a value carrying the gap's own name first, and for the things of its kind only when there is none. It changes nothing while `memory.identifiersByResource` is off |
-| `memory.rememberAcceptedRequests` | `true` | 9.7 | remembers only what the API's replies carried, as before 9.7, and no longer the values of the requests it accepted - the e-mail address and password a registration went with are then not there for the login after it |
 | `generation.impliedFormats` | `true` | 9.6 | invents an ordinary word where a name or a description implies a kind the document does not declare — an e-mail address for `billing_email`, a test card number for `ccNumber`, a country code where the description says "ISO 3166", a date in the form the description writes out — as it did before 9.6. How often it sends the implied kind when on is `generation.impliedFormatChance`, a number rather than a switch |
+| `memory.rememberAcceptedRequests` | `true` | 9.7 | remembers only what the API's replies carried, as before 9.7, and no longer the values of the requests it accepted — the e-mail address and password a registration went with are then not there for the login after it |
 | `generation.optionalParametersBySize` | `true` | 2.9 | decides each optional parameter on a coin of its own, so the request carrying only what the API requires is drawn once in 2ⁿ attempts for an operation with n optional parameters, rather than about half the time. That coin is weighted by `generation.optionalBodyChance`, so 2ⁿ holds at its default of 0.5; [the settings](settings.md#four-things-worth-knowing) say why |
 
 ### Breaking things in more ways
@@ -141,18 +141,18 @@ memory:
   identifiersByResourceFirst: false
 ```
 
-**9.7, the values of accepted requests**
-
-```yaml
-memory:
-  rememberAcceptedRequests: false
-```
-
 **9.6, the kinds a name or a description implies**
 
 ```yaml
 generation:
   impliedFormats: false
+```
+
+**9.7, the values of accepted requests**
+
+```yaml
+memory:
+  rememberAcceptedRequests: false
 ```
 
 **2.9, how many optional parameters drawn first**

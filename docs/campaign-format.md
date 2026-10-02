@@ -101,7 +101,7 @@ silently shadow RESTest's own samples, and nobody reading the file could tell wh
 | `enum` | the closed list of values the document says it accepts |
 | `example` | the sample values the document's author wrote down |
 | `default` | the value the document says applies when the caller sends nothing |
-| `observed` | what the API itself has already sent back, earlier in this run |
+| `observed` | what the API itself has already sent back earlier in this run, and what it accepted in a request to another operation |
 | `random` | a value invented to fit the shape |
 
 `enum` is worth putting first and leaving there. A closed list is not advice: it is the whole set of

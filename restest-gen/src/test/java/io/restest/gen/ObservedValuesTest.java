@@ -641,6 +641,58 @@ class ObservedValuesTest {
                             ObservedValues.HeardIn.REPLY);
         }
 
+        @Test
+        @DisplayName("a parameter that is an object, or a body that is a list, is taken apart like "
+                + "any other")
+        void pieces_of_parameters_and_lists_are_kept() {
+            ObservedValues seen = new ObservedValues(users);
+            TestCase filtered = TestCase.of(REGISTER, List.of(io.restest.core.execution
+                    .ParameterValue.of("team", ParameterLocation.PATH, JsonValue.object(Map.of(
+                            "email", JsonValue.of("lead@example.com"))),
+                            new io.restest.core.execution.ValueOrigin.Generated("random"))),
+                    new io.restest.core.execution.BodyValue("application/json",
+                            JsonValue.array(List.of(JsonValue.object(Map.of(
+                                    "password", JsonValue.of("first-one"))), JsonValue.object(
+                                    Map.of("password", JsonValue.of("second-one"))))),
+                            new io.restest.core.execution.ValueOrigin.Generated("random")));
+
+            seen.on(answered(filtered, 201));
+
+            assertThat(valuesUnder(seen, "email")).containsExactly(JsonValue.of("lead@example.com"));
+            assertThat(valuesUnder(seen, "password")).containsExactly(JsonValue.of("first-one"),
+                    JsonValue.of("second-one"));
+        }
+
+        @Test
+        @DisplayName("a value standing where a key was hidden is not a value to send on")
+        void a_hidden_key_is_not_kept() {
+            ObservedValues seen = new ObservedValues(users);
+            TestCase hiddenWhole = TestCase.of(REGISTER, List.of(
+                    sent("source", ParameterLocation.QUERY, io.restest.core.auth.Secrets.MARKER)),
+                    new io.restest.core.execution.BodyValue("application/json",
+                            JsonValue.object(Map.of("password",
+                                    JsonValue.of(io.restest.core.auth.Secrets.MARKER))),
+                            new io.restest.core.execution.ValueOrigin.Generated("random")));
+
+            seen.on(answered(hiddenWhole, 201));
+
+            assertThat(valuesUnder(seen, "source")).isEmpty();
+            assertThat(valuesUnder(seen, "password")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a value says which operation its request went to")
+        void a_value_knows_its_operation() {
+            ObservedValues seen = new ObservedValues(users);
+
+            seen.on(answered(registration, 201));
+
+            assertThat(seen.underTheirOwnNames().observationsFor(ValueRequest.of(GET_PET,
+                            "password", ParameterLocation.BODY, StringSchema.of())))
+                    .extracting(ObservedValues.Observation::sentTo)
+                    .containsExactly(Optional.of(REGISTER));
+        }
+
         private static io.restest.core.execution.ParameterValue sent(String name,
                 ParameterLocation where, String value) {
             return io.restest.core.execution.ParameterValue.of(name, where, JsonValue.of(value),
