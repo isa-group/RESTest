@@ -79,7 +79,7 @@ Four milestones are added to the roadmap and taken before anything else:
 
 | Milestone | What it is | Measurement it moves |
 |---|---|---|
-| M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations whose recent answers all say *this will never work as asked* — 9.4 names the codes, and they are a setting. *9.3 was measured and not merged, and 9.4 set aside before it was built* | Operations covered, coverage, and the area under both |
+| M9 Reach | A scheduler that owns the clock and sends every operation its best request first; path parameters filled from the identifier of the resource the path names; a producer sent before a consumer that has nothing to consume; budget withdrawn from operations whose recent answers all say *this will never work as asked* — 9.4 names the codes, and they are a setting. *9.3 was measured and not merged, and 9.4 set aside before it was built. Five rows were added as 9.5–9.9 by the maintainer on 2 October, from the campaigns of 1-2 October: a memory of replies that keeps what operations ask for, formats the name implies, the values of accepted requests sent on, plural and name gaps, and HAL's reserved properties left out of bodies* | Operations covered, coverage, and the area under both |
 | M10 Break | Mutations of requests the API accepted; bodies of the wrong shape; sequences over real resources — delete then read, create twice | Unique server failures and the error branches of the API |
 | M11 Settings | One place for every number decided during development, layered from defaults, a file, the environment and the command line; every lever with a switch (ADR-0025). *API keys were added as 11.3 by the maintainer on 29 September: sent where the document says, handed over by the person running the tool* | None directly. It is what makes the ablation a campaign rather than a branch per variant. *11.3 moves nothing on the five known APIs, which the benchmark's proxy signs in; it is there in case the undisclosed five hand the tool a key* |
 | M12 Closing | The list in §1 | None. It is what makes the submission a release |
@@ -132,7 +132,11 @@ document and what the API returned, and those plus a hand-written dictionary per
 worth of each source is known before any lever is built on it, and so that the most favourable case,
 which the competition does not offer, is known as a ceiling. Every M9 and M10 row is then measured
 before it is merged, on a restarted containerised API from the priority corpus, switched on against
-switched off, five seeds, and the number goes in the pull request. Each milestone is then screened as a whole on the five known APIs with short budgets, one
+switched off, five seeds, and the number goes in the pull request. *The five rows added on
+2 October, 9.5–9.9, are measured where their evidence is, which for some of them is outside the
+priority corpus, as the maintainer chose that day; each also counts what its rule reaches over the
+fifty documents of the wider corpus. 9.5 has no switch, by the maintainer's choice, and is measured
+before against after (ROADMAP 9.5).* Each milestone is then screened as a whole on the five known APIs with short budgets, one
 switch off at a time, and a lever that moves nothing is switched off in the shipped settings. The
 dress rehearsal runs the competition's own protocol from the frozen commit for twenty-five hours,
 and nothing that changes a request is written while it runs. After the submission, the comparison

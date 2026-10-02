@@ -447,7 +447,7 @@ switches](switches.md#switching-off-everything-one-increment-added) has that fil
 | `faultsShownOnTheConsole` | `50` | how many faults are printed in full before the screen stops being the place |
 | `skippedOperationsShownOnTheConsole` | `5` | how many operations that could not be tested are named on the screen |
 
-## Three things worth knowing
+## Four things worth knowing
 
 **A whole request is given twice the longest wait inside it.** `callTimeout` is the longest one
 request may take, from sending it to the last byte of its reply. It is what ends a reply that never
@@ -470,6 +470,15 @@ RESTest invents one between `lowestNumber` and `lowestNumber + roomAboveIt`. Whe
 states a bottom of its own, that bottom is used and the same room is allowed above it, so the room
 to move in is the same wherever the numbers begin. When the only limit it states is a top lower
 than `lowestNumber`, the same room is allowed below that top instead.
+
+**`optionalBodyChance` also decides optional parameters, when `optionalParametersBySize` is off.**
+With `optionalParametersBySize` on, which is the default, how many optional parameters a request
+carries is drawn first and `optionalParameterContinueChance` shapes that count. Switched off, each
+optional parameter is decided on a coin of its own, weighted by `optionalBodyChance` — the same
+number that decides whether a request sends a body it may leave out. Bodies and optional parameters
+cannot be given different chances, so an experiment that turns `optionalParametersBySize` off and
+changes `optionalBodyChance` changes how often optional parameters are sent as well as bodies. A
+setting of its own for the coin would correct it, and is left for RESTest 2.1.
 
 ## What is not a setting
 
