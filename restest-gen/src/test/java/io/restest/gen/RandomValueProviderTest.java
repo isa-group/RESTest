@@ -751,11 +751,29 @@ class RandomValueProviderTest {
         private static final io.restest.core.model.OperationId ADD_USER =
                 io.restest.core.model.OperationId.of("addUser");
 
-        @RepeatedTest(10)
+        @Test
         @DisplayName("where a name implies a kind and it is drawn, the value is of that kind")
         void a_name_implies_a_kind() {
-            assertThat(word(implying(true, 1.0), "billing_email", StringSchema.of(), 1L))
-                    .endsWith("@example.com");
+            RandomValueProvider always = provider(EMPTY, implying(true, 1.0), 1L);
+            for (int draw = 0; draw < 20; draw++) {
+                assertThat(text(always, "billing_email", StringSchema.of()))
+                        .endsWith("@example.com");
+            }
+        }
+
+        @Test
+        @DisplayName("a sample the parameter itself carries wins over the name, as one on its "
+                + "shape does")
+        void a_parameter_sample_wins() {
+            RandomValueProvider always = provider(EMPTY, implying(true, 1.0), 2L);
+            for (int draw = 0; draw < 20; draw++) {
+                String value = ((JsonValue.JsonString) always.offer(
+                        io.restest.core.gen.ValueRequest.of(ADD_USER, "email",
+                                ParameterLocation.QUERY, StringSchema.of(),
+                                List.of(JsonValue.of("someone"))))
+                        .orElseThrow().value()).value();
+                assertThat(value).doesNotContain("@");
+            }
         }
 
         @Test
@@ -786,14 +804,16 @@ class RandomValueProviderTest {
                             "378282246310005", "6011111111111117");
         }
 
-        @RepeatedTest(10)
+        @Test
         @DisplayName("a value too long for its place is not sent")
         void the_lengths_hold() {
             StringSchema short5 = new StringSchema(SchemaMetadata.none(), Optional.empty(),
                     Optional.of(5), Optional.empty(), Optional.empty());
-
-            assertThat(word(implying(true, 1.0), "email", short5, 5L)).doesNotContain("@")
-                    .hasSizeLessThanOrEqualTo(5);
+            RandomValueProvider always = provider(EMPTY, implying(true, 1.0), 5L);
+            for (int draw = 0; draw < 20; draw++) {
+                assertThat(text(always, "email", short5)).doesNotContain("@")
+                        .hasSizeLessThanOrEqualTo(5);
+            }
         }
 
         @Test
@@ -823,7 +843,7 @@ class RandomValueProviderTest {
             }
         }
 
-        @RepeatedTest(5)
+        @Test
         @DisplayName("a property deep inside a body is given its kind too")
         void inside_a_body() {
             ObjectSchema user = ObjectSchema.of(java.util.Map.of("contact",
@@ -839,7 +859,7 @@ class RandomValueProviderTest {
             assertThat(((JsonValue.JsonString) email).value()).endsWith("@example.com");
         }
 
-        @RepeatedTest(5)
+        @Test
         @DisplayName("a parameter's own description is read when its shape has none")
         void a_parameter_description_is_read() {
             io.restest.core.model.Operation search = io.restest.core.model.Operation.of(

@@ -41,7 +41,11 @@ class DateTimeTemplateTest {
         "dd/MM/yyyy | \\d{2}/\\d{2}/\\d{4}",
         "MM/dd/yyyy | \\d{2}/\\d{2}/\\d{4}",
         "hh:mm | \\d{2}:\\d{2}",
-        "yyyy-MM-dd HH:mm | \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"})
+        "yyyy-MM-dd HH:mm | \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z' | \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z",
+        "YYYY-MM-DDThh:mm:ssTZD | \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z",
+        "yyyy-MM-dd'T'HH:mm:ssX | \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z",
+        "yy/MM/dd | \\d{2}/\\d{2}/\\d{2}"})
     void a_template_is_followed(String template, String shape) {
         String value = DateTimeTemplate.fromLetters(template).orElseThrow().valueFor(RANDOM);
 
@@ -82,7 +86,7 @@ class DateTimeTemplateTest {
     }
 
     @ParameterizedTest(name = "{0} is no template")
-    @ValueSource(strings = {"ZZ", "MM-DD", "hello", "yyyy-QQ"})
+    @ValueSource(strings = {"ZZ", "MM-DD", "hello", "yyyy-QQ", "hh"})
     void words_that_are_not_a_template(String words) {
         assertThat(DateTimeTemplate.fromLetters(words)).isEmpty();
     }

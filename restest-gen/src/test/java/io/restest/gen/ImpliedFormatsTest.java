@@ -67,6 +67,9 @@ class ImpliedFormatsTest {
             "since | The date, as an HTTP-date | HTTP_DATE | T5",
             "from | Unix timestamp of the earliest event | EPOCH_SECONDS | T6",
             "from | Milliseconds since the start of 1970 | EPOCH_MILLIS | T6m",
+            "from | Unix timestamp in milliseconds | EPOCH_MILLIS | T6m",
+            "countryCode | A country code, two letters | COUNTRY | D7",
+            "market | An ISO 3166 2-letter country code | COUNTRY | D2",
             "phone | The phone number, in E.164 form | PHONE | D6",
             "language | A language code like en-US, de-DE, fr, or auto to guess the language | LANGUAGE | D7",
             "cc | A 2-character country code of the country where the results come from. | COUNTRY | D7",
@@ -91,7 +94,11 @@ class ImpliedFormatsTest {
             "statement_descriptor | An arbitrary string to be displayed on your customer's credit card statement.",
             "view | Level of detail; FULL also includes the country code of each hotel",
             "fromReleaseDate | Returns books released on or after the date, in ISO 8601 format",
-            "menaMpaaRating | The rating, 33408548 being the code for none"})
+            "menaMpaaRating | The rating, 33408548 being the code for none",
+            "sender | An RFC 822 email address of the sender",
+            "count | How many results to return for each country code",
+            "coupon | A coupon valid in any country code listed",
+            "filters | Filter e.g. DATE:[2015-01-01 TO 2016-01-01]"})
         void a_mention_is_not_a_statement(String name, String description) {
             assertThat(ImpliedFormats.of(name, description)).isEmpty();
         }
@@ -109,7 +116,10 @@ class ImpliedFormatsTest {
             "The date period, in ISO 8601 date format YYYY-MM or YYYY | YYYY-MM",
             "This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ. | YYYY-MM-DDTHH:MM:SSZ",
             "The duration, expressed in the format hh:mm | hh:mm",
-            "The day it starts, as dd/MM/yyyy | dd/MM/yyyy"})
+            "The day it starts, as dd/MM/yyyy | dd/MM/yyyy",
+            "Created at, as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' | yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "The W3C way, YYYY-MM-DDThh:mm:ssTZD. | YYYY-MM-DDThh:mm:ssTZD",
+            "In the form ±hh:mm after yyyy-MM-ddTHH:mm±hh:mm | yyyy-MM-ddTHH:mm±hh:mm"})
         void a_template_is_read(String description, String template) {
             Optional<Implied> implied = ImpliedFormats.of("when", description);
 
@@ -128,6 +138,17 @@ class ImpliedFormatsTest {
             assertThat(implied).map(Implied::rule).contains("T2");
             assertThat(implied.flatMap(Implied::template)).map(DateTimeTemplate::written)
                     .contains("yyyy-MM-dd'T'HH:mm:ss");
+        }
+
+        @ParameterizedTest(name = "\"{0}\" is read whole or not at all")
+        @CsvSource(delimiter = '|', value = {
+            "Written YYYY-MM-DDThh:mmQQ",
+            "Written yyyy-MM-ddTHH:mm:ssQ",
+            "hh alone"})
+        void a_template_cut_short_is_no_template(String description) {
+            assertThat(ImpliedFormats.of("createdAt", description)).map(Implied::rule)
+                    .describedAs("the name's own rule, since no template could be read whole")
+                    .contains("N1");
         }
 
         @Test

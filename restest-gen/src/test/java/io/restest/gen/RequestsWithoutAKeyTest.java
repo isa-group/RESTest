@@ -105,7 +105,9 @@ class RequestsWithoutAKeyTest {
 
     /**
      * The generator a run builds when it is handed nothing but the document: the lists of values
-     * RESTest carries, the plan it carries, and the settings it has when nobody has changed one.
+     * RESTest carries, the plan it carries, and the settings it has when nobody has changed one -
+     * but for the kinds a name implies, which are left out for the reason given where it is
+     * built.
      */
     private static RandomTestCaseGenerator asARunBuildsIt(ApiModel model) {
         Dictionaries.Found found = Dictionaries.gather(List.of(), model);

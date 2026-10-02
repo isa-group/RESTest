@@ -224,9 +224,9 @@ class FormattedStringsTest {
         @RepeatedTest(20)
         @DisplayName("a moment the web's way, and as seconds or milliseconds since 1970")
         void moments_written_other_ways() {
-            assertThatCode(() -> java.time.ZonedDateTime.parse(FormattedStrings.httpDate(RANDOM),
-                    java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME))
-                    .doesNotThrowAnyException();
+            assertThat(FormattedStrings.httpDate(RANDOM))
+                    .describedAs("the form HTTP prefers, the day always in two digits")
+                    .matches("[A-Z][a-z]{2}, \\d{2} [A-Z][a-z]{2} \\d{4} \\d{2}:\\d{2}:\\d{2} GMT");
             assertThat(Long.parseLong(FormattedStrings.epochSeconds(RANDOM)))
                     .isBetween(631_152_000L, 2_208_988_800L);
             assertThat(FormattedStrings.epochMillis(RANDOM)).matches("\\d{12,13}");

@@ -20,6 +20,7 @@ import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.AnySchema;
@@ -99,12 +100,14 @@ public final class RandomValueProvider implements ValueProvider {
     private final Map<Spelling, Optional<MatchingStrings>> spellings = new LinkedHashMap<>();
 
     /**
-     * What each place's name and description were found to imply, worked out once per place. The
-     * same place is asked about thousands of times in a run, and its description does not change.
+     * What each place was found to imply, worked out once per place - the rules read, and the
+     * parameter's description looked up - because the same place is asked about thousands of
+     * times in a run and its name and description do not change.
      */
-    private final Map<Clues, Optional<ImpliedFormats.Implied>> implied = new LinkedHashMap<>();
+    private final Map<Place, Optional<ImpliedFormats.Implied>> implied = new LinkedHashMap<>();
 
-    private record Clues(String name, String description) {
+    private record Place(OperationId operation, ParameterLocation location, String name,
+            Optional<String> beside) {
     }
 
     /**
@@ -304,9 +307,10 @@ public final class RandomValueProvider implements ValueProvider {
                 || !schema.metadata().examples().isEmpty() || !request.examples().isEmpty()) {
             return Optional.empty();
         }
-        Clues clues = new Clues(request.name(), descriptionOf(request, schema));
-        Optional<ImpliedFormats.Implied> kind = implied.computeIfAbsent(clues,
-                ignored -> ImpliedFormats.of(clues.name(), clues.description()));
+        Place place = new Place(request.operation(), request.location(), request.name(),
+                schema.metadata().description());
+        Optional<ImpliedFormats.Implied> kind = implied.computeIfAbsent(place,
+                ignored -> ImpliedFormats.of(request.name(), descriptionOf(request, schema)));
         if (kind.isEmpty() || random.nextDouble() >= settings.impliedFormatChance()) {
             return Optional.empty();
         }

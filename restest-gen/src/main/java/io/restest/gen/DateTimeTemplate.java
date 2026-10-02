@@ -41,7 +41,11 @@ import java.util.regex.Pattern;
  * ({@code HH} or {@code hh}) on, the next pair of letters is the minutes and the one after the
  * seconds, whatever their case, which is how {@code HH:MM:SS} is meant. A dot and {@code S}s are a
  * fraction of a second, {@code Z} is UTC, and {@code XXX} or {@code +hh:mm} an offset from it.
- * Anything else in it - a dash, a slash, a {@code T}, a quoted {@code 'T'} - is written as it is.
+ * Anything else in it - a dash, a slash, a {@code T}, a quoted {@code 'T'} or {@code 'Z'} - is
+ * written as it is.
+ *
+ * <p>{@link ImpliedFormats} finds these statements in a description, and {@link RandomValueProvider}
+ * writes the value when it invents one for that place.
  */
 final class DateTimeTemplate {
 
@@ -74,6 +78,7 @@ final class DateTimeTemplate {
         List<Piece> pieces = new ArrayList<>();
         boolean sawYear = false;
         boolean sawHour = false;
+        boolean sawMinute = false;
         int timeFields = 0;
         int at = 0;
         while (at < template.length()) {
@@ -87,8 +92,14 @@ final class DateTimeTemplate {
                 pieces.add(new Piece(Part.SHORT_YEAR, "", 0));
                 sawYear = true;
                 at += 2;
-            } else if (rest.startsWith("'T'")) {
-                pieces.add(new Piece(Part.LITERAL, "T", 0));
+            } else if (rest.startsWith("'") && rest.indexOf('\'', 1) > 1) {
+                // A quoted letter or two, such as 'T' or 'Z', is written as it is.
+                int end = rest.indexOf('\'', 1);
+                pieces.add(new Piece(Part.LITERAL, rest.substring(1, end), 0));
+                at += end + 1;
+            } else if (sawHour && rest.startsWith("TZD")) {
+                // How the W3C writes "a time zone": Z, or an offset from it.
+                pieces.add(new Piece(Part.UTC, "", 0));
                 at += 3;
             } else if (twice(rest, 'h')) {
                 pieces.add(new Piece(Part.HOUR, "", 0));
@@ -96,8 +107,9 @@ final class DateTimeTemplate {
                 timeFields = 1;
                 at += 2;
             } else if (sawHour && (twice(rest, 'm') || twice(rest, 's'))) {
-                pieces.add(new Piece(timeFields == 1 && twice(rest, 'm') ? Part.MINUTE : Part.SECOND,
-                        "", 0));
+                boolean minutes = timeFields == 1 && twice(rest, 'm');
+                pieces.add(new Piece(minutes ? Part.MINUTE : Part.SECOND, "", 0));
+                sawMinute |= minutes;
                 timeFields++;
                 at += 2;
             } else if (twice(rest, 'm')) {
@@ -121,6 +133,16 @@ final class DateTimeTemplate {
             } else if (sawHour && rest.regionMatches(true, 0, "xxx", 0, 3)) {
                 pieces.add(new Piece(Part.OFFSET, "", 0));
                 at += 3;
+            } else if (sawHour && (letter == 'X' || letter == 'x')) {
+                // One X is UTC written as Z, the way Java's own patterns write it.
+                pieces.add(new Piece(Part.UTC, "", 0));
+                at += 1;
+            } else if (sawHour && letter == 'z') {
+                // A time zone's name, however many letters ask for it.
+                pieces.add(new Piece(Part.LITERAL, "UTC", 0));
+                while (at < template.length() && template.charAt(at) == 'z') {
+                    at++;
+                }
             } else if (sawHour && (letter == '+' || letter == '-' || letter == '±')
                     && rest.length() >= 5 && twice(rest.substring(1), 'h')) {
                 boolean colon = rest.length() >= 6 && rest.charAt(3) == ':';
@@ -133,8 +155,9 @@ final class DateTimeTemplate {
                 return Optional.empty();
             }
         }
-        return sawYear || sawHour ? Optional.of(new DateTimeTemplate(pieces, template))
-                : Optional.empty();
+        // A year, or a time down to its minutes: an hour alone is not a form anybody writes.
+        return sawYear || (sawHour && sawMinute)
+                ? Optional.of(new DateTimeTemplate(pieces, template)) : Optional.empty();
     }
 
     /**

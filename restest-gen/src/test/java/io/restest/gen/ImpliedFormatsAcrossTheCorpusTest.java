@@ -54,8 +54,9 @@ import org.junit.jupiter.api.Test;
  * the table, and the answer is held against what the place declares. A rule that falls below nine
  * in ten, over three places or more, is not one to keep.
  *
- * <p>The second number is reach: how many places in the requests declare nothing at all, so that a
- * rule changes what is sent there. The numbers move when the corpus or the table does, and are
+ * <p>The second number is reach: how many places in the requests declare nothing that settles
+ * them - a spelling rule may still hold the value to account - so that a rule changes what is sent
+ * there. The numbers move when the corpus or the table does, and are
  * pinned so that a change in them is something somebody decided.
  */
 class ImpliedFormatsAcrossTheCorpusTest {
@@ -73,14 +74,14 @@ class ImpliedFormatsAcrossTheCorpusTest {
 
     /** Per rule: right and wrong where the answer is known, and the places that declare nothing. */
     private static final Map<String, String> PINNED = new TreeMap<>(Map.ofEntries(
-            Map.entry("D1", "0 right, 0 wrong, 3 places with nothing declared"),
+            Map.entry("D1", "0 right, 0 wrong, 4 places with nothing declared"),
             Map.entry("D10", "27 right, 0 wrong, 7 places with nothing declared"),
             Map.entry("D11", "3 right, 0 wrong, 0 places with nothing declared"),
-            Map.entry("D2", "3 right, 0 wrong, 5 places with nothing declared"),
+            Map.entry("D2", "3 right, 0 wrong, 6 places with nothing declared"),
             Map.entry("D3", "0 right, 0 wrong, 1 places with nothing declared"),
-            Map.entry("D7", "1 right, 0 wrong, 5 places with nothing declared"),
+            Map.entry("D7", "1 right, 0 wrong, 6 places with nothing declared"),
             Map.entry("D8", "0 right, 0 wrong, 6 places with nothing declared"),
-            Map.entry("D9", "3 right, 0 wrong, 4 places with nothing declared"),
+            Map.entry("D9", "2 right, 0 wrong, 4 places with nothing declared"),
             Map.entry("N1", "82 right, 2 wrong, 0 places with nothing declared"),
             Map.entry("N10", "2 right, 1 wrong, 8 places with nothing declared"),
             Map.entry("N2", "9 right, 0 wrong, 8 places with nothing declared"),
@@ -91,7 +92,7 @@ class ImpliedFormatsAcrossTheCorpusTest {
             Map.entry("N8", "0 right, 0 wrong, 0 places with nothing declared"),
             Map.entry("N9", "0 right, 0 wrong, 2 places with nothing declared"),
             Map.entry("T1", "15 right, 1 wrong, 19 places with nothing declared"),
-            Map.entry("T2", "14 right, 0 wrong, 2 places with nothing declared"),
+            Map.entry("T2", "12 right, 0 wrong, 2 places with nothing declared"),
             Map.entry("T4", "0 right, 0 wrong, 0 places with nothing declared"),
             Map.entry("T6", "0 right, 0 wrong, 1 places with nothing declared")));
 
@@ -159,7 +160,7 @@ class ImpliedFormatsAcrossTheCorpusTest {
                 Optional<String> truth = truthOf(place);
                 if (truth.isPresent()) {
                     numbers[agrees(implied.get(), truth.get(), random) ? 0 : 1]++;
-                } else if (place.inARequest() && !place.hasPattern()) {
+                } else if (place.inARequest()) {
                     numbers[2]++;
                 }
             }
@@ -189,9 +190,11 @@ class ImpliedFormatsAcrossTheCorpusTest {
             case ObjectSchema object -> object.properties().forEach((property, shape) ->
                     walk(document, property, "", List.of(), shape, model, inARequest, into,
                             depth + 1, entered));
-            case ArraySchema list -> walk(document, name, list.metadata().description()
-                    .orElse(description), List.of(), list.items(), model, inARequest, into,
-                    depth + 1, entered);
+            // A piece of a list goes by the list's name and, inside a parameter, by the parameter's
+            // description, which is what invention reads for it; a list's own description inside a
+            // body is not read, so it is not counted either.
+            case ArraySchema list -> walk(document, name, description, List.of(), list.items(),
+                    model, inARequest, into, depth + 1, entered);
             case ChoiceSchema choice -> choice.alternatives().forEach(one -> walk(document, name,
                     description, examples, one, model, inARequest, into, depth + 1, entered));
             case SchemaReference reference -> {

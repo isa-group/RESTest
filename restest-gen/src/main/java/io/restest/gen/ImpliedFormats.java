@@ -18,6 +18,7 @@ package io.restest.gen;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +35,8 @@ import java.util.regex.Pattern;
  * described as "A two-letter ISO 3166-1 alpha-2 code", a card number called {@code ccNumber}. An
  * API checks those values, and an invented word of random letters is refused before anything worth
  * testing has happened. This works out which kind a piece of text is meant to be from those two
- * clues, so that invention can sometimes send one.
+ * clues, so that {@link RandomValueProvider}, inventing a value for that place, can sometimes send
+ * one; a date or time written out is read by {@link DateTimeTemplate}.
  *
  * <p>The clues are read in a fixed order, the description first and the name after it, and the
  * first rule that recognises one decides. The description goes first because it is the more
@@ -108,15 +110,14 @@ final class ImpliedFormats {
     private static final String AT_THE_START =
             "^\\s*(?:(?:a valid|an optional|the|an|a|optional)\\s+)?";
 
-    /** A date or time written in letters: {@code YYYY-MM-DD}, {@code yyyy-MM-dd'T'HH:mm:ss}. */
-    private static final Pattern A_TEMPLATE = Pattern.compile("(?<![A-Za-z])(?:"
-            + "[yY]{4}(?:[-/.]?[mM]{2}(?:[-/.]?[dD]{2})?)?"
-            + "(?:(?:T|'T'| )[hH]{2}:[mM]{2}(?::[sS]{2}(?:\\.[sS]{1,9})?)?"
-            + "(?:Z|[xX]{3}|[+-][hH]{2}:?[mM]{2})?)?"
-            + "|[dD]{2}([-/.])[mM]{2}\\1[yY]{4}"
-            + "|[mM]{2}([-/.])[dD]{2}\\2[yY]{4}"
-            + "|[hH]{2}:[mM]{2}(?::[sS]{2})?"
-            + ")(?![A-Za-z])");
+    /**
+     * A run of the characters a date or time template is written with, starting where a word
+     * starts: {@code YYYY-MM-DD}, {@code yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}, {@code hh:mm}. The whole run
+     * has to read as a template, or nothing is taken from it - a template cut short where it stops
+     * being readable would be a different form from the one the description shows.
+     */
+    private static final Pattern A_TEMPLATE = Pattern.compile("(?<![A-Za-z'])[yYmMdDhH]"
+            + "(?:[yYmMdDhHsSTZXxz'±+:\\-/.]| (?=[hH]{2}))*+(?![A-Za-z0-9'])");
 
     /**
      * A date or time written out the ISO way, shown as what the value looks like: "in ISO 8601
@@ -124,9 +125,23 @@ final class ImpliedFormats {
      * date that is only mentioned - a range inside a filter's example - is not a sample.
      */
     private static final Pattern A_SAMPLE = Pattern.compile("(?i:\\bformat\\b|\\be\\.?g\\.|"
-            + "\\bexample\\b|\\bfor instance\\b|\\bsuch as\\b|\\blike\\b)[^.\\d]{0,24}?"
+            + "\\bexample\\b|\\bfor instance\\b|\\bsuch as\\b|\\blike\\b)[\\s:(\"'`]{0,3}"
             + "(?<![\\d-])(\\d{4}-\\d{2}(?:-\\d{2})?(?:T\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,9})?)?"
             + "(?:Z|[+-]\\d{2}:?\\d{2})?)?)(?![\\d-])");
+
+    /** The ways a description says a moment is counted from the start of 1970. */
+    private static final String SINCE_1970 = "\\bunix\\b|\\bepoch\\b|\\bsince (?:the start of )?1970\\b";
+
+    /**
+     * How each of those kinds is written short in a name. Closed, because a word that merely
+     * begins the same way - {@code count} for a country, {@code cursor} for a currency - is a
+     * different word.
+     */
+    private static final Map<String, Set<String>> SHORT_FOR = Map.of(
+            "country", Set.of("ctry", "cntry"),
+            "currency", Set.of("cur", "curr", "ccy"),
+            "language", Set.of("lang", "lng"),
+            "locale", Set.of("loc"));
 
     /** "K code" or "K tag", where K is what such a code is a code for. */
     private static final Pattern A_CODE_FOR = Pattern.compile(
@@ -141,14 +156,15 @@ final class ImpliedFormats {
             contains("D1", "\\bISO[ -]?639|\\bBCP[ -]?47\\b|\\bRFC[ -]?5646|\\bIETF language tag",
                     Kind.LANGUAGE),
             // ISO 3166-2 is the codes for provinces and states, not for countries.
-            containsUnless("D2", "\\bISO[ -]?3166", "3166[ -]?2\\b", Kind.COUNTRY),
+            containsUnless("D2", "\\bISO[ -]?3166", "\\b3166-2(?![\\d-])", Kind.COUNTRY),
             contains("D3", "\\bISO[ -]?4217", Kind.CURRENCY),
             contains("T3", "\\bRFC[ -]?3339", Kind.DATE_TIME),
             containsBoth("T4", "\\bISO[ -]?8601", "\\bdurations?\\b", Kind.DURATION),
-            contains("T5", "\\bRFC[ -]?(?:1123|7231|2822|822)\\b|\\bHTTP-date\\b", Kind.HTTP_DATE),
-            contains("T6m", "\\bmilli ?seconds? since\\b", Kind.EPOCH_MILLIS),
-            contains("T6", "\\bunix time|\\bunix timestamp|\\bepoch\\b|\\bseconds since (?:1970|the "
-                    + "epoch)", Kind.EPOCH_SECONDS),
+            // Not RFC 822, 2822 or 7231, which are also the standards for e-mail addresses and for
+            // the headers an HTTP request carries.
+            contains("T5", "\\bRFC[ -]?1123\\b|\\bHTTP-date\\b|\\bIMF-fixdate\\b", Kind.HTTP_DATE),
+            containsBoth("T6m", SINCE_1970, "\\bmilli", Kind.EPOCH_MILLIS),
+            contains("T6", SINCE_1970, Kind.EPOCH_SECONDS),
             contains("D6", "\\bE\\.?164\\b", Kind.PHONE),
             codeTiedToTheName("D7"),
             startsWith("D8", "(?:uuid|guid)\\b", Kind.UUID),
@@ -207,13 +223,19 @@ final class ImpliedFormats {
     private static Rule template(String id) {
         return place -> {
             Matcher found = A_TEMPLATE.matcher(place.description());
+            Optional<DateTimeTemplate> longest = Optional.empty();
             while (found.find()) {
-                Optional<DateTimeTemplate> read = DateTimeTemplate.fromLetters(found.group());
-                if (read.isPresent()) {
-                    return Optional.of(new Implied(Kind.TEMPLATE, id, read));
+                // A sentence's own punctuation after it is not part of it.
+                String run = found.group().replaceAll("[.:,/-]+$", "");
+                Optional<DateTimeTemplate> read = DateTimeTemplate.fromLetters(run);
+                // The fullest form a description writes is the one it means: "YYYY-MM or YYYY"
+                // means months, and "±hh:mm after yyyy-MM-ddTHH:mm±hh:mm" means the whole moment.
+                if (read.isPresent() && (longest.isEmpty()
+                        || read.get().written().length() > longest.get().written().length())) {
+                    longest = read;
                 }
             }
-            return Optional.empty();
+            return longest.map(template -> new Implied(Kind.TEMPLATE, id, Optional.of(template)));
         };
     }
 
@@ -260,10 +282,11 @@ final class ImpliedFormats {
 
     /**
      * "A valid country code", "A language code like en-US": a code for one of the kinds of thing
-     * a code is commonly for, tied to the place it describes. The name has to be that kind, or end
-     * in it, or begin the way it does ({@code lang} for a language), or be the initials of the
-     * phrase ({@code cc} for a country code) - otherwise the description is only mentioning one,
-     * as a description of a view that lists country codes among its fields does.
+     * a code is commonly for, tied to the place it describes. One of the name's words has to be
+     * that kind or the way it is written short ({@code country_code}, {@code lang}), or the name has
+     * to be the initials of the phrase ({@code cc} for a country code) - otherwise the description is
+     * only mentioning one, as a description of a view that lists country codes among its fields
+     * does.
      */
     private static Rule codeTiedToTheName(String id) {
         return place -> {
@@ -276,11 +299,8 @@ final class ImpliedFormats {
                 String kind = found.group(1).toLowerCase(Locale.ROOT);
                 String initials = kind.charAt(0) + found.group(2).substring(0, 1)
                         .toLowerCase(Locale.ROOT);
-                boolean tied = joined.equals(kind)
-                        || place.words().getLast().equals(kind)
-                        || (joined.length() >= 3 && kind.startsWith(joined.substring(0, 3)))
-                        || joined.startsWith(kind.substring(0, 3))
-                        || joined.equals(initials);
+                boolean tied = joined.equals(initials) || place.words().stream().anyMatch(word ->
+                        word.equals(kind) || SHORT_FOR.get(kind).contains(word));
                 if (tied) {
                     return Optional.of(new Implied(switch (kind) {
                         case "country" -> Kind.COUNTRY;

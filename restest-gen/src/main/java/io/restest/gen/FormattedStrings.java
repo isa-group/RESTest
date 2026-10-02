@@ -133,10 +133,16 @@ final class FormattedStrings {
         return oneOf(LANGUAGES, random);
     }
 
-    /** A moment written as the web's own headers write one: {@code Sun, 06 Nov 1994 08:49:37 GMT}. */
+    /**
+     * A moment written as the web's own headers write one: {@code Sun, 06 Nov 1994 08:49:37 GMT},
+     * the day always in two digits, as the HTTP standard's preferred form has it.
+     */
     static String httpDate(RandomGenerator random) {
-        return moment(random).format(DateTimeFormatter.RFC_1123_DATE_TIME);
+        return moment(random).format(HTTP_DATE);
     }
+
+    private static final DateTimeFormatter HTTP_DATE =
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ROOT);
 
     /** A moment written as the seconds since the start of 1970. */
     static String epochSeconds(RandomGenerator random) {

@@ -315,7 +315,11 @@ whoever needs it then can add it without changing what is stored today.
 **Date:** 2026-10-02
 
 **Where a document declares no kind, the kind its name or its description implies is sent half the
-time, by a table of rules measured against the fifty documents of the corpus.**
+time, by a table of rules measured against the fifty documents of the corpus.** This reverses the
+alternative this record rejected, "inferring a kind from a parameter's name", on two grounds the
+rejection did not have: the campaigns of 1-2 October showed what it costs, and each rule is now
+measured against what the corpus's documents declare rather than taken on trust, with a switch to
+turn the whole of it off.
 
 ### Why
 
@@ -377,7 +381,24 @@ still recorded as invented, as §5 says.
 
 ### Measured
 
-MEASURED
+On market and flight-search, each restarted before every run, five seeds, three minutes each, the
+shipped plan, `generation.impliedFormats` on against off:
+
+| | market, off | market, on | flight-search, off | flight-search, on |
+|---|---:|---:|---:|---:|
+| Operations answered 2XX, mean | 10.6 | **12.0** | 19.4 | 19.8 |
+| Area under that curve | 1,838 | **2,029** | 3,372 | 3,432 |
+| Branch coverage | 3.6% | **5.6%** | 26.3% | 26.3% |
+| Distinct faults, counted as the benchmark counts them | 48.0 | **60.0** | 0 | 0 |
+| Payments answered 2XX, per seed | 0 everywhere | **6, 4, 4, 7, 11** | | |
+| Registrations answered 2XX, per seed | | | 1 everywhere | **14, 14, 24, 19, 15** |
+
+Market is better on every seed by every measure: its payment takes a card number only when it
+passes the check digit, which a test card does and a number built from its spelling rule does not,
+and its registration and contacts reach code they never reached. On flight-search registration
+answers because the e-mail address is one; no login answers yet, since the password registered is
+not the one a login is sent, which is what 9.7 is for. The changes made after review read
+descriptions more strictly and touch no place of either document, so the table stands for them.
 
 ### What was not done
 
