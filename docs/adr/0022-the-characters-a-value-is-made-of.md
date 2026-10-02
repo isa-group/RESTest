@@ -309,3 +309,101 @@ whoever needs it then can add it without changing what is stored today.
 - **Inferring a kind from a parameter's name** — dates for `bornOn`, addresses for `homepage`.
   Rejected again, as ADR-0013 rejected semantic dictionaries: the hard part is deciding what a
   parameter means, and reading what the document says is not that.
+
+## Amendment (M9.6)
+
+**Date:** 2026-10-02
+
+**Where a document declares no kind, the kind its name or its description implies is sent half the
+time, by a table of rules measured against the fifty documents of the corpus.** This reverses the
+alternative this record rejected, "inferring a kind from a parameter's name", on two grounds the
+rejection did not have: the campaigns of 1-2 October showed what it costs, and each rule is now
+measured against what the corpus's documents declare rather than taken on trust, with a switch to
+turn the whole of it off.
+
+### Why
+
+A document that writes `format: email` gets an e-mail address; one that names a property
+`billing_email` and says nothing else gets a word of random letters, which every API that checks an
+address refuses. In the campaigns of 1-2 October that was the commonest kind of knowledge the
+hand-written dictionaries supplied and a rule could: market's `POST /customer/cart/pay` answered 406
+on `ccNumber` to every invented card and accepted 113 payments made with test card numbers;
+flight-search refused registrations for "a valid e-mail address"; restcountries' currencies and
+languagetool's languages wanted codes.
+
+### What is read, and in what order
+
+Two clues, the description first, because it is the more precise: a date template or a standard it
+names leaves nothing to guess, where a name can mean several things. The order follows the matching
+rules of ARTE (Alonso et al., IEEE TSE 2023), which reads the description before the name for the
+same reason; nothing of ARTE's machinery is taken - no knowledge base, no language processing, no
+learning from replies - only the order and its rule for "*K* code" phrases.
+
+- **The description, by what it contains**: a date or time template written in letters
+  (`YYYY-MM-DD`, `yyyy-MM-dd'T'HH:mm:ss`, `YYYYMMDD`, `dd/MM/yyyy`, `hh:mm`), or a sample date
+  written out (`1996-08-01T00:00:00`), which gives a value written exactly that way; a standard it
+  names - ISO 639, BCP 47 or RFC 5646 for a language, ISO 3166 for a country (not 3166-2, which is
+  provinces), ISO 4217 for a currency, RFC 3339, an ISO 8601 duration, an HTTP date, Unix time,
+  E.164; and "*K* code" for a country, a currency or a language, only when *K* is tied to the
+  place's own name.
+- **The description, by how it begins**: "The UUID of…", "The email address", "URL of…", "Phone
+  number…". A mention anywhere else is not a statement: "Title of the job associated with the UUID"
+  is not a UUID.
+- **The name, by the words it ends in**: `…At` and `timestamp` a date and time, `email`, `url`,
+  `uuid`, `phone`, a card number, a currency, a language.
+
+The table is kept as data in one class, `ImpliedFormats`, which answers one question - which kind
+does this name and description imply, and by which rule - and nothing else in RESTest knows how a
+name or a description is matched. A rule is kept only if, where a document of the corpus does
+declare what it wants, it agrees nine times in ten over three places or more;
+`ImpliedFormatsAcrossTheCorpusTest` pins every rule's count and fails if one falls below. That is
+what left out `date` and `country` as names on their own - corpus documents declare a date and time
+for names ending in `Date` as often as a date, and want country names as often as codes - `cc`,
+which is a country code wherever the corpus uses it, and "ISO 8601" on its own. The one rule kept
+below the bar, the language names, is kept by the maintainer's choice and said so in the test.
+
+### How it is sent
+
+Inside invention, not as a source of its own: a source of its own in the plan would win every value
+inside a body, because invention asks the rest of the strategy first for what is nested, and a random
+word would then never be sent there. So invention, at a place no declared kind, closed list or
+sample settles, sends the implied kind with probability `generation.impliedFormatChance`, a half by
+default, and an ordinary word otherwise, at any depth. A spelling rule the document states still
+holds, and so do its lengths; a value they refuse is replaced by what would have been sent anyway.
+Nothing is drawn where nothing is implied, so a place no rule recognises is invented exactly as
+before, and with `generation.impliedFormats` off a run draws what it drew before, number for number.
+
+The kinds that are new are built from lists the standards publish - currency, country and language
+codes - or that are set aside for testing: the card numbers card companies publish for tests, the
+telephone ranges kept for fiction. That is a narrowing of §2's "built, not looked up in a shipped
+list" for these five only, since a currency code cannot be built any other way; the values are
+still recorded as invented, as §5 says.
+
+### Measured
+
+On market and flight-search, each restarted before every run, five seeds, three minutes each, the
+shipped plan, `generation.impliedFormats` on against off:
+
+| | market, off | market, on | flight-search, off | flight-search, on |
+|---|---:|---:|---:|---:|
+| Operations answered 2XX, mean | 10.6 | **12.0** | 19.4 | 19.8 |
+| Area under that curve | 1,838 | **2,029** | 3,372 | 3,432 |
+| Branch coverage | 3.6% | **5.6%** | 26.3% | 26.3% |
+| Distinct faults, counted as the benchmark counts them | 48.0 | **60.0** | 0 | 0 |
+| Payments answered 2XX, per seed | 0 everywhere | **6, 4, 4, 7, 11** | | |
+| Registrations answered 2XX, per seed | | | 1 everywhere | **14, 14, 24, 19, 15** |
+
+Market is better on every seed by every measure: its payment takes a card number only when it
+passes the check digit, which a test card does and a number built from its spelling rule does not,
+and its registration and contacts reach code they never reached. On flight-search registration
+answers because the e-mail address is one; no login answers yet, since the password registered is
+not the one a login is sent, which is what 9.7 is for. The changes made after review read
+descriptions more strictly and touch no place of either document, so the table stands for them.
+
+### What was not done
+
+- A source of its own in the plan, which needs invention to stop asking the strategy first for
+  what is nested; that is the 2.1 design.
+- A knowledge base, language processing or learning from what the API accepted, which are ARTE's
+  and stay with 2.1's external data provider.
+- Passwords, postal codes, people's names, and a date where a date and time is declared.

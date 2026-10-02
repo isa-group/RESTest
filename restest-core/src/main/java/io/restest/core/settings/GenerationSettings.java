@@ -70,6 +70,13 @@ import java.util.Objects;
  *     in the request
  * @param writableBodyAttempts how many bodies are drawn while looking for one that can be written
  *     as its media type
+ * @param impliedFormats whether an invented word takes the kind its name or its description implies
+ *     where the description names none - an e-mail address for {@code email}, a card number for
+ *     {@code ccNumber}, a country code where the description says "ISO 3166". Off, such a word is
+ *     an ordinary one, as it always was
+ * @param impliedFormatChance how often it does, where a kind is implied, between 0 and 1. The rest
+ *     are ordinary invented words, because a value the API refuses for being well formed is worth
+ *     finding as well
  */
 public record GenerationSettings(
         int optionalNestingDepth,
@@ -88,11 +95,13 @@ public record GenerationSettings(
         int nullInOneIn,
         int uniqueAttempts,
         int sendableAttempts,
-        int writableBodyAttempts) {
+        int writableBodyAttempts,
+        boolean impliedFormats,
+        double impliedFormatChance) {
 
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
-            0.5, 0.5, 0.5, true, 8, 8, 8, 8);
+            0.5, 0.5, 0.5, true, 8, 8, 8, 8, true, 0.5);
 
     public GenerationSettings {
         Objects.requireNonNull(lowestNumber, "lowestNumber");
@@ -117,6 +126,7 @@ public record GenerationSettings(
         aShare(optionalPropertyChance, "optionalPropertyChance");
         aShare(optionalBodyChance, "optionalBodyChance");
         aShare(optionalParameterContinueChance, "optionalParameterContinueChance");
+        aShare(impliedFormatChance, "impliedFormatChance");
         if (decimalPlaces < 0) {
             throw new IllegalArgumentException("decimalPlaces cannot be negative; zero invents "
                     + "whole numbers where decimals are allowed: " + decimalPlaces);

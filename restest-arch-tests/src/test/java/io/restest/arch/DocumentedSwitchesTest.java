@@ -323,8 +323,9 @@ class DocumentedSwitchesTest {
     @DisplayName("the file for a milestone is the files for its increments put together")
     void the_file_for_a_milestone_is_its_increments_together() {
         assertThat(valuesIn(labelled("Reach")))
-                .describedAs("the file for reach is supposed to be the files for 2.9, 9.1 and 9.2")
-                .isEqualTo(together("2.9", "9.1", "9.2"));
+                .describedAs("the file for reach is supposed to be the files for 2.9, 9.1, 9.2 and "
+                        + "9.6")
+                .isEqualTo(together("2.9", "9.1", "9.2", "9.6"));
         Map<String, String> breaking = new TreeMap<>(valuesIn(labelled("10.3")));
         breaking.put("mutation.violations", "false");
         assertThat(valuesIn(labelled("Break")))

@@ -181,7 +181,11 @@ public record Settings(
                 typed.wholeNumber("generation.sendableAttempts",
                         DEFAULTS.generation.sendableAttempts()),
                 typed.wholeNumber("generation.writableBodyAttempts",
-                        DEFAULTS.generation.writableBodyAttempts())));
+                        DEFAULTS.generation.writableBodyAttempts()),
+                typed.yesOrNo("generation.impliedFormats", DEFAULTS.generation.impliedFormats()),
+                typed.number("generation.impliedFormatChance",
+                        BigDecimal.valueOf(DEFAULTS.generation.impliedFormatChance()))
+                        .doubleValue()));
         MutationSettings mutation = group("mutation", () -> new MutationSettings(
                 typed.yesOrNo("mutation.violations", DEFAULTS.mutation.violations()),
                 typed.yesOrNo("mutation.dropRequired", DEFAULTS.mutation.dropRequired()),
@@ -362,6 +366,8 @@ public record Settings(
             case "generation.sendableAttempts" -> String.valueOf(generation.sendableAttempts());
             case "generation.writableBodyAttempts" ->
                     String.valueOf(generation.writableBodyAttempts());
+            case "generation.impliedFormats" -> String.valueOf(generation.impliedFormats());
+            case "generation.impliedFormatChance" -> written(generation.impliedFormatChance());
 
             case "mutation.violations" -> String.valueOf(mutation.violations());
             case "mutation.dropRequired" -> String.valueOf(mutation.dropRequired());

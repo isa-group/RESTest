@@ -22,6 +22,8 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +75,92 @@ final class FormattedStrings {
 
     private static final String LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
 
+    /**
+     * Telephone numbers set aside for fiction: the United Kingdom keeps 07700 900000 to 900999
+     * for drama, and North America keeps 555-0100 to 555-0199 in every area. Written the
+     * international way, a plus sign and the country's code first, which is the form most APIs
+     * check for. Each range is a prefix and the hundred or thousand numbers after it.
+     */
+    private static final String UK_FICTION = "+447700900";
+    private static final String NORTH_AMERICAN_FICTION = "+120255501";
+
+    /**
+     * Card numbers the card companies publish for testing: each passes the check digit every card
+     * number carries, and none can be charged.
+     */
+    private static final List<String> TEST_CARD_NUMBERS = List.of("4111111111111111",
+            "4242424242424242", "5555555555554444", "378282246310005", "6011111111111117");
+
+    /** Currency codes, as ISO 4217 writes them. */
+    private static final List<String> CURRENCIES = List.of("USD", "EUR", "GBP", "JPY", "CHF",
+            "CAD", "AUD", "CNY", "SEK", "NOK", "MXN", "BRL", "INR");
+
+    /** Country codes, as ISO 3166-1 writes them in two letters. */
+    private static final List<String> COUNTRIES = List.of("US", "GB", "DE", "FR", "ES", "IT", "NL",
+            "PT", "SE", "JP", "CN", "BR", "IN", "CA", "AU", "MX");
+
+    /** Language tags, as BCP 47 writes them: a language, or a language and where it is spoken. */
+    private static final List<String> LANGUAGES = List.of("en", "es", "fr", "de", "it", "pt",
+            "en-US", "en-GB", "es-ES", "pt-BR", "de-DE", "fr-FR");
+
     private FormattedStrings() {
+    }
+
+    /** A telephone number nobody answers, written the international way. */
+    static String phone(RandomGenerator random) {
+        return random.nextBoolean()
+                ? UK_FICTION + String.format(Locale.ROOT, "%03d", random.nextInt(1000))
+                : NORTH_AMERICAN_FICTION + String.format(Locale.ROOT, "%02d", random.nextInt(100));
+    }
+
+    /** A card number published for testing, which no payment can be taken from. */
+    static String testCardNumber(RandomGenerator random) {
+        return oneOf(TEST_CARD_NUMBERS, random);
+    }
+
+    /** A currency's three-letter code. */
+    static String currency(RandomGenerator random) {
+        return oneOf(CURRENCIES, random);
+    }
+
+    /** A country's two-letter code. */
+    static String country(RandomGenerator random) {
+        return oneOf(COUNTRIES, random);
+    }
+
+    /** A language tag. */
+    static String language(RandomGenerator random) {
+        return oneOf(LANGUAGES, random);
+    }
+
+    /**
+     * A moment written as the web's own headers write one: {@code Sun, 06 Nov 1994 08:49:37 GMT},
+     * the day always in two digits, as the HTTP standard's preferred form has it.
+     */
+    static String httpDate(RandomGenerator random) {
+        return moment(random).format(HTTP_DATE);
+    }
+
+    private static final DateTimeFormatter HTTP_DATE =
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ROOT);
+
+    /** A moment written as the seconds since the start of 1970. */
+    static String epochSeconds(RandomGenerator random) {
+        return Long.toString(moment(random).toEpochSecond());
+    }
+
+    /** A moment written as the milliseconds since the start of 1970. */
+    static String epochMillis(RandomGenerator random) {
+        return Long.toString(moment(random).toInstant().toEpochMilli() + random.nextInt(1000));
+    }
+
+    /** A moment drawn from the same years every other date here is drawn from. */
+    static java.time.LocalDateTime localMoment(RandomGenerator random) {
+        return moment(random).toLocalDateTime();
+    }
+
+    private static String oneOf(List<String> values, RandomGenerator random) {
+        return values.get(random.nextInt(values.size()));
     }
 
     /**

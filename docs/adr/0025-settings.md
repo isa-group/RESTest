@@ -513,3 +513,16 @@ settings file brings back the memory as it was before 9.5, so a campaign run bef
 after differ in this as well as in whatever they were run to compare. `memory.mostNames` keeps its
 name and its default, and says what happens when it is reached. Seventy-two settings in eight
 groups.
+
+## Amendment (M9.6)
+
+**Date:** 2026-10-02
+
+**Two settings for the kinds a name or a description implies.** `generation.impliedFormats` is the
+switch §4 asks for, on by default. `generation.impliedFormatChance`, a half by default, is how often
+an invented word takes the implied kind where one is implied; it is a number, not a way of
+switching the row off, and the page of switches says so. The rule table itself is not a setting:
+which names and descriptions imply what is a fact the corpus measures, kept in one class and pinned
+by a test, not a decision somebody tunes per run
+([ADR-0022](0022-the-characters-a-value-is-made-of.md), M9.6 amendment). Seventy-four settings in
+eight groups.
