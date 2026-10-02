@@ -474,11 +474,11 @@ than `lowestNumber`, the same room is allowed below that top instead.
 **`optionalBodyChance` also decides optional parameters, when `optionalParametersBySize` is off.**
 With `optionalParametersBySize` on, which is the default, how many optional parameters a request
 carries is drawn first and `optionalParameterContinueChance` shapes that count. Switched off, each
-optional parameter is decided on a coin of its own, and that coin is `optionalBodyChance` — the same
-number that decides whether a request sends a body it may leave out. The two cannot be set apart, so
-an experiment that turns `optionalParametersBySize` off and changes `optionalBodyChance` changes
-how often optional parameters are sent as well as bodies. A setting of its own for the coin would
-correct it.
+optional parameter is decided on a coin of its own, weighted by `optionalBodyChance` — the same
+number that decides whether a request sends a body it may leave out. Bodies and optional parameters
+cannot be given different chances, so an experiment that turns `optionalParametersBySize` off and
+changes `optionalBodyChance` changes how often optional parameters are sent as well as bodies. A
+setting of its own for the coin would correct it, and is left for RESTest 2.1.
 
 ## What is not a setting
 
