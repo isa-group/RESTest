@@ -31,8 +31,11 @@ import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
 import io.restest.core.model.ResponseModel;
+import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NumberKind;
@@ -44,9 +47,12 @@ import io.restest.core.settings.MemorySettings;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,6 +77,21 @@ class ObservedValuesTest {
     private static final ObjectSchema PET = ObjectSchema.of(Map.of(
             "id", NumberSchema.of(NumberKind.INTEGER),
             "name", StringSchema.of()));
+
+    /**
+     * An operation that is sent a pet, which is what makes the names a pet comes back with ones a
+     * request asks for: its id in the path, and its name, tag, tags and owner's town in the body.
+     * A name only a reply carries is not kept, so without this the memory would hold nothing.
+     */
+    private static final Operation UPDATE_PET = Operation.of(HttpMethod.PUT, "/pets/{id}",
+                    List.of(Parameter.of("id", ParameterLocation.PATH, true,
+                            NumberSchema.of(NumberKind.INTEGER))))
+            .withId(OperationId.of("updatePet"))
+            .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                    "name", StringSchema.of(),
+                    "tag", StringSchema.of(),
+                    "tags", ArraySchema.of(StringSchema.of()),
+                    "owner", ObjectSchema.of(Map.of("town", StringSchema.of())))), true));
 
     @Nested
     @DisplayName("what is kept")
@@ -423,21 +444,138 @@ class ObservedValuesTest {
         }
 
         @Test
-        @DisplayName("only so many different names, whatever an API invents")
+        @DisplayName("only so many different names, however many a document asks for")
         void only_so_many_names() {
-            ObservedValues seen = new ObservedValues(anApiReturning(PET));
+            Map<String, CanonicalSchema> asked = new LinkedHashMap<>();
             StringBuilder madeUp = new StringBuilder("{");
             for (int at = 0; at < MemorySettings.defaults().mostNames() + 50; at++) {
+                asked.put("name" + at, NumberSchema.of(NumberKind.INTEGER));
                 madeUp.append(at == 0 ? "" : ",").append("\"name").append(at).append("\": 1");
             }
             madeUp.append("}");
+            ObservedValues seen = new ObservedValues(anApiReturning(PET,
+                    Operation.of(HttpMethod.POST, "/maps").withId(OperationId.of("addMap"))
+                            .withRequestBody(RequestBodyModel.json(ObjectSchema.of(asked), true))));
 
             seen.on(reply(200, "application/json", madeUp.toString()));
 
             assertThat(seen.underTheirOwnNames().size())
-                    .describedAs("an API writing a map of identifiers as an object would grow "
-                            + "this for as long as the run lasted")
+                    .describedAs("a document asking for more names than this would grow it for "
+                            + "as long as the run lasted")
                     .isEqualTo(MemorySettings.defaults().mostNames());
+        }
+
+        @Test
+        @DisplayName("when as many names are kept as may be, the one heard of longest ago makes "
+                + "room for a new one")
+        void the_name_heard_of_longest_ago_makes_room() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET), new MemorySettings(
+                    MemorySettings.defaults().mostValuesUnderOneName(), 3,
+                    MemorySettings.defaults().longestValueKept(),
+                    MemorySettings.defaults().longestReplyRead(),
+                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true));
+
+            seen.on(reply(200, "application/json", "{\"id\": 1}"));
+            seen.on(reply(200, "application/json", "{\"name\": \"Fluffy\"}"));
+            seen.on(reply(200, "application/json", "{\"tag\": \"cat\"}"));
+            seen.on(reply(200, "application/json", "{\"id\": 2}"));
+            seen.on(reply(200, "application/json", "{\"owner\": {\"town\": \"Sevilla\"}}"));
+
+            assertThat(seen.underTheirOwnNames().size()).isEqualTo(3);
+            assertThat(valuesUnder(seen, "name"))
+                    .describedAs("heard of longest ago, so the first to make room")
+                    .isEmpty();
+            assertThat(valuesUnder(seen, "tag"))
+                    .describedAs("the next oldest, once the owner had made room for its town")
+                    .isEmpty();
+            assertThat(valuesUnder(seen, "id"))
+                    .describedAs("heard first, and heard again since, which is what counts")
+                    .containsExactly(JsonValue.of(1), JsonValue.of(2));
+            assertThat(valuesUnder(seen, "town")).containsExactly(JsonValue.of("Sevilla"));
+        }
+    }
+
+    @Nested
+    @DisplayName("only what some request asks for")
+    class OnlyWhatSomeRequestAsksFor {
+
+        @Test
+        @DisplayName("a name no request asks for is not kept")
+        void a_name_nobody_asks_for_is_not_kept() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET));
+
+            seen.on(reply(200, "application/json", "{\"org.hibernate.validator.internal.engine"
+                    + ".groups\": {\"effectiveLevel\": \"INFO\"}, \"name\": \"Fluffy\"}"));
+
+            assertThat(valuesUnder(seen, "org.hibernate.validator.internal.engine.groups"))
+                    .isEmpty();
+            assertThat(valuesUnder(seen, "effectiveLevel")).isEmpty();
+            assertThat(valuesUnder(seen, "name")).containsExactly(JsonValue.of("Fluffy"));
+            assertThat(seen.underTheirOwnNames().size())
+                    .describedAs("only the one name some request asks for takes up room")
+                    .isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("what is inside a piece nobody asks for is still looked at")
+        void inside_a_piece_nobody_asks_for() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET));
+
+            seen.on(reply(200, "application/json",
+                    "{\"address\": {\"town\": \"Sevilla\"}}"));
+
+            assertThat(valuesUnder(seen, "address")).isEmpty();
+            assertThat(valuesUnder(seen, "town")).containsExactly(JsonValue.of("Sevilla"));
+        }
+
+        @Test
+        @DisplayName("a token a login hands back is kept, however many names came before it")
+        void a_token_after_thousands_of_names() {
+            Operation diagnostics = Operation.of(HttpMethod.GET, "/actuator/loggers")
+                    .withId(OperationId.of("loggers"))
+                    .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+            Operation refresh = Operation.of(HttpMethod.POST, "/user/refresh-token")
+                    .withId(OperationId.of("refreshToken"))
+                    .withRequestBody(RequestBodyModel.json(ObjectSchema.of(
+                            Map.of("refreshToken", StringSchema.of())), true));
+            ObservedValues seen = new ObservedValues(anApiReturning(PET, diagnostics, refresh));
+            StringBuilder loggers = new StringBuilder("{\"loggers\": {");
+            for (int at = 0; at < MemorySettings.defaults().mostNames() + 50; at++) {
+                loggers.append(at == 0 ? "" : ",").append("\"org.example.Class").append(at)
+                        .append("\": {\"effectiveLevel\": \"INFO\"}");
+            }
+            loggers.append("}}");
+
+            seen.on(reply(200, "application/json", loggers.toString()));
+            seen.on(reply(200, "application/json", "{\"isSuccess\": true, \"response\": "
+                    + "{\"accessToken\": \"eyJhY2Nlc3M\", \"refreshToken\": \"eyJyZWZyZXNo\"}}"));
+
+            assertThat(valuesUnder(seen, "refreshToken"))
+                    .describedAs("the names of every class in the program, which no request asks "
+                            + "for, used to fill the memory before the first login answered")
+                    .containsExactly(JsonValue.of("eyJyZWZyZXNo"));
+        }
+
+        @Test
+        @DisplayName("a value is kept under whichever names it is said to answer, and remembers the "
+                + "one it came with")
+        void kept_under_the_names_it_answers() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET),
+                    MemorySettings.defaults(), heard -> heard.equals("token")
+                            ? Set.of("refreshToken", "accessToken") : Set.of());
+
+            seen.on(reply(200, "application/json", "{\"token\": \"eyJ0b2tlbg\"}"));
+
+            assertThat(valuesUnder(seen, "token"))
+                    .describedAs("a name is only ever kept under the names a request asks for")
+                    .isEmpty();
+            assertThat(valuesUnder(seen, "refreshToken")).containsExactly(JsonValue.of("eyJ0b2tlbg"));
+            assertThat(valuesUnder(seen, "accessToken")).containsExactly(JsonValue.of("eyJ0b2tlbg"));
+            assertThat(seen.underTheirOwnNames().observationsFor(ValueRequest.of(GET_PET,
+                            "refreshToken", ParameterLocation.BODY, StringSchema.of())))
+                    .extracting(ObservedValues.Observation::heardAs)
+                    .describedAs("so that where it came from can be told as the reply told it")
+                    .containsExactly("token");
         }
     }
 
@@ -502,12 +640,17 @@ class ObservedValuesTest {
                 ParameterLocation.BODY, PET, List.of(), Optional.of(shape)));
     }
 
-    /** An API with one operation, answering 200 with the given shape. */
-    private static ApiModel anApiReturning(CanonicalSchema schema) {
+    /**
+     * An API with an operation answering 200 with the given shape, one that is sent a pet, and
+     * any others given.
+     */
+    private static ApiModel anApiReturning(CanonicalSchema schema, Operation... others) {
         Operation operation = Operation.of(HttpMethod.GET, "/pets")
                 .withId(GET_PET)
                 .withResponses(List.of(ResponseModel.json("200", schema)));
-        return ApiModel.of("pets", "1", List.of(operation)).withSchemas(Map.of("Pet", PET));
+        List<Operation> operations = new ArrayList<>(List.of(operation, UPDATE_PET));
+        operations.addAll(List.of(others));
+        return ApiModel.of("pets", "1", operations).withSchemas(Map.of("Pet", PET));
     }
 
     private static RunEvent.InteractionCompleted reply(int status, String contentType,

@@ -35,7 +35,9 @@ import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
 import io.restest.core.model.ResponseModel;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
@@ -473,7 +475,16 @@ class ObservedValueProviderTest {
                 .withId(GET_PET)
                 .withResponses(List.of(
                         ResponseModel.json("200", SchemaReference.to(shapeName))));
-        ApiModel model = ApiModel.of("pets", "1", List.of(returnsOne))
+        // The operation these tests ask on behalf of, asking for every name they ask about: the
+        // memory keeps a value only under a name some request asks for.
+        Operation sendsOne = Operation.of(HttpMethod.POST, "/pets", List.of(
+                        Parameter.of("id", ParameterLocation.QUERY, false, StringSchema.of()),
+                        Parameter.of("name", ParameterLocation.QUERY, false, StringSchema.of()),
+                        Parameter.of("status", ParameterLocation.QUERY, false, StringSchema.of()),
+                        Parameter.of("owner", ParameterLocation.QUERY, false, StringSchema.of())))
+                .withId(ADD_PET)
+                .withRequestBody(RequestBodyModel.json(SchemaReference.to(shapeName), true));
+        ApiModel model = ApiModel.of("pets", "1", List.of(returnsOne, sendsOne))
                 .withSchemas(Map.of(shapeName, shape));
         ObservedValues seen = new ObservedValues(model);
         seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Interaction.answered(

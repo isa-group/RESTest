@@ -29,9 +29,9 @@ package io.restest.core.settings;
  * larger than the tool will read is skipped rather than read slowly.
  *
  * @param mostValuesUnderOneName how many values are kept under any one name
- * @param mostNames how many different names are kept at all. A guard rather than a design, against
- *     an API whose replies carry made-up property names, and well above anything a real description
- *     declares
+ * @param mostNames how many different names are kept at all. A guard rather than a design: only a
+ *     name some request can ask for is kept, and no real description asks for nearly this many.
+ *     When it is reached, a new name makes room by letting go of the one heard of longest ago
  * @param longestValueKept how long one remembered word or number may be, written out. The numbers
  *     matter as much as the words: {@code 1e9999999} is ten characters in a reply and ten million
  *     in a web address
