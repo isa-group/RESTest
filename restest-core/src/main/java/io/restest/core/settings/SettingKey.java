@@ -295,7 +295,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many values the run remembers under any one name, and things of any "
                             + "one kind. 0 remembers none"),
             key("memory", "mostNames", SettingKind.WHOLE_NUMBER,
-                    "how many different names, and kinds of thing, are remembered at all"),
+                    "how many different names, shapes and kinds of thing are remembered at all; "
+                            + "a new one makes room by letting go of the one heard of longest ago"),
             key("memory", "longestValueKept", SettingKind.WHOLE_NUMBER,
                     "how long one remembered word or number may be, written out"),
             key("memory", "longestReplyRead", SettingKind.WHOLE_NUMBER,

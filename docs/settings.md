@@ -212,7 +212,7 @@ sequences:
 memory:
   # how many values the run remembers under any one name, and things of any one kind. 0 remembers none
   mostValuesUnderOneName: 20  # default
-  # how many different names, and kinds of thing, are remembered at all
+  # how many different names, shapes and kinds of thing are remembered at all; a new one makes room by letting go of the one heard of longest ago
   mostNames: 2000             # default
   # how long one remembered word or number may be, written out
   longestValueKept: 10000     # default
@@ -423,7 +423,7 @@ switches](switches.md#switching-off-everything-one-increment-added) has that fil
 | Setting | Default | What it does |
 |---|---|---|
 | `mostValuesUnderOneName` | `20` | how many values the run remembers under any one name, and things of any one kind. 0 remembers none |
-| `mostNames` | `2000` | how many different names, and kinds of thing, are remembered at all |
+| `mostNames` | `2000` | how many different names, shapes and kinds of thing are remembered at all; a new one makes room by letting go of the one heard of longest ago |
 | `longestValueKept` | `10000` | how long one remembered word or number may be, written out |
 | `longestReplyRead` | `524288` | the largest reply the run reads looking for values to remember |
 | `asDeepAsAReplyIsRead` | `6` | how far into a reply that search goes |

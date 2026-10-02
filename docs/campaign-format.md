@@ -124,6 +124,13 @@ produced — an identifier that exists, a reference that resolves, a name spelle
 spells it. Of the values inside the request bodies of our fifty-document corpus, 89% carry a name
 some reply of the same API also carries.
 
+Only a value whose name some request of the document asks for is kept: a parameter's name, or a
+property's anywhere inside a body. A reply's other names are never asked for, and some APIs send
+thousands of them — flight-search lists every class in the program on one of its diagnostic pages —
+so keeping them would leave no room for the token a login hands back. The memory holds at most
+`memory.mostNames` names, and when it is full a new one makes room by letting go of the name heard
+of longest ago.
+
 A gap in a web address gets a second chance. The API usually calls a thing's identifier `id`, and the
 address that reads one calls it something else — `/pettypes/{petTypeId}` — so no reply ever carries
 a value named `petTypeId`. What the API returns at an address is therefore also kept under the kind
@@ -142,9 +149,9 @@ otherwise exactly as real as what it sent. Where nothing different can be had �
 one no other source can fill — it goes as it came back, and the run records that it was unchanged
 rather than naming a value that was not.
 
-It can only offer a value that fits: the kind has to match, and where the document states the closed
-list of values it accepts, a value seen elsewhere in the API is not made acceptable by having been
-seen.
+It can only offer a value that fits: the kind has to match, a word has to be as long as the document
+allows where it goes, and where the document states the closed list of values it accepts, a value
+seen elsewhere in the API is not made acceptable by having been seen.
 
 **It costs one promise, and the cost is real.** A run whose plan names `observed` cannot be repeated
 by giving it the same `--seed` again: what it sends depends on what the API answered, and an API

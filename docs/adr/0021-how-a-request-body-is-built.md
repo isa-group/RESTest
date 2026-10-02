@@ -713,3 +713,96 @@ enough to call the question closed - which is what `memory.identifiersByResource
   is not always a deletion ([ADR-0013](0013-input-generation.md), M9.3 amendment).*
 - No synonym table and no similarity score, as the row says: the kind of thing is the fixed part of
   the address, spelt one way, and nothing else.
+
+## Amendment (M9.5)
+
+**Date:** 2026-10-02
+
+**A value from a reply is kept only under a name some request asks for, and a full memory lets the
+name heard of longest ago go.**
+
+### Why
+
+The memory of 2.5b files every named piece of every reply under its name, and kept at most
+`memory.mostNames` names, two thousand: a new name arriving when it was full was turned away. The
+guard was written against an API inventing property names, and it held against that; what it did
+not foresee is an API whose ordinary replies carry thousands of names nobody asks for. flight-search
+answers `GET /actuator/loggers` with one name per class in the program, 721 of them, and
+`/actuator/beans`, `/conditions` and `/configprops` with hundreds more. In the campaigns of 1-2
+October those four filled the memory 2.9 to 4.4 seconds into a session; the first login that
+answered 2XX came later - 48 seconds in one session - and the `refreshToken` it returned, a name the
+refresh operation asks for, was turned away. None of the refresh-token requests after it carried
+one.
+
+Counted over the corpus by `NamesAskedForAcrossTheCorpusTest`: of the 4,060 names the fifty
+documents declare in their 2XX replies, 741 - fewer than one in five - are names some request of
+the same document asks for. A value is only ever asked for by such a name, so the other four in
+five took up room and were never read. The document asking for the most names, GitHub's, asks for
+394.
+
+### How
+
+- **Which names a request asks for** is worked out once from the document by
+  `NamesTheDocumentAsksFor`, the way a request names its places: every parameter's name, `body`
+  where a body is sent, and every property's name inside either, however deep, through lists,
+  choices, maps and named shapes. A body on a `GET` or a `HEAD` adds nothing.
+- **One question decides where a value is filed**: which of the document's names does the name it
+  came with answer? Today a name answers itself, and only when some request asks for it. The memory
+  files the value under each name the answer gives and under nothing else, and keeps the name it
+  came with beside it, which is what a report shows as where it came from. What is inside a piece
+  nobody asks for is still read: an `address` nobody asks for may hold a `town` somebody does.
+- **When the memory is full**, a new name makes room by letting go of the name heard of longest
+  ago. "Heard" means filed: asking happens on the thread that builds requests, which is never made
+  to write anything down, so a name asked for often and heard of long ago goes first. The whole
+  things kept under their shape's name (M2.5b) and the things kept by their kind (M9.2) follow the
+  same rule, and are otherwise kept as before; their keys are the document's own shape names and
+  addresses, so they never reach the limit in practice.
+- **A remembered word is only offered where its length fits** the `minLength` and `maxLength` the
+  document states for the place it would go, as it was already only offered where its kind matched
+  and where it was on a closed list the document states. Found by the measurement below, not
+  planned: with `password` now a name the memory keeps, flight-search's `/actuator/configprops`,
+  which shows the database's password as `"******"`, became the password of every invented body -
+  inside a body the memory is asked before invention - and every registration that could have
+  worked was refused for a password shorter than the eight characters the document declares. It
+  is a check of what the document already says, so it has no switch either, and the maintainer
+  approved it on 2 October.
+
+The question is asked at the moment a value is filed rather than when one is looked up, so that
+**matching names by likeness** - a reply's `token` for a request's `refreshToken`, which is 4.1's -
+would change that one class and nothing else: what is looked up stays an exact search by the name
+asked for, the memory stays bounded by the document's own names, and the matching runs on the
+thread that hears replies rather than the one building requests.
+
+### Measured
+
+On flight-search, the containerised API restarted before every run, five seeds, three minutes each,
+before (`17369e00`) against after, under the shipped plan and under the plan with the dictionaries
+of the 1-2 October campaign - the only plan whose logins had answered 2XX:
+
+| | shipped, before | shipped, after | dictionaries, before | dictionaries, after |
+|---|---:|---:|---:|---:|
+| Operations answered 2XX, mean | 19.4 | **20.6** | 23.6 | **24.8** |
+| Area under that curve, operations × seconds | 3,418 | **3,568** | 4,140 | **4,303** |
+| Branch coverage | 26.3% | 26.3% | 27.6% | **29.6%** on four seeds, 27.6% on one |
+| Refresh-token requests answered 2XX, per seed | 0 everywhere | 0 everywhere | 0 everywhere | **14, 15, 0, 4, 0** |
+| Logout requests answered 2XX, per seed | 0 everywhere | 0 everywhere | 0 everywhere | **8, 9, 2, 2, 0** |
+
+The area is larger on four seeds of five under each plan. Under the shipped plan the gain is
+`POST /actuator/loggers/{name}`, answered 2XX on every seed after and on none before, because the
+logging level its body asks for is now kept from the replies that list one; no login answers there,
+so nothing has a token to send, and that waits for 9.6 and 9.7. Under the dictionaries the token a
+login returns is sent to the refresh and logout operations, and they answer.
+
+The length check was found by the first measurement of the filter alone, which had three seeds of
+the shipped plan worse than before - 18 operations rather than 19, branch coverage 25.0% rather than
+26.3% - because every invented password had become `"******"` and the one registration a run
+otherwise manages was refused. With the check those runs are back where they were, and the table
+above is the filter, the eviction and the check together.
+
+### What was not done
+
+- **No switch**, by the maintainer's choice; [ADR-0025](0025-settings.md)'s M9.5 amendment records
+  the exception and what it costs.
+- **The limit was not raised.** Two thousand names is a guard, and a larger one would only move the
+  second at which an API like flight-search fills it.
+- **No likeness between names**, which stays with 4.1; this only makes it one class to change.

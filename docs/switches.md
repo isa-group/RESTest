@@ -1,8 +1,9 @@
 # The switches
 
 A switch is a setting that is `true` or `false` and turns off one thing RESTest does. Every
-behaviour added since RESTest has had settings comes with one, and the few older ones that do not
-are [named further down](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
+behaviour added since RESTest has had settings comes with one but [one left without by
+choice](#one-with-no-switch-by-choice), and the few older ones that do not are [named further
+down](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
 dislikes one of them can turn it off in a line. And what each one is worth can be measured by
 running the same tool twice, once with it and once without, rather than by building two versions of
 the tool. A comparison of that kind is called an *ablation*, and this page is written for whoever is
@@ -381,6 +382,23 @@ sequences:
 The run says which it is, under the line that gives its seed. While any of the three is on, it
 prints `what it sends depends on the API's own replies, so the seed alone does not repeat this run`.
 Once all three are off, that line is gone.
+
+## One with no switch, by choice
+
+Since 9.5, the memory of what the API returned keeps a value only under a name some request of
+the document asks for — a parameter's, or a property's anywhere in a body — and when it holds as
+many names as `memory.mostNames` allows, a new one makes room by letting go of the name heard of
+longest ago. Before, it kept every name a reply carried and turned away every new one once it was
+full, so the first names an API happened to send were the only ones a run could ever remember: on
+flight-search, the names of the classes its diagnostic pages list filled it within three seconds,
+and the token a login handed back a minute later was never kept. Since 9.5 too, a word it
+remembered is only offered where it is as long as the document allows: a password a diagnostic page
+shows as `******` is not sent where the document asks for eight characters at least.
+
+The maintainer chose to give this no switch: turning new names away once the memory was full was
+not a behaviour anybody chose. What that costs is worth knowing before an ablation: no file brings
+back the memory as it was, so a campaign run before 9.5 and one run after it differ in this as well
+as in whatever they were run to compare.
 
 ## What has no switch yet
 

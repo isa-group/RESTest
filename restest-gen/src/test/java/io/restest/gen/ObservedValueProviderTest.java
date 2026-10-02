@@ -35,7 +35,9 @@ import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
 import io.restest.core.model.ResponseModel;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
@@ -136,6 +138,42 @@ class ObservedValueProviderTest {
                     .describedAs("a closed list is the whole set of values the API takes, and a "
                             + "value is not made acceptable by having been seen elsewhere")
                     .isEmpty();
+        }
+
+        @Test
+        @DisplayName("a word shorter or longer than the document allows here is not offered")
+        void a_word_of_the_wrong_length_is_not_offered() {
+            ObservedValueProvider source = sourceKnowing("{\"name\": \"******\"}", null);
+            StringSchema atLeastEight = new StringSchema(SchemaMetadata.none(), Optional.of(8),
+                    Optional.empty(), Optional.empty(), Optional.empty());
+            StringSchema atMostThree = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.of(3), Optional.empty(), Optional.empty());
+
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    atLeastEight)))
+                    .describedAs("a diagnostic page hides a password as six asterisks, and six "
+                            + "characters are no password where eight are the least accepted")
+                    .isEmpty();
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    atMostThree))).isEmpty();
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    StringSchema.of())).map(GeneratedValue::value))
+                    .describedAs("where the document states no length, it fits")
+                    .contains(JsonValue.of("******"));
+        }
+
+        @Test
+        @DisplayName("a word exactly as long as the least or the most allowed is offered, counted "
+                + "in characters as a reader counts them")
+        void the_limits_themselves_are_allowed() {
+            ObservedValueProvider source = sourceKnowing("{\"name\": \"\ud83d\udc36\ud83d\udc31\"}", null);
+            StringSchema exactlyTwo = new StringSchema(SchemaMetadata.none(), Optional.of(2),
+                    Optional.of(2), Optional.empty(), Optional.empty());
+
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    exactlyTwo)))
+                    .describedAs("two animals are two characters, though Java stores four")
+                    .isPresent();
         }
 
         @Test
@@ -473,7 +511,16 @@ class ObservedValueProviderTest {
                 .withId(GET_PET)
                 .withResponses(List.of(
                         ResponseModel.json("200", SchemaReference.to(shapeName))));
-        ApiModel model = ApiModel.of("pets", "1", List.of(returnsOne))
+        // The operation these tests ask on behalf of, asking for the names they expect to find:
+        // the memory keeps a value only under a name some request asks for.
+        Operation sendsOne = Operation.of(HttpMethod.POST, "/pets", List.of(
+                        Parameter.of("id", ParameterLocation.QUERY, false, StringSchema.of()),
+                        Parameter.of("name", ParameterLocation.QUERY, false, StringSchema.of()),
+                        Parameter.of("status", ParameterLocation.QUERY, false, StringSchema.of()),
+                        Parameter.of("owner", ParameterLocation.QUERY, false, StringSchema.of())))
+                .withId(ADD_PET)
+                .withRequestBody(RequestBodyModel.json(SchemaReference.to(shapeName), true));
+        ApiModel model = ApiModel.of("pets", "1", List.of(returnsOne, sendsOne))
                 .withSchemas(Map.of(shapeName, shape));
         ObservedValues seen = new ObservedValues(model);
         seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Interaction.answered(

@@ -35,14 +35,18 @@ import io.restest.core.settings.MemorySettings;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 /**
  * What the API has already shown us, kept as the run goes along.
@@ -61,7 +65,10 @@ import java.util.concurrent.ConcurrentMap;
  *       called {@code petId} is wanted, whether that is a parameter or a property four levels
  *       inside a body. This is where nearly all of the value is - of the request bodies in our
  *       corpus of fifty specifications, 89% of the individual values inside them carry a name some
- *       reply also carries.</li>
+ *       reply also carries. Only a name some request can ask for is kept, which is what
+ *       {@link NamesTheDocumentAsksFor} works out: a reply's other names would take up room
+ *       nothing ever asks for, and an API's diagnostic pages can fill all of it with them in a
+ *       few seconds.</li>
  *   <li><b>Under the name of the shape.</b> A reply the document says is an {@code Owner} is also
  *       kept whole, under {@code Owner}, so that an operation asking to be sent an {@code Owner}
  *       can be sent one the API itself produced rather than one assembled from nothing.</li>
@@ -101,6 +108,7 @@ public final class ObservedValues implements RunListener {
 
     private final ApiModel model;
     private final MemorySettings settings;
+    private final Function<String, Set<String>> answeredBy;
     private final Remembered underTheirOwnNames;
     private final Remembered underTheNameOfTheirShape;
     private final Resources underTheKindOfThingTheyAre;
@@ -123,8 +131,22 @@ public final class ObservedValues implements RunListener {
      *     search goes, and whether things are kept by their kind at all
      */
     public ObservedValues(ApiModel model, MemorySettings settings) {
+        this(model, settings, NamesTheDocumentAsksFor.in(model)::answeredBy);
+    }
+
+    /**
+     * A memory that files what it hears under the names it is told each one answers.
+     *
+     * @param model the API being tested
+     * @param settings how much is remembered
+     * @param answeredBy for a name heard in a reply, the names some request asks for that it
+     *     answers - nothing for a name no request would ever ask for
+     */
+    ObservedValues(ApiModel model, MemorySettings settings,
+            Function<String, Set<String>> answeredBy) {
         this.model = Objects.requireNonNull(model, "model");
         this.settings = Objects.requireNonNull(settings, "settings");
+        this.answeredBy = Objects.requireNonNull(answeredBy, "answeredBy");
         this.underTheirOwnNames = new Remembered(ValueDictionary.Keying.NAME, settings);
         this.underTheNameOfTheirShape = new Remembered(ValueDictionary.Keying.SCHEMA, settings);
         this.underTheKindOfThingTheyAre = new Resources(settings);
@@ -512,6 +534,9 @@ public final class ObservedValues implements RunListener {
      *
      * <p>A piece with no value in it is not kept. Knowing that an API sometimes sends nothing for a
      * property is not knowing a value for it.
+     *
+     * <p>Nor is a piece no request would ever ask for, by its name - but what is inside it is still
+     * looked at: an {@code address} nobody asks for may hold a {@code town} somebody does.
      */
     private void rememberNamedPieces(JsonValue.JsonObject thing, InteractionId from, int depth) {
         if (depth > settings.asDeepAsAReplyIsRead()) {
@@ -519,10 +544,18 @@ public final class ObservedValues implements RunListener {
         }
         for (Map.Entry<String, JsonValue> piece : thing.members().entrySet()) {
             JsonValue value = piece.getValue();
-            if (value instanceof JsonValue.JsonNull || !smallEnoughToSend(value)) {
+            if (value instanceof JsonValue.JsonNull) {
                 continue;
             }
-            underTheirOwnNames.remember(piece.getKey(), value, from);
+            Set<String> askedAs = answeredBy.apply(piece.getKey());
+            // Kept only when it could be sent, but looked inside either way: a reply's wrapper that
+            // also carries a photo too large to send still carries the token next to it, and each
+            // piece inside is measured on its own when it is kept.
+            if (smallEnoughToSend(value)) {
+                for (String name : askedAs) {
+                    underTheirOwnNames.remember(name, value, piece.getKey(), from);
+                }
+            }
             switch (value) {
                 case JsonValue.JsonObject inside -> rememberNamedPieces(inside, from, depth + 1);
                 case JsonValue.JsonArray list -> {
@@ -533,7 +566,9 @@ public final class ObservedValues implements RunListener {
                         // Under the name of the list it is in, which is the only name an element
                         // has - and is the name whatever fills one piece of a list asks under.
                         if (smallEnoughToSend(element)) {
-                            underTheirOwnNames.remember(piece.getKey(), element, from);
+                            for (String name : askedAs) {
+                                underTheirOwnNames.remember(name, element, piece.getKey(), from);
+                            }
                         }
                         if (element instanceof JsonValue.JsonObject inside) {
                             rememberNamedPieces(inside, from, depth + 1);
@@ -587,11 +622,17 @@ public final class ObservedValues implements RunListener {
         };
     }
 
-    /** One value the API sent back, and the exchange it was read out of. */
-    record Observation(JsonValue value, InteractionId from) {
+    /**
+     * One value the API sent back, the name it came with, and the exchange it was read out of.
+     *
+     * <p>The name it came with is the one a person reading where a value came from will find in
+     * the reply. It is the name it is kept under too, as long as a name answers only itself.
+     */
+    record Observation(JsonValue value, String heardAs, InteractionId from) {
 
         Observation {
             Objects.requireNonNull(value, "value");
+            Objects.requireNonNull(heardAs, "heardAs");
             Objects.requireNonNull(from, "from");
         }
     }
@@ -603,12 +644,17 @@ public final class ObservedValues implements RunListener {
      * the one building the next request. The list under a name is replaced whole rather than added
      * to, so a reader always sees one complete list and never waits for a writer: a request is
      * never held up by a reply arriving.
+     *
+     * <p>When as many names are kept as it may hold, a new one makes room by letting go of the name
+     * heard of longest ago, rather than being turned away: an API's first replies are not a better
+     * guide to what will be asked for than its last ones.
      */
     static final class Remembered implements Dictionary {
 
         private final ValueDictionary.Keying keying;
         private final MemorySettings settings;
         private final ConcurrentMap<String, List<Observation>> byKey = new ConcurrentHashMap<>();
+        private final LastHeard lastHeard = new LastHeard();
 
         Remembered(ValueDictionary.Keying keying, MemorySettings settings) {
             this.keying = keying;
@@ -616,16 +662,20 @@ public final class ObservedValues implements RunListener {
         }
 
         void remember(String key, JsonValue value, InteractionId from) {
+            remember(key, value, key, from);
+        }
+
+        void remember(String key, JsonValue value, String heardAs, InteractionId from) {
             // One thread writes here: the one the run's announcements are carried out on. That is
             // what lets the cap be read and then acted on, and it is why nothing here locks.
-            if (!byKey.containsKey(key) && byKey.size() >= settings.mostNames()) {
+            if (!lastHeard.makeRoomFor(key, byKey, settings.mostNames())) {
                 return;
             }
             byKey.compute(key, (ignored, kept) -> {
                 List<Observation> latest =
                         new ArrayList<>(kept == null ? List.of() : kept);
                 latest.removeIf(seen -> seen.value().equals(value));
-                latest.add(new Observation(value, from));
+                latest.add(new Observation(value, heardAs, from));
                 while (latest.size() > settings.mostValuesUnderOneName()) {
                     latest.remove(0);
                 }
@@ -694,19 +744,20 @@ public final class ObservedValues implements RunListener {
 
         private final MemorySettings settings;
         private final ConcurrentMap<String, List<Observation>> byKind = new ConcurrentHashMap<>();
+        private final LastHeard lastHeard = new LastHeard();
 
         Resources(MemorySettings settings) {
             this.settings = settings;
         }
 
         void remember(String kind, JsonValue.JsonObject thing, InteractionId from) {
-            if (!byKind.containsKey(kind) && byKind.size() >= settings.mostNames()) {
+            if (!lastHeard.makeRoomFor(kind, byKind, settings.mostNames())) {
                 return;
             }
             byKind.compute(kind, (ignored, kept) -> {
                 List<Observation> latest = new ArrayList<>(kept == null ? List.of() : kept);
                 latest.removeIf(seen -> seen.value().equals(thing));
-                latest.add(new Observation(thing, from));
+                latest.add(new Observation(thing, kind, from));
                 while (latest.size() > settings.mostValuesUnderOneName()) {
                     latest.remove(0);
                 }
@@ -727,6 +778,42 @@ public final class ObservedValues implements RunListener {
         @Override
         public String toString() {
             return "what this run has seen, by the kind of thing (" + byKind.size() + " so far)";
+        }
+    }
+
+    /**
+     * The order names were last heard in, kept so that a full memory can let the oldest go.
+     *
+     * <p>Only the thread that writes to the memory touches this, which is why it needs no lock;
+     * readers never see it. "Heard" means kept: a name asked for often and heard of long ago goes
+     * before one heard a moment ago, because asking happens on the thread building requests, and
+     * that thread is never made to write anything down.
+     */
+    private static final class LastHeard {
+
+        private final Set<String> oldestFirst = new LinkedHashSet<>();
+
+        /**
+         * Makes room for one name, by letting the name heard of longest ago go when as many are
+         * kept as may be, and marks it as heard now.
+         *
+         * @return whether it may be kept at all, which is only not so when nothing may be
+         */
+        boolean makeRoomFor(String key, ConcurrentMap<String, ?> kept, int most) {
+            if (most <= 0) {
+                return false;
+            }
+            // As many times as it takes, so that a name the order holds and the memory does not -
+            // which an error halfway through keeping one would leave behind - cannot let the memory
+            // grow past its limit for the rest of the run.
+            Iterator<String> eldest = oldestFirst.iterator();
+            while (!kept.containsKey(key) && kept.size() >= most && eldest.hasNext()) {
+                kept.remove(eldest.next());
+                eldest.remove();
+            }
+            oldestFirst.remove(key);
+            oldestFirst.add(key);
+            return true;
         }
     }
 }

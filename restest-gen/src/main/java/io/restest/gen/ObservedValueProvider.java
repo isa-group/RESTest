@@ -66,7 +66,9 @@ import java.util.random.RandomGenerator;
  * {@code id} is not offered where a number is wanted, and no value is offered where the document
  * states the closed list of values it will accept and this is not one of them - that list is the
  * whole set of values the API takes, and a value seen elsewhere in the API is not made acceptable
- * by having been seen.
+ * by having been seen. Nor is a word shorter or longer than the document allows where it would go:
+ * a password a diagnostic page shows as six asterisks is no password where eight characters are the
+ * least the document accepts.
  *
  * <p>Every value offered here says which exchange it was read out of, so a report can answer "where
  * did that come from" with the request that produced it rather than with the word "observed".
@@ -258,6 +260,7 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     private boolean fitsAnIdentifier(JsonValue value, ValueRequest request) {
         return couldSatisfy(value, request.schema())
+                && withinTheStatedLengths(value, request.schema())
                 && inTheDeclaredForm(value, resolved(request.schema()))
                 && canGoThere(value, request);
     }
@@ -307,17 +310,23 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     private Optional<GeneratedValue> oneValueSeenUnderThisName(ValueRequest request) {
         List<Sendable> usable = new ArrayList<>();
+        List<String> heardAs = new ArrayList<>();
         for (ObservedValues.Observation what : seen.underTheirOwnNames().observationsFor(request)) {
             keptOf(what.value(), request.schema(), 0)
                     .filter(fits -> canGoThere(fits, request))
-                    .ifPresent(fits -> usable.add(new Sendable(fits, what.from())));
+                    .ifPresent(fits -> {
+                        usable.add(new Sendable(fits, what.from()));
+                        heardAs.add(what.heardAs());
+                    });
         }
         if (usable.isEmpty()) {
             return Optional.empty();
         }
-        Sendable chosen = usable.get(random.nextInt(usable.size()));
-        return Optional.of(new GeneratedValue(chosen.value(), new ValueOrigin.Derived(
-                chosen.from(), "the '" + request.name() + "' of an earlier reply")));
+        int chosen = random.nextInt(usable.size());
+        // Named as the reply named it, which is where a person checking will look for it.
+        return Optional.of(new GeneratedValue(usable.get(chosen).value(),
+                new ValueOrigin.Derived(usable.get(chosen).from(),
+                        "the '" + heardAs.get(chosen) + "' of an earlier reply")));
     }
 
     /**
@@ -443,7 +452,8 @@ public final class ObservedValueProvider implements ValueProvider {
         // returned reaches this without having been measured at all: the thing is filed under the
         // name of its shape in one piece. A number of eight characters that cannot be written down
         // at all, or a word of four hundred kilobytes, arrives this way and no other.
-        return couldSatisfy(was, wanted) && seen.smallEnoughToSend(was)
+        return couldSatisfy(was, wanted) && withinTheStatedLengths(was, wanted)
+                && seen.smallEnoughToSend(was)
                 ? Optional.of(was)
                 : Optional.empty();
     }
@@ -591,6 +601,21 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     private boolean couldSatisfy(JsonValue value, CanonicalSchema wanted) {
         return Shapes.couldSatisfy(model, value, wanted, AS_DEEP_AS_A_CHANGE_REACHES);
+    }
+
+    /**
+     * Whether a word is as long as the document says a word there may be, counted in characters
+     * as a reader counts them. Anything that is not a word, or goes where no word is wanted, has no
+     * length to hold against it here.
+     */
+    private boolean withinTheStatedLengths(JsonValue value, CanonicalSchema wanted) {
+        if (!(value instanceof JsonValue.JsonString word)
+                || !(resolved(wanted) instanceof StringSchema text)) {
+            return true;
+        }
+        int length = word.value().codePointCount(0, word.value().length());
+        return length >= text.minLength().orElse(0)
+                && length <= text.maxLength().orElse(Integer.MAX_VALUE);
     }
 
     /** The shape itself, where the document referred to one it declared elsewhere by name. */
