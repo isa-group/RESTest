@@ -829,13 +829,22 @@ while its login still answered none.
   request, not a step of a series, not built to push at the API, and not a deletion - left out
   whole, path, query and body, as the maintainer chose on 2 October, since the thing it named is
   gone.
-- **Its values are filed as a reply's are**: each parameter under its name, the body's named pieces
-  at any depth, through the one question 9.5 asks of every name. They share each name's list with
+- **Its values are filed as a reply's are**: each parameter under its name - and the named pieces of
+  one that is an object or a list - and the body's named pieces at any depth, through the one
+  question 9.5 asks of every name. They share each name's list with
   what replies carried - twenty values, the newest last - so a value that came back and a value that
   went out are offered side by side, and `observed` in the plan offers both. The body as a whole is
   not filed under `body`: the row asked for its properties.
 - **Each value says where it was learned**, which is what a report shows: "the 'password' sent in an
   earlier request the API accepted", and the exchange.
+- **It is offered to the other operations, not back to its own.** A value carries the operation its
+  request went to, and the source leaves it out when that operation asks: the username a creation
+  was accepted with, sent to the same creation again, asks the API for the same account twice -
+  which is how user-management answered "The username stefania it's already in use" on 1-2 October.
+  Found by the review of this increment; the row's title asked for other operations.
+- **A value standing where a key was hidden is not kept.** When the keys handed over cannot be told
+  apart in an exchange, it is hidden whole and its values become the mark; sending the mark on as a
+  username would only put it where no key ever was.
 - **A key handed over is never among them.** The memory reads the test case, which never holds a
   key - the key is added on the way out and hidden in everything that comes back
   ([ADR-0029](0029-the-key-an-api-asks-for.md)) - and a test sends a request through that door to an
@@ -844,10 +853,45 @@ while its login still answered none.
 
 ### Measured
 
-MEASURED
+Each API restarted before every run, five seeds, the shipped plan with 9.5 and 9.6 in,
+`memory.rememberAcceptedRequests` on against off; distinct faults counted as the benchmark counts
+them:
+
+| API, minutes a run | Operations 2XX, off → on | Area, off → on | Branch coverage, off → on | Distinct faults, off → on |
+|---|---:|---:|---:|---:|
+| flight-search, 3 | 19.8 → **23.0** | 3,465 → **3,972** | 26.3% → **29.6%** | 0 → 0 |
+| user-management, 3 | 11.0 → **12.0** | 1,952 → **2,130** | 9.4% → **9.7%** | 3.6 → 4.2 |
+| pet-clinic, 1 | 33.6 → 33.8 | 1,940 → 1,952 | 16.9% → 17.1% | 81.6 → 82.0 |
+| kafka-rest-proxy, 1 | 35.0 → 35.6 | 2,004 → 2,040 | 17.8% → 17.9% | 2.0 → 1.8 |
+| notebook-manager, 1 | 5 → 5 | 294 → 294 | 50% → 50% | 1 → 1 |
+| gestao-hospital, 1 | 16.2 → 15.8 | 927 → 910 | 18.1% → 16.1% | 3 → 3 |
+
+On flight-search the chain the row was for works for the first time without a dictionary: a
+password a registration was accepted with reaches the login, which answers 2XX on every seed (1 to 3
+times a run), and the token the login returns reaches refresh and logout (9.5), which answer on four
+seeds and five. On user-management the gain is `DELETE
+/users/rbac/roles/{roleId}/permissions/{permissionKey}`, on every seed, with the identifiers an
+accepted request had sent; its creations, refused as "already in use" 310 times a run before, are
+refused 303 times after - that risk comes from what replies show, and none of its creations is ever
+accepted. gestao-hospital's difference is two operations that come and go between seeds and branch
+coverage that ranges over seven points within one variant.
+
+**The cost, found by measuring.** On flight-search, registrations refused with 409 "User already
+exist" doubled (513 against 255 over five seeds) and the registrations that answered fell from about
+twelve a run to about two. 251 of the 513 carried an e-mail address that had been registered and
+then sent to a login the API accepted: the value goes from the registration to the login, the login
+is accepted, and the memory then holds the value as the login's, so it is offered to the
+registration again. Leaving a value out of its own operation stops the direct repetition (13
+refusals of that kind without 9.7, none with it) and not this cycle, because a value seen again
+replaces what was known of it. The maintainer chose on 2 October to measure before deciding, and
+with the measurement to keep 9.7 as it is: the cycle costs registrations, and the login, refresh and
+logout it opens are worth more.
 
 ### What was not done
 
+- **The cycle closed**, left for 2.1 by the maintainer: a value would keep every operation that has
+  accepted it, never replaced when it is sent again or a reply shows it, and be offered to none of
+  them again.
 - Matching names by likeness, which is 4.1's: `user_email` in one request does not answer `email` in
   another.
 - Learning which pairs of operations go together from what the API answered.
