@@ -141,6 +141,28 @@ class ObservedValueProviderTest {
         }
 
         @Test
+        @DisplayName("a word shorter or longer than the document allows here is not offered")
+        void a_word_of_the_wrong_length_is_not_offered() {
+            ObservedValueProvider source = sourceKnowing("{\"name\": \"******\"}", null);
+            StringSchema atLeastEight = new StringSchema(SchemaMetadata.none(), Optional.of(8),
+                    Optional.empty(), Optional.empty(), Optional.empty());
+            StringSchema atMostThree = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                    Optional.of(3), Optional.empty(), Optional.empty());
+
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    atLeastEight)))
+                    .describedAs("a diagnostic page hides a password as six asterisks, and six "
+                            + "characters are no password where eight are the least accepted")
+                    .isEmpty();
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    atMostThree))).isEmpty();
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    StringSchema.of())).map(GeneratedValue::value))
+                    .describedAs("where the document states no length, it fits")
+                    .contains(JsonValue.of("******"));
+        }
+
+        @Test
         @DisplayName("a value that could not be written into a path is not offered for one")
         void a_value_that_cannot_be_sent_is_not_offered() {
             ObservedValueProvider source = sourceKnowing("{\"name\": \"\"}", null);

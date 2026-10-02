@@ -488,3 +488,24 @@ would still not cover requests waiting for their turn in the engine, which have 
 **No wait can be longer than the HTTP engine can count to**, about 24 days, and is refused, naming
 it, rather than ending the run as a failure of RESTest's own. Twice a long wait stops there.
 Seventy-two settings in eight groups.
+
+## Amendment (M9.5)
+
+**Date:** 2026-10-02
+
+**One lever lands without a switch, by the maintainer's choice, and §4 says so.** Roadmap row 9.5
+changes what the memory of observed values keeps: a value from a reply only under a name some
+request of the document asks for, and, when `memory.mostNames` names are kept, a new one makes room
+by letting go of the name heard of longest ago instead of being turned away. Before it, the memory
+kept every name a reply carried and refused every new one once full, so on flight-search the names
+of the classes its diagnostic pages list took all two thousand places within three seconds and the
+token a login returned was never kept.
+
+§4 asks every behaviour a run can do without to ship with a switch, and this one could have had one.
+The maintainer chose on 2 October to give it none: refusing new names once full was not a behaviour
+anybody chose, and a switch would keep it available as though it had been. The cost is stated
+where an ablation is planned ([the switches](../switches.md), *One with no switch, by choice*): no
+settings file brings back the memory as it was before 9.5, so a campaign run before it and one run
+after differ in this as well as in whatever they were run to compare. `memory.mostNames` keeps its
+name and its default, and says what happens when it is reached. Seventy-two settings in eight
+groups.

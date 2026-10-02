@@ -713,3 +713,65 @@ enough to call the question closed - which is what `memory.identifiersByResource
   is not always a deletion ([ADR-0013](0013-input-generation.md), M9.3 amendment).*
 - No synonym table and no similarity score, as the row says: the kind of thing is the fixed part of
   the address, spelt one way, and nothing else.
+
+## Amendment (M9.5)
+
+**Date:** 2026-10-02
+
+**A value from a reply is kept only under a name some request asks for, and a full memory lets the
+name heard of longest ago go.**
+
+### Why
+
+The memory of 2.5b files every named piece of every reply under its name, and kept at most
+`memory.mostNames` names, two thousand: a new name arriving when it was full was turned away. The
+guard was written against an API inventing property names, and it held against that; what it did
+not foresee is an API whose ordinary replies carry thousands of names nobody asks for. flight-search
+answers `GET /actuator/loggers` with one name per class in the program, 721 of them, and
+`/actuator/beans`, `/conditions` and `/configprops` with hundreds more. In the campaigns of 1-2
+October those four filled the memory 2.9 to 4.4 seconds into a session; the first login that
+answered 2XX came later - 48 seconds in one session - and the `refreshToken` it returned, a name the
+refresh operation asks for, was turned away. None of the refresh-token requests after it carried
+one.
+
+Counted over the corpus by `NamesAskedForAcrossTheCorpusTest`: of the 4,060 names the fifty
+documents declare in their 2XX replies, 743 - fewer than one in five - are names some request of
+the same document asks for. A value is only ever asked for by such a name, so the other four in
+five took up room and were never read. The document asking for the most names, GitHub's, asks for
+394.
+
+### How
+
+- **Which names a request asks for** is worked out once from the document by
+  `NamesTheDocumentAsksFor`, the way a request names its places: every parameter's name, `body`
+  where a body is sent, and every property's name inside either, however deep, through lists,
+  choices, maps and named shapes. A body on a `GET` or a `HEAD` adds nothing.
+- **One question decides where a value is filed**: which of the document's names does the name it
+  came with answer? Today a name answers itself, and only when some request asks for it. The memory
+  files the value under each name the answer gives and under nothing else, and keeps the name it
+  came with beside it, which is what a report shows as where it came from. What is inside a piece
+  nobody asks for is still read: an `address` nobody asks for may hold a `town` somebody does.
+- **When the memory is full**, a new name makes room by letting go of the name heard of longest
+  ago. "Heard" means filed: asking happens on the thread that builds requests, which is never made
+  to write anything down, so a name asked for often and heard of long ago goes first. The things
+  kept by their kind (M9.2) follow the same rule; their kinds come from the document's addresses,
+  so they never reach the limit in practice. Whole things kept under their shape's name are
+  untouched.
+
+The question is asked at the moment a value is filed rather than when one is looked up, so that
+**matching names by likeness** - a reply's `token` for a request's `refreshToken`, which is 4.1's -
+would change that one class and nothing else: what is looked up stays an exact search by the name
+asked for, the memory stays bounded by the document's own names, and the matching runs on the
+thread that hears replies rather than the one building requests.
+
+### Measured
+
+MEASURED
+
+### What was not done
+
+- **No switch**, by the maintainer's choice; [ADR-0025](0025-settings.md)'s M9.5 amendment records
+  the exception and what it costs.
+- **The limit was not raised.** Two thousand names is a guard, and a larger one would only move the
+  second at which an API like flight-search fills it.
+- **No likeness between names**, which stays with 4.1; this only makes it one class to change.
