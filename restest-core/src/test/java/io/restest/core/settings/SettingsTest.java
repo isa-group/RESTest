@@ -489,7 +489,7 @@ class SettingsTest {
                     .isFalse();
             assertThat(from.withSequences(SequenceSettings.noneSent()).mutation())
                     .isEqualTo(from.mutation());
-            assertThat(from.withMemory(new MemorySettings(0, 0, 0, 0, 0, false, false)).memory()
+            assertThat(from.withMemory(new MemorySettings(0, 0, 0, 0, 0, false, false, false)).memory()
                     .mostNames()).isZero();
             assertThat(from.withDocument(new DocumentSettings(Duration.ofSeconds(1), 10))
                     .document().mostBytesRead()).isEqualTo(10);

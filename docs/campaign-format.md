@@ -101,7 +101,7 @@ silently shadow RESTest's own samples, and nobody reading the file could tell wh
 | `enum` | the closed list of values the document says it accepts |
 | `example` | the sample values the document's author wrote down |
 | `default` | the value the document says applies when the caller sends nothing |
-| `observed` | what the API itself has already sent back, earlier in this run |
+| `observed` | what the API itself has already sent back earlier in this run, and what it accepted in a request to another operation |
 | `random` | a value invented to fit the shape |
 
 `enum` is worth putting first and leaving there. A closed list is not advice: it is the whole set of
@@ -130,6 +130,13 @@ thousands of them — flight-search lists every class in the program on one of i
 so keeping them would leave no room for the token a login hands back. The memory holds at most
 `memory.mostNames` names, and when it is full a new one makes room by letting go of the name heard
 of longest ago.
+
+It also keeps what the API *accepted*. When a request is answered with a success, the values it
+carried — its parameters and every named piece of its body — are kept under their names beside what
+replies carried, so the password a registration was accepted with is there for the login that asks
+for a password next. Not from a deletion, whose thing is gone, nor from a request made to push at
+the API, nor from one made by changing an accepted one; `memory.rememberAcceptedRequests` switches
+it off ([the settings](settings.md)).
 
 A gap in a web address gets a second chance. The API usually calls a thing's identifier `id`, and the
 address that reads one calls it something else — `/pettypes/{petTypeId}` — so no reply ever carries

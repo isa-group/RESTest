@@ -85,7 +85,7 @@ final class AcceptedRequests implements RunListener {
         }
         Interaction interaction = completed.interaction();
         TestCase testCase = interaction.testCase();
-        if (!worthKeeping(interaction)) {
+        if (!worthLearningFrom(model, interaction)) {
             return;
         }
         byOperation.compute(testCase.operation(), (ignored, kept) -> {
@@ -122,7 +122,17 @@ final class AcceptedRequests implements RunListener {
                 : Optional.of(kept.get(random.nextInt(kept.size())));
     }
 
-    private boolean worthKeeping(Interaction interaction) {
+    /**
+     * Whether a request the API answered is one a run should learn from: accepted, not made by
+     * changing another one, not a step of a series, not built from values meant to push at the API,
+     * and not a deletion. The one rule for this, shared by everything that keeps accepted requests
+     * or the values in them.
+     *
+     * @param model the API, which says which operations delete things
+     * @param interaction the request and the API's answer to it
+     * @return whether it is worth learning from
+     */
+    static boolean worthLearningFrom(ApiModel model, Interaction interaction) {
         TestCase testCase = interaction.testCase();
         boolean accepted = interaction.statusCode()
                 .filter(code -> code >= 200 && code < 300)

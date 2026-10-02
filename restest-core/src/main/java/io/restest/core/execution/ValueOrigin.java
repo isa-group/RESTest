@@ -126,8 +126,9 @@ public sealed interface ValueOrigin {
     }
 
     /**
-     * A value read out of an earlier interaction's response - the mechanism that makes a "stateful"
-     * step (one that depends on an earlier request) possible at all.
+     * A value taken from an earlier interaction - read out of its response, or out of a request the
+     * API accepted in it - the mechanism that makes a "stateful" step (one that depends on an
+     * earlier request) possible at all.
      *
      * <p>{@code from} names the specific {@link InteractionId} the value was read from, not the
      * {@link TestCase} that produced that interaction. Whatever builds this value correctly only ever

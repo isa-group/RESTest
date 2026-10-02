@@ -222,12 +222,14 @@ memory:
   longestValueKept: 10000     # default
   # the largest reply the run reads looking for values to remember
   longestReplyRead: 524288    # default
-  # how far into a reply that search goes
+  # how far into a reply, or an accepted request's body, that search goes
   asDeepAsAReplyIsRead: 6     # default
   # whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it
   identifiersByResource: true # default
   # whether those pets are asked before any value named petId; off, the name is asked first
   identifiersByResourceFirst: true # default
+  # whether the values a request carried are remembered too when the API accepted it, such as the password a registration was accepted with
+  rememberAcceptedRequests: true # default
 
 document:
   # how long to wait for a description fetched over the network
@@ -432,9 +434,10 @@ switches](switches.md#switching-off-everything-one-increment-added) has that fil
 | `mostNames` | `2000` | how many different names, shapes and kinds of thing are remembered at all; a new one makes room by letting go of the one heard of longest ago |
 | `longestValueKept` | `10000` | how long one remembered word or number may be, written out |
 | `longestReplyRead` | `524288` | the largest reply the run reads looking for values to remember |
-| `asDeepAsAReplyIsRead` | `6` | how far into a reply that search goes |
+| `asDeepAsAReplyIsRead` | `6` | how far into a reply, or an accepted request's body, that search goes |
 | `identifiersByResource` | `true` | whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it |
 | `identifiersByResourceFirst` | `true` | whether those pets are asked before any value named petId; off, the name is asked first |
+| `rememberAcceptedRequests` | `true` | whether the values a request carried are remembered too when the API accepted it, such as the password a registration was accepted with |
 
 ### `document.*`
 

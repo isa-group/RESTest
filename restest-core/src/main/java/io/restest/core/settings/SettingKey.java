@@ -308,13 +308,16 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("memory", "longestReplyRead", SettingKind.WHOLE_NUMBER,
                     "the largest reply the run reads looking for values to remember"),
             key("memory", "asDeepAsAReplyIsRead", SettingKind.WHOLE_NUMBER,
-                    "how far into a reply that search goes"),
+                    "how far into a reply, or an accepted request's body, that search goes"),
             key("memory", "identifiersByResource", SettingKind.YES_OR_NO,
                     "whether a gap such as {petId} in /pets/{petId} is filled from the ids of the "
                             + "pets the API returned; off, only a value named petId fills it"),
             key("memory", "identifiersByResourceFirst", SettingKind.YES_OR_NO,
                     "whether those pets are asked before any value named petId; off, the name is "
                             + "asked first"),
+            key("memory", "rememberAcceptedRequests", SettingKind.YES_OR_NO,
+                    "whether the values a request carried are remembered too when the API accepted "
+                            + "it, such as the password a registration was accepted with"),
 
             key("document", "fetchTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait for a description fetched over the network"),
