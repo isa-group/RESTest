@@ -284,7 +284,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("mutation", "acceptedKept", SettingKind.WHOLE_NUMBER,
                     "how many of each operation's accepted requests are kept to be changed, newest first"),
             key("mutation", "oversizedLength", SettingKind.WHOLE_NUMBER,
-                    "how many characters an oversized word has"),
+                    "how long an oversized word is in characters, and a far too wide number in "
+                            + "digits"),
             key("mutation", "oversizedItems", SettingKind.WHOLE_NUMBER,
                     "how many items an oversized list has"),
 

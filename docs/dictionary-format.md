@@ -232,9 +232,12 @@ own, one list can feed two kinds of request, or two lists one kind.
 One more thing reads the lists called `fuzzing`, and no plan names it. When a request the API
 accepted is sent again with one value of the wrong kind in it — see [the campaign
 file](campaign-format.md#changing-one-thing-in-a-request-that-worked) — that value is drawn from
-those lists as well as from a few RESTest keeps for it. There one odd value goes among good ones on
-purpose, since what is asked is what the API does with that one value. Only the values the document
-refuses for the place they go to are sent there, so a list of yours called `fuzzing` adds to both.
+those lists as well as from a few RESTest keeps for it - from a list keyed by `type`, which is how
+the one RESTest carries is keyed, and not from one written for named places, whose values belong to
+those places alone. There one odd value goes among good ones on purpose, since what is asked is what
+the API does with that one value. Only the values the document refuses for the place they go to are
+sent there, so a list of yours called `fuzzing`, keyed by `type`, adds to both. It does so even in a
+plan with no pushing strategy, unless `mutation.wrongType` is off.
 
 Among the lists feeding ordinary requests, the order is how much each one knows about the value:
 

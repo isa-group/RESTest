@@ -93,9 +93,8 @@ values:
     - 1e308
     - -1e308
     - 99999999999999999999999999999999.999999
-    # Zero with a sign, the smallest a double holds, one too large for it; a number written as a
-    # word, a word that is no number, and a yes-or-no.
-    - -0.0
+    # The smallest a double holds, and one too large for it; a number written as a word, a word
+    # that is no number, and a yes-or-no.
     - 1e-308
     - 1e400
     - "1.5"

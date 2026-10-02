@@ -401,14 +401,16 @@ public final class RandomTestCaseGenerator {
      * The lists this run was given and will not draw a single value from.
      *
      * <p>One thing puts a list here: being named for pushing at the API in a run told to do no
-     * pushing. Somebody has asked for two things that cancel, and one of them is probably a
-     * mistake - which is exactly when saying so is worth the line. Named once however many lists
+     * pushing, and to send no value of the wrong kind in a request it changes either, which draws
+     * on the same lists. Somebody has asked for two things that cancel, and one of them is probably
+     * a mistake - which is exactly when saying so is worth the line. Named once however many lists
      * answer to it, since the name is all anybody could act on.
      *
      * @return the names, empty when every list given will be used
      */
     public java.util.List<String> listsGivenButNotUsed() {
-        if (!sourcesThatPushAtTheApi().isEmpty()) {
+        if (!sourcesThatPushAtTheApi().isEmpty()
+                || mutations != null && mutations.drawsOnTheAwkwardValues()) {
             return List.of();
         }
         return given.stream()

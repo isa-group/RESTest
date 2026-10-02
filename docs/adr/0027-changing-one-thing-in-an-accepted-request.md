@@ -457,7 +457,10 @@ Schemathesis, RESTler, EvoMaster, RestTestGen and AutoRestTest showed RESTest's 
   the values the lists called `fuzzing` hold - the one RESTest carries and any a person handed over
   under that name - and a few of the class's own: `1.5` and `0.5`, `"1"`, `"1.5"`, `"true"`, `[[]]`,
   `[[], []]`, `[{}]`. In a parameter declared a number or a yes-or-no it is any word among those
-  that does not read as one, with `1.5`, `1e3`, ` 1`, `0x1A`, `NaN`, `Infinity` and a few more.
+  that does not read as one, with `1.5`, `1e3`, ` 1`, `0x1A`, `NaN`, `Infinity` and a few more -
+  and arrives as written: never one a header would arrive without the space it starts or ends with,
+  never one that cannot travel where the parameter goes, never one as long as an oversized word in an
+  address or a header. A whole number is judged by its value in either place, so `1e3` is one.
   What is sent is judged against the declared kind and not against the class of the accepted
   value: `1.5` is not a whole number although both are numbers. A value of the declared kind that
   breaks a limit or a closed list is still left to the kinds that break those, so that what each
@@ -472,7 +475,7 @@ Schemathesis, RESTler, EvoMaster, RestTestGen and AutoRestTest showed RESTest's 
   `ipv4`, `ipv6`, `hostname` - it sends a word that looks like one and is not: `2021-02-30`, an hour
   past 23, `a@b.`, an identifier one group short, `256.1.1.1`. Not where a closed list is stated,
   which `breakAnEnumeration` breaks.
-- **The list RESTest carries grows from 49 values to 89 (10.7):** a whole number with a fraction and
+- **The list RESTest carries grows from 48 values to 88 (10.7):** a whole number with a fraction and
   written as a word in the whole numbers, a word and a yes-or-no in the numbers, numbers with a
   fraction in the yes-or-nos, lists of empty lists, nested objects; letters that grow when their
   case changes, Zalgo text, invisible characters, template and format-string markers, one SQL and
@@ -482,3 +485,8 @@ Schemathesis, RESTler, EvoMaster, RestTestGen and AutoRestTest showed RESTest's 
   `mutation.beyondItsWidth` still turn each off whole. What cannot be done without a code change
   is to send the narrower list alone: the five values of before for `wrongType`, its two ways for
   `notJson`.
+- **Only lists written for a whole kind of value lend to `wrongType`**: a list called `fuzzing`
+  keyed by `name` or by `operationAndParameter` is about named places, and its values are not sprayed
+  over every other. And since the changes draw on the list, a list called `fuzzing` handed to a run
+  whose plan does no pushing is no longer reported as one nothing will be sent from, unless
+  `mutation.wrongType` is off.

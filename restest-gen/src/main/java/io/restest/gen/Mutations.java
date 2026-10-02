@@ -165,8 +165,7 @@ final class Mutations {
             NEITHER_A_NUMBER_NOR_A_YES_OR_NO, "1.5", "1e3", " 1", "1 ", "0x1A", "1,5", "NaN",
             "Infinity", "-", "true", "yes", "1");
 
-    /** A whole number as a document's text writes one, and any number as one does. */
-    private static final Pattern WHOLE_NUMBER = Pattern.compile("-?(0|[1-9][0-9]*)");
+    /** A number as a document's text writes one. */
     private static final Pattern ANY_NUMBER = Pattern.compile(
             "-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?");
 
@@ -235,31 +234,8 @@ final class Mutations {
     private final GenerationSettings generation;
     private final RandomGenerator random;
     private final List<JsonValue> ofOtherKinds;
-
-    /**
-     * Something to change accepted requests with, drawing its values of the wrong kind from the
-     * list of awkward values RESTest carries.
-     *
-     * @param model the API being tested, which says what every value is allowed to be
-     * @param settings which kinds of change may be made, and how large an oversized value is
-     * @param generation how deep inside a body a change may go, and the longest word and list a
-     *     change one past a limit may build
-     * @param random where every choice comes from
-     */
-    Mutations(ApiModel model, MutationSettings settings, GenerationSettings generation,
-            RandomGenerator random) {
-        this(model, settings, generation, random, Carried.AWKWARD);
-    }
-
-    /** The awkward values in the list RESTest carries, read once, when first wanted. */
-    private static final class Carried {
-
-        static final List<JsonValue> AWKWARD =
-                awkwardValuesIn(Dictionaries.fuzzing().map(List::of).orElse(List.of()));
-
-        private Carried() {
-        }
-    }
+    /** The number far past every width, built the first time it is wanted; see {@link #farPast}. */
+    private BigDecimal farPast;
 
     /**
      * Something to change accepted requests with.
@@ -288,9 +264,32 @@ final class Mutations {
     }
 
     /**
+     * The number as many digits long as an oversized word, built once, the first time a change
+     * wants it: reading ten thousand digits is work, and this is the thread that builds requests.
+     */
+    private BigDecimal farPast() {
+        if (farPast == null) {
+            farPast = digits(settings.oversizedLength());
+        }
+        return farPast;
+    }
+
+    /**
+     * Whether the changes made here draw on the lists of awkward values, which they do whenever a
+     * value of the wrong kind is among the changes switched on.
+     *
+     * @return whether they do
+     */
+    boolean drawsOnTheAwkwardValues() {
+        return Operator.WRONG_TYPE.isOn(settings);
+    }
+
+    /**
      * Every value the lists of awkward values hold for a word, a whole number, a number, a
      * yes-or-no, a list and an object - the lists a run pushes at the API with, which are the ones
      * named for that: the one RESTest carries, and any a person handed over under the same name.
+     * Only a list written for a whole kind of value is asked; one written for a named parameter or
+     * for one operation's is about that place alone, and its values do not belong everywhere.
      * Other lists are values meant to work, and are not asked.
      *
      * @param dictionaries the lists the run holds
@@ -299,7 +298,8 @@ final class Mutations {
     static List<JsonValue> awkwardValuesIn(List<Dictionary> dictionaries) {
         Set<JsonValue> found = new LinkedHashSet<>();
         for (Dictionary dictionary : dictionaries) {
-            if (!RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(dictionary.name())) {
+            if (!RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(dictionary.name())
+                    || dictionary.isAboutOneValueInParticular()) {
                 continue;
             }
             for (CanonicalSchema kind : EVERY_KIND) {
@@ -554,10 +554,10 @@ final class Mutations {
             case BEYOND_ITS_WIDTH -> {
                 List<Extreme> beyond = beyondItsWidth(place);
                 Extreme chosen = beyond.get(random.nextInt(beyond.size()));
-                String written = chosen.value().toPlainString();
+                String digits = chosen.value().abs().toPlainString();
                 yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
-                        + (written.length() <= QUOTED_AT_MOST ? written
-                                : "a number " + written.length() + " digits long")
+                        + (digits.length() <= QUOTED_AT_MOST ? chosen.value().toPlainString()
+                                : "a number " + digits.length() + " digits long")
                         + " for " + place.described() + ", " + chosen.what()));
             }
         };
@@ -715,8 +715,12 @@ final class Mutations {
     /**
      * Words that are not what this parameter is declared to be, where it is declared a number or a
      * yes-or-no: this class's own and every word among the run's values of the wrong kind, except
-     * the ones that read as such a number, or as {@code true} or {@code false}, and the empty word,
-     * which is a change of its own. Nothing for a parameter declared a word, since any text is one.
+     * the ones that read as such a number, or as {@code true} or {@code false}. And only words that
+     * arrive as written: not the empty word, which is a change of its own; not one that cannot
+     * travel where this parameter goes; not, in a header, one with spaces at either end, which the
+     * client that sends requests takes off, so that {@code " 1"} would arrive as {@code 1}; and not
+     * one as long as an oversized word, which in a web address or a header makes the request too
+     * long to arrive at all - a refusal, but of the length rather than the kind.
      */
     private List<JsonValue> wordsItIsNot(Place place) {
         if (!(place.shape() instanceof NumberSchema) && !(place.shape() instanceof BooleanSchema)) {
@@ -730,19 +734,29 @@ final class Mutations {
         }
         List<JsonValue> others = new ArrayList<>();
         for (String word : words) {
-            if (!word.isEmpty() && !readsAsDeclared(word, place.shape())) {
-                others.add(JsonValue.of(word));
+            JsonValue value = JsonValue.of(word);
+            boolean arrivesAsWritten = !word.isEmpty()
+                    && word.codePointCount(0, word.length()) < settings.oversizedLength()
+                    && RequestBuilder.canBeSentFrom(value, place.location())
+                    && (place.location() != ParameterLocation.HEADER
+                            || word.equals(word.strip()));
+            if (arrivesAsWritten && !readsAsDeclared(word, place.shape())) {
+                others.add(value);
             }
         }
         return others;
     }
 
-    /** Whether a word is how this parameter's declared kind is written. */
+    /**
+     * Whether a word is how this parameter's declared kind is written: a number as the document's
+     * own text writes one, and a whole number where its value is one however it is written - as a
+     * value in a body is judged, so that {@code 1e3} is a whole number in either place.
+     */
     private static boolean readsAsDeclared(String word, CanonicalSchema shape) {
         return switch (shape) {
-            case NumberSchema number when number.kind() == NumberKind.INTEGER ->
-                    WHOLE_NUMBER.matcher(word).matches();
-            case NumberSchema ignored -> ANY_NUMBER.matcher(word).matches();
+            case NumberSchema number -> ANY_NUMBER.matcher(word).matches()
+                    && (number.kind() != NumberKind.INTEGER
+                            || new BigDecimal(word).stripTrailingZeros().scale() <= 0);
             case BooleanSchema ignored -> word.equals("true") || word.equals("false");
             default -> true;
         };
@@ -1211,8 +1225,8 @@ final class Mutations {
             // inside a body, since in a web address a number that long makes the address too long
             // to arrive, which is a different refusal.
             if (place.inTheBody()) {
-                extremes.add(new Extreme(digits(settings.oversizedLength()), "far past what "
-                        + width.named() + " can hold"));
+                extremes.add(new Extreme(farPast(), "far past what " + width.named()
+                        + " can hold"));
             }
             for (Extreme extreme : extremes) {
                 if (!letThrough(number, acceptedList(place), extreme.value())) {

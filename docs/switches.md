@@ -1,8 +1,8 @@
 # The switches
 
 A switch is a setting that is `true` or `false` and turns off one thing RESTest does. Every
-behaviour added since RESTest has had settings comes with one but [one left without by
-choice](#one-with-no-switch-by-choice), and the few older ones that do not are [named further
+behaviour added since RESTest has had settings comes with one but [a few left without by
+choice](#some-with-no-switch-by-choice), and the few older ones that do not are [named further
 down](#what-has-no-switch-yet). There are two reasons for them. Somebody whose API
 dislikes one of them can turn it off in a line. And what each one is worth can be measured by
 running the same tool twice, once with it and once without, rather than by building two versions of
@@ -366,7 +366,9 @@ The strategy that pushes at the API has a quarter of the run. To give it more or
 share in the plan, and the shares of the others so that they still add up to a hundred; to push at
 the API not at all, leave the pushing strategy out and share its quarter among the others. The
 changes to accepted requests also send values the document forbids, and are switched off with
-`mutation.violations` rather than in the plan.
+`mutation.violations` rather than in the plan. They draw on the list of awkward values too, with or
+without the pushing strategy: a value of the wrong kind in a request the API accepted is taken from
+it, one value at a time, until `mutation.wrongType` is off.
 
 ### What the document writes down
 
@@ -413,7 +415,7 @@ The run says which it is, under the line that gives its seed. While any of the t
 prints `what it sends depends on the API's own replies, so the seed alone does not repeat this run`.
 Once all three are off, that line is gone.
 
-## One with no switch, by choice
+## Some with no switch, by choice
 
 Since 9.5, the memory of what the API returned keeps a value only under a name some request of
 the document asks for — a parameter's, or a property's anywhere in a body — and when it holds as
@@ -429,6 +431,22 @@ The maintainer chose to give this no switch: turning new names away once the mem
 not a behaviour anybody chose. What that costs is worth knowing before an ablation: no file brings
 back the memory as it was, so a campaign run before 9.5 and one run after it differ in this as well
 as in whatever they were run to compare.
+
+Since 10.4, 10.5 and 10.7, three kinds of change draw on more than they did, and the maintainer
+chose to give none of the three a switch of its own, since each widens a kind that already has one:
+
+- **10.4**: a value of the wrong kind is drawn from every awkward value the run holds and a few more
+  of RESTest's own, not from five. `mutation.wrongType` turns the kind off whole.
+- **10.5**: a body that is not JSON is broken in four more ways, and a number past its format's
+  width can be thousands of digits long. `mutation.notJson` and `mutation.beyondItsWidth` turn those
+  kinds off whole.
+- **10.7**: the list of awkward values RESTest carries grew from 48 values to 88. A plan without the
+  pushing strategy sends none of them in requests made entirely of awkward values; 10.4 still draws
+  on them.
+
+What that costs is the same as for 9.5: no file brings back the narrower kinds, five values of the
+wrong kind or two ways of not being JSON, so a campaign run before these rows and one run after them
+differ in this too.
 
 ## What has no switch yet
 

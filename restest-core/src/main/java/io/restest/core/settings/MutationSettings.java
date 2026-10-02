@@ -65,7 +65,8 @@ package io.restest.core.settings;
  *     documentation names can hold: 2147483648 where it says {@code int32}
  * @param acceptedKept how many of the requests each operation accepted are kept to be changed; the
  *     most recent ones, since an older one may refer to something deleted since
- * @param oversizedLength how many characters an oversized word has
+ * @param oversizedLength how many characters an oversized word has, and how many digits the
+ *     number far past what a format holds has
  * @param oversizedItems how many items an oversized list has
  */
 public record MutationSettings(

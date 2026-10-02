@@ -77,6 +77,9 @@ class MutationsTest {
     /** Every kind of change, as a run makes them unless told otherwise. */
     private static final MutationSettings EVERY_CHANGE = MutationSettings.defaults();
 
+    /** The awkward values in the list RESTest carries, which values of the wrong kind come from. */
+    private static final List<JsonValue> AWKWARD = carried();
+
     private static final NumberSchema LIMIT = new NumberSchema(SchemaMetadata.none(),
             NumberKind.INTEGER, Optional.of(BigDecimal.ONE), Optional.empty(),
             Optional.of(BigDecimal.valueOf(100)), Optional.empty(), Optional.empty(),
@@ -341,8 +344,8 @@ class MutationsTest {
             List<TestCase> changed = new ArrayList<>();
             for (long seed = 0; seed < 600; seed++) {
                 new Mutations(api, Settings.from(onlyTheSwitch("wrongType")).mutation(),
-                        GenerationSettings.defaults(), new SplittableRandom(seed))
-                        .changeOneThingIn(find, found).ifPresent(changed::add);
+                        GenerationSettings.defaults(), new SplittableRandom(seed),
+                                AWKWARD).changeOneThingIn(find, found).ifPresent(changed::add);
             }
             Map<String, List<String>> sent = new HashMap<>();
             for (TestCase each : changed) {
@@ -368,7 +371,7 @@ class MutationsTest {
             assertThat(changed).isNotEmpty().allSatisfy(each -> {
                 String path = each.mutation().orElseThrow().path();
                 JsonValue sent = at(each, path);
-                assertThat(Shapes.ofTheKind(API, sent, declaredInAPet(path), 8))
+                assertThat(isOfTheKind(sent, declaredInAPet(path)))
                         .describedAs("%s at %s", sent, path).isFalse();
                 assertThat(sent).isNotInstanceOf(JsonValue.JsonNull.class);
             });
@@ -395,13 +398,16 @@ class MutationsTest {
             List<JsonValue> sent = new ArrayList<>();
             for (long seed = 0; seed < 600; seed++) {
                 new Mutations(api, Settings.from(onlyTheSwitch("wrongType")).mutation(),
-                        GenerationSettings.defaults(), new SplittableRandom(seed))
-                        .changeOneThingIn(addCount, accepted)
+                        GenerationSettings.defaults(), new SplittableRandom(seed),
+                                AWKWARD).changeOneThingIn(addCount, accepted)
                         .ifPresent(each -> sent.add(at(each, "body.n")));
             }
 
             assertThat(sent).isNotEmpty().allSatisfy(each -> assertThat(
-                    Shapes.ofTheKind(API, each, whole, 8)).describedAs("%s", each).isFalse());
+                    each instanceof JsonValue.JsonNumber number
+                            && number.value().stripTrailingZeros().scale() <= 0)
+                    .describedAs("a whole number was sent as one of the wrong kind: %s", each)
+                    .isFalse());
             assertThat(sent).contains(JsonValue.of(new BigDecimal("1.5")), JsonValue.of("1"),
                     JsonValue.array(JsonValue.array(List.of())), JsonValue.of("🙂🙂🙂"));
             assertThat(new java.util.HashSet<>(sent)).hasSizeGreaterThan(20);
@@ -434,6 +440,69 @@ class MutationsTest {
                     .contains(JsonValue.of("🙂🙂🙂"), JsonValue.of(new BigDecimal("1.5")),
                             JsonValue.array(List.of()), JsonValue.object(Map.of()))
                     .doesNotContain(JsonValue.NULL);
+        }
+
+        /** Whether a value is of a shape's kind, worked out here rather than asked of the code. */
+        private boolean isOfTheKind(JsonValue value, CanonicalSchema shape) {
+            return switch (shape) {
+                case StringSchema text -> value instanceof JsonValue.JsonString
+                        || value instanceof JsonValue.JsonNull && text.metadata().nullable();
+                case NumberSchema number when number.kind() == NumberKind.INTEGER ->
+                        value instanceof JsonValue.JsonNumber written
+                                && written.value().stripTrailingZeros().scale() <= 0;
+                case NumberSchema ignored -> value instanceof JsonValue.JsonNumber;
+                case ArraySchema ignored -> value instanceof JsonValue.JsonArray;
+                case ObjectSchema ignored -> value instanceof JsonValue.JsonObject;
+                default -> throw new IllegalArgumentException("no such kind in a pet: " + shape);
+            };
+        }
+
+        @Test
+        @DisplayName("words that arrive as written: in a header none the client would trim, and "
+                + "none that cannot travel in one; in no parameter one as long as an oversized word")
+        void words_that_arrive_as_written() {
+            Operation get = Operation.of(HttpMethod.GET, "/items/{id}", List.of(
+                            Parameter.of("id", ParameterLocation.PATH, true,
+                                    NumberSchema.of(NumberKind.INTEGER)),
+                            Parameter.of("X-Count", ParameterLocation.HEADER, true,
+                                    NumberSchema.of(NumberKind.INTEGER)),
+                            Parameter.of("page", ParameterLocation.QUERY, true,
+                                    NumberSchema.of(NumberKind.INTEGER))))
+                    .withId(OperationId.of("getItem"));
+            AcceptedRequests.Accepted got = new AcceptedRequests.Accepted(TestCase.of(get.id(),
+                    List.of(value("id", ParameterLocation.PATH, JsonValue.of(7)),
+                            value("X-Count", ParameterLocation.HEADER, JsonValue.of(3)),
+                            value("page", ParameterLocation.QUERY, JsonValue.of(1)))),
+                    InteractionId.generate());
+            ApiModel api = ApiModel.of("One", "1.0", List.of(get));
+
+            Map<String, List<String>> sent = new HashMap<>();
+            for (long seed = 0; seed < 600; seed++) {
+                new Mutations(api, Settings.from(onlyTheSwitch("wrongType")).mutation(),
+                        GenerationSettings.defaults(), new SplittableRandom(seed), AWKWARD)
+                        .changeOneThingIn(get, got).ifPresent(each -> {
+                            Mutation mutation = each.mutation().orElseThrow();
+                            sent.computeIfAbsent(mutation.path(), path -> new ArrayList<>()).add(
+                                    ((JsonValue.JsonString) each.parameterValue(mutation.path(),
+                                            mutation.location()).orElseThrow().value()).value());
+                        });
+            }
+
+            assertThat(sent).containsOnlyKeys("id", "X-Count", "page");
+            assertThat(sent.get("X-Count")).isNotEmpty().allSatisfy(word -> {
+                assertThat(word).describedAs("trimmed on the way, it would arrive as another word")
+                        .isEqualTo(word.strip()).isNotEmpty();
+                assertThat(RequestBuilder.canBeSentFrom(JsonValue.of(word),
+                        ParameterLocation.HEADER)).describedAs(word).isTrue();
+            }).doesNotContain(" 1", "1 ").contains("abc", "1.5");
+            assertThat(sent.get("id")).describedAs("a space is written into an address, not lost")
+                    .contains(" 1");
+            for (String parameter : List.of("id", "X-Count", "page")) {
+                assertThat(sent.get(parameter)).describedAs(parameter).allSatisfy(word ->
+                        assertThat(word.length()).isLessThan(10_000));
+            }
+            assertThat(sent.get("page")).describedAs("1e3 is a whole number, however it is written")
+                    .doesNotContain("1e3").contains("1.5");
         }
 
         private CanonicalSchema declaredInAPet(String path) {
@@ -584,7 +653,8 @@ class MutationsTest {
             List<TestCase> names = new ArrayList<>();
             for (long seed = 0; seed < DRAWS; seed++) {
                 new Mutations(API, Settings.from(given).mutation(), GenerationSettings.defaults(),
-                        new SplittableRandom(seed)).changeOneThingIn(ADD_PET, ADDED)
+                        new SplittableRandom(seed), AWKWARD)
+                        .changeOneThingIn(ADD_PET, ADDED)
                         .filter(changed -> changed.mutation().orElseThrow().path()
                                 .equals("body.name"))
                         .ifPresent(names::add);
@@ -807,8 +877,8 @@ class MutationsTest {
                 List<String> made = new ArrayList<>();
                 for (long seed = 0; seed < 60; seed++) {
                     new Mutations(odd, EVERY_CHANGE, GenerationSettings.defaults(),
-                            new SplittableRandom(seed))
-                            .changeOneThingIn(operation, accepted)
+                            new SplittableRandom(seed),
+                                    AWKWARD).changeOneThingIn(operation, accepted)
                             .ifPresent(each -> made.add(each.mutation().orElseThrow().operator()));
                 }
                 assertThat(made).describedAs(operation.path())
@@ -913,6 +983,29 @@ class MutationsTest {
                     .isSubsetOf("http//example.com", "://example.com", "http://exa mple.com");
             assertThat(sent.get("code")).isSubsetOf("123e4567-e89b-12d3-a456",
                     "123e4567-e89b-12d3-a456-42661417400g", "123e4567e89b12d3a456426614174000x");
+            assertThat(sent.get("body.at")).isNotEmpty();
+            assertThat(sent.get("on")).describedAs("not one a strict reader of dates reads")
+                    .isNotEmpty().allSatisfy(word -> assertThatExceptionOfType(
+                            java.time.format.DateTimeParseException.class)
+                            .isThrownBy(() -> java.time.LocalDate.parse(word)));
+            assertThat(sent.get("body.at")).describedAs("nor of a moment in time")
+                    .allSatisfy(word -> assertThatExceptionOfType(
+                            java.time.format.DateTimeParseException.class)
+                            .isThrownBy(() -> java.time.OffsetDateTime.parse(word)));
+            assertThat(sent.get("code")).describedAs("nor of an identifier")
+                    .isNotEmpty().allSatisfy(word -> assertThatExceptionOfType(
+                            IllegalArgumentException.class)
+                            .isThrownBy(() -> java.util.UUID.fromString(word)));
+            assertThat(sent.get("body.site")).describedAs("nor a whole web address")
+                    .allSatisfy(word -> assertThat(isAnAbsoluteAddress(word)).isFalse());
+        }
+
+        private boolean isAnAbsoluteAddress(String word) {
+            try {
+                return new java.net.URI(word).isAbsolute();
+            } catch (java.net.URISyntaxException notOne) {
+                return false;
+            }
         }
 
         @Test
@@ -1131,7 +1224,8 @@ class MutationsTest {
             List<TestCase> changed = new ArrayList<>();
             for (long seed = 0; seed < DRAWS; seed++) {
                 new Mutations(round, EVERY_CHANGE, GenerationSettings.defaults(),
-                        new SplittableRandom(seed)).changeOneThingIn(addThing, accepted)
+                        new SplittableRandom(seed), AWKWARD)
+                        .changeOneThingIn(addThing, accepted)
                         .ifPresent(changed::add);
             }
 
@@ -1240,8 +1334,8 @@ class MutationsTest {
             List<TestCase> changed = new ArrayList<>();
             for (long seed = 0; seed < DRAWS; seed++) {
                 new Mutations(api, Settings.from(onlyTheSwitch("sendNull")).mutation(),
-                        GenerationSettings.defaults(), new SplittableRandom(seed))
-                        .changeOneThingIn(add, accepted).ifPresent(changed::add);
+                        GenerationSettings.defaults(), new SplittableRandom(seed),
+                                AWKWARD).changeOneThingIn(add, accepted).ifPresent(changed::add);
             }
 
             assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
@@ -1290,8 +1384,8 @@ class MutationsTest {
                 List<TestCase> changed = new ArrayList<>();
                 for (long seed = 0; seed < 20; seed++) {
                     new Mutations(api, Settings.from(onlyTheSwitch(operator)).mutation(),
-                            GenerationSettings.defaults(), new SplittableRandom(seed))
-                            .changeOneThingIn(tag, accepted).ifPresent(changed::add);
+                            GenerationSettings.defaults(), new SplittableRandom(seed),
+                                    AWKWARD).changeOneThingIn(tag, accepted).ifPresent(changed::add);
                 }
                 assertThat(changed).extracting(each -> each.mutation().orElseThrow().path())
                         .describedAs(operator)
@@ -1308,8 +1402,8 @@ class MutationsTest {
                     "1", "generation.hardNestingDepth", "1")).generation();
             List<TestCase> changed = new ArrayList<>();
             for (long seed = 0; seed < DRAWS; seed++) {
-                new Mutations(API, settings.mutation(), oneDeep, new SplittableRandom(seed))
-                        .changeOneThingIn(ADD_PET, ADDED).ifPresent(changed::add);
+                new Mutations(API, settings.mutation(), oneDeep, new SplittableRandom(seed),
+                                AWKWARD).changeOneThingIn(ADD_PET, ADDED).ifPresent(changed::add);
             }
 
             assertThat(changed).isNotEmpty()
@@ -1333,8 +1427,8 @@ class MutationsTest {
             for (long seed = 0; seed < 20; seed++) {
                 new Mutations(ApiModel.of("V", "1.0", List.of(add)),
                         Settings.from(onlyTheSwitch("breakAnEnumeration")).mutation(),
-                        GenerationSettings.defaults(), new SplittableRandom(seed))
-                        .changeOneThingIn(add, base).ifPresent(changed -> sent.add(
+                        GenerationSettings.defaults(), new SplittableRandom(seed),
+                                AWKWARD).changeOneThingIn(add, base).ifPresent(changed -> sent.add(
                                 ((JsonValue.JsonObject) changed.body().orElseThrow().value())
                                         .members().get("v")));
             }
@@ -1368,8 +1462,8 @@ class MutationsTest {
         List<TestCase> changed = new ArrayList<>();
         for (long seed = 0; seed < 40; seed++) {
             new Mutations(api, Settings.from(onlyTheSwitch(operator)).mutation(),
-                    GenerationSettings.defaults(), new SplittableRandom(seed))
-                    .changeOneThingIn(operation, accepted).ifPresent(changed::add);
+                    GenerationSettings.defaults(), new SplittableRandom(seed),
+                            AWKWARD).changeOneThingIn(operation, accepted).ifPresent(changed::add);
         }
         return changed;
     }
@@ -1388,8 +1482,8 @@ class MutationsTest {
             AcceptedRequests.Accepted accepted) {
         List<TestCase> changed = new ArrayList<>();
         for (long seed = 0; seed < DRAWS; seed++) {
-            new Mutations(API, settings, GenerationSettings.defaults(), new SplittableRandom(seed))
-                    .changeOneThingIn(operation, accepted).ifPresent(changed::add);
+            new Mutations(API, settings, GenerationSettings.defaults(), new SplittableRandom(seed),
+                            AWKWARD).changeOneThingIn(operation, accepted).ifPresent(changed::add);
         }
         return changed;
     }
@@ -1425,6 +1519,14 @@ class MutationsTest {
             }
         }
         return here;
+    }
+
+    private static List<JsonValue> carried() {
+        try {
+            return Mutations.awkwardValuesIn(List.of(Dictionaries.shipped()));
+        } catch (java.io.IOException cannotRead) {
+            throw new java.io.UncheckedIOException(cannotRead);
+        }
     }
 
     private static ParameterValue value(String name, ParameterLocation location, JsonValue value) {

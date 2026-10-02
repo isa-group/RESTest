@@ -196,7 +196,7 @@ mutation:
   beyondItsWidth: true        # default
   # how many of each operation's accepted requests are kept to be changed, newest first
   acceptedKept: 16            # default
-  # how many characters an oversized word has
+  # how long an oversized word is in characters, and a far too wide number in digits
   oversizedLength: 10000      # default
   # how many items an oversized list has
   oversizedItems: 1000        # default
@@ -408,7 +408,7 @@ once, the kinds that change one value or these last five.
 | `wrongContentType` | `true` | send the accepted body under a media type the description does not offer |
 | `beyondItsWidth` | `true` | send a number past what its declared format holds, such as 2147483648 for int32 |
 | `acceptedKept` | `16` | how many of each operation's accepted requests are kept to be changed, newest first |
-| `oversizedLength` | `10000` | how many characters an oversized word has |
+| `oversizedLength` | `10000` | how long an oversized word is in characters, and a far too wide number in digits |
 | `oversizedItems` | `1000` | how many items an oversized list has |
 
 ### `sequences.*`

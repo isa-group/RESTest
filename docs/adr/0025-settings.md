@@ -508,7 +508,7 @@ token a login returned was never kept.
 §4 asks every behaviour a run can do without to ship with a switch, and this one could have had one.
 The maintainer chose on 2 October to give it none: refusing new names once full was not a behaviour
 anybody chose, and a switch would keep it available as though it had been. The cost is stated
-where an ablation is planned ([the switches](../switches.md), *One with no switch, by choice*): no
+where an ablation is planned ([the switches](../switches.md), *Some with no switch, by choice*): no
 settings file brings back the memory as it was before 9.5, so a campaign run before it and one run
 after differ in this as well as in whatever they were run to compare. `memory.mostNames` keeps its
 name and its default, and says what happens when it is reached. Seventy-two settings in eight
@@ -533,3 +533,17 @@ eight groups.
 
 **`memory.rememberAcceptedRequests`, on by default, is 9.7's switch**: off, the memory of observed
 values learns from replies alone, as it did before 9.7. Seventy-five settings in eight groups.
+
+## Amendment (M10.4-M10.7)
+
+**Date:** 2026-10-02
+
+**`mutation.breakAFormat`, on by default, is 10.6's switch.** Rows 10.4, 10.5 and 10.7 land with no
+switch of their own, by the maintainer's choice, and §4 says so here as it did at 9.5: each widens a
+kind of change that already has one - `mutation.wrongType`, `mutation.notJson`,
+`mutation.beyondItsWidth` - or the list of awkward values, which a plan does without by leaving out
+the strategy that pushes. What cannot be done without a code change is to run the narrower kinds
+alone; [the switches](../switches.md), *Some with no switch, by choice*, says so where an ablation is
+planned. `mutation.oversizedLength` now also says how many digits the number far past a format's
+width has. Seventy-six settings in eight groups.
+
