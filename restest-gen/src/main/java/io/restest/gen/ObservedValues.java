@@ -17,10 +17,13 @@ package io.restest.gen;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
+import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
+import io.restest.core.execution.TestCase;
 import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
@@ -86,6 +89,13 @@ import java.util.function.Function;
  * with the {@code id} of one of them. This one is not a list of values anybody could write in a
  * file, because what it is keyed by is worked out from the document's addresses rather than
  * written down, and it is kept only when {@link MemorySettings#identifiersByResource()} is on.
+ *
+ * <p>It also keeps what the API <em>accepted</em>, which no reply may ever show: when a request is
+ * answered with a success, the values it carried are filed under their names exactly as a reply's
+ * are, beside them. The password a registration was accepted with is then there for the login that
+ * asks for a password next. Only from requests worth learning from - not a deletion, whose thing is
+ * gone, nor a request built to push at the API - and only while
+ * {@link MemorySettings#rememberAcceptedRequests()} is on.
  *
  * <p>What came back from a request made by changing one thing in an accepted one is not kept: a
  * value the API should have refused and accepted anyway is not a value anybody believes in.
@@ -199,6 +209,10 @@ public final class ObservedValues implements RunListener {
         if (response == null || !theApiWasHappy(response.statusCode())) {
             return;
         }
+        if (settings.rememberAcceptedRequests()
+                && AcceptedRequests.worthLearningFrom(model, interaction)) {
+            rememberWhatWasSent(interaction.testCase(), interaction.id());
+        }
         readable(response).ifPresent(reply -> {
             OperationId operation = interaction.testCase().operation();
             remember(reply, shapeOfOneThingIn(operation, response), interaction.id(), 0);
@@ -207,6 +221,41 @@ public final class ObservedValues implements RunListener {
                         rememberTheThingsIn(reply, kind, interaction.id(), 0));
             }
         });
+    }
+
+    /**
+     * Keeps the values a request carried, now that the API has accepted it: each parameter under
+     * its name, and each named piece of its body as a reply's would be. What a request carries is
+     * often what no reply ever does - a password - and the operation that next asks for one under
+     * that name, a login after a registration, is then sent one the API took.
+     */
+    private void rememberWhatWasSent(TestCase sent, InteractionId from) {
+        for (ParameterValue parameter : sent.parameterValues()) {
+            JsonValue value = parameter.value();
+            if (value instanceof JsonValue.JsonNull || !smallEnoughToSend(value)) {
+                continue;
+            }
+            for (String name : answeredBy.apply(parameter.name())) {
+                underTheirOwnNames.remember(name, value, parameter.name(), HeardIn.ACCEPTED_REQUEST,
+                        from);
+            }
+        }
+        sent.body().map(BodyValue::value).ifPresent(body ->
+                rememberThePiecesOf(body, HeardIn.ACCEPTED_REQUEST, from, 0));
+    }
+
+    /** The named pieces inside a value, whether it is one thing or a list of them. */
+    private void rememberThePiecesOf(JsonValue value, HeardIn heardIn, InteractionId from,
+            int depth) {
+        if (depth > settings.asDeepAsAReplyIsRead()) {
+            return;
+        }
+        switch (value) {
+            case JsonValue.JsonObject thing -> rememberNamedPieces(thing, heardIn, from, 0);
+            case JsonValue.JsonArray list -> list.elements().forEach(element ->
+                    rememberThePiecesOf(element, heardIn, from, depth + 1));
+            default -> { }
+        }
     }
 
     /**
@@ -520,7 +569,7 @@ public final class ObservedValues implements RunListener {
         if (reply instanceof JsonValue.JsonObject thing) {
             shape.ifPresent(named ->
                     underTheNameOfTheirShape.remember(named, thing, from));
-            rememberNamedPieces(thing, from, 0);
+            rememberNamedPieces(thing, HeardIn.REPLY, from, 0);
         }
     }
 
@@ -538,7 +587,8 @@ public final class ObservedValues implements RunListener {
      * <p>Nor is a piece no request would ever ask for, by its name - but what is inside it is still
      * looked at: an {@code address} nobody asks for may hold a {@code town} somebody does.
      */
-    private void rememberNamedPieces(JsonValue.JsonObject thing, InteractionId from, int depth) {
+    private void rememberNamedPieces(JsonValue.JsonObject thing, HeardIn heardIn,
+            InteractionId from, int depth) {
         if (depth > settings.asDeepAsAReplyIsRead()) {
             return;
         }
@@ -553,11 +603,12 @@ public final class ObservedValues implements RunListener {
             // piece inside is measured on its own when it is kept.
             if (smallEnoughToSend(value)) {
                 for (String name : askedAs) {
-                    underTheirOwnNames.remember(name, value, piece.getKey(), from);
+                    underTheirOwnNames.remember(name, value, piece.getKey(), heardIn, from);
                 }
             }
             switch (value) {
-                case JsonValue.JsonObject inside -> rememberNamedPieces(inside, from, depth + 1);
+                case JsonValue.JsonObject inside ->
+                        rememberNamedPieces(inside, heardIn, from, depth + 1);
                 case JsonValue.JsonArray list -> {
                     for (JsonValue element : list.elements()) {
                         if (element instanceof JsonValue.JsonNull) {
@@ -567,11 +618,12 @@ public final class ObservedValues implements RunListener {
                         // has - and is the name whatever fills one piece of a list asks under.
                         if (smallEnoughToSend(element)) {
                             for (String name : askedAs) {
-                                underTheirOwnNames.remember(name, element, piece.getKey(), from);
+                                underTheirOwnNames.remember(name, element, piece.getKey(), heardIn,
+                                        from);
                             }
                         }
                         if (element instanceof JsonValue.JsonObject inside) {
-                            rememberNamedPieces(inside, from, depth + 1);
+                            rememberNamedPieces(inside, heardIn, from, depth + 1);
                         }
                     }
                 }
@@ -622,17 +674,22 @@ public final class ObservedValues implements RunListener {
         };
     }
 
+    /** Where a value was learned: in what the API sent back, or in a request it accepted. */
+    enum HeardIn { REPLY, ACCEPTED_REQUEST }
+
     /**
-     * One value the API sent back, the name it came with, and the exchange it was read out of.
+     * One value, the name it came with, where it was learned, and the exchange it came out of.
      *
      * <p>The name it came with is the one a person reading where a value came from will find in
-     * the reply. It is the name it is kept under too, as long as a name answers only itself.
+     * the reply or the request. It is the name it is kept under too, as long as a name answers
+     * only itself.
      */
-    record Observation(JsonValue value, String heardAs, InteractionId from) {
+    record Observation(JsonValue value, String heardAs, HeardIn heardIn, InteractionId from) {
 
         Observation {
             Objects.requireNonNull(value, "value");
             Objects.requireNonNull(heardAs, "heardAs");
+            Objects.requireNonNull(heardIn, "heardIn");
             Objects.requireNonNull(from, "from");
         }
     }
@@ -662,10 +719,11 @@ public final class ObservedValues implements RunListener {
         }
 
         void remember(String key, JsonValue value, InteractionId from) {
-            remember(key, value, key, from);
+            remember(key, value, key, HeardIn.REPLY, from);
         }
 
-        void remember(String key, JsonValue value, String heardAs, InteractionId from) {
+        void remember(String key, JsonValue value, String heardAs, HeardIn heardIn,
+                InteractionId from) {
             // One thread writes here: the one the run's announcements are carried out on. That is
             // what lets the cap be read and then acted on, and it is why nothing here locks.
             if (!lastHeard.makeRoomFor(key, byKey, settings.mostNames())) {
@@ -675,7 +733,7 @@ public final class ObservedValues implements RunListener {
                 List<Observation> latest =
                         new ArrayList<>(kept == null ? List.of() : kept);
                 latest.removeIf(seen -> seen.value().equals(value));
-                latest.add(new Observation(value, heardAs, from));
+                latest.add(new Observation(value, heardAs, heardIn, from));
                 while (latest.size() > settings.mostValuesUnderOneName()) {
                     latest.remove(0);
                 }
@@ -757,7 +815,7 @@ public final class ObservedValues implements RunListener {
             byKind.compute(kind, (ignored, kept) -> {
                 List<Observation> latest = new ArrayList<>(kept == null ? List.of() : kept);
                 latest.removeIf(seen -> seen.value().equals(thing));
-                latest.add(new Observation(thing, kind, from));
+                latest.add(new Observation(thing, kind, HeardIn.REPLY, from));
                 while (latest.size() > settings.mostValuesUnderOneName()) {
                     latest.remove(0);
                 }

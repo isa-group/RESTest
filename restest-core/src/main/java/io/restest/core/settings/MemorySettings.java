@@ -46,6 +46,9 @@ package io.restest.core.settings;
  *     before any value carrying the gap's own name. Off, the name is asked first and the things
  *     of its kind only when the name finds nothing. Means nothing while
  *     {@code identifiersByResource} is off
+ * @param rememberAcceptedRequests whether the values a request carried are kept too when the API
+ *     accepted it - the e-mail address and password a registration was accepted with, ready for a
+ *     login - beside what replies carried. Off, only replies are learned from
  */
 public record MemorySettings(
         int mostValuesUnderOneName,
@@ -54,10 +57,11 @@ public record MemorySettings(
         int longestReplyRead,
         int asDeepAsAReplyIsRead,
         boolean identifiersByResource,
-        boolean identifiersByResourceFirst) {
+        boolean identifiersByResourceFirst,
+        boolean rememberAcceptedRequests) {
 
     private static final MemorySettings DEFAULTS =
-            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true);
+            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true, true);
 
     public MemorySettings {
         atLeastNothing(mostValuesUnderOneName, "mostValuesUnderOneName");

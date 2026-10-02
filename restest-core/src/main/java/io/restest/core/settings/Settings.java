@@ -228,7 +228,9 @@ public record Settings(
                 typed.yesOrNo("memory.identifiersByResource",
                         DEFAULTS.memory.identifiersByResource()),
                 typed.yesOrNo("memory.identifiersByResourceFirst",
-                        DEFAULTS.memory.identifiersByResourceFirst())));
+                        DEFAULTS.memory.identifiersByResourceFirst()),
+                typed.yesOrNo("memory.rememberAcceptedRequests",
+                        DEFAULTS.memory.rememberAcceptedRequests())));
         DocumentSettings document = group("document", () -> new DocumentSettings(
                 typed.lengthOfTime("document.fetchTimeout", DEFAULTS.document.fetchTimeout()),
                 typed.wholeNumber("document.mostBytesRead", DEFAULTS.document.mostBytesRead())));
@@ -404,6 +406,8 @@ public record Settings(
             case "memory.identifiersByResource" -> String.valueOf(memory.identifiersByResource());
             case "memory.identifiersByResourceFirst" ->
                     String.valueOf(memory.identifiersByResourceFirst());
+            case "memory.rememberAcceptedRequests" ->
+                    String.valueOf(memory.rememberAcceptedRequests());
 
             case "document.fetchTimeout" -> LengthOfTime.written(document.fetchTimeout());
             case "document.mostBytesRead" -> String.valueOf(document.mostBytesRead());

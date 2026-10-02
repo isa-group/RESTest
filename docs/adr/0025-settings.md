@@ -526,3 +526,10 @@ which names and descriptions imply what is a fact the corpus measures, kept in o
 by a test, not a decision somebody tunes per run
 ([ADR-0022](0022-the-characters-a-value-is-made-of.md), M9.6 amendment). Seventy-four settings in
 eight groups.
+
+## Amendment (M9.7)
+
+**Date:** 2026-10-02
+
+**`memory.rememberAcceptedRequests`, on by default, is 9.7's switch**: off, the memory of observed
+values learns from replies alone, as it did before 9.7. Seventy-five settings in eight groups.

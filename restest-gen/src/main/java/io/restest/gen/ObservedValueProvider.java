@@ -310,23 +310,26 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     private Optional<GeneratedValue> oneValueSeenUnderThisName(ValueRequest request) {
         List<Sendable> usable = new ArrayList<>();
-        List<String> heardAs = new ArrayList<>();
+        List<ObservedValues.Observation> heard = new ArrayList<>();
         for (ObservedValues.Observation what : seen.underTheirOwnNames().observationsFor(request)) {
             keptOf(what.value(), request.schema(), 0)
                     .filter(fits -> canGoThere(fits, request))
                     .ifPresent(fits -> {
                         usable.add(new Sendable(fits, what.from()));
-                        heardAs.add(what.heardAs());
+                        heard.add(what);
                     });
         }
         if (usable.isEmpty()) {
             return Optional.empty();
         }
         int chosen = random.nextInt(usable.size());
-        // Named as the reply named it, which is where a person checking will look for it.
+        // Named as the reply or the request named it, which is where a person checking will look.
+        ObservedValues.Observation where = heard.get(chosen);
+        String described = where.heardIn() == ObservedValues.HeardIn.ACCEPTED_REQUEST
+                ? "the '" + where.heardAs() + "' sent in an earlier request the API accepted"
+                : "the '" + where.heardAs() + "' of an earlier reply";
         return Optional.of(new GeneratedValue(usable.get(chosen).value(),
-                new ValueOrigin.Derived(usable.get(chosen).from(),
-                        "the '" + heardAs.get(chosen) + "' of an earlier reply")));
+                new ValueOrigin.Derived(usable.get(chosen).from(), described)));
     }
 
     /**

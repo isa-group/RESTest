@@ -315,6 +315,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("memory", "identifiersByResourceFirst", SettingKind.YES_OR_NO,
                     "whether those pets are asked before any value named petId; off, the name is "
                             + "asked first"),
+            key("memory", "rememberAcceptedRequests", SettingKind.YES_OR_NO,
+                    "whether the values a request carried are remembered too when the API accepted "
+                            + "it, such as the password a registration was accepted with"),
 
             key("document", "fetchTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait for a description fetched over the network"),

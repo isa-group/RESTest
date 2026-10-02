@@ -419,7 +419,7 @@ class ObservedValuesTest {
                     new MemorySettings(2, MemorySettings.defaults().mostNames(),
                             MemorySettings.defaults().longestValueKept(),
                             MemorySettings.defaults().longestReplyRead(),
-                            MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true));
+                            MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true));
 
             for (int identifier = 1; identifier <= 5; identifier++) {
                 small.on(reply(200, "application/json", "{\"id\": " + identifier + "}"));
@@ -437,7 +437,7 @@ class ObservedValuesTest {
                 + "switches it off")
         void a_memory_of_nothing() {
             ObservedValues none = new ObservedValues(anApiReturning(PET),
-                    new MemorySettings(0, 0, 0, 0, 0, false, false));
+                    new MemorySettings(0, 0, 0, 0, 0, false, false, false));
 
             none.on(reply(200, "application/json", "{\"id\": 1}"));
 
@@ -474,7 +474,7 @@ class ObservedValuesTest {
                     MemorySettings.defaults().mostValuesUnderOneName(), 3,
                     MemorySettings.defaults().longestValueKept(),
                     MemorySettings.defaults().longestReplyRead(),
-                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true));
+                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true));
 
             seen.on(reply(200, "application/json", "{\"id\": 1}"));
             seen.on(reply(200, "application/json", "{\"name\": \"Fluffy\"}"));
@@ -497,6 +497,173 @@ class ObservedValuesTest {
     }
 
     @Nested
+    @DisplayName("what the API accepted")
+    class WhatTheApiAccepted {
+
+        private static final OperationId REGISTER = OperationId.of("register");
+        private static final OperationId DELETE_USER = OperationId.of("deleteUser");
+
+        /** Registering and logging in, and deleting somebody: the names a request asks for. */
+        private final ApiModel users = ApiModel.of("users", "1", List.of(
+                Operation.of(HttpMethod.POST, "/users/{team}", List.of(
+                                Parameter.of("team", ParameterLocation.PATH, true, StringSchema.of()),
+                                Parameter.of("source", ParameterLocation.QUERY, false,
+                                        StringSchema.of()),
+                                Parameter.of("X-Trace", ParameterLocation.HEADER, false,
+                                        StringSchema.of()),
+                                Parameter.of("session", ParameterLocation.COOKIE, false,
+                                        StringSchema.of())))
+                        .withId(REGISTER)
+                        .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                                "email", StringSchema.of(),
+                                "password", StringSchema.of(),
+                                "profile", ObjectSchema.of(Map.of("phone", StringSchema.of())))),
+                                true)),
+                Operation.of(HttpMethod.POST, "/login").withId(OperationId.of("login"))
+                        .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                                "email", StringSchema.of(), "password", StringSchema.of())), true)),
+                Operation.of(HttpMethod.DELETE, "/users/{userId}", List.of(
+                                Parameter.of("userId", ParameterLocation.PATH, true,
+                                        StringSchema.of()),
+                                Parameter.of("reason", ParameterLocation.QUERY, false,
+                                        StringSchema.of())))
+                        .withId(DELETE_USER)));
+
+        private final TestCase registration = TestCase.of(REGISTER, List.of(
+                        sent("team", ParameterLocation.PATH, "blue"),
+                        sent("source", ParameterLocation.QUERY, "web"),
+                        sent("X-Trace", ParameterLocation.HEADER, "abc123"),
+                        sent("session", ParameterLocation.COOKIE, "s-42")),
+                new io.restest.core.execution.BodyValue("application/json", JsonValue.object(Map.of(
+                        "email", JsonValue.of("ana@example.com"),
+                        "password", JsonValue.of("Tr0ub4dor&3"),
+                        "profile", JsonValue.object(Map.of("phone", JsonValue.of("+447700900123"))))),
+                        new io.restest.core.execution.ValueOrigin.Generated("random")));
+
+        @Test
+        @DisplayName("every value an accepted request carried is kept under its name, a password "
+                + "no reply would ever show among them")
+        void what_was_sent_is_kept() {
+            ObservedValues seen = new ObservedValues(users);
+
+            seen.on(answered(registration, 201));
+
+            assertThat(valuesUnder(seen, "team")).containsExactly(JsonValue.of("blue"));
+            assertThat(valuesUnder(seen, "source")).containsExactly(JsonValue.of("web"));
+            assertThat(valuesUnder(seen, "X-Trace")).containsExactly(JsonValue.of("abc123"));
+            assertThat(valuesUnder(seen, "session")).containsExactly(JsonValue.of("s-42"));
+            assertThat(valuesUnder(seen, "email")).containsExactly(JsonValue.of("ana@example.com"));
+            assertThat(valuesUnder(seen, "password")).containsExactly(JsonValue.of("Tr0ub4dor&3"));
+            assertThat(valuesUnder(seen, "phone")).containsExactly(JsonValue.of("+447700900123"));
+            assertThat(seen.underTheirOwnNames().observationsFor(ValueRequest.of(GET_PET,
+                            "password", ParameterLocation.BODY, StringSchema.of())))
+                    .extracting(ObservedValues.Observation::heardIn)
+                    .containsExactly(ObservedValues.HeardIn.ACCEPTED_REQUEST);
+        }
+
+        @Test
+        @DisplayName("nothing is kept from a request the API refused")
+        void a_refused_request_teaches_nothing() {
+            ObservedValues seen = new ObservedValues(users);
+
+            seen.on(answered(registration, 400));
+
+            assertThat(valuesUnder(seen, "password")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("nothing is kept from a request built to push at the API, a changed one or a "
+                + "step of a series")
+        void not_every_accepted_request_is_learned_from() {
+            ObservedValues seen = new ObservedValues(users);
+            TestCase pushing = TestCase.of(REGISTER, registration.parameterValues(),
+                    registration.body(), io.restest.core.execution.Intent.PUSHING);
+            TestCase changed = TestCase.changed(REGISTER, registration.parameterValues(),
+                    registration.body(), io.restest.core.execution.Intent.REFUSAL_EXPECTED,
+                    new io.restest.core.execution.Mutation(
+                            io.restest.core.execution.InteractionId.generate(), "oversize",
+                            ParameterLocation.BODY, "body.password", "a password far too long"));
+            TestCase step = TestCase.stepOf(REGISTER, registration.parameterValues(),
+                    registration.body(), io.restest.core.execution.Intent.UNKNOWN,
+                    new io.restest.core.execution.SequenceStep("createTwice", 2,
+                            List.of(io.restest.core.execution.InteractionId.generate()),
+                            "create it again"));
+
+            seen.on(answered(pushing, 201));
+            seen.on(answered(changed, 201));
+            seen.on(answered(step, 201));
+
+            assertThat(valuesUnder(seen, "password")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("nothing at all is kept from a deletion, whose thing is gone")
+        void a_deletion_teaches_nothing() {
+            ObservedValues seen = new ObservedValues(users);
+            TestCase deletion = TestCase.of(DELETE_USER, List.of(
+                    sent("userId", ParameterLocation.PATH, "u-7"),
+                    sent("reason", ParameterLocation.QUERY, "left")));
+
+            seen.on(answered(deletion, 204));
+
+            assertThat(valuesUnder(seen, "userId")).isEmpty();
+            assertThat(valuesUnder(seen, "reason")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("switched off, only replies are learned from, as before")
+        void switched_off() {
+            MemorySettings d = MemorySettings.defaults();
+            ObservedValues seen = new ObservedValues(users, new MemorySettings(
+                    d.mostValuesUnderOneName(), d.mostNames(), d.longestValueKept(),
+                    d.longestReplyRead(), d.asDeepAsAReplyIsRead(), true, true, false));
+
+            seen.on(answered(registration, 201, "{\"email\": \"ana@example.com\"}"));
+
+            assertThat(valuesUnder(seen, "password")).isEmpty();
+            assertThat(valuesUnder(seen, "email")).containsExactly(JsonValue.of("ana@example.com"));
+        }
+
+        @Test
+        @DisplayName("what a request sent and what a reply showed share one list under a name, "
+                + "the newest last")
+        void requests_and_replies_share_a_name() {
+            ObservedValues seen = new ObservedValues(users);
+
+            seen.on(answered(registration, 201, "{\"email\": \"ana.r@example.com\"}"));
+
+            assertThat(valuesUnder(seen, "email")).containsExactly(
+                    JsonValue.of("ana@example.com"), JsonValue.of("ana.r@example.com"));
+            assertThat(seen.underTheirOwnNames().observationsFor(ValueRequest.of(GET_PET,
+                            "email", ParameterLocation.BODY, StringSchema.of())))
+                    .extracting(ObservedValues.Observation::heardIn)
+                    .containsExactly(ObservedValues.HeardIn.ACCEPTED_REQUEST,
+                            ObservedValues.HeardIn.REPLY);
+        }
+
+        private static io.restest.core.execution.ParameterValue sent(String name,
+                ParameterLocation where, String value) {
+            return io.restest.core.execution.ParameterValue.of(name, where, JsonValue.of(value),
+                    new io.restest.core.execution.ValueOrigin.Generated("random"));
+        }
+
+        private static RunEvent.InteractionCompleted answered(TestCase sent, int status) {
+            return answered(sent, status, null);
+        }
+
+        private static RunEvent.InteractionCompleted answered(TestCase sent, int status,
+                String reply) {
+            return new RunEvent.InteractionCompleted(Instant.EPOCH, Interaction.answered(sent,
+                    HttpRequestRecord.of(HttpMethod.POST, "https://api.example/users/blue"),
+                    new HttpResponseRecord(StatusLine.of(status),
+                            List.of(Header.of("Content-Type", "application/json")),
+                            reply == null ? Optional.empty() : Optional.of(Payload.of(
+                                    reply.getBytes(StandardCharsets.UTF_8), "application/json"))),
+                    Instant.EPOCH, Duration.ofMillis(3)));
+        }
+    }
+
+    @Nested
     @DisplayName("how a full memory makes room")
     class HowAFullMemoryMakesRoom {
 
@@ -504,7 +671,7 @@ class ObservedValuesTest {
                 MemorySettings.defaults().mostValuesUnderOneName(), 1,
                 MemorySettings.defaults().longestValueKept(),
                 MemorySettings.defaults().longestReplyRead(),
-                MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true);
+                MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true);
 
         @Test
         @DisplayName("a memory allowed no names keeps none, however many values a name may hold")
@@ -513,7 +680,7 @@ class ObservedValuesTest {
                     MemorySettings.defaults().mostValuesUnderOneName(), 0,
                     MemorySettings.defaults().longestValueKept(),
                     MemorySettings.defaults().longestReplyRead(),
-                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true));
+                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true));
 
             none.on(reply(200, "application/json", "{\"id\": 1, \"name\": \"Fluffy\"}"));
 

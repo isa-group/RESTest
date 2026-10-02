@@ -131,6 +131,13 @@ so keeping them would leave no room for the token a login hands back. The memory
 `memory.mostNames` names, and when it is full a new one makes room by letting go of the name heard
 of longest ago.
 
+It also keeps what the API *accepted*. When a request is answered with a success, the values it
+carried — its parameters and every named piece of its body — are kept under their names beside what
+replies carried, so the password a registration was accepted with is there for the login that asks
+for a password next. Not from a deletion, whose thing is gone, nor from a request made to push at
+the API, nor from one made by changing an accepted one; `memory.rememberAcceptedRequests` switches
+it off ([the settings](settings.md)).
+
 A gap in a web address gets a second chance. The API usually calls a thing's identifier `id`, and the
 address that reads one calls it something else — `/pettypes/{petTypeId}` — so no reply ever carries
 a value named `petTypeId`. What the API returns at an address is therefore also kept under the kind

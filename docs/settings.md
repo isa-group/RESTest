@@ -228,6 +228,8 @@ memory:
   identifiersByResource: true # default
   # whether those pets are asked before any value named petId; off, the name is asked first
   identifiersByResourceFirst: true # default
+  # whether the values a request carried are remembered too when the API accepted it, such as the password a registration was accepted with
+  rememberAcceptedRequests: true # default
 
 document:
   # how long to wait for a description fetched over the network
@@ -435,6 +437,7 @@ switches](switches.md#switching-off-everything-one-increment-added) has that fil
 | `asDeepAsAReplyIsRead` | `6` | how far into a reply that search goes |
 | `identifiersByResource` | `true` | whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it |
 | `identifiersByResourceFirst` | `true` | whether those pets are asked before any value named petId; off, the name is asked first |
+| `rememberAcceptedRequests` | `true` | whether the values a request carried are remembered too when the API accepted it, such as the password a registration was accepted with |
 
 ### `document.*`
 

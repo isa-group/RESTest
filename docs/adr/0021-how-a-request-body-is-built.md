@@ -806,3 +806,48 @@ above is the filter, the eviction and the check together.
 - **The limit was not raised.** Two thousand names is a guard, and a larger one would only move the
   second at which an API like flight-search fills it.
 - **No likeness between names**, which stays with 4.1; this only makes it one class to change.
+
+## Amendment (M9.7)
+
+**Date:** 2026-10-02
+
+**What a request carried is kept too, once the API accepted it, beside what replies carried.**
+
+### Why
+
+The memory of observed values learned only from replies, and the values that link one operation to
+the next are often ones no reply ever carries: a password goes into a registration and comes out of
+nothing. In the campaigns of 1-2 October, with dictionaries, 22 of 22 flight-search logins that
+answered 2XX used an e-mail address and password registered earlier in the same session - a small
+list lining up by chance - and with 9.6 flight-search's registration answered 14 to 24 times a run
+while its login still answered none.
+
+### How
+
+- **One rule for which accepted request is worth learning from**, shared with the requests 10.1
+  changes (`AcceptedRequests.worthLearningFrom`): answered 2XX, not itself a change to an accepted
+  request, not a step of a series, not built to push at the API, and not a deletion - left out
+  whole, path, query and body, as the maintainer chose on 2 October, since the thing it named is
+  gone.
+- **Its values are filed as a reply's are**: each parameter under its name, the body's named pieces
+  at any depth, through the one question 9.5 asks of every name. They share each name's list with
+  what replies carried - twenty values, the newest last - so a value that came back and a value that
+  went out are offered side by side, and `observed` in the plan offers both. The body as a whole is
+  not filed under `body`: the row asked for its properties.
+- **Each value says where it was learned**, which is what a report shows: "the 'password' sent in an
+  earlier request the API accepted", and the exchange.
+- **A key handed over is never among them.** The memory reads the test case, which never holds a
+  key - the key is added on the way out and hidden in everything that comes back
+  ([ADR-0029](0029-the-key-an-api-asks-for.md)) - and a test sends a request through that door to an
+  API that repeats the key back, and finds it in no memory.
+- `memory.rememberAcceptedRequests` switches it off.
+
+### Measured
+
+MEASURED
+
+### What was not done
+
+- Matching names by likeness, which is 4.1's: `user_email` in one request does not answer `email` in
+  another.
+- Learning which pairs of operations go together from what the API answered.
