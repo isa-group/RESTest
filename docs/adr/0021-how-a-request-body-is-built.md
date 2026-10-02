@@ -735,7 +735,7 @@ refresh operation asks for, was turned away. None of the refresh-token requests 
 one.
 
 Counted over the corpus by `NamesAskedForAcrossTheCorpusTest`: of the 4,060 names the fifty
-documents declare in their 2XX replies, 743 - fewer than one in five - are names some request of
+documents declare in their 2XX replies, 741 - fewer than one in five - are names some request of
 the same document asks for. A value is only ever asked for by such a name, so the other four in
 five took up room and were never read. The document asking for the most names, GitHub's, asks for
 394.
@@ -753,10 +753,19 @@ five took up room and were never read. The document asking for the most names, G
   nobody asks for is still read: an `address` nobody asks for may hold a `town` somebody does.
 - **When the memory is full**, a new name makes room by letting go of the name heard of longest
   ago. "Heard" means filed: asking happens on the thread that builds requests, which is never made
-  to write anything down, so a name asked for often and heard of long ago goes first. The things
-  kept by their kind (M9.2) follow the same rule; their kinds come from the document's addresses,
-  so they never reach the limit in practice. Whole things kept under their shape's name are
-  untouched.
+  to write anything down, so a name asked for often and heard of long ago goes first. The whole
+  things kept under their shape's name (M2.5b) and the things kept by their kind (M9.2) follow the
+  same rule, and are otherwise kept as before; their keys are the document's own shape names and
+  addresses, so they never reach the limit in practice.
+- **A remembered word is only offered where its length fits** the `minLength` and `maxLength` the
+  document states for the place it would go, as it was already only offered where its kind matched
+  and where it was on a closed list the document states. Found by the measurement below, not
+  planned: with `password` now a name the memory keeps, flight-search's `/actuator/configprops`,
+  which shows the database's password as `"******"`, became the password of every invented body -
+  inside a body the memory is asked before invention - and every registration that could have
+  worked was refused for a password shorter than the eight characters the document declares. It
+  is a check of what the document already says, so it has no switch either, and the maintainer
+  approved it on 2 October.
 
 The question is asked at the moment a value is filed rather than when one is looked up, so that
 **matching names by likeness** - a reply's `token` for a request's `refreshToken`, which is 4.1's -
@@ -766,7 +775,29 @@ thread that hears replies rather than the one building requests.
 
 ### Measured
 
-MEASURED
+On flight-search, the containerised API restarted before every run, five seeds, three minutes each,
+before (`17369e00`) against after, under the shipped plan and under the plan with the dictionaries
+of the 1-2 October campaign - the only plan whose logins had answered 2XX:
+
+| | shipped, before | shipped, after | dictionaries, before | dictionaries, after |
+|---|---:|---:|---:|---:|
+| Operations answered 2XX, mean | 19.4 | **20.6** | 23.6 | **24.8** |
+| Area under that curve, operations × seconds | 3,418 | **3,568** | 4,140 | **4,303** |
+| Branch coverage | 26.3% | 26.3% | 27.6% | **29.6%** on four seeds, 27.6% on one |
+| Refresh-token requests answered 2XX, per seed | 0 everywhere | 0 everywhere | 0 everywhere | **14, 15, 0, 4, 0** |
+| Logout requests answered 2XX, per seed | 0 everywhere | 0 everywhere | 0 everywhere | **8, 9, 2, 2, 0** |
+
+The area is larger on four seeds of five under each plan. Under the shipped plan the gain is
+`POST /actuator/loggers/{name}`, answered 2XX on every seed after and on none before, because the
+logging level its body asks for is now kept from the replies that list one; no login answers there,
+so nothing has a token to send, and that waits for 9.6 and 9.7. Under the dictionaries the token a
+login returns is sent to the refresh and logout operations, and they answer.
+
+The length check was found by the first measurement of the filter alone, which had three seeds of
+the shipped plan worse than before - 18 operations rather than 19, branch coverage 25.0% rather than
+26.3% - because every invented password had become `"******"` and the one registration a run
+otherwise manages was refused. With the check those runs are back where they were, and the table
+above is the filter, the eviction and the check together.
 
 ### What was not done
 

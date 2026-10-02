@@ -163,6 +163,20 @@ class ObservedValueProviderTest {
         }
 
         @Test
+        @DisplayName("a word exactly as long as the least or the most allowed is offered, counted "
+                + "in characters as a reader counts them")
+        void the_limits_themselves_are_allowed() {
+            ObservedValueProvider source = sourceKnowing("{\"name\": \"\ud83d\udc36\ud83d\udc31\"}", null);
+            StringSchema exactlyTwo = new StringSchema(SchemaMetadata.none(), Optional.of(2),
+                    Optional.of(2), Optional.empty(), Optional.empty());
+
+            assertThat(source.offer(ValueRequest.of(ADD_PET, "name", ParameterLocation.BODY,
+                    exactlyTwo)))
+                    .describedAs("two animals are two characters, though Java stores four")
+                    .isPresent();
+        }
+
+        @Test
         @DisplayName("a value that could not be written into a path is not offered for one")
         void a_value_that_cannot_be_sent_is_not_offered() {
             ObservedValueProvider source = sourceKnowing("{\"name\": \"\"}", null);
@@ -497,8 +511,8 @@ class ObservedValueProviderTest {
                 .withId(GET_PET)
                 .withResponses(List.of(
                         ResponseModel.json("200", SchemaReference.to(shapeName))));
-        // The operation these tests ask on behalf of, asking for every name they ask about: the
-        // memory keeps a value only under a name some request asks for.
+        // The operation these tests ask on behalf of, asking for the names they expect to find:
+        // the memory keeps a value only under a name some request asks for.
         Operation sendsOne = Operation.of(HttpMethod.POST, "/pets", List.of(
                         Parameter.of("id", ParameterLocation.QUERY, false, StringSchema.of()),
                         Parameter.of("name", ParameterLocation.QUERY, false, StringSchema.of()),

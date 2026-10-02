@@ -149,9 +149,9 @@ otherwise exactly as real as what it sent. Where nothing different can be had â€
 one no other source can fill â€” it goes as it came back, and the run records that it was unchanged
 rather than naming a value that was not.
 
-It can only offer a value that fits: the kind has to match, and where the document states the closed
-list of values it accepts, a value seen elsewhere in the API is not made acceptable by having been
-seen.
+It can only offer a value that fits: the kind has to match, a word has to be as long as the document
+allows where it goes, and where the document states the closed list of values it accepts, a value
+seen elsewhere in the API is not made acceptable by having been seen.
 
 **It costs one promise, and the cost is real.** A run whose plan names `observed` cannot be repeated
 by giving it the same `--seed` again: what it sends depends on what the API answered, and an API

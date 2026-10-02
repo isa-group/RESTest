@@ -49,15 +49,16 @@ import java.util.Set;
  * <p>The names are worked out once, from the document, the way a request names its places: a
  * parameter by its own name, the whole body as {@code body}, and anything inside either by the name
  * of the property it is, however deep - a piece of a list goes by the name of the list. A body on a
- * {@code GET} or a {@code HEAD} adds nothing, since the client that sends requests never sends one.
+ * {@code GET} or a {@code HEAD} adds nothing, since the client that sends requests never sends one,
+ * and neither does a property the document says the API only ever sends back.
  */
 final class NamesTheDocumentAsksFor {
 
     /**
-     * How deep a shape written out in place, rather than named, is followed. Only a guard: a named
-     * shape is entered once whatever refers to it, which is what ends a shape that contains itself,
-     * and no document writes one out in place nearly this deep. A document built to go down for
-     * ever does not end the run.
+     * How many steps into a value the walk goes - into a property, a list, a choice or a named
+     * shape. Only a guard: a named shape is entered once whatever refers to it, which is what ends
+     * a shape that contains itself, and no document goes nearly this deep. A document built to go
+     * down for ever does not end the run.
      */
     private static final int DEEPER_THAN_ANY_DOCUMENT = 64;
 
@@ -126,6 +127,11 @@ final class NamesTheDocumentAsksFor {
             }
             case ObjectSchema object -> {
                 object.properties().forEach((name, property) -> {
+                    // A property the API only ever sends back is never built into a request, so
+                    // nothing ever asks for it, or for anything inside it.
+                    if (Shapes.onlyEverReturned(model, property, DEEPER_THAN_ANY_DOCUMENT)) {
+                        return;
+                    }
                     names.add(name);
                     namesInside(property, model, names, shapesEntered, depth + 1);
                 });

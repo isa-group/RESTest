@@ -391,7 +391,9 @@ many names as `memory.mostNames` allows, a new one makes room by letting go of t
 longest ago. Before, it kept every name a reply carried and turned away every new one once it was
 full, so the first names an API happened to send were the only ones a run could ever remember: on
 flight-search, the names of the classes its diagnostic pages list filled it within three seconds,
-and the token a login handed back a minute later was never kept.
+and the token a login handed back a minute later was never kept. Since 9.5 too, a word it
+remembered is only offered where it is as long as the document allows: a password a diagnostic page
+shows as `******` is not sent where the document asks for eight characters at least.
 
 The maintainer chose to give this no switch: turning new names away once the memory was full was
 not a behaviour anybody chose. What that costs is worth knowing before an ablation: no file brings

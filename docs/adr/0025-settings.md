@@ -493,10 +493,14 @@ Seventy-two settings in eight groups.
 
 **Date:** 2026-10-02
 
-**One lever lands without a switch, by the maintainer's choice, and §4 says so.** Roadmap row 9.5
+**One row lands without a switch, by the maintainer's choice, and §4 says so.** Roadmap row 9.5
 changes what the memory of observed values keeps: a value from a reply only under a name some
 request of the document asks for, and, when `memory.mostNames` names are kept, a new one makes room
-by letting go of the name heard of longest ago instead of being turned away. Before it, the memory
+by letting go of the name heard of longest ago instead of being turned away. Its measurement added a
+third change the maintainer approved the same day: a remembered word is only offered where it is
+as long as the document allows, which is a check of what the document states, as the checks of a
+value's kind and of a closed list already were ([ADR-0021](0021-how-a-request-body-is-built.md),
+M9.5 amendment). Before it, the memory
 kept every name a reply carried and refused every new one once full, so on flight-search the names
 of the classes its diagnostic pages list took all two thousand places within three seconds and the
 token a login returned was never kept.

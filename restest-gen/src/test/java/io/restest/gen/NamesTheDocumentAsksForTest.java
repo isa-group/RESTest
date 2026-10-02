@@ -135,6 +135,52 @@ class NamesTheDocumentAsksForTest {
                 + ".MongoDataAutoConfiguration")).isEmpty();
     }
 
+    @Test
+    @DisplayName("a name pointing at a shape the document never declares ends the reading there")
+    void a_shape_that_is_not_there() {
+        NamesTheDocumentAsksFor names = NamesTheDocumentAsksFor.in(anApi(
+                Operation.of(HttpMethod.POST, "/owners")
+                        .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                                "name", StringSchema.of(),
+                                "pet", SchemaReference.to("Missing"))), true))));
+
+        assertThat(names.answeredBy("name")).containsExactly("name");
+        assertThat(names.answeredBy("pet")).containsExactly("pet");
+    }
+
+    @Test
+    @DisplayName("a document nested far deeper than any other does not end the run")
+    void a_document_built_to_go_down_for_ever() {
+        io.restest.core.schema.CanonicalSchema deep = StringSchema.of();
+        for (int level = 0; level < 5_000; level++) {
+            deep = ObjectSchema.of(Map.of("level" + level, deep));
+        }
+        NamesTheDocumentAsksFor names = NamesTheDocumentAsksFor.in(anApi(
+                Operation.of(HttpMethod.POST, "/deep")
+                        .withRequestBody(RequestBodyModel.json(deep, true))));
+
+        assertThat(names.answeredBy("level4999")).containsExactly("level4999");
+        assertThat(names.answeredBy("level0"))
+                .describedAs("read only so far down")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a property the API only ever sends back is asked for by no request")
+    void a_property_only_ever_returned() {
+        ObjectSchema pet = ObjectSchema.of(Map.of(
+                "name", StringSchema.of(),
+                "id", new StringSchema(SchemaMetadata.none().withAccess(
+                        SchemaMetadata.Access.READ_ONLY), Optional.empty(), Optional.empty(),
+                        Optional.empty(), Optional.empty())));
+        NamesTheDocumentAsksFor names = NamesTheDocumentAsksFor.in(anApi(
+                Operation.of(HttpMethod.POST, "/pets")
+                        .withRequestBody(RequestBodyModel.json(pet, true))));
+
+        assertThat(names.answeredBy("name")).containsExactly("name");
+        assertThat(names.answeredBy("id")).isEmpty();
+    }
+
     private static ApiModel anApi(Operation operation) {
         return ApiModel.of("an API", "1", List.of(operation));
     }

@@ -22,6 +22,7 @@ import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
@@ -496,6 +497,65 @@ class ObservedValuesTest {
     }
 
     @Nested
+    @DisplayName("how a full memory makes room")
+    class HowAFullMemoryMakesRoom {
+
+        private final MemorySettings oneName = new MemorySettings(
+                MemorySettings.defaults().mostValuesUnderOneName(), 1,
+                MemorySettings.defaults().longestValueKept(),
+                MemorySettings.defaults().longestReplyRead(),
+                MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true);
+
+        @Test
+        @DisplayName("a memory allowed no names keeps none, however many values a name may hold")
+        void no_names_at_all() {
+            ObservedValues none = new ObservedValues(anApiReturning(PET), new MemorySettings(
+                    MemorySettings.defaults().mostValuesUnderOneName(), 0,
+                    MemorySettings.defaults().longestValueKept(),
+                    MemorySettings.defaults().longestReplyRead(),
+                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true));
+
+            none.on(reply(200, "application/json", "{\"id\": 1, \"name\": \"Fluffy\"}"));
+
+            assertThat(none.underTheirOwnNames().size()).isZero();
+        }
+
+        @Test
+        @DisplayName("whole things under the name of their shape make room the same way")
+        void shapes_make_room_too() {
+            ObservedValues.Remembered shapes =
+                    new ObservedValues.Remembered(ValueDictionary.Keying.SCHEMA, oneName);
+            InteractionId from = InteractionId.generate();
+
+            shapes.remember("Pet", JsonValue.object(Map.of("id", JsonValue.of(1))), from);
+            shapes.remember("Owner", JsonValue.object(Map.of("id", JsonValue.of(2))), from);
+
+            assertThat(shapes.size()).isEqualTo(1);
+            assertThat(shapes.valuesFor(shapeRequest("Pet"))).isEmpty();
+            assertThat(shapes.valuesFor(shapeRequest("Owner"))).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("and so do things kept by their kind")
+        void kinds_make_room_too() {
+            ObservedValues.Resources kinds = new ObservedValues.Resources(oneName);
+            InteractionId from = InteractionId.generate();
+
+            kinds.remember("pet", new JsonValue.JsonObject(Map.of("id", JsonValue.of(1))), from);
+            kinds.remember("owner", new JsonValue.JsonObject(Map.of("id", JsonValue.of(2))), from);
+
+            assertThat(kinds.size()).isEqualTo(1);
+            assertThat(kinds.thingsOfKind("pet")).isEmpty();
+            assertThat(kinds.thingsOfKind("owner")).hasSize(1);
+        }
+
+        private static ValueRequest shapeRequest(String shape) {
+            return new ValueRequest(GET_PET, "body", "body", ParameterLocation.BODY, PET,
+                    List.of(), Optional.of(shape));
+        }
+    }
+
+    @Nested
     @DisplayName("only what some request asks for")
     class OnlyWhatSomeRequestAsksFor {
 
@@ -526,6 +586,22 @@ class ObservedValuesTest {
 
             assertThat(valuesUnder(seen, "address")).isEmpty();
             assertThat(valuesUnder(seen, "town")).containsExactly(JsonValue.of("Sevilla"));
+        }
+
+        @Test
+        @DisplayName("what is inside a piece too large to keep is still looked at")
+        void inside_a_piece_too_large_to_keep() {
+            ObservedValues seen = new ObservedValues(anApiReturning(PET));
+
+            seen.on(reply(200, "application/json", "{\"owner\": {\"town\": \"Sevilla\", "
+                    + "\"photo\": \"" + "x".repeat(20_000) + "\"}}"));
+
+            assertThat(valuesUnder(seen, "owner"))
+                    .describedAs("an owner carrying a photo nobody could send is not sent")
+                    .isEmpty();
+            assertThat(valuesUnder(seen, "town"))
+                    .describedAs("but the town beside the photo is a value like any other")
+                    .containsExactly(JsonValue.of("Sevilla"));
         }
 
         @Test

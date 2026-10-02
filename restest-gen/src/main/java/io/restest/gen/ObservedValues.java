@@ -544,12 +544,17 @@ public final class ObservedValues implements RunListener {
         }
         for (Map.Entry<String, JsonValue> piece : thing.members().entrySet()) {
             JsonValue value = piece.getValue();
-            if (value instanceof JsonValue.JsonNull || !smallEnoughToSend(value)) {
+            if (value instanceof JsonValue.JsonNull) {
                 continue;
             }
             Set<String> askedAs = answeredBy.apply(piece.getKey());
-            for (String name : askedAs) {
-                underTheirOwnNames.remember(name, value, piece.getKey(), from);
+            // Kept only when it could be sent, but looked inside either way: a reply's wrapper that
+            // also carries a photo too large to send still carries the token next to it, and each
+            // piece inside is measured on its own when it is kept.
+            if (smallEnoughToSend(value)) {
+                for (String name : askedAs) {
+                    underTheirOwnNames.remember(name, value, piece.getKey(), from);
+                }
             }
             switch (value) {
                 case JsonValue.JsonObject inside -> rememberNamedPieces(inside, from, depth + 1);
@@ -798,12 +803,13 @@ public final class ObservedValues implements RunListener {
             if (most <= 0) {
                 return false;
             }
-            if (!kept.containsKey(key) && kept.size() >= most) {
-                Iterator<String> eldest = oldestFirst.iterator();
-                if (eldest.hasNext()) {
-                    kept.remove(eldest.next());
-                    eldest.remove();
-                }
+            // As many times as it takes, so that a name the order holds and the memory does not -
+            // which an error halfway through keeping one would leave behind - cannot let the memory
+            // grow past its limit for the rest of the run.
+            Iterator<String> eldest = oldestFirst.iterator();
+            while (!kept.containsKey(key) && kept.size() >= most && eldest.hasNext()) {
+                kept.remove(eldest.next());
+                eldest.remove();
             }
             oldestFirst.remove(key);
             oldestFirst.add(key);

@@ -96,7 +96,7 @@ class NamesAskedForAcrossTheCorpusTest {
                 .describedAs("names declared in 2XX replies, per document, that some request of "
                         + "the same document asks for: the rest, four in five, were kept "
                         + "before and never asked for")
-                .isEqualTo("743 of 4060");
+                .isEqualTo("741 of 4060");
     }
 
     private static void namesIn(CanonicalSchema schema, ApiModel model, Set<String> into,
