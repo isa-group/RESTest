@@ -213,36 +213,23 @@ class DocumentedReportTest {
             """;
 
     /**
-     * The plan RESTest carries with its shares moved towards series and changes to accepted requests,
-     * which are what the parts of a written-out fault only some requests have come from. Under the
-     * shipped shares a series is a tenth of the run, which a slow machine may not reach in time.
+     * A plan in which every request drawn after the first round is a step of a series or a change
+     * to a request the API accepted, which are what the parts of a written-out fault only some
+     * requests have come from, and a few push at the API. The first round accepts a creation and a
+     * list, so both have something to start from at once. Under the shipped shares half the run
+     * builds ordinary requests, and a slow machine may reach neither in a few seconds.
      */
     private static final String A_PLAN_FOR_EVERY_PART = """
             version: 1
             strategies:
-              - name: nominal
-                share: 20
-                sources:
-                  - source: enum
-                  - weighted:
-                      - source: example
-                        weight: 15
-                      - source: random
-                        weight: 20
-                      - source: observed
-                        weight: 20
-                      - dictionaries: given
-                        weight: 40
-                      - source: default
-                        weight: 5
               - name: sequences
-                share: 40
+                share: 45
                 sends: sequences
                 sources:
                   - source: enum
                   - source: random
               - name: mutation
-                share: 30
+                share: 45
                 mutates: accepted
                 sources:
                   - source: enum
@@ -277,7 +264,8 @@ class DocumentedReportTest {
     @DisplayName("every key a run writes into report.json is explained on the page, and the keys "
             + "at the top come in the page's order")
     void every_key_of_the_report_is_on_the_page(@TempDir Path directory) throws IOException {
-        JsonValue report = aRealReport(directory);
+        Run run = aRealRun(directory);
+        JsonValue report = run.report();
 
         Map<String, List<String>> explained = keysOnThePage();
         Set<String> written = new TreeSet<>();
@@ -286,7 +274,7 @@ class DocumentedReportTest {
         assertThat(written)
                 .describedAs("the run against the small API in this test no longer writes some of "
                         + "the parts of the report it is there to make a run write, so the page is "
-                        + "not checked for them")
+                        + "not checked for them. The run printed:%n%s", run.screen())
                 .containsAll(THE_RUN_IS_MEANT_TO_WRITE);
         assertThat(written).allSatisfy(key -> assertThat(explained.getOrDefault(parentOf(key),
                         List.of()))
@@ -362,13 +350,14 @@ class DocumentedReportTest {
     // --- the run ------------------------------------------------------------------------------
 
     /**
-     * Runs RESTest for a few seconds against the small API and reads back the report it wrote.
+     * Runs RESTest for a few seconds against the small API and reads back the report it wrote,
+     * beside what it printed, which says what the run did when the report holds less than expected.
      *
      * <p>Every fault is written out whole, rather than the first few of each kind, so that the parts
      * of a written-out fault only some requests have - a change made to an accepted request, a step
      * of a series - are in the file whichever requests happened to fail first.
      */
-    private static JsonValue aRealReport(Path directory) throws IOException {
+    private static Run aRealRun(Path directory) throws IOException {
         Path document = directory.resolve("things.yaml");
         Files.writeString(document, THE_DOCUMENT);
         Path unreadable = directory.resolve("unreadable.yaml");
@@ -384,13 +373,13 @@ class DocumentedReportTest {
         AtomicInteger made = new AtomicInteger();
         api.createContext("/", exchange -> answer(exchange, made));
         api.start();
+        StringWriter screen = new StringWriter();
         try {
-            StringWriter screen = new StringWriter();
             StringWriter problems = new StringWriter();
             int answer = Restest.run(new String[] {
                 "run", document.toString(),
                 "--url", "http://127.0.0.1:" + api.getAddress().getPort(),
-                "--budget", "3s",
+                "--budget", "5s",
                 "--seed", "20261003",
                 "--out", out.toString(),
                 "--dictionary", unreadable.toString(),
@@ -408,7 +397,12 @@ class DocumentedReportTest {
             api.stop(0);
             threads.shutdownNow();
         }
-        return JsonText.read(Files.readString(out.resolve("report.json")));
+        return new Run(JsonText.read(Files.readString(out.resolve("report.json"))),
+                screen.toString());
+    }
+
+    /** What a run wrote into its report, and what it printed. */
+    private record Run(JsonValue report, String screen) {
     }
 
     /** What the small API answers. */
