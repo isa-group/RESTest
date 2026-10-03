@@ -48,8 +48,9 @@ wins over `--settings`, which wins over what the tool does when nobody says othe
 
 `--auth` is the one way in for anything that signs a request. RESTest hides every value handed over
 this way in everything the run writes — the screen, `report.json` and its `curl` commands, the stored
-run — and writes a word such as `REDACTED-AUTH.api_key` where it went, which a command copied from
-a report needs the key put back in place of.
+run — and writes `REDACTED-AUTH` where it went: followed by the key's name, `REDACTED-AUTH.api_key`,
+when it was given with one, and by its place, `REDACTED-AUTH.header.X-API-Key`, when it was given
+with that. The run says which before its first request.
 [ADR-0029](adr/0029-the-key-an-api-asks-for.md) has the rules.
 
 ```bash

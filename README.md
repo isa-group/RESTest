@@ -52,12 +52,13 @@ something: a run leaves pets, orders and users behind wherever it is pointed. Ke
 and point `--url` at a copy of your own for anything longer, or for anything you would mind having
 written to.
 
-What it prints looks like this. The numbers are one run's, and yours will be different:
+What it prints begins like this, saying what it will test and then printing each fault as it finds
+it. The numbers are one run's, and yours will be different:
 
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-19 of 19 operations can be tested, seed 20260914, budget 10s
+19 of 19 operations can be tested, seed -2533421039499011723, budget 10s
   2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
@@ -65,19 +66,35 @@ F100  HTTP Status 500
       getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
       the API answered 500, so it fell over while handling this request
       curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+```
 
+A fault of the other kind, later in the same run, says what in the reply was not the shape the
+document gives:
+
+```
+F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+      getPetById - GET https://petstore3.swagger.io/api/v3/pet/1022725  ->  200
+      the body does not match the shape the specification declares for it, answering 200 as application/json
+        /status: does not have a value in the enumeration ["available", "pending", "sold"]
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/pet/1022725' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0'
+```
+
+After fifty faults the screen stops printing them, and the run ends with a summary:
+
+```
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-567 requests to 19 operations in 10.4s, 13% of it idle
-  opening lap: 19 requests in 2.3s, 9 of 19 operations answered 2xx
-  171 2xx, 245 4xx, 151 5xx
-  112 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 245 refusals above
-  34 of them changed one thing in a request the API had accepted
+716 requests to 19 operations in 10.3s, 13% of it idle
+  opening lap: 19 requests in 2.1s, 8 of 19 operations answered 2xx
+  186 2xx, 242 4xx, 288 5xx
+  141 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 242 refusals above
+  44 of them changed one thing in a request the API had accepted
+  4 of them were steps of 2 series about a thing the run created: createTwice 2, deleteTwice 2; 13 creation(s) meant to begin one were not accepted
   11 operation(s) answered 500, 11 answered some 5xx
-184 faults:
-  151 x F100  HTTP Status 500
-  33 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (126.1 KiB)
+336 faults:
+  288 x F100  HTTP Status 500
+  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (163.1 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -89,7 +106,7 @@ the run itself was not kept; pass --store to keep every request and reply
 - **Each fault** is printed as it is found: its kind, by a number from a catalogue other testing
   tools share (`F100` is a reply of 500), the request and what the API answered, what is wrong, and
   a `curl` command that does it again.
-- **The summary** says how much was sent and how it was answered. `171 2xx, 245 4xx, 151 5xx` is
+- **The summary** says how much was sent and how it was answered. `186 2xx, 242 4xx, 288 5xx` is
   worth a glance even when nothing is wrong: if almost everything was refused, the requests were the
   problem rather than the API. `11 operation(s) answered 500` counts operations rather than replies,
   and is the number worth quoting, since one broken operation asked six hundred times is six hundred
@@ -201,9 +218,10 @@ sends it where the document says, with the operations that ask for it:
 
 A bearer token or a session cookie you already hold goes the same way:
 `--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…`. The key is written into
-nothing the run leaves behind: the screen, `report.json` and its `curl` commands show a word such as
-`REDACTED-AUTH.api_key` where it went, and a `curl` command copied from a report is run by putting
-the key back in place of that word. [Handing over a key or a token](docs/command-line.md#handing-over-a-key-or-a-token).
+nothing the run leaves behind: the screen, `report.json` and its `curl` commands show `REDACTED-AUTH`
+where it went — or, for a key given with its name or its place, a longer word such as
+`REDACTED-AUTH.api_key`, which the run names before its first request. A `curl` command copied from a
+report is run by putting the key back in place of that word. [Handing over a key or a token](docs/command-line.md#handing-over-a-key-or-a-token).
 
 ## Exit codes
 

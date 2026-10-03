@@ -26,7 +26,7 @@ of its own:
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-19 of 19 operations can be tested, seed 20260914, budget 10s
+19 of 19 operations can be tested, seed -2533421039499011723, budget 10s
   2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 ```
@@ -57,15 +57,16 @@ fifty, the screen stops printing them and says so; every one is still counted.
 ### The summary
 
 ```
-567 requests to 19 operations in 10.4s, 13% of it idle
-  opening lap: 19 requests in 2.3s, 9 of 19 operations answered 2xx
-  171 2xx, 245 4xx, 151 5xx
-  112 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 245 refusals above
-  34 of them changed one thing in a request the API had accepted
+716 requests to 19 operations in 10.3s, 13% of it idle
+  opening lap: 19 requests in 2.1s, 8 of 19 operations answered 2xx
+  186 2xx, 242 4xx, 288 5xx
+  141 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 242 refusals above
+  44 of them changed one thing in a request the API had accepted
+  4 of them were steps of 2 series about a thing the run created: createTwice 2, deleteTwice 2; 13 creation(s) meant to begin one were not accepted
   11 operation(s) answered 500, 11 answered some 5xx
-184 faults:
-  151 x F100  HTTP Status 500
-  33 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+336 faults:
+  288 x F100  HTTP Status 500
+  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
 ```
 
 | Line | When | What it says |
@@ -86,7 +87,7 @@ fifty, the screen stops printing them and says so; every one is still counted.
 ### The last lines
 
 ```
-report written to restest-out/report.json (126.1 KiB)
+report written to restest-out/report.json (163.1 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -276,7 +277,7 @@ ways and most replies are wrong in none.
 |---|---|---|
 | `total` | number | Requests that ended, one way or another |
 | `withNothingWrong` | number | Requests no rule found anything wrong with |
-| `byClass` | object | Requests by the first digit of their status code — `"2xx": 171`, `"4xx": 245` — and `noReply` for those that got no reply, in that order |
+| `byClass` | object | Requests by the first digit of their status code — `"2xx": 186`, `"4xx": 242` — and `noReply` for those that got no reply, in that order |
 | `commonest` | list | The ten exact status codes answered most, commonest first |
 
 ### `replies.commonest[]`
@@ -358,7 +359,7 @@ in a run from having nothing written about it.
 | `operation` | text | The operation |
 | `summary` | text | What is wrong, in a sentence |
 | `details` | list of text | The particulars, when there are any: for `F200`, each place in the body that disagreed with the document |
-| `curl` | text | A command that sends the same request again. A key handed over with `--auth` appears as its mask, a word such as `REDACTED-AUTH.api_key`; put the key back in place of that whole word before running it |
+| `curl` | text | A command that sends the same request again. A key handed over with `--auth` appears as its mask — `REDACTED-AUTH`, or a longer word such as `REDACTED-AUTH.api_key`, as the first lines of the run say — so put the key back in place of that whole word before running it |
 | `status` | number | Only when a status code arrived: what the API answered |
 | `statusClass` | text | `2xx`, `5xx` and so on, or `noReply` |
 | `interaction` | object | The whole exchange: what was meant, what was sent, what came back |

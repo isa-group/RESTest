@@ -93,8 +93,8 @@ F100  HTTP Status 500
    it again, say — a line saying which step, of which series, and that the command below sends this
    step alone, without the steps before it, so it may not answer the same way.
 6. A `curl` command that sends the same request again. A key handed over with `--auth` appears as
-   a word such as `REDACTED-AUTH.api_key`: put the key back in place of that whole word before
-   running it.
+   `REDACTED-AUTH`, or a longer word such as `REDACTED-AUTH.api_key` that the run names before its
+   first request: put the key back in place of that whole word before running it.
 
 The first fifty faults are printed in full. After that the screen says
 `... more faults are being found; every one of them is counted in the run's report and in the total
@@ -104,9 +104,9 @@ below`, and prints no more of them; `report.faultsShownOnTheConsole` changes the
 At the end of the run, the summary counts them by kind:
 
 ```
-184 faults:
-  151 x F100  HTTP Status 500
-  33 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+336 faults:
+  288 x F100  HTTP Status 500
+  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
 ```
 
 ## How faults are counted
