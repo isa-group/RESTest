@@ -263,11 +263,13 @@ same class, which is where to add one if you widen it again.
 
 ## Dependency updates
 
-`.github/dependabot.yml` asks for weekly pull requests for Maven dependencies and for the workflow
-actions. GitHub reads that file from the repository's default branch, `master`. The pairs that must
-move together have groups of their own — `jackson-core` with `jackson-annotations`, and
-`swagger-parser` with `swagger-core` — beside the test libraries and the build plugins. To see what
-is out of date without waiting for Monday:
+`.github/dependabot.yml` describes weekly pull requests for Maven dependencies and for the workflow
+actions, but **they are switched off for now**: each entry's `open-pull-requests-limit` is `0`, which
+is how GitHub stops version updates while keeping the configuration. Giving each entry its limit
+again switches them back on. GitHub reads that file from the repository's default branch, `master`.
+The pairs that must move together have groups of their own — `jackson-core` with
+`jackson-annotations`, and `swagger-parser` with `swagger-core` — beside the test libraries and the
+build plugins. Until the updates are back, check what is out of date by hand:
 
 ```bash
 ./mvnw -q versions:display-dependency-updates versions:display-plugin-updates
