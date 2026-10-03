@@ -72,7 +72,7 @@
         <jacoco.version>0.8.15</jacoco.version>
         <picocli.version>4.7.7</picocli.version>
         <testcontainers.version>2.0.5</testcontainers.version>
-        <swagger-parser.version>2.1.47</swagger-parser.version>
+        <swagger-parser.version>2.1.48</swagger-parser.version>
         <!-- Arrives transitively through swagger-parser; pinned in its own right so a future
              swagger-parser upgrade that changes it is a visible, reviewed version bump rather than
              whatever Maven's dependency mediation happens to resolve (ADR-0007's own complaint about
@@ -82,7 +82,7 @@
              back out with io.swagger.v3.core.util.Json, so the library that provides it is pinned
              here rather than left to whatever swagger-parser happens to resolve. Must move with
              swagger-parser: the two share the model classes they serialise. -->
-        <swagger-core.version>2.2.52</swagger-core.version>
+        <swagger-core.version>2.2.55</swagger-core.version>
         <okhttp.version>5.5.0</okhttp.version>
         <wiremock.version>3.13.2</wiremock.version>
         <sqlite.version>3.50.3.0</sqlite.version>
