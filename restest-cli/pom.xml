@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.restest</groupId>
+        <artifactId>restest</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <artifactId>restest-cli</artifactId>
+    <name>RESTest :: CLI</name>
+    <description>Command line. The only module permitted to terminate the process.</description>
+
+    <!--
+      No maven.compiler.release override here. The CLI targets Java 21 like every other
+      module, so a single reactor build works on any JDK from 21 upwards, and no toolchain
+      configuration is needed. See ADR-0003.
+    -->
+
+    <dependencies>
+        <!--
+          The command-line framework. Confined to this module by an architecture rule, the same way
+          the parser is confined to restest-spec and the HTTP client to restest-exec.
+        -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-spec</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-idl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-gen</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-exec</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-oracles</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-report</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+          The schema validator logs through the SLF4J facade. With no binding on the class path it
+          prints three warning lines to standard error the first time it is used, which is not what
+          a command-line tool should greet somebody with. Choosing the binding is the application's
+          business and not a library's, so it is chosen here, and the choice is to log nothing.
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- A stand-in API for the end-to-end test: real HTTP, no network, answers we choose. -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Two real APIs in containers, for the smoke run. Needs a container runtime; the tests
+             that use it carry the `smoke` tag and are left out of an ordinary build. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                      This module's tests open a run's SQLite file, and the database driver loads a
+                      native library. Without this flag Java 24 and later print a warning for every
+                      such load. Same flag, same reason, as restest-store.
+                    -->
+                    <argLine>@{argLine} --enable-native-access=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
+
+            <!--
+              Puts everything the command needs at runtime in one directory, so the `restest` script
+              at the root of the checkout is a single `java -cp .../lib/*` line with no list of names
+              in it and no absolute paths written into a file. Copies rather than referencing the
+              local repository, so moving or copying the checkout cannot leave a stale path behind.
+
+              Jars rather than the compiled-classes directories, and this is not a detail: a report
+              says which version of RESTest produced it by reading a jar manifest, and a directory
+              has no manifest. Point the script at target/classes and every report says "unknown".
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- The editor's Maven integration runs this execution as part of its own
+                             build and fails on it: inside the workspace the other modules resolve to
+                             their target/classes directories rather than to jars, so there is no jar
+                             for it to copy. Nothing needs it to try - filling target/lib is a
+                             packaging step for the launcher script, and an editor packages nothing.
+                             The instruction below tells that integration to leave the execution
+                             alone. Maven never sees it: an XML processing instruction is not
+                             configuration, and ./mvnw package fills target/lib exactly as before. -->
+                        <?m2e ignore?>
+                        <id>runtime-libraries</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

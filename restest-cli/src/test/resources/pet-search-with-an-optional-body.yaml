@@ -1,0 +1,36 @@
+openapi: 3.1.0
+info:
+  title: Pet Search
+  version: 1.0.0
+  description: >
+    One operation: a search that accepts a body although it is a GET, and does not insist on one.
+    The client RESTest sends requests with refuses to build a GET carrying a body, so RESTest tests
+    the operation without it - a request the document allows - rather than sending, on half of its
+    requests, one that never leaves the machine.
+paths:
+  /pets/search:
+    get:
+      operationId: searchPets
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: the pets whose name matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string

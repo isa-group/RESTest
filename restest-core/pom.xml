@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.restest</groupId>
+        <artifactId>restest</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <artifactId>restest-core</artifactId>
+    <name>RESTest :: Core</name>
+    <description>Domain model and interfaces. No network, no OpenAPI parser, no heavy dependencies.</description>
+
+    <dependencies>
+        <!--
+          The first of the two third-party libraries this module carries, and only its streaming
+          reader and writer, not the object mapper: RESTest's own JSON values are turned into text
+          and back here, and there is no use for a library that maps Java objects to JSON. It lives
+          in this module because three others need it and none of them may see the other two - the
+          stored run, the report written at the end of a run, and the schema location an oracle
+          hands to the validator. See ADR-0006.
+        -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+
+        <!--
+          The second, and for the same reason as the first. Three files are written by hand for
+          RESTest - a list of values, a plan, and a file of settings - and they are read by three
+          parts of the tool that cannot see one another. One answer to "what does a hand-written
+          file say" is worth more than three. See ADR-0006.
+        -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              The blocking coverage gate. It is here, on this module, rather than at the root,
+              because only two modules carry a minimum: this one and the other named under
+              "Quality gates" in docs/DESIGN.md.
+
+              The figures are floors, set below what the module actually measures so that they fail
+              on a real loss of testing rather than on rounding. They are never to be lowered to make
+              a build pass; a rule that gets relaxed whenever it fires is not a rule.
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.85</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,301 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.cli;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+/**
+ * Telling a run where its values should come from, from the command line.
+ *
+ * <p>Two options and one refusal. {@code --print-campaign} writes out the plan RESTest follows when
+ * it is given none, so that somebody can save it and change a line; {@code --campaign} hands one
+ * back. The refusal matters most: a plan that cannot be read ends the run rather than quietly
+ * running a different one, because one of the things a plan is for is keeping a run away from
+ * everything that writes.
+ */
+class CampaignCommandTest {
+
+    private static WireMockServer api;
+
+    private final StringWriter screen = new StringWriter();
+    private final StringWriter problems = new StringWriter();
+
+    @BeforeAll
+    static void startTheApi() {
+        api = new WireMockServer(options().dynamicPort());
+        api.start();
+        answersEverythingWith("{}");
+    }
+
+    /** An API that says yes to everything, with the same body every time. */
+    private static void answersEverythingWith(String body) {
+        api.resetAll();
+        api.stubFor(any(urlMatching(".*")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(body)));
+    }
+
+    @AfterAll
+    static void stopTheApi() {
+        api.stop();
+    }
+
+    /**
+     * Puts the shared API back the way every test here but one expects to find it.
+     *
+     * <p>After each test rather than at the end of the one that changes it: a restore written as
+     * the last line of that test does not run when an assertion above it fails, and one failure
+     * would then be followed by a cascade of failures in whatever ran next - the worst signal there
+     * is to debug.
+     */
+    @AfterEach
+    void putTheApiBack() {
+        answersEverythingWith("{}");
+    }
+
+    @Test
+    @DisplayName("the plan RESTest follows can be printed, and printing it needs no document, "
+            + "because it is a question about the tool rather than about an API")
+    void the_carried_plan_can_be_printed() {
+        assertThat(run("run", "--print-campaign")).isZero();
+
+        assertThat(screen.toString())
+                .contains("strategies:")
+                .contains("name: nominal")
+                .contains("name: fuzzing")
+                .describedAs("printed with the comments that say why, since it is meant to be "
+                        + "copied and changed rather than only parsed")
+                .contains("# What a run does when nobody has said otherwise.");
+    }
+
+    @Test
+    @DisplayName("what is printed is a plan the tool will read back")
+    void what_is_printed_can_be_handed_back(@TempDir Path directory) throws Exception {
+        run("run", "--print-campaign");
+        Path saved = directory.resolve("mine.yaml");
+        Files.writeString(saved, screen.toString());
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--campaign", saved.toString(), "--out", directory.resolve("out").toString()))
+                .isBetween(0, 1);
+        assertThat(problems.toString()).doesNotContain("could not be read");
+    }
+
+    @Test
+    @DisplayName("a plan keeps the run to the operations it names, and the run says how many it "
+            + "left alone rather than blaming the document for them")
+    void a_plan_narrows_which_operations_are_touched(@TempDir Path directory) throws Exception {
+        Path plan = planIn(directory, """
+                operations:
+                  methods: [GET, HEAD, OPTIONS, TRACE]
+                """);
+
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--campaign", plan.toString(), "--out", directory.resolve("out").toString());
+
+        assertThat(screen.toString())
+                .describedAs("the document has four operations and one of them is a POST")
+                .contains("3 of 4 operations can be tested")
+                .contains("1 left alone by the plan");
+    }
+
+    @Test
+    @DisplayName("a plan that matches no operation says it was the plan, because a run that "
+            + "blamed the document would send somebody to look in the wrong place")
+    void a_plan_that_matches_nothing_says_so(@TempDir Path directory) throws Exception {
+        Path plan = planIn(directory, """
+                operations:
+                  only: [thereIsNoSuchOperation]
+                """);
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
+                .isEqualTo(3);
+        assertThat(problems.toString())
+                .contains("the plan keeps this run to no operation at all")
+                .contains("describes 4 that could have been tested")
+                .describedAs("and the name nothing answered to is quoted back, since a plan "
+                        + "written against an older document is the usual reason")
+                .contains("thereIsNoSuchOperation");
+    }
+
+
+    @Test
+    @DisplayName("a plan asking for what the API returns sends it back, and says the seed no "
+            + "longer repeats the run on its own")
+    void what_the_api_returned_goes_back_out(@TempDir Path directory) throws Exception {
+        answersEverythingWith("{\"id\": 5, \"name\": \"Melibea\", \"tag\": \"cat\"}");
+        Path plan = directory.resolve("plan.yaml");
+        Files.writeString(plan, """
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 100
+                    sources:
+                      - source: enum
+                      - source: observed
+                      - source: random
+                """);
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
+                .isBetween(0, 1);
+
+        assertThat(api.getServeEvents().getServeEvents().stream()
+                .map(event -> event.getRequest().getBodyAsString())
+                .filter(body -> body.contains("Melibea")))
+                .describedAs("the API said a pet of this API is called Melibea, and the next body "
+                        + "this run built carried that name rather than an invented word")
+                .isNotEmpty();
+        assertThat(screen.toString())
+                .describedAs("and the run says the seed it printed no longer repeats it on its own")
+                .contains("what it sends depends on the API's own replies");
+    }
+
+    @Test
+    @DisplayName("a plan that cannot be read ends the run: following a different one would "
+            + "answer 'only read' by writing to the API")
+    void a_plan_that_cannot_be_read_ends_the_run(@TempDir Path directory) throws Exception {
+        Path plan = directory.resolve("plan.yaml");
+        Files.writeString(plan, """
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 100
+                    sourses:
+                      - source: random
+                operations:
+                  methods: [GET]
+                """);
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
+                .isEqualTo(2);
+        assertThat(problems.toString()).contains("does not recognise (sourses)");
+        assertThat(screen.toString())
+                .describedAs("nothing was sent, so nothing was written to")
+                .doesNotContain("operations can be tested");
+    }
+
+    @Test
+    @DisplayName("nor does a plan named that is not there, or one with a mistake inside a group")
+    void the_other_two_ways_a_plan_is_refused(@TempDir Path directory) throws Exception {
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--campaign", directory.resolve("nope.yaml").toString(),
+                "--out", directory.resolve("out").toString()))
+                .isEqualTo(2);
+        assertThat(problems.toString()).contains("there is no such file");
+
+        Path zero = planIn(directory, "");
+        Files.writeString(zero, """
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 100
+                    sources:
+                      - weighted:
+                          - source: random
+                            weight: 100
+                          - source: example
+                            weight: 0
+                """);
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--campaign", zero.toString(), "--out", directory.resolve("out2").toString()))
+                .describedAs("a person's typo answers 2, not the 4 that means RESTest broke")
+                .isEqualTo(2);
+        assertThat(problems.toString()).contains("would never be chosen");
+    }
+
+    @Test
+    @DisplayName("how much of a run pushes at the API is said in a plan: --fuzzing is not an "
+            + "option, and answers the way any option that does not exist answers")
+    void a_share_of_pushing_is_said_in_a_plan(@TempDir Path directory) throws Exception {
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--fuzzing", "10", "--out", directory.resolve("out").toString()))
+                .isEqualTo(2);
+        assertThat(problems.toString()).contains("Unknown option: --fuzzing");
+        assertThat(Files.exists(directory.resolve("out")))
+                .describedAs("a command line nobody could act on sends nothing and writes nothing")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("a plan that matches no operation still says it was the plan when the document also "
+            + "has one that could not be read, and says that too")
+    void a_plan_that_matches_nothing_says_so_beside_what_could_not_be_read(@TempDir Path directory)
+            throws Exception {
+        Path plan = planIn(directory, """
+                operations:
+                  only: [thereIsNoSuchOperation]
+                """);
+
+        assertThat(run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
+                "--url", api.baseUrl(), "--budget", "1s", "--campaign", plan.toString(),
+                "--out", directory.resolve("out").toString()))
+                .isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("the plan left alone the one operation that could be read, so it is "
+                        + "the plan that kept this run to nothing, not the document")
+                .contains("the plan keeps this run to no operation at all - the document describes "
+                        + "1 that could have been tested, and its 'operations' filter matches none "
+                        + "of them; 1 more could not be read at all")
+                .doesNotContain("operations in the document can be tested");
+    }
+
+    /** A plan that does the ordinary thing, plus whatever else is written here. */
+    private static Path planIn(Path directory, String extra) throws Exception {
+        Path plan = directory.resolve("plan.yaml");
+        Files.writeString(plan, """
+                version: 1
+                strategies:
+                  - name: nominal
+                    share: 100
+                    sources:
+                      - source: enum
+                      - source: example
+                      - source: random
+                """ + extra);
+        return plan;
+    }
+
+    private int run(String... arguments) {
+        PrintWriter out = new PrintWriter(screen);
+        PrintWriter err = new PrintWriter(problems);
+        try {
+            return Restest.run(arguments, out, err);
+        } finally {
+            out.flush();
+            err.flush();
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "openapi" : "3.0.3",
+  "info" : { "title" : "Kinds", "version" : "1.0.0" },
+  "paths" : {
+    "/kinds" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "a whole number, and nothing else",
+            "content" : {
+              "application/json" : { "schema" : { "type" : "integer" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

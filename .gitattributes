@@ -1,0 +1,18 @@
+# Line endings, kept deliberately narrow.
+#
+# There is no blanket "* text=auto" here on purpose: a blanket rule normalises every tracked file's
+# line endings on the next checkout or "git add", which is a whole-repository change nobody asked
+# for the day it happens to fire. The four rules below are all the Windows CI rows actually need.
+
+# mvnw is executed by /bin/sh, including by Git Bash on the Windows runners. A CRLF checkout turns
+# the shebang into "/bin/sh^M" and the build dies with "bad interpreter".
+mvnw text eol=lf
+*.sh text eol=lf
+
+# The restest launcher has no extension, so the rule above does not match it, and it is run by
+# /bin/sh for the same reasons mvnw is.
+restest text eol=lf
+
+# Batch files are executed by cmd.exe, which wants CRLF.
+mvnw.cmd text eol=crlf
+*.bat text eol=crlf

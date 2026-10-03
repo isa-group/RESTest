@@ -1,0 +1,255 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.core.model;
+
+import io.restest.core.internal.Copies;
+import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.SchemaReference;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+/**
+ * One whole API, translated from its OpenAPI document into something the rest of RESTest can work
+ * with directly: every operation it offers, the data shapes those operations share, and a note of
+ * anything in the document that could not be understood.
+ *
+ * <p>This is what the module that reads OpenAPI documents produces, and everything else in RESTest -
+ * test generation, execution, reporting - builds on this instead of reading the original document
+ * again. That way, changing how documents are read, or adding support for a newer OpenAPI version,
+ * never affects how the rest of the tool uses the result.
+ *
+ * <p>The document itself is kept alongside, in {@link #document()}, for the one job that must not go
+ * through anybody's reading of it: checking whether a reply matches what the API promised. A
+ * promise is the document's to make, so it is the document a reply is held to.
+ *
+ * <p>It never changes once built, and it does not depend on any shared or global state, so several
+ * of these can exist side by side - for two different runs, two different APIs, or two versions of
+ * the same API - without one interfering with another.
+ *
+ * @param title the API's name, as the document gives it
+ * @param version the API's version, as the document gives it
+ * @param servers the base URLs the document declares, in order. An operation may override them
+ * @param operations every operation that could be read, in document order
+ * @param schemas the shapes the document declares by name, which is where a
+ *     {@link SchemaReference} resolves and therefore how a recursive shape is held
+ * @param issues everything that could not be read, each saying where it was and why. An empty list
+ *     means the document was read in full
+ * @param document the specification itself, written as one OpenAPI 3 JSON document, or nothing if
+ *     it could not be kept. Held so that a reply can be checked against what the document actually
+ *     says rather than against anybody's reading of it
+ * @param securitySchemes the ways of proving who one is that the document declares, under the names
+ *     it gives them, in the order it declares them
+ * @param security what the document asks of every request unless an operation says otherwise, or
+ *     nothing if it says nothing for the API as a whole
+ */
+public record ApiModel(
+        String title,
+        String version,
+        List<Server> servers,
+        List<Operation> operations,
+        Map<String, CanonicalSchema> schemas,
+        List<SpecificationIssue> issues,
+        Optional<String> document,
+        Map<String, SecurityScheme> securitySchemes,
+        Optional<SecurityRequirement> security) {
+
+    public ApiModel {
+        Objects.requireNonNull(title, "title");
+        Objects.requireNonNull(version, "version");
+        Objects.requireNonNull(document, "document");
+        Objects.requireNonNull(security, "security");
+        servers = List.copyOf(servers);
+        operations = List.copyOf(operations);
+        schemas = Copies.orderedMap(schemas, "schemas");
+        issues = List.copyOf(issues);
+        securitySchemes = Copies.orderedMap(securitySchemes, "securitySchemes");
+        rejectDuplicateIds(operations);
+    }
+
+    /**
+     * An API whose document says nothing about proving who one is.
+     *
+     * @param title the API's name
+     * @param version the API's version
+     * @param servers the base URLs the document declares
+     * @param operations every operation that could be read
+     * @param schemas the shapes the document declares by name
+     * @param issues everything that could not be read
+     * @param document the specification itself, if it could be kept
+     */
+    public ApiModel(String title, String version, List<Server> servers, List<Operation> operations,
+            Map<String, CanonicalSchema> schemas, List<SpecificationIssue> issues,
+            Optional<String> document) {
+        this(title, version, servers, operations, schemas, issues, document, Map.of(),
+                Optional.empty());
+    }
+
+    /** An API of the given name and version with the given operations, read in full. */
+    public static ApiModel of(String title, String version, List<Operation> operations) {
+        return new ApiModel(title, version, List.of(), operations, Map.of(), List.of(),
+                Optional.empty());
+    }
+
+    /** The same API, with the named shapes its references resolve against. */
+    public ApiModel withSchemas(Map<String, CanonicalSchema> value) {
+        return new ApiModel(title, version, servers, operations, value, issues, document,
+                securitySchemes, security);
+    }
+
+    /** The same API, carrying what could not be read. */
+    public ApiModel withIssues(List<SpecificationIssue> value) {
+        return new ApiModel(title, version, servers, operations, schemas, value, document,
+                securitySchemes, security);
+    }
+
+    /** The same API, with these operations in place of its own. */
+    public ApiModel withOperations(List<Operation> value) {
+        return new ApiModel(title, version, servers, value, schemas, issues, document,
+                securitySchemes, security);
+    }
+
+    /**
+     * The same API, with what its document says about proving who one is.
+     *
+     * @param schemes the ways the document declares, by name
+     * @param requirement what it asks of every request unless an operation says otherwise
+     * @return the API, otherwise unchanged
+     */
+    public ApiModel withSecurity(Map<String, SecurityScheme> schemes,
+            Optional<SecurityRequirement> requirement) {
+        return new ApiModel(title, version, servers, operations, schemas, issues, document,
+                schemes, requirement);
+    }
+
+    /**
+     * The same API, carrying the specification document it was read from.
+     *
+     * <p>Written as one OpenAPI 3 JSON document whatever the original was, so that whoever reads it
+     * has one shape to expect. A Swagger 2.0 document is therefore the converted form of itself.
+     */
+    public ApiModel withDocument(String value) {
+        return new ApiModel(title, version, servers, operations, schemas, issues,
+                Optional.of(Objects.requireNonNull(value, "value")), securitySchemes, security);
+    }
+
+    /** The operation under the given identifier, if this API has one. */
+    public Optional<Operation> operation(OperationId id) {
+        Objects.requireNonNull(id, "id");
+        return operations.stream().filter(operation -> operation.id().equals(id)).findFirst();
+    }
+
+    /**
+     * The operations the document describes but could not be read for, each with what reading it
+     * said, in the order the document was read.
+     *
+     * <p>They are not among {@link #operations()}, because there was nothing a request could be
+     * built from. They are still the API's: a run counts them and names them, a plan naming one
+     * names something that exists, and a list of values written for one is written for something
+     * real.
+     */
+    public List<SpecificationIssue> unreadableOperations() {
+        return issues.stream()
+                .filter(issue -> issue.skipsAnOperation() && issue.operation().isPresent())
+                .toList();
+    }
+
+    /** Every operation using the given method, in document order. */
+    public List<Operation> operations(HttpMethod method) {
+        Objects.requireNonNull(method, "method");
+        return operations.stream().filter(operation -> operation.method() == method).toList();
+    }
+
+    /** The shape declared under the given name, if the document declares one. */
+    public Optional<CanonicalSchema> schema(String name) {
+        Objects.requireNonNull(name, "name");
+        return Optional.ofNullable(schemas.get(name));
+    }
+
+    /**
+     * What a reference points at.
+     *
+     * <p>Empty when the document never declared the name - a broken reference, which is a fact for
+     * the parser to report rather than a reason to refuse the API. Following a chain of references
+     * is left to the caller, deliberately: a document can point one name at another, and a model
+     * that resolved chains silently could loop for ever on one that points at itself.
+     */
+    public Optional<CanonicalSchema> resolve(SchemaReference reference) {
+        Objects.requireNonNull(reference, "reference");
+        return schema(reference.name());
+    }
+
+    /** Whether everything in the document could be read. */
+    public boolean isComplete() {
+        return issues.isEmpty();
+    }
+
+    /**
+     * The servers an operation is reached at: its own when it declares any, the API's otherwise.
+     *
+     * <p>The inheritance rule lives here rather than in {@link Operation} because only the API knows
+     * what is being inherited, and because a caller that has to remember the rule will eventually
+     * forget it and send a request to the wrong host.
+     */
+    public List<Server> serversFor(Operation operation) {
+        Objects.requireNonNull(operation, "operation");
+        return operation.servers().isEmpty() ? servers : operation.servers();
+    }
+
+    /**
+     * What a request to an operation has to prove: what the operation says, if it says anything,
+     * and what the document says for the whole API otherwise.
+     *
+     * <p>Empty when neither says anything, which means the operation asks for nothing. That is not
+     * the same as an operation saying {@code security: []}: the operation that says it has been
+     * told, in so many words, to ask for nothing whatever the rest of the API asks for, while one
+     * that says nothing in a document that says nothing was simply never described.
+     *
+     * <p>Here beside {@link #serversFor(Operation)}, and for the same reason: only the API knows
+     * what is being inherited.
+     */
+    public Optional<SecurityRequirement> securityFor(Operation operation) {
+        Objects.requireNonNull(operation, "operation");
+        return operation.security().or(() -> security);
+    }
+
+    /**
+     * Two operations under one identifier is a contradiction, not a degradation, so it is refused
+     * here rather than carried.
+     *
+     * <p>Everything downstream looks an operation up by its identifier - per-operation settings,
+     * stored results, failure reports - and every one of them would silently get the wrong operation
+     * if two shared an identifier. RESTest's rule is to never let a bad specification crash the
+     * tool, so instead of rejecting the whole document outright, whatever builds this model from it
+     * is meant to make the identifier unique, record a {@link SpecificationIssue} saying so, and keep
+     * both operations testable. What it may not do is hand over a model that cannot answer its own
+     * lookups, which is why this constructor still rejects the duplicate rather than silently
+     * accepting it.
+     */
+    private static void rejectDuplicateIds(List<Operation> operations) {
+        Map<OperationId, Operation> seen = new LinkedHashMap<>();
+        for (Operation operation : operations) {
+            Operation previous = seen.put(operation.id(), operation);
+            if (previous != null) {
+                throw new IllegalArgumentException("two operations share the identifier "
+                        + operation.id() + ": " + previous.method() + " " + previous.path()
+                        + " and " + operation.method() + " " + operation.path());
+            }
+        }
+    }
+}

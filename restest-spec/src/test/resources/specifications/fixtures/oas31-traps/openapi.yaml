@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: Fixture - OAS 3.1 traps
+  version: "1.0"
+  description: >
+    Hand-written for this corpus, not carried over from any real API. Exercises the 3.0-to-3.1
+    differences ADR-0007 names as version traps that fail silently rather than loudly if a
+    generator reads them the 3.0 way: nullable expressed as a JSON Schema type array rather than
+    the removed `nullable: true`, `exclusiveMinimum`/`exclusiveMaximum` as numbers rather than
+    booleans, and a schema-level `examples` list (a parameter's own `examples` is a named map in
+    both versions, so that difference is not repeated here).
+paths:
+  /accounts/{accountId}:
+    get:
+      operationId: getAccount
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The account, or nothing if it has no display name yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+components:
+  schemas:
+    Account:
+      type: object
+      required:
+        - id
+        - balance
+      properties:
+        id:
+          type: string
+        displayName:
+          # 3.1: nullable is a type-array member, not a sibling "nullable: true" keyword.
+          type:
+            - string
+            - "null"
+          examples:
+            - Jane Doe
+            - null
+        balance:
+          type: number
+          # 3.1 (JSON Schema 2020-12): exclusiveMinimum is the numeric bound itself.
+          exclusiveMinimum: 0

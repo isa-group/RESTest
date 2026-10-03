@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.restest</groupId>
+        <artifactId>restest</artifactId>
+        <version>2.0.0</version>
+    </parent>
+
+    <artifactId>restest-exec</artifactId>
+    <name>RESTest :: Exec</name>
+    <description>HTTP engine.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-jvm</artifactId>
+        </dependency>
+
+        <!--
+          The HTTP layer is tested against a stub server rather than against a real API: WireMock
+          can be told to answer slowly, to hang up mid-reply or to send nothing at all, which is how
+          the fault-handling paths below get exercised deterministically and offline.
+        -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

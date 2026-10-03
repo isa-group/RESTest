@@ -1,547 +1,253 @@
-<img src="https://github.com/isa-group/RESTest/blob/master/RESTLogo_Black.png?raw=true" alt="RESTest Logo" width="200px"/>
+<img src="RESTLogo_Black.png" alt="RESTest" width="200">
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest)
-[![javadoc](https://javadoc.io/badge2/es.us.isa/restest/javadoc.svg)](https://javadoc.io/doc/es.us.isa/restest)
-<!--
-[![Build Status](https://circleci.com/gh/isa-group/RESTest.svg?style=svg)](https://circleci.com/gh/isa-group/RESTest)
-[![Test coverage](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=coverage)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Coverage)
-[![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Maintainability)
-[![Reliability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Reliability)
-[![Security](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=security_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Security)
--->
+[![CI](https://github.com/isa-group/RESTest/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/isa-group/RESTest/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the [OpenAPI Specification (OAS)](https://www.openapis.org/) of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
+> **RESTest 2 is a complete rewrite.** From version 2.0 on, RESTest shares no code with RESTest 1.x
+> and is not compatible with it: the command line, the files it reads and the reports it writes are
+> all new, and nothing written for 1.x works with it. The last version of RESTest 1.x is
+> [1.6.0](https://github.com/isa-group/RESTest/releases/tag/restest-1.6.0), and its code is on the
+> [`v1.x`](https://github.com/isa-group/RESTest/tree/v1.x) branch.
 
-## Index
-1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
+# RESTest
 
-2. [Quick examples](https://github.com/isa-group/RESTest#quick-examples)
-   1. [Using the system programmatically](https://github.com/isa-group/RESTest#using-the-system-programmatically)
-      1. [Generating test cases](https://github.com/isa-group/RESTest#generating-test-cases)
-      2. [Generating and running test cases](https://github.com/isa-group/RESTest#generating-and-running-test-cases)
-      3. [Generating and running test cases](https://github.com/isa-group/RESTest#running-test-cases)
-   2. [Using the system via the command-line interface](https://github.com/isa-group/RESTest#using-the-system-via-the-command-line-interface)
-      1. [Generate, Execute, and Generate Reports based on OpenAPI specification](https://github.com/isa-group/RESTest#generate,-execute,-and-generate-reports-based-on-openapi-specification)
-      2. [Create a Test Configuration File](https://github.com/isa-group/RESTest#create-a-test-configuration-file)
-      3. [Generate Test Cases](https://github.com/isa-group/RESTest#generate-test-cases)
-      4. [Execute Test Cases](https://github.com/isa-group/RESTest#execute-test-cases)
-      5. [Generate and Execute Test Cases](https://github.com/isa-group/RESTest#generate-and-execute-test-cases)
-3. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
-4. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
-5. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
-   1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
-   2. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
-6. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
-7. [License](https://github.com/isa-group/RESTest#license)
-   1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
+A black-box testing tool for REST APIs. Give it an OpenAPI document and the address of the API it
+describes; RESTest invents requests from the document, sends them for as long as you allow, checks
+every reply against what the document promised, and reports what it found wrong — each fault with a
+`curl` command that sends the same request again.
 
-## RESTest Wiki
-In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki).
+Nothing has to be configured first. RESTest reads OpenAPI 2.0, 3.0 and 3.1, and it never looks at
+the API's code: the document and the replies are all it needs, so the API can be written in any
+language and run anywhere.
 
+## Installation and use
 
+### What you need
 
+Java 21 or later — a JDK to build RESTest, and a plain Java runtime to run it afterwards — and git.
 
-## Quick examples:
+### Install from source
 
-### Using the system programmatically
-
-#### Generating test cases 
-
-In this example, we illustrate how to generate a set of test cases using the Constraint-Based test case generator and write them to a file using the RESTAssured writer. Test cases are generated by randomly selecting values for each input parameter, ensuring that dependencies between parameters are met (or intentionally violated). This is made possible through the use of a constraint solver (Choco) and IDL, a domain-specific language for specifying dependencies between parameters as part of the OAS specification.
-
-The complete code of the example is provided above.
-
-```java 
-public class Ex3_CBTGeneration {
-
-    public static String propertyFilePath="src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties"; 		// Path to user properties file with configuration options
-
-    public static void main(String[] args) throws RESTestException {
-        // Load properties
-        RESTestLoader loader = new RESTestLoader(propertyFilePath);
-
-        // Create test case generator
-        ConstraintBasedTestCaseGenerator generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
-        Collection<TestCase> testCases = generator.generate();
-
-        // Create target directory for test cases if it does not exist
-        createDir(loader.getTargetDirJava());
-
-        // Write (RestAssured) test cases
-        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
-        writer.write(testCases);
-
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
-    }
-}
-
+```bash
+git clone https://github.com/isa-group/RESTest.git
+cd RESTest
+./mvnw -q install -DskipTests
 ```
 
-This code demonstrates how to load the properties, create a constraint-based test case generator, generate test cases, and write them using the RESTAssured writer. Now, let's examine one of the test cases generated using RESTAssured.
-```java
+The first build downloads what RESTest is built from and takes a few minutes; the ones after it, less
+than one. `./restest`, at the root of the checkout, then runs what was built. On Windows, run it from
+Git Bash.
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.junit.Test;
-import static org.junit.Assert.fail;
+### Your first run
 
-public class Ex3_CBTGeneration {
+One command, a document and an address. This one tests the pet shop that the OpenAPI project keeps
+online as a demonstration, for ten seconds:
 
-   // ... Previous code ...
-
-   @Test
-   public void test_qec4n4cuyvcj_getMultiHotelOffers() {
-      String testResultId = "test_qec4n4cuyvcj_getMultiHotelOffers";
-
-      // Filter settings for specific test case
-      nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'min' constraint of integer parameter radius");
-      statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'min' constraint of integer parameter radius");
-      csvFilter.setTestResultId(testResultId);
-      statusCode5XXFilter.setTestResultId(testResultId);
-      nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-      validationFilter.setTestResultId(testResultId);
-
-      try {
-         // Build and send request using RestAssured
-         Response response = RestAssured
-                 .given()
-                 .queryParam("page[limit]", "25")
-                 .queryParam("amenities", "BABY-SITTING,AIR_CONDITIONING")
-                 .queryParam("hotelIds", "HSFELAAF")
-                 .queryParam("roomQuantity", "5")
-                 .queryParam("chains", "WV,EC,WW")
-                 .queryParam("includeClosed", "false")
-                 .queryParam("radius", "-3")
-                 .queryParam("radiusUnit", "MILE")
-                 .queryParam("checkInDate", "2023-11-14")
-                 .queryParam("rateCodes", "WKD,STP,TUR")
-                 .queryParam("paymentPolicy", "DEPOSIT")
-                 .filter(allureFilter)
-                 .filter(statusCode5XXFilter)
-                 .filter(nominalOrFaultyTestCaseFilter)
-                 .filter(validationFilter)
-                 .filter(csvFilter)
-                 .when()
-                 .get("/shopping/hotel-offers");
-
-         // Verify the response
-         response.then();
-         System.out.println("El caso de prueba pasó exitosamente.");
-      } catch (RuntimeException ex) {
-         System.err.println(ex.getMessage());
-         fail(ex.getMessage());
-      }
-   }
-}
+```bash
+./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+    --url https://petstore3.swagger.io/api/v3 --budget 10s
 ```
 
-#### Running test cases 
-This example will illustrate how to execute a set of tests that have been previously generated using ResTestExecutor. Below is an example of how this process would be carried out.
-```
-public class Ex8_TestExecution {
+That server is somebody else's, and RESTest tests an operation that creates something by creating
+something: a run leaves pets, orders and users behind wherever it is pointed. Keep runs there short,
+and point `--url` at a copy of your own for anything longer, or for anything you would mind having
+written to.
 
-
-    public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
-
-    public static void main(String[] args) throws RESTestException {
-
-        // Execute tests
-
-        RESTestExecutor executor = new RESTestExecutor(PROPERTY_FILE_PATH);
-        executor.execute();
-
-
-    }
-}
-```
-
-
-#### Generating and running test cases
-In this example, we will explore the generation and execution of test cases using RESTestRunner, a tool that enables the creation of an automated workflow to manage the entire testing process. Below is an example illustrating how this workflow would be executed.
-
-```java
-
-public class Ex9_Generation_Execution {
-
-   public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex9_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
-
-   public static final Logger logger = Logger.getLogger(Ex9_Generation_Execution.class.getName());
-
-   public static void main(String[] args) throws RESTestException {
-      // Load properties
-      RESTestRunner runner = new RESTestRunner(PROPERTY_FILE_PATH);
-
-      // Run workflow
-      runner.run();
-
-      if (logger.isLoggable(java.util.logging.Level.INFO)) {
-         String message1 = String.format("%d test cases generated and written to %s", runner.getNumberOfTestCases(), runner.getTargetDirJava());
-         String message2 = String.format("Allure report available at %s", runner.getAllureReportsPath());
-         String message3 = String.format("CSV stats available at %s/%s", PropertyManager.readProperty("data.tests.dir"), runner.getExperimentName());
-         String message4 = String.format("Coverage report available at %s/%s", PropertyManager.readProperty("data.coverage.dir"), runner.getExperimentName());
-         logger.info(message1);
-         logger.info(message2);
-         logger.info(message3);
-         logger.info(message4);
-      }
-
-   }
-}
-
+What it prints begins like this, saying what it will test and then printing each fault as it finds
+it. The numbers are one run's, and yours will be different:
 
 ```
+RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-Upon completion, the program will display detailed information in the console. This will include the number of generated test cases, the location of Allure reports, CSV statistics, and the coverage report, providing a comprehensive overview of the results obtained during the execution.
+19 of 19 operations can be tested, seed -2533421039499011723, budget 10s
+  2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
+  what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
-Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `src/main/resources/Examples/Ex8_Generation_Execution/allure_report/anApiOfIceAndFire/index.html` in your browser:
-
-![Allure](docs/img.png)
-
-### Using the system via the command-line interface
-
-The RESTest CLI supports various options for interacting with the system. Here are the available options: 
-
-* **-h, --help:** Display help information about available options and usage. 
-* **-o, --openapi [path]:** Generates and executes a series of tests based on an OpenAPI file. 
-* **-c, --create-conf [path]:** Generate a test configuration file from the provided OpenAPI file. 
-* **-g, --generate [path]:** Generate test cases based on the provided configuration file. 
-* **-e, --execute [path]:** Execute the test cases defined in the provided configuration file. 
-
-Here are some quick examples of using the RESTest CLI: 
-
-#### Generate, Execute, and Generate Reports based on OpenAPI specification: 
-
-```
-java -jar .\target\restest-cli.jar -o [path_to_oas_file] 
-```
-  
-
-#### Create a Test Configuration File: 
-
-```
-java -jar .\target\restest-cli.jar -c [path_to_oas_file] 
-```
-  
-
-#### Generate Test Cases: 
-
-```
-java -jar .\target\restest-cli.jar -g [path_to_properties_file] 
-```
-  
-
-#### Execute Test Cases: 
-
-```
-java -jar .\target\restest-cli.jar -e [path_to_properties_file] 
-```
-  
-
-#### Generate and Execute Test Cases: 
-
-```
-java -jar .\target\restest-cli.jar -g -e [path_to_properties_file]
+F100  HTTP Status 500
+      getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
+      the API answered 500, so it fell over while handling this request
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
+A fault of the other kind, later in the same run, says what in the reply was not the shape the
+document gives:
 
-## Detailed example
+```
+F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+      getPetById - GET https://petstore3.swagger.io/api/v3/pet/1022725  ->  200
+      the body does not match the shape the specification declares for it, answering 200 as application/json
+        /status: does not have a value in the enumeration ["available", "pending", "sold"]
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/pet/1022725' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0'
+```
 
-In this section, we will delve into a specific example to illustrate in detail how RESTEST operates. Throughout the following steps, we will break down a practical scenario, providing step-by-step explanations of how the system functions.
+After fifty faults the screen stops printing them, and the run ends with a summary:
 
-In this example, we will conduct tests on the Ice and Fire API using RESTest. To perform these tests, we will rely on the OpenAPI specification of the API, which is available at the following [link](src/main/resources/Examples/Ex10_Iterative_Generation_Execution/spec_iceandfire.yaml).
+```
+... more faults are being found; every one of them is counted in the run's report and in the total below
 
-In the next step, we will proceed to obtain the configuration file that will encompass all the essential settings for our tests. This file plays a fundamental role as it sets key parameters, such as the types of generators to use, specific configurations for the Ice and Fire API, and any other relevant information for the successful execution of tests with RESTest.
-This is the configuration file for this example:
+716 requests to 19 operations in 10.3s, 13% of it idle
+  opening lap: 19 requests in 2.1s, 8 of 19 operations answered 2xx
+  186 2xx, 242 4xx, 288 5xx
+  141 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 242 refusals above
+  44 of them changed one thing in a request the API had accepted
+  4 of them were steps of 2 series about a thing the run created: createTwice 2, deleteTwice 2; 13 creation(s) meant to begin one were not accepted
+  11 operation(s) answered 500, 11 answered some 5xx
+336 faults:
+  288 x F100  HTTP Status 500
+  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (163.1 KiB)
+the run itself was not kept; pass --store to keep every request and reply
+```
+
+### Reading what it says
+
+- **The top** says what will be tested: how many of the document's operations RESTest can send
+  requests to, the seed and the budget, and anything worth knowing before the first request — here,
+  that two operations want a key nobody gave.
+- **Each fault** is printed as it is found: its kind, by a number from a catalogue other testing
+  tools share (`F100` is a reply of 500), the request and what the API answered, what is wrong, and
+  a `curl` command that does it again.
+- **The summary** says how much was sent and how it was answered. `186 2xx, 242 4xx, 288 5xx` is
+  worth a glance even when nothing is wrong: if almost everything was refused, the requests were the
+  problem rather than the API. `11 operation(s) answered 500` counts operations rather than replies,
+  and is the number worth quoting, since one broken operation asked six hundred times is six hundred
+  broken replies.
+- **`report.json`**, in `restest-out/`, has all of it for a program to read: every fault counted,
+  every operation and kind of fault that went wrong, the first few faults of each kind written out
+  whole, every operation that could not be tested and why, and every setting the run used.
+
+[What a run leaves behind](docs/report.md) goes through every line and every key, and [The faults
+RESTest reports](docs/faults.md) says what each kind of fault means.
+
+## What a run does
+
+1. **It reads the document**, and sets aside what it cannot test — a file upload the API insists on,
+   say — naming each
+   operation and the reason, so that `no faults found` is never read as covering an operation that
+   was never tried.
+2. **It sends every operation once**, with the request it is most likely to accept, before anything
+   is left to chance: lists first, then creations, reads of one thing, changes and deletions, each
+   step waiting for the answers to the one before so that an identifier just handed back can be
+   used by the next. [The first round of a run](docs/campaign-format.md#the-first-round-of-a-run).
+3. **Then, until the budget runs out, it draws requests**, by the plan RESTest carries:
+   - nearly half are built to be accepted, from the values the document states, from what the API has
+     already returned — identifiers that exist rather than invented ones — from values it makes up
+     to suit what the document says, and from lists of your own;
+   - about a quarter push at the API with values nobody sensible would send — an empty word, a
+     number one past the largest 32-bit integer, text where a number belongs — since an API that
+     falls over on one of those has a fault whatever was sent
+     ([how much of a run pushes](docs/campaign-format.md#how-much-of-a-run-pushes-at-the-api));
+   - about a fifth take a request the API accepted and send it again with exactly one thing broken,
+     which gets past every check the API makes but one
+     ([changing one thing](docs/campaign-format.md#changing-one-thing-in-a-request-that-worked));
+   - about a tenth turn a creation into the first step of a short series about the thing created —
+     delete it and read it again, create it twice
+     ([series](docs/campaign-format.md#series-of-requests-around-a-thing-the-run-created)).
+4. **It judges every reply**: a 500 is a fault, and so is a reply whose body is not the shape the
+   document promised.
+
+The whole budget is used, reading the document included. The share of it in which RESTest had
+nothing in flight is reported as *idle*, and kept as close to nothing as possible.
+
+Because a run learns from the API's replies, running the same command twice makes two similar runs
+rather than the same one, even with the same `--seed`. `--store` keeps every request and reply of the
+run you had, in `restest-out/run.sqlite`, and [Getting the seed
+back](docs/switches.md#getting-the-seed-back) has the files that make a run repeatable from its seed.
+
+## Making a run yours
+
+Every one of these is optional.
+
+**Values you know are good** — identifiers that exist, the names the API actually holds — go in a
+YAML file and are handed over with `--dictionary`, which takes a file or a directory and may be
+repeated:
 
 ```yaml
----
-auth:
-  required: true
-  queryParams: {}
-  headerParams: {}
-  apiKeysPath: null
-  headersPath: null
-testConfiguration:
-  operations:
-  - testPath: /api
-    operationId: getRoot
-    method: get
-    testParameters: null
-    expectedResponse: 200
-  - testPath: "/api/books/{book-id}"
-    operationId: findBookById
-    method: get
-    testParameters:
-    - name: book-id
-      in: path
-      weight: null
-      generators:
-      - type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/api/characters/{character-id}"
-    operationId: findCharacterById
-    method: get
-    testParameters:
-    - name: character-id
-      in: path
-      weight: null
-      generators:
-      - type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/api/houses/{house-id}"
-    operationId: findHouseById
-    method: get
-    testParameters:
-    - name: house-id
-      in: path
-      weight: null
-      generators:
-      - type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-
+version: 1
+name: pet-ids
+keyedBy: name
+values:
+  petId: [1, 2, 3]
 ```
 
-
-The following [link](src/main/java/es/us/isa/restest/examples/Ex2_CreateTestConf.java) provides an example of how we can obtain this configuration file.
-
-Once we have both files, the OAS specification, and the configuration file, we will create a new .properties file in which we will specify the path where these files are located, along with other configurations for the generation and execution of tests. This file looks like the following:
-````java
-
-# OAS specification
-oas.path=src/main/resources/Examples/Ex9_Iterative_Generation_Execution/spec_iceandfire.yaml
-
-# Test configuration file
-conf.path=src/main/resources/Examples/Ex9_Iterative_Generation_Execution/test_conf.yaml
-
-# Directory where the test cases will be generated
-test.target.dir=src/generation/java/anApiOfIceAndFire
-
-# Package name
-test.target.package=anApiOfIceAndFire
-
-# Experiment name (for naming related folders and files)
-experiment.name=anApiOfIceAndFire
-
-# Set true for running the generated test cases
-experiment.execute=true
-
-# Name of the test class to be generated
-testclass.name=AnApiOfIceAndFireTest
-
-# Ratio of faulty test cases to be generated doe to broken individual dependencies (ex. missing required parameter). Helpful for negative testing
-faulty.ratio=0.05
-
-# Number of test cases to be generated per operation
-testsperoperation=5
-
-# Maximum number of test cases to be generated (approximately)
-numtotaltestcases=100
-
-# Delay between requests in seconds (-1 for no delay)
-delay=30
-
-# Set to true for validating the test cases with OASValidator before executing them
-testcases.check=true
-
-
-# =================================
-# CONSTRAINT-BASED TESTING (CBT)
-# =================================
-
-# Test case generator
-generator=CBT
-
-# Ratio of faulty test cases to generate due to the violation of inter-parameter dependencies
-faulty.dependency.ratio=0.4
-
-# Number of requests using the same randomly generated input data
-reloadinputdataevery=10
-
-# Number of values used for each parameter when reloading input data
-inputdatamaxvalues=100
-
-# =================
-# ALLURE REPORTS
-# =================
-
-# Set to true for generating Allure reports
-allure.report=true
-
-# Path to the directory where Allure will save the report
-allure.report.dir=src/main/resources/Examples/Ex9_Iterative_Generation_Execution/allure_report
-
-# ==================
-# CSV STATS REPORTS
-# ==================
-
-# Set to true for generating CSV stats
-stats.csv=true
-
-# ===================
-# COVERAGE REPORTS
-# ===================
-
-# Set to true for computing input coverage
-coverage.input=true
-
-# Set to true for computing output coverage
-coverage.output=true
-
-# Path to the directory where coverage results will be saved
-data.coverage.dir=target/coverage-data
-
-
-````
-
-Once we have this file, we will be ready to carry out the generation and execution of our tests. To achieve this, we will use the following example as a guide:
-
-```java
-
-public class Ex9_Generation_Execution {
-
-   public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex9_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
-
-   public static final Logger logger = Logger.getLogger(Ex9_Generation_Execution.class.getName());
-
-   public static void main(String[] args) throws RESTestException {
-      // Load properties
-      RESTestRunner runner = new RESTestRunner(PROPERTY_FILE_PATH);
-
-      // Run workflow
-      runner.run();
-
-      if (logger.isLoggable(java.util.logging.Level.INFO)) {
-         String message1 = String.format("%d test cases generated and written to %s", runner.getNumberOfTestCases(), runner.getTargetDirJava());
-         String message2 = String.format("Allure report available at %s", runner.getAllureReportsPath());
-         String message3 = String.format("CSV stats available at %s/%s", PropertyManager.readProperty("data.tests.dir"), runner.getExperimentName());
-         String message4 = String.format("Coverage report available at %s/%s", PropertyManager.readProperty("data.coverage.dir"), runner.getExperimentName());
-         logger.info(message1);
-         logger.info(message2);
-         logger.info(message3);
-         logger.info(message4);
-      }
-
-   }
-}
-
+```bash
+./restest run openapi.yaml --url http://localhost:8080 --dictionary pet-ids.yaml
 ```
 
-As we can see, by providing the path where the .properties file is located, the system will create a workflow that will perform the generation of test cases, their execution, and the generation of reports and summaries about the tests. Additionally, after executing the workflow, the following information will be printed on the screen:
+[The dictionary format](docs/dictionary-format.md).
 
-* Number of test cases generated and written to a specific location.
-* Location of the Allure report.
-* CSV stats available at a specific path.
-* Coverage report available at another specific path.
+**The plan** — where values come from, how much of a run pushes at the API, which operations it may
+touch — is a file. `--print-campaign` writes out the one RESTest follows; save it, change a line,
+and hand it back with `--campaign`.
 
-These details provide a quick and useful insight into the success and results of the conducted tests, facilitating the tracking and evaluation of the performance of the generated test cases.
-
-## How does it work?
-The figure below shows how RESTest works:
-
-1. **Test model generation**: RESTest takes as input the OAS specification of the API under test, considered the *system model*. A [*test model*](https://github.com/isa-group/RESTest/wiki/Test-configuration-files) is automatically generated from the system model including test-specific configuration data. The default test model can be manually enriched with fine-grained configuration details such as test data generation settings.
-
-2. **Abstract test case generation**: The system and the test models drive the generation of abstract test cases following user-defined test case generation strategies such as random testing. If the API under test contains [inter-parameter dependencies](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies), then constraint-based testing can be applied, specifying the dependencies in the OAS specification using the IDL4OAS extension (see examples [here](https://github.com/isa-group/IDLReasoner/blob/master/src/test/resources/OAS_example.yaml#L45) and [here](https://github.com/isa-group/IDLReasoner/tree/master/src/test/resources)). Requests satisfying all inter-parameter dependencies are automatically generated thanks to [IDLReasoner](https://github.com/isa-group/IDLReasoner).
-
-3. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Test-writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) and [Postman](https://www.postman.com/) test cases.
-
-4. **Test case execution**: The test cases are executed and a set of reports and stats are generated. Stats are machine-readable, and the test reports can be graphically visualized thanks to [Allure](http://allure.qatools.ru/).
-
-5. **Feedback collection**: [Test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators) and other components can react to the test outputs (i.e., the stats generated in the previous step) to create more sophisticated test cases. Examples of this are the stateful data generators (e.g., the [BodyGenerator](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/inputs/stateful/BodyGenerator.java)) and the [StatsReportManager](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/reporting/StatsReportManager.java), both of which generate new test data based on previous API responses.
-
-![RESTest](docs/RESTest_v3.png)
-
-## What can I do with RESTest?
-Check out the following demo video, where we discuss some of the things that you can do with RESTest, both from the user and the developer point of view. The showcase shown in the video is available at http://betty.us.es/restest-showcase-demo/.
-
-<a href="https://youtu.be/TnGkwMDBDt4" target="_blank"><img src="docs/play_video.png" alt="RESTest demo video" width="300" /></a>
-
-## Running RESTest as a JAR
-Instead of from an IDE like IntelliJ IDEA, you can also run RESTest as a fat JAR. You have two options:
-
-### Option 1: Build RESTest from source
-
-To package RESTest as a fat JAR file, run the following command in the root directory:
-
-```
-mvn clean install -DskipTests
+```bash
+./restest run --print-campaign > plan.yaml
+./restest run openapi.yaml --url http://localhost:8080 --campaign plan.yaml
 ```
 
-Then, run the JAR file passing as argument the path to the properties file, for example:
+A block worth knowing, since a run writes to whatever it is pointed at: added to the plan, this keeps
+it to the requests HTTP calls *safe*, the ones that change nothing.
 
-```
-java -jar target/restest.jar src/test/resources/Restcountries/restcountries_demo.properties
-```
-
-### Option 2: Download the latest release
-
-Go to the [releases page](https://github.com/isa-group/RESTest/releases) and download the latest one. RESTest releases consist of ZIP files which, once uncompressed, provide the directory structure and the necessary resources to run RESTest as a JAR. You can test the same example shown in the quickstart guide by running the following command:
-
-```
-java -jar restest.jar src/test/resources/Folder/api.properties
+```yaml
+operations:
+  methods: [GET, HEAD, OPTIONS, TRACE]
 ```
 
-## Citing RESTest
+[The campaign file](docs/campaign-format.md).
 
-If you want to cite RESTest in your research, please use the BibTeX entry below. [Here's a link to a preprint of the paper](https://www.researchgate.net/publication/352835570_RESTest_Automated_Black-Box_Testing_of_RESTful_Web_APIs).
+**How the tool behaves** — how many requests it keeps in flight, how long it waits, how much of a
+reply it keeps — is a setting. `--set` changes one, `--settings` reads a file of them, and each is
+also an environment variable, which is how a container is configured. `--print-settings` writes every
+one out, with what it does and where its value came from:
 
-
-```bibtex
-@inproceedings{MartinLopez2021Restest,
-	title= {{RESTest: Automated Black-Box Testing of RESTful Web APIs}},
-	author= {Alberto Martin-Lopez and Sergio Segura and Antonio Ruiz-Cort\'{e}s},
-	booktitle= {Proceedings of the 30th ACM SIGSOFT International Symposium on Software Testing and Analysis},
-	series= {ISSTA '21},
-	publisher= {Association for Computing Machinery},
-	year= {2021}
-}
+```bash
+./restest run openapi.yaml --url http://localhost:8080 --set engine.maxConcurrency=1
+RESTEST_ENGINE_MAX_CONCURRENCY=1 ./restest run openapi.yaml --url http://localhost:8080
 ```
+
+That one is the answer to an API that falls over when it is asked two things at once. [The
+settings](docs/settings.md), and [the switches](docs/switches.md) — the settings that each turn off
+one thing a run does.
+
+**An API that asks for a key** refuses every request without it. `--auth` hands it over, and RESTest
+sends it where the document says, with the operations that ask for it:
+
+```bash
+./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+    --url https://petstore3.swagger.io/api/v3 --budget 10s --auth special-key
+```
+
+A bearer token or a session cookie you already hold goes the same way:
+`--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…`. The key is written into
+nothing the run leaves behind: the screen, `report.json` and its `curl` commands show `REDACTED-AUTH`
+where it went — or, for a key given with its name or its place, a longer word such as
+`REDACTED-AUTH.api_key`, which the run names before its first request. A `curl` command copied from a
+report is run by putting the key back in place of that word. [Handing over a key or a token](docs/command-line.md#handing-over-a-key-or-a-token).
+
+## Exit codes
+
+A run ends with `0` when it found nothing wrong, `1` when it found at least one fault, and another
+number when it could not do its job — a wrong command line, nothing it could test, RESTest itself
+breaking, or a run stopped with Ctrl-C. A build server can go red on anything but `0`.
+[The exit codes](docs/command-line.md#exit-codes) says what each number means.
+
+`./restest help run` lists every option, and [the command line](docs/command-line.md) has the same on
+one page; `./restest version` says which RESTest and which Java you have.
+
+## Documentation
+
+[The manual](docs/manual/README.md) is the place to start: it is read from beginning to end, and
+takes you from a first run against a practice API on your own machine to RESTest in your continuous
+integration. `docs/manual/pdf.sh` builds it as one PDF, with Docker.
+
+[`docs/`](docs/README.md) has a page for each subject: the command line, what a run leaves behind,
+the faults, the plan, dictionaries, the settings and the switches — and, for working on RESTest
+itself, the design, continuous integration and the decision records.
+
+## Contributing
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says how a change is proposed, built and reviewed.
 
 ## License
-RESTest is distributed under the [GNU Lesser General Public License v3.0](LICENSE).
 
-RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
-
-### Icon credits
-This README and some pages of the Wiki use icons provided by [Freepik](https://www.flaticon.com/authors/freepik), available at [Flaticon](https://www.flaticon.com/).
+Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

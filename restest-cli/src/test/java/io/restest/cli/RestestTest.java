@@ -1,0 +1,868 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.cli;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import io.restest.core.auth.AuthGiven;
+import io.restest.core.json.JsonText;
+import io.restest.core.json.JsonValue;
+import io.restest.core.store.InteractionQuery;
+import io.restest.core.store.InteractionStore;
+import io.restest.store.SqliteInteractionStore;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+/**
+ * What {@code restest} answers, and what it says, for each way a command can go.
+ *
+ * <p>The number the command leaves behind is what a build server and a script act on, usually
+ * without reading anything else, so each of them is pinned here: nothing wrong, something wrong,
+ * nonsense on the command line, nothing to test, and RESTest itself breaking. The API is a stand-in
+ * that answers exactly as this test tells it to, so no network is involved and nothing depends on
+ * somebody else's server.
+ */
+class RestestTest {
+
+    private static WireMockServer api;
+
+    private final StringWriter screen = new StringWriter();
+    private final StringWriter problems = new StringWriter();
+
+    @BeforeAll
+    static void startTheApi() {
+        api = new WireMockServer(options().dynamicPort());
+        api.start();
+        api.stubFor(get(urlMatching("/pets")).willReturn(aResponse()
+                .withStatus(500)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{\"error\": \"could not reach the database\"}")));
+        api.stubFor(get(urlMatching("/pets/[0-9]+")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{\"id\": 7, \"name\": \"Rex\"}")));
+        api.stubFor(get(urlMatching("/shelters")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{\"total\": 3}")));
+    }
+
+    @AfterAll
+    static void stopTheApi() {
+        api.stop();
+    }
+
+    @Test
+    @DisplayName("a run that finds something wrong says so, and answers 1")
+    void faults_found_answer_one(@TempDir Path directory) throws Exception {
+        int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--seed", "20260914", "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(1);
+        assertThat(screen.toString())
+                .contains("RESTest testing Pet Shelter at " + api.baseUrl())
+                .contains("4 of 4 operations can be tested, seed 20260914, budget 1s")
+                .contains("F100")
+                .contains("listPets - GET " + api.baseUrl() + "/pets")
+                .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle");
+        assertThat(directory.resolve("report.json")).exists();
+        assertThat(screen.toString())
+                .contains("report written to " + directory.resolve("report.json"));
+    }
+
+    @Test
+    @DisplayName("a run's first lines come out whole and in one order, however often it is run")
+    void the_first_lines_of_a_run_come_out_in_one_order(@TempDir Path directory) {
+        // Many times over, because what this guards against is two writers on one screen. With the
+        // count written by the command and the line above it by the report, about half the runs of
+        // one command in one program printed the count first, and now and then one line landed
+        // inside the other. The budget is spent before a request could go out, so each run is over
+        // in moments and asks the network nothing - on every system alike.
+        for (int again = 1; again <= 40; again++) {
+            StringWriter seen = new StringWriter();
+            PrintWriter out = new PrintWriter(seen);
+            int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url",
+                "http://127.0.0.1:1", "--budget", "1ms", "--seed", "20260923",
+                "--out", directory.toString()}, out, new PrintWriter(new StringWriter()));
+            out.flush();
+
+            assertThat(answer).describedAs("run %d of the same command", again).isEqualTo(3);
+            assertThat(seen.toString().lines().limit(3))
+                    .describedAs("run %d of the same command", again)
+                    .containsExactly("RESTest testing Pet Shelter at http://127.0.0.1:1", "",
+                            "4 of 4 operations can be tested, seed 20260923, budget 1ms");
+        }
+    }
+
+    @Test
+    @DisplayName("an API served from under a directory is tested there, not at the top of its server")
+    void the_directory_the_document_declares_is_where_the_requests_go(@TempDir Path directory) {
+        // Only under the directory. Anything asked for anywhere else on this server is answered the
+        // way a real server answers a path it has never heard of, so a run that lost the directory
+        // produces exactly what runs against pet-clinic produced before this was fixed: everything
+        // refused.
+        api.stubFor(get(urlMatching("/shelter/api/pets")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("[{\"id\": 7, \"name\": \"Rex\"}]")));
+
+        int answer = run("run", "pet-shelter-under-a-directory.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--seed", "20260918", "--out", directory.toString());
+
+        assertThat(answer)
+                .describedAs("nothing here is broken - though this says only that the run finished, "
+                        + "not that it arrived anywhere; the two assertions below say that")
+                .isZero();
+        assertThat(screen.toString())
+                .describedAs("the address it settled on is the first thing a run says, so losing "
+                        + "the directory is visible before any request goes out")
+                .contains("RESTest testing Pet Shelter at " + api.baseUrl() + "/shelter/api");
+        api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/shelter/api/pets")));
+    }
+
+    @Test
+    @DisplayName("a run keeps nothing unless asked to, and says so rather than leaving you to look")
+    void a_run_keeps_nothing_unless_asked(@TempDir Path directory) {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString());
+
+        assertThat(directory.resolve("run.sqlite"))
+                .describedAs("a minute against a fast API keeps hundreds of megabytes, and almost "
+                        + "nothing ever reads them back, so it is not the default")
+                .doesNotExist();
+        assertThat(screen.toString())
+                .describedAs("whoever wanted the evidence should find out in the run that did not "
+                        + "keep it, not the next day")
+                .contains("the run itself was not kept")
+                .contains("--store");
+    }
+
+    @Test
+    @DisplayName("a run asked to keep itself does, and says where and how big")
+    void a_run_asked_to_keep_itself_does(@TempDir Path directory) {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString(), "--store");
+
+        assertThat(directory.resolve("run.sqlite")).exists();
+        assertThat(screen.toString())
+                .contains("run stored in " + directory.resolve("run.sqlite"))
+                .describedAs("the size is beside the name: a tool that writes hundreds of megabytes "
+                        + "owes that number to whoever ran it, when it writes them")
+                .containsPattern("run stored in .+ \\(\\d+(\\.\\d+)? (bytes|KiB|MiB|GiB)\\)");
+    }
+
+    @Test
+    @DisplayName("a second run replaces a kept run rather than leaving two runs in one directory")
+    void a_second_run_replaces_a_kept_run(@TempDir Path directory) {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "1", "--out", directory.toString(), "--store");
+        assertThat(directory.resolve("run.sqlite")).exists();
+
+        StringWriter second = new StringWriter();
+        PrintWriter out = new PrintWriter(second);
+        Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
+            "--budget", "1s", "--seed", "2", "--out", directory.toString()},
+                out, new PrintWriter(problems));
+        out.flush();
+
+        assertThat(directory.resolve("run.sqlite"))
+                .describedAs("a directory holds one run. Keeping one means giving it a directory "
+                        + "of its own, and the run that removes it says so")
+                .doesNotExist();
+        assertThat(second.toString()).contains("was replaced");
+    }
+
+    @Test
+    @DisplayName("a run clears up after itself rather than after whoever owns the directory")
+    void a_run_leaves_other_files_alone(@TempDir Path directory) throws Exception {
+        Path somebodysWork = directory.resolve("notes.txt");
+        Files.writeString(somebodysWork, "not ours");
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString())).isEqualTo(1);
+
+        assertThat(somebodysWork)
+                .describedAs("--out is whatever somebody typed, and may be a directory full of "
+                        + "their own work: only the files this tool writes are ever removed")
+                .exists();
+        assertThat(Files.readString(somebodysWork)).isEqualTo("not ours");
+    }
+
+    @Test
+    @DisplayName("a run that finds nothing wrong says so, and answers 0")
+    void a_clean_run_answers_zero(@TempDir Path directory) throws Exception {
+        int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl() + "/shelters-only",
+                "--budget", "1s", "--seed", "1", "--out", directory.toString());
+
+        // Nothing is stubbed under that prefix, so every reply is a 404 - which no oracle in this
+        // version complains about, because a document that does not describe 404 has not been
+        // contradicted by one.
+        assertThat(answer).isZero();
+        assertThat(screen.toString()).contains("no faults found");
+    }
+
+    @Test
+    @DisplayName("running with nothing to run shows what the choices are, and answers 2")
+    void no_command_answers_two() {
+        assertThat(run()).isEqualTo(2);
+        assertThat(problems.toString()).contains("Usage: restest").contains("run");
+    }
+
+    @Test
+    @DisplayName("what the tool prints is the same text on every machine, colour codes included")
+    void nothing_printed_is_dressed_up_for_a_terminal() {
+        // The command-line framework decides for itself whether the terminal can take colour, and
+        // it decides differently on different operating systems - which is how this came up: on
+        // Windows the word "restest" in the usage text arrived wrapped in invisible characters, so
+        // the same run printed something else there than here. Asking for colour as loudly as
+        // possible and getting none back is what stops that coming back.
+        String asked = System.getProperty("picocli.ansi");
+        System.setProperty("picocli.ansi", "true");
+        try {
+            run();
+            run("run", "--help");
+        } finally {
+            if (asked == null) {
+                System.clearProperty("picocli.ansi");
+            } else {
+                System.setProperty("picocli.ansi", asked);
+            }
+        }
+
+        assertThat(screen.toString() + problems.toString())
+                .describedAs("a transcript pasted into a bug report, or compared with last week's, "
+                        + "must not depend on which machine produced it")
+                .doesNotContain("\u001B[");
+    }
+
+    @Test
+    @DisplayName("a mistyped option answers 2 rather than pretending to have run")
+    void a_bad_option_answers_two() {
+        assertThat(run("run", "pet-shelter.yaml", "--nonsense")).isEqualTo(2);
+        assertThat(problems.toString()).contains("--nonsense");
+    }
+
+    @Test
+    @DisplayName("a budget that is not a length of time answers 2, and says how to write one")
+    void a_bad_budget_answers_two() {
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "soon"))
+                .isEqualTo(2);
+        assertThat(problems.toString()).contains("30s");
+    }
+
+    @Test
+    @DisplayName("a document nothing can be read from answers 3, not 0")
+    void an_unreadable_document_answers_three(@TempDir Path directory) throws Exception {
+        Path nothingThere = directory.resolve("not-a-document.yaml");
+        Files.writeString(nothingThere, "this file is not an API description\n");
+
+        assertThat(run("run", nothingThere.toString(), "--url", api.baseUrl(), "--budget", "1s"))
+                .isEqualTo(3);
+        assertThat(problems.toString()).contains("no operation that could be tested");
+    }
+
+    @Test
+    @DisplayName("a document with nowhere to send requests asks for --url, and answers 3")
+    void nowhere_to_send_answers_three() {
+        assertThat(run("run", "pet-shelter.yaml", "--budget", "1s")).isEqualTo(3);
+        assertThat(problems.toString())
+                .contains("there is nowhere to send the requests")
+                .contains("--url");
+    }
+
+    @Test
+    @DisplayName("an address nothing is listening at answers 3 rather than 'no faults found'")
+    void nothing_listening_answers_three(@TempDir Path directory) throws Exception {
+        int answer = run("run", "pet-shelter.yaml", "--url", "http://127.0.0.1:1",
+                "--budget", "20s", "--seed", "3", "--out", directory.toString());
+
+        assertThat(answer)
+                .describedAs("an empty report that exits successfully would read as 'this API is "
+                        + "fine', which is the one thing this run has no evidence for")
+                .isEqualTo(3);
+        assertThat(problems.toString()).contains("answered any of the").contains("Check the address");
+    }
+
+    @Test
+    @DisplayName("a GET that insists on a body is named as what cannot be tested, not blamed on the "
+            + "address")
+    void a_get_insisting_on_a_body_is_named_rather_than_blamed_on_the_address(
+            @TempDir Path directory) {
+        int answer = run("run", "pet-search-with-a-body.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("the API at this address is running; what stands in the way is a "
+                        + "body RESTest cannot send with a GET")
+                .contains("none of the 1 operations in the document can be tested; the first "
+                        + "says: it requires a request body, and RESTest cannot send one with a GET "
+                        + "request")
+                .doesNotContain("Check the address");
+        assertThat(directory.resolve("report.json"))
+                .describedAs("nothing was attempted, so there is no run to report")
+                .doesNotExist();
+    }
+
+    @Test
+    @DisplayName("a GET that merely accepts a body is tested without it, and no request of it is "
+            + "thrown away unsent")
+    void a_get_merely_accepting_a_body_is_sent_without_it(@TempDir Path directory) {
+        api.stubFor(get(urlMatching("/pets/search")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("[]")));
+
+        int answer = run("run", "pet-search-with-an-optional-body.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--seed", "20260923", "--out", directory.toString());
+
+        assertThat(answer).isZero();
+        assertThat(screen.toString())
+                .contains("1 of 1 operations can be tested")
+                .describedAs("a request carrying a body the client refuses is recorded as one "
+                        + "that got no reply; there should be none")
+                .doesNotContain("no reply");
+        api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/pets/search")));
+    }
+
+    @Test
+    @DisplayName("a run that can test some operations names the ones it cannot, and why, on the "
+            + "screen and in its report, in the order the document declares them")
+    void the_operations_a_run_cannot_try_are_named_on_the_screen_and_in_the_report(
+            @TempDir Path directory) throws Exception {
+        // In the order the document declares them, which is not alphabetical: named in any other
+        // order - a set's, say, which differs from one run of the program to the next - and the
+        // same command would explain itself differently each time it was run.
+        List<String> named = List.of(
+                "  uploadPhoto: it requires a request body, and the only way it is offered is "
+                        + "multipart/form-data, which cannot be written yet",
+                "  searchPets: it requires a request body, and RESTest cannot send one with a GET "
+                        + "request",
+                "  filterPets: the parameter 'filter' is written in the 'deepObject' style, which "
+                        + "is not assembled yet");
+
+        int answer = run("run", "pet-shop-with-operations-it-cannot-try.yaml",
+                "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
+                "--out", directory.toString());
+
+        assertThat(answer).describedAs("an operation that had to be skipped is not an error").isZero();
+        List<String> lines = screen.toString().lines().toList();
+        assertThat(lines.subList(0, 3)).containsExactly(
+                "RESTest testing Pet Shop at " + api.baseUrl(), "",
+                "1 of 4 operations can be tested, seed 20260923, budget 1s");
+        int verdict = lines.indexOf("no faults found");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size()))
+                .describedAs("what was skipped is named straight after the verdict")
+                .startsWith("3 operations could not be tested:", named.get(0), named.get(1),
+                        named.get(2));
+
+        JsonValue.JsonObject report = (JsonValue.JsonObject) JsonText.read(
+                Files.readString(directory.resolve("report.json")));
+        List<JsonValue.JsonObject> skipped =
+                ((JsonValue.JsonArray) report.member("skippedOperations").orElseThrow())
+                        .elements().stream().map(JsonValue.JsonObject.class::cast).toList();
+        assertThat(skipped)
+                .describedAs("the report says the same, operation by operation")
+                .extracting(each -> "  " + text(each, "operation") + ": " + text(each, "reason"))
+                .containsExactlyElementsOf(named);
+    }
+
+    @Test
+    @DisplayName("an operation the document could not be read for is counted and named like one "
+            + "that could not be built, with what reading it said")
+    void an_operation_that_could_not_be_read_is_counted_and_named(@TempDir Path directory)
+            throws Exception {
+        String named = "  searchPets: the operation could not be represented: minProperties (5) is "
+                + "greater than maxProperties (2), so no value can satisfy both (paths./pets.get)";
+
+        int answer = run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
+                "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
+                "--out", directory.toString());
+
+        assertThat(answer).isZero();
+        assertThat(screen.toString())
+                .describedAs("the document describes two operations, whether or not both could be read")
+                .contains("1 of 2 operations can be tested, seed 20260923, budget 1s");
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("no faults found");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size()))
+                .startsWith("1 operation could not be tested:", named);
+
+        JsonValue.JsonObject report = (JsonValue.JsonObject) JsonText.read(
+                Files.readString(directory.resolve("report.json")));
+        assertThat(((JsonValue.JsonArray) report.member("skippedOperations").orElseThrow())
+                .elements().stream().map(JsonValue.JsonObject.class::cast)
+                .map(each -> "  " + text(each, "operation") + ": " + text(each, "reason")))
+                .containsExactly(named);
+    }
+
+    @Test
+    @DisplayName("a document whose every operation could not be read says why, rather than that it "
+            + "describes none")
+    void a_document_nothing_of_which_could_be_read_says_why(@TempDir Path directory)
+            throws Exception {
+        Path document = Files.writeString(directory.resolve("unreadable.yaml"), """
+                openapi: 3.0.3
+                info: {title: Pet Shop, version: '1'}
+                paths:
+                  /pets:
+                    get:
+                      operationId: searchPets
+                      parameters:
+                        - {name: filter, in: query, schema: {minProperties: 5, maxProperties: 2}}
+                      responses: {'200': {description: the pets that match}}
+                """);
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.resolve("out").toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("it describes one, which could not be read; not none")
+                .contains("none of the 1 operations in the document can be tested; the first says: "
+                        + "the operation could not be represented: minProperties (5) is greater "
+                        + "than maxProperties (2), so no value can satisfy both (paths./pets.get)")
+                .doesNotContain("describes no operation");
+    }
+
+    @Test
+    @DisplayName("when nothing can be tested, the reason quoted is one given for an operation that was "
+            + "read, and the ones that could not be read are counted beside it")
+    void the_reason_quoted_is_one_given_for_an_operation_that_was_read(@TempDir Path directory)
+            throws Exception {
+        Path document = Files.writeString(directory.resolve("both.yaml"), """
+                openapi: 3.1.0
+                info: {title: Pet Search, version: '1'}
+                paths:
+                  /pets/search:
+                    get:
+                      operationId: searchPets
+                      requestBody:
+                        required: true
+                        content: {application/json: {schema: {type: object}}}
+                      responses: {'200': {description: the pets that match}}
+                  /pets:
+                    get:
+                      operationId: listPets
+                      parameters:
+                        - {name: filter, in: query, schema: {minProperties: 5, maxProperties: 2}}
+                      responses: {'200': {description: every pet}}
+                """);
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.resolve("out").toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString()).contains("none of the 1 operations in the document can be "
+                + "tested; the first says: it requires a request body, and RESTest cannot send one "
+                + "with a GET request; 1 more could not be read at all");
+    }
+
+    @Test
+    @DisplayName("an operation that could not be read never stops another that shares its name from "
+            + "being tested")
+    void an_unreadable_operation_never_shadows_a_readable_one_of_the_same_name(
+            @TempDir Path directory) throws Exception {
+        // An operation copied under a deeper path with its name left as it was: the copy's path has
+        // a gap nothing fills, so it cannot be read, and it is called what the original is called.
+        Path document = Files.writeString(directory.resolve("copied.yaml"), """
+                openapi: 3.0.3
+                info: {title: Vets, version: '1'}
+                paths:
+                  /vets/{vetId}:
+                    get:
+                      operationId: getVet
+                      parameters:
+                        - {name: vetId, in: path, required: true, schema: {type: integer, minimum: 1, maximum: 9}}
+                      responses: {'200': {description: one vet}}
+                  /clinics/{clinicId}/vets/{vetId}:
+                    get:
+                      operationId: getVet
+                      parameters:
+                        - {name: vetId, in: path, required: true, schema: {type: integer}}
+                      responses: {'200': {description: one vet}}
+                """);
+        api.stubFor(get(urlMatching("/vets/[0-9]+")).willReturn(aResponse().withStatus(200)));
+        // Everything else a plain 404. Left to itself the stub server describes a request it has no
+        // answer for by writing the address into a format string, and an address holding '%n',
+        // which the awkward values include, makes the stub itself answer 500.
+        api.stubFor(any(anyUrl()).atPriority(10).willReturn(aResponse().withStatus(404)));
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260924", "--out", directory.resolve("out").toString());
+
+        assertThat(answer).isZero();
+        assertThat(screen.toString()).contains("1 of 2 operations can be tested");
+        List<String> lines = screen.toString().lines().toList();
+        assertThat(lines.subList(lines.indexOf("no faults found") + 1, lines.size())).startsWith(
+                "1 operation could not be tested:",
+                "  getVet: the operation could not be represented: the path template "
+                        + "'/clinics/{clinicId}/vets/{vetId}' has no parameter to fill 'clinicId', "
+                        + "so no request could be assembled (paths./clinics/{clinicId}/vets/{vetId}"
+                        + ".get)");
+        api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/vets/[0-9]+")));
+    }
+
+    private static String text(JsonValue.JsonObject parent, String name) {
+        return ((JsonValue.JsonString) parent.member(name).orElseThrow()).value();
+    }
+
+    @Test
+    @DisplayName("a directory nothing can be written to answers 3, not 4, and says which directory")
+    void an_unwritable_output_directory_answers_three(@TempDir Path parent) throws Exception {
+        Path directory = Files.createDirectory(parent.resolve("read-only"));
+        // Asked for, not insisted upon. Whether this can be done at all depends on the machine:
+        // Windows keeps a read-only flag that means nothing for a directory and refuses the request
+        // outright, and a build running as root may write anywhere whatever the permissions say.
+        // What matters is the state that follows, not whether the request was granted, so the
+        // answer is thrown away and the state is asked about instead. Insisting here was this
+        // test's own bug: it failed on Windows before reaching the line that would have skipped it.
+        directory.toFile().setWritable(false, false);
+        Assumptions.assumeFalse(Files.isWritable(directory),
+                "this machine lets the current user write into a directory marked unwritable");
+
+        try {
+            int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                    "--budget", "1s", "--out", directory.toString());
+
+            assertThat(answer)
+                    .describedAs("nowhere to write the results is one of the ways a run cannot "
+                            + "start, not RESTest breaking; answering 4 would send whoever reads it "
+                            + "looking for a bug in the tool")
+                    .isEqualTo(3);
+            assertThat(problems.toString())
+                    .contains(directory.toString())
+                    .contains("--out");
+        } finally {
+            // Best effort, for the same reason, so that the temporary directory can be removed.
+            directory.toFile().setWritable(true, true);
+        }
+    }
+
+    @Test
+    @DisplayName("a budget too short to send anything says so, rather than 'no faults found'")
+    void a_budget_that_buys_nothing_answers_three(@TempDir Path directory) throws Exception {
+        int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                "--budget", "1ms", "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(3);
+        assertThat(problems.toString())
+                .describedAs("and explains where the time went, because it is not obvious")
+                .contains("ran out before a single request could be sent")
+                .contains("paid out of the budget");
+    }
+
+    @Test
+    @DisplayName("a run that breaks with an error rather than an exception answers 4, not the 1 "
+            + "of a fault found, and says what broke")
+    void an_error_in_a_run_answers_four(@TempDir Path directory) {
+        // Out of room for the stack is what a walk of a shape with no end runs into, and running
+        // out of memory is its cousin. Java calls both errors rather than exceptions, and the
+        // command-line framework lets errors through: left to go on up, this one would end the
+        // program with the number Java gives any program that crashes, which is 1.
+        int answer = run(anEnvironmentThatBreaks(() -> {
+            throw new StackOverflowError("a shape too deep to walk");
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.toString());
+
+        assertThat(answer)
+                .describedAs("RESTest broke, not the API; 1 would have whatever ran the command "
+                        + "count a crash as a fault found")
+                .isEqualTo(4);
+        assertThat(problems.toString())
+                .contains("restest: the run could not be completed: java.lang.StackOverflowError: "
+                        + "a shape too deep to walk")
+                .describedAs("with the stack trace, so that somebody can report it")
+                .contains("at io.restest.cli.RunCommand");
+    }
+
+    @Test
+    @DisplayName("a run that breaks with an exception answers 4 as well, in the same words")
+    void an_exception_in_a_run_answers_four(@TempDir Path directory) {
+        int answer = run(anEnvironmentThatBreaks(() -> {
+            throw new IllegalStateException("something RESTest did not expect");
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--out", directory.toString());
+
+        assertThat(answer).isEqualTo(4);
+        assertThat(problems.toString()).contains("restest: the run could not be completed: "
+                + "java.lang.IllegalStateException: something RESTest did not expect");
+    }
+
+    @Test
+    @DisplayName("a run that breaks while it is sending answers 4, leaves what it opened closed, "
+            + "and leaves the program able to run another")
+    void a_run_that_breaks_while_sending_answers_four_and_leaves_nothing_open(
+            @TempDir Path directory) throws Exception {
+        // A real error, with no stand-in. The body createNode takes is one it merely accepts, so
+        // whether the operation can be tested is decided without building one. The run opens by
+        // sending listPets and keeping what comes back; then it builds a body for createNode, which
+        // must hold another of itself, a million deep - and runs out of room for the stack while
+        // the engine, the store and the thread delivering its events are all open.
+        Path document = Files.writeString(directory.resolve("nested.yaml"), """
+                openapi: 3.0.3
+                info: {title: Nested, version: '1'}
+                paths:
+                  /pets:
+                    get:
+                      operationId: listPets
+                      responses: {'200': {description: every pet}}
+                  /nodes:
+                    post:
+                      operationId: createNode
+                      requestBody:
+                        content:
+                          application/json:
+                            schema: {$ref: '#/components/schemas/Node'}
+                      responses: {'201': {description: created}}
+                components:
+                  schemas:
+                    Node:
+                      type: object
+                      required: [child]
+                      properties:
+                        child: {$ref: '#/components/schemas/Node'}
+                """);
+        Path out = directory.resolve("out");
+        List<Thread> deliveringBefore = threadsNamed("restest-events");
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "10s",
+                "--seed", "20260930", "--store", "--out", out.toString(),
+                "--set", "generation.optionalNestingDepth=1000000",
+                "--set", "generation.hardNestingDepth=1000000",
+                "--set", "generation.optionalBodyChance=1");
+
+        assertThat(problems.toString())
+                .describedAs("what this test stands on: building that body runs out of room for "
+                        + "the stack. If it stops doing so, the test needs another way to break a "
+                        + "run while it is sending")
+                .contains("restest: the run could not be completed: java.lang.StackOverflowError");
+        assertThat(answer).isEqualTo(4);
+        assertThat(out.resolve("run.sqlite-wal"))
+                .describedAs("the store was closed on the way out, which folds its working files "
+                        + "back in")
+                .doesNotExist();
+        assertThat(stored(out.resolve("run.sqlite")))
+                .describedAs("with what listPets sent back in it")
+                .isPositive();
+        assertThat(threadsNamed("restest-events"))
+                .describedAs("the thread that delivered the run's events ended with it")
+                .isSubsetOf(deliveringBefore);
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.resolve("again").toString()))
+                .describedAs("and the same program runs another, which finds what it always finds")
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a run that breaks where even saying so breaks still answers 4")
+    void a_run_that_cannot_say_it_broke_still_answers_four(@TempDir Path directory) {
+        // A program that has run out of memory may not have enough left to write a stack trace.
+        // Somewhere to write problems that breaks when it is written to stands in for that.
+        int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
+            "--budget", "1s", "--out", directory.toString()},
+                new PrintWriter(screen), aScreenThatBreaks(),
+                anEnvironmentThatBreaks(() -> {
+                    throw new StackOverflowError("a shape too deep to walk");
+                }));
+
+        assertThat(answer).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("a failure inside the command-line framework itself answers 4, not 1")
+    void a_failure_inside_the_framework_answers_four() {
+        // The help is written by the framework rather than by a command, so a failure while it is
+        // being written is answered by the framework's own last resort - with 1, unless it is told
+        // otherwise.
+        PrintWriter err = new PrintWriter(problems);
+
+        int answer = Restest.run(new String[] {"--help"}, aScreenThatBreaks(), err);
+        err.flush();
+
+        assertThat(answer).isEqualTo(4);
+        assertThat(problems.toString())
+                .describedAs("what broke is still said, where problems go")
+                .contains("java.lang.IllegalStateException: the screen went away");
+    }
+
+    @Test
+    @DisplayName("the seed a run used is the one it was given, and is printed either way")
+    void the_seed_is_passed_on_and_reported(@TempDir Path directory) throws Exception {
+        // What the command is responsible for is handing the seed to the part that invents values
+        // and saying which one it used; that the same seed then produces the same values is that
+        // part's own promise, and its own test. Note what is deliberately NOT claimed here: with
+        // requests overlapping, the order answers come back in is not fixed by the seed, so two
+        // runs print the same questions but not necessarily in the same order.
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                "--seed", "424242", "--out", directory.toString())).isEqualTo(1);
+
+        assertThat(screen.toString()).contains("seed 424242");
+
+        StringWriter unseeded = new StringWriter();
+        PrintWriter out = new PrintWriter(unseeded);
+        int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
+            "--budget", "2s", "--out", directory.toString()}, out, new PrintWriter(problems));
+        out.flush();
+
+        assertThat(answer).isEqualTo(1);
+        assertThat(unseeded.toString())
+                .describedAs("a run nobody gave a seed still says which one it chose, or the run "
+                        + "cannot be repeated")
+                .containsPattern("seed -?\\d+,")
+                .doesNotContain("seed 424242");
+    }
+
+    @Test
+    @DisplayName("a second run into the same place replaces the first rather than adding to it")
+    void a_run_replaces_whatever_was_there(@TempDir Path directory) throws Exception {
+        Files.writeString(directory.resolve("report.json"), "left over from something else");
+
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                "--seed", "7", "--out", directory.toString())).isEqualTo(1);
+
+        assertThat(Files.readString(directory.resolve("report.json")))
+                .doesNotContain("left over")
+                .contains("\"tool\"");
+    }
+
+    @Test
+    @DisplayName("the tool can say which version of itself it is")
+    void it_names_its_own_version() {
+        assertThat(run("--version")).isZero();
+        assertThat(screen.toString()).contains("RESTest ");
+    }
+
+    @Test
+    @DisplayName("the help names the three things a run needs")
+    void the_help_names_what_a_run_needs() {
+        assertThat(run("run", "--help")).isZero();
+        assertThat(screen.toString())
+                .contains("<specification>")
+                .contains("--url")
+                .contains("--budget")
+                .contains("60s");
+    }
+
+    @Test
+    @DisplayName("the help says plainly that a run writes to the API it is pointed at")
+    void the_help_says_that_a_run_writes() {
+        assertThat(run("run", "--help")).isZero();
+        assertThat(screen.toString())
+                .describedAs("an operation that creates something is tested by creating something, "
+                        + "and whoever runs this should know before they run it")
+                .contains("willing to have written to");
+    }
+
+    private int run(String... arguments) {
+        PrintWriter out = new PrintWriter(screen);
+        PrintWriter err = new PrintWriter(problems);
+        try {
+            return Restest.run(arguments, out, err);
+        } finally {
+            out.flush();
+            err.flush();
+        }
+    }
+
+    private int run(Map<String, String> environment, String... arguments) {
+        PrintWriter out = new PrintWriter(screen);
+        PrintWriter err = new PrintWriter(problems);
+        try {
+            return Restest.run(arguments, out, err, environment);
+        } finally {
+            out.flush();
+            err.flush();
+        }
+    }
+
+    /**
+     * An environment in which looking for a key left there breaks, in the way given. A run looks
+     * for one once it has read the document and started the engine that sends its requests, before
+     * anything is sent. Every setting is looked for as well, and none is found.
+     */
+    private static Map<String, String> anEnvironmentThatBreaks(Runnable breaking) {
+        return new AbstractMap<>() {
+            @Override
+            public Set<Map.Entry<String, String>> entrySet() {
+                return Set.of();
+            }
+
+            @Override
+            public String get(Object name) {
+                if (AuthGiven.VARIABLE.equals(name)) {
+                    breaking.run();
+                }
+                return null;
+            }
+        };
+    }
+
+    /** Somewhere to write that breaks as soon as anything is written to it. */
+    private static PrintWriter aScreenThatBreaks() {
+        return new PrintWriter(new Writer() {
+            @Override
+            public void write(char[] text, int from, int length) {
+                throw new IllegalStateException("the screen went away");
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        });
+    }
+
+    /** The threads of this program by this name that are still running, whoever started them. */
+    private static List<Thread> threadsNamed(String name) {
+        return Thread.getAllStackTraces().keySet().stream()
+                .filter(thread -> thread.getName().equals(name) && thread.isAlive())
+                .toList();
+    }
+
+    private static long stored(Path runFile) {
+        try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
+            return store.count(InteractionQuery.all());
+        }
+    }
+}

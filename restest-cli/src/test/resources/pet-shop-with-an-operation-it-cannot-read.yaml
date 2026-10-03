@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Pet Shop
+  version: 1.0.0
+  description: >
+    Two operations, and RESTest cannot even read one of them: its filter must have at least five
+    properties and at most two, which no value can be, so the operation never becomes one a request
+    could be built for. A run counts it among the operations it cannot test and names it, with what
+    reading it said, beside the one it tests.
+paths:
+  /pets:
+    get:
+      operationId: searchPets
+      parameters:
+        - name: filter
+          in: query
+          schema:
+            minProperties: 5
+            maxProperties: 2
+      responses:
+        "200":
+          description: the pets that match
+  /shelters:
+    get:
+      operationId: listShelters
+      responses:
+        "200":
+          description: how many shelters there are
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
