@@ -1,0 +1,43 @@
+# Builds the PDF of the manual whenever the manual changes, so that the script which builds it is
+# known to work before a release needs it. The PDF is kept as an artifact of the run.
+#
+# Every action is pinned to a commit SHA, with the version in a trailing comment, for the reasons
+# ci.yml gives.
+name: Manual
+
+on:
+  push:
+    branches: [master, v2]
+    paths: ['docs/manual/**', '.github/workflows/manual.yml']
+  pull_request:
+    branches: [master, v2]
+    paths: ['docs/manual/**', '.github/workflows/manual.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: manual-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pdf:
+    name: Build the PDF of the manual
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The PDF names its version from the nearest tag.
+          fetch-depth: 0
+
+      - name: Build the PDF
+        run: docs/manual/pdf.sh
+
+      - name: Keep the PDF
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: restest-manual
+          path: target/restest-manual.pdf
+          if-no-files-found: error
