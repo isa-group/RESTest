@@ -1,5 +1,9 @@
 # Dependency updates arrive as reviewable pull requests rather than as drift.
 #
+# Switched off for now by the maintainer (3 October 2026): an open-pull-requests-limit of 0 is how
+# GitHub stops version updates while keeping the configuration. To switch them back on, give each
+# entry its limit again - 5 for Maven, GitHub's default of 5 for the actions.
+#
 # Grouped on purpose: nine modules share one version property per dependency, so an ungrouped
 # update would open several pull requests that all have to land together anyway.
 version: 2
@@ -9,7 +13,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     commit-message:
       prefix: build
       include: scope
@@ -41,5 +45,6 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    open-pull-requests-limit: 0
     commit-message:
       prefix: ci
