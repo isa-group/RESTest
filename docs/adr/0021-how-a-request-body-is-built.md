@@ -936,14 +936,25 @@ FeaturesService, GitHub, Restcountries, flight-search and kafka-rest-proxy.
   `-name`, `NAME`, `_NAME` or `-NAME` with something before it. While `memory.namesByResource` is
   on, such a gap has one kind, the one its own name names - `{productName}` is a product's - and not
   the address's, since what comes before it may be some other kind of thing whose `name` is not the
-  one asked for. Its steps are M9.2's first, a property named exactly like the gap, and then `name`
-  in any capitals or the kind followed by a name ending (`productName`, `product_name`). It never
-  takes an identifier, and never the looser fourth step.
+  one asked for. Its steps are M9.2's first, a property named exactly like the gap; then any value
+  heard under the gap's own name, as before; and only then `name` in any capitals or the kind
+  followed by a name ending (`productName`, `product_name`). A thing's name comes after what was
+  heard under the gap's name because `{userName}` is written like a thing's name and usually means
+  a login: a login the API took under `userName` must not be pushed aside by a person's full name.
+  It never takes an identifier, and never the looser fourth step.
+- **An object with a `name` is a thing.** M9.2 takes an object with nothing written like an
+  identifier for a wrapper around things, and files what is inside it under the same kind. While
+  `memory.namesByResource` is on, an object carrying `name` is a thing too: features-service's
+  `{"name": "basic", "valid": true, "activedFeatures": [{"id": 3, "name": "gps"}]}` is one
+  configuration, and the features inside it are not configurations, so `{configurationName}` is
+  never sent `gps`.
 - **A reply that lists its things by name alone**, decided by the maintainer on 3 October: while
   `memory.namesByResource` is on, every word or number that is an element of a list in a reply kept
-  by kind - at any depth M9.2's walk already reaches - is kept as a thing of that kind with one
-  property, `name`. features-service's `GET /products` keeps two products named `car` and `bike`,
-  and `.../configurations` and `.../configurations/{configurationName}/features` keep configurations
+  by kind is kept as a thing of that kind with one property, `name` - as deep as M9.2's walk
+  reaches, but only while no object on the way down to the list has words or numbers of its own:
+  the list in `{"data": ["car"]}` names products, the `tags` of a pet do not name pets.
+  features-service's `GET /products` keeps two products named `car` and `bike`, and
+  `.../configurations` and `.../configurations/{configurationName}/features` keep configurations
   and features the same way. They fill `{productName}`, and `{name}` right after `/products/`, and
   never an identifier gap, because `name` is not written like an identifier. Nothing is kept from a
   `DELETE`, as before.
@@ -967,6 +978,13 @@ Measured: (numbers to come)
 - **Kinds named in another language than the address's**: gestao-hospital's `{produto_id}` under
   `/estoque/` is a product in a hospital's stock, and nothing written says that `produto` and
   `estoque` name the same things. That is likeness between names, which stays with 4.1.
+- **A name gap that names a longer kind than its address**: flight-search's
+  `/actuator/metrics/{requiredMetricName}` names "required metric", and only the address says
+  metric. Such a gap uses the kind its own name names and no other, as decided in the plan, so the
+  names `GET /actuator/metrics` lists are kept and not offered there.
+- **A gap for several identifiers declared as a list** (`type: array`): it is offered nothing new,
+  because a single word does not fit a list. person-controller declares `{ids}` as a word, and the
+  corpus has no gap of either kind.
 - **Several identifiers sent as several**: a gap named for several is sent one, not a list joined
   by commas. One is what every such address accepts, and the corpus has no gap of the kind to
   measure a list on.

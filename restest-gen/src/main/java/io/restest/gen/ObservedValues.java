@@ -333,8 +333,7 @@ public final class ObservedValues implements RunListener {
                 // Judged by the names the thing came with rather than by what was kept of it: a
                 // thing whose identifier is empty or too long to keep is still a thing, not a
                 // wrapper, and what is inside it is still some other kind.
-                if (thing.members().keySet().stream()
-                        .noneMatch(ObservedValues::looksLikeAnIdentifier)) {
+                if (thing.members().keySet().stream().noneMatch(this::marksAThing)) {
                     for (JsonValue inside : thing.members().values()) {
                         if (inside instanceof JsonValue.JsonObject
                                 || inside instanceof JsonValue.JsonArray) {
@@ -346,6 +345,17 @@ public final class ObservedValues implements RunListener {
             }
             default -> { }
         }
+    }
+
+    /**
+     * Whether a property tells an object that carries it is a thing rather than a wrapper around
+     * things: one written like an identifier, or - while things are known by their names too - one
+     * called {@code name}. A product configuration with a {@code name} and no identifier is a
+     * configuration, and the features listed inside it are not configurations.
+     */
+    private boolean marksAThing(String property) {
+        return looksLikeAnIdentifier(property)
+                || settings.namesByResource() && property.equalsIgnoreCase(A_THINGS_NAME);
     }
 
     /**
@@ -515,15 +525,6 @@ public final class ObservedValues implements RunListener {
     }
 
     /**
-     * The kind of thing a gap's name says it holds the identifiers of: {@code petIds} holds pets',
-     * {@code user_ids} users'. Nothing for a name that does not end the way several identifiers
-     * are written.
-     */
-    static Optional<String> kindOfThingInThePluralName(String gap) {
-        return nameWithoutThePluralIdentifierEnding(gap).flatMap(ObservedValues::kindOfThingNamed);
-    }
-
-    /**
      * A name with the ending several identifiers are written with taken off: {@code pet} out of
      * {@code petIds}. Nothing for a name that does not end that way, or that is nothing but the
      * ending.
@@ -543,8 +544,9 @@ public final class ObservedValues implements RunListener {
     /**
      * Whether a name is written the way a thing's name is: ending in {@code Name}, {@code _name},
      * {@code -name}, {@code NAME}, {@code _NAME} or {@code -NAME}, with something before it -
-     * {@code productName}, {@code topic_name}. Not {@code username} or {@code filename}, where
-     * "name" is part of one word, nor {@code name} on its own, which names no kind of thing.
+     * {@code productName}, {@code topic_name}. Not {@code username} or {@code filename} in lower
+     * case, where "name" is part of one word, nor {@code name} on its own, which names no kind of
+     * thing.
      */
     static boolean looksLikeAName(String name) {
         return nameWithoutTheNameEnding(name).isPresent();

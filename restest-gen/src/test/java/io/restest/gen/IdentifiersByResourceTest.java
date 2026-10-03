@@ -443,10 +443,10 @@ class IdentifiersByResourceTest {
                     .allMatch(ObservedValues::looksLikeSeveralIdentifiers);
             assertThat(List.of("id", "petId", "kids", "valids", "Ids_", "idsOfPets"))
                     .noneMatch(ObservedValues::looksLikeSeveralIdentifiers);
-            assertThat(ObservedValues.kindOfThingInThePluralName("petIds")).contains("pet");
-            assertThat(ObservedValues.kindOfThingInThePluralName("user_ids")).contains("user");
-            assertThat(ObservedValues.kindOfThingInThePluralName("PET_IDS")).contains("pet");
-            assertThat(ObservedValues.kindOfThingInThePluralName("ids"))
+            assertThat(kindInThePluralName("petIds")).contains("pet");
+            assertThat(kindInThePluralName("user_ids")).contains("user");
+            assertThat(kindInThePluralName("PET_IDS")).contains("pet");
+            assertThat(kindInThePluralName("ids"))
                     .describedAs("a bare ids names no kind of thing")
                     .isEmpty();
             assertThat(ObservedValues.looksLikeAnIdentifier("petIds"))
@@ -585,6 +585,33 @@ class IdentifiersByResourceTest {
             spelt.replies("listProducts", 200, "[{\"id\": 1, \"product_name\": \"bike\"}]");
             assertThat(spelt.offers("getProduct", "productName", StringSchema.of())
                     .map(GeneratedValue::value)).contains(JsonValue.of("bike"));
+        }
+
+        @Test
+        @DisplayName("takes a value heard under its own name before the name of a thing")
+        void a_value_under_its_own_name_first() {
+            Api api = new Api();
+            api.replies("listUsers", 200, "[{\"id\": 1, \"name\": \"Ana Lopez\"}]");
+            assertThat(fiftyDraws(api, "getUserByUserName", "userName", StringSchema.of()))
+                    .describedAs("with nothing heard under userName, a user's name will do")
+                    .containsExactly(JsonValue.of("Ana Lopez"));
+
+            api.replies("listStores", 200, "{\"userName\": \"ana\"}");
+            assertThat(fiftyDraws(api, "getUserByUserName", "userName", StringSchema.of()))
+                    .describedAs("a login the API wrote under userName is not pushed aside")
+                    .containsExactly(JsonValue.of("ana"));
+        }
+
+        @Test
+        @DisplayName("not the name of something listed inside a thing that has a name of its own")
+        void not_the_name_of_what_a_named_thing_carries() {
+            Api api = new Api();
+            api.replies("getConfiguration", 200, "{\"name\": \"basic\", \"valid\": true, "
+                    + "\"activedFeatures\": [{\"id\": 3, \"name\": \"gps\"}, "
+                    + "{\"id\": 4, \"name\": \"radio\"}]}");
+
+            assertThat(fiftyDraws(api, "deleteConfiguration", "configurationName",
+                    StringSchema.of())).containsExactly(JsonValue.of("basic"));
         }
 
         @Test
@@ -767,6 +794,9 @@ class IdentifiersByResourceTest {
                     "/products/{productName}/features/{featureName}"));
             operations.add(at("listConfigurations", HttpMethod.GET,
                     "/products/{productName}/configurations"));
+            operations.add(at("getConfiguration", HttpMethod.GET,
+                    "/products/{productName}/configurations/{configurationName}"));
+            operations.add(at("getUserByUserName", HttpMethod.GET, "/users/{userName}"));
             operations.add(at("deleteConfiguration", HttpMethod.DELETE,
                     "/products/{productName}/configurations/{configurationName}"));
             operations.add(list("listStores", "/stores"));
@@ -820,5 +850,10 @@ class IdentifiersByResourceTest {
             return Operation.of(method, path, gaps).withId(OperationId.of(id))
                     .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         }
+    }
+
+    private static Optional<String> kindInThePluralName(String gap) {
+        return ObservedValues.nameWithoutThePluralIdentifierEnding(gap)
+                .flatMap(ObservedValues::kindOfThingNamed);
     }
 }

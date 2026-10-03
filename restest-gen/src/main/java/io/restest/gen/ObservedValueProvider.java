@@ -142,7 +142,7 @@ public final class ObservedValueProvider implements ValueProvider {
         Optional<GeneratedValue> byName = oneValueSeenUnderThisName(request);
         return byName.isPresent()
                 ? byName
-                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE);
+                : anIdentifierOfTheThingsFor(request, kinds, Likeness.LESS_CONVINCING);
     }
 
     /** A gap in the web address, as a whole rather than one piece of it. */
@@ -221,13 +221,16 @@ public final class ObservedValueProvider implements ValueProvider {
 
     /** How sure a property of a thing is to be that thing's identifier. */
     private enum Likeness {
-        /**
-         * Named like the gap itself, or {@code id}, or the kind of thing followed by id - or, for a
-         * gap named for a thing's name, {@code name}, or the kind of thing followed by name.
-         */
+        /** Named like the gap itself, or {@code id}, or the kind of thing followed by id. */
         CONVINCING,
-        /** Only written the way identifiers are, like {@code ownerId} inside a pet. */
-        ONLY_LOOKS_LIKE_ONE
+        /**
+         * Only written the way identifiers are, like {@code ownerId} inside a pet - or, for a gap
+         * named for a thing's name, {@code name}, or the kind of thing followed by name. Asked only
+         * after every value heard under the gap's own name, so that a value the API took under
+         * that very name - {@code {userName}} sent at a registration - is never pushed aside by a
+         * person's full name.
+         */
+        LESS_CONVINCING
     }
 
     /** Every step of asking the things of these kinds, the convincing ones first. */
@@ -237,7 +240,7 @@ public final class ObservedValueProvider implements ValueProvider {
                 anIdentifierOfTheThingsFor(request, kinds, Likeness.CONVINCING);
         return convincing.isPresent()
                 ? convincing
-                : anIdentifierOfTheThingsFor(request, kinds, Likeness.ONLY_LOOKS_LIKE_ONE);
+                : anIdentifierOfTheThingsFor(request, kinds, Likeness.LESS_CONVINCING);
     }
 
     /**
@@ -251,17 +254,18 @@ public final class ObservedValueProvider implements ValueProvider {
      * <p>Only two kinds of gap take a property that is not named exactly like them. One whose own
      * name is written like an identifier - {@code {petId}}, {@code {id}} - takes the thing's
      * {@code id}, and failing that whatever is written like an identifier. One named for a thing's
-     * name - {@code {productName}} - takes the product's {@code name}, and never an identifier. A
+     * name - {@code {productName}} - takes the product's {@code name}, though only once nothing has
+     * been heard under {@code productName} itself, and never an identifier. A
      * gap called {@code {username}} or {@code {slug}} is asking for something else, and a thing's
      * {@code id} put there would only push aside the document's own sample for it.
      */
     private Optional<GeneratedValue> anIdentifierOfTheThingsFor(ValueRequest request,
             List<Kind> kinds, Likeness likeness) {
         boolean namedLikeAnIdentifier = namedLikeAnIdentifier(request);
-        if (likeness == Likeness.ONLY_LOOKS_LIKE_ONE && !namedLikeAnIdentifier) {
+        boolean namedLikeAName = !namedLikeAnIdentifier && namedLikeAName(request);
+        if (likeness == Likeness.LESS_CONVINCING && !namedLikeAnIdentifier && !namedLikeAName) {
             return Optional.empty();
         }
-        boolean namedLikeAName = !namedLikeAnIdentifier && namedLikeAName(request);
         for (Kind kind : kinds) {
             List<ObservedValues.Observation> things =
                     seen.underTheKindOfThingTheyAre().thingsOfKind(kind.kept());
@@ -270,9 +274,9 @@ public final class ObservedValueProvider implements ValueProvider {
                 steps.add(name -> name.equals(request.name()));
                 if (namedLikeAnIdentifier) {
                     steps.add(name -> ObservedValues.isTheIdentifierOf(name, kind.kept()));
-                } else if (namedLikeAName) {
-                    steps.add(name -> ObservedValues.isTheNameOf(name, kind.kept()));
                 }
+            } else if (namedLikeAName) {
+                steps.add(name -> ObservedValues.isTheNameOf(name, kind.kept()));
             } else {
                 steps.add(ObservedValues::looksLikeAnIdentifier);
             }
