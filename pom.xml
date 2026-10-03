@@ -85,7 +85,7 @@
         <swagger-core.version>2.2.52</swagger-core.version>
         <okhttp.version>5.5.0</okhttp.version>
         <wiremock.version>3.13.2</wiremock.version>
-        <sqlite.version>3.50.3.0</sqlite.version>
+        <sqlite.version>3.53.4.0</sqlite.version>
         <jackson.version>2.22.1</jackson.version>
         <!-- Versioned separately from the rest of Jackson, and pinned here for a reason found the
              hard way: the schema validator's own JSON library needs 2.22, while another path
