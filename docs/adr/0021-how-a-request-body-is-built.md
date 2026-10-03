@@ -971,7 +971,29 @@ FeaturesService, GitHub, Restcountries, flight-search and kafka-rest-proxy.
 
 ### Measured
 
-Measured: (numbers to come)
+Five seeds, three minutes a run, the shipped plan at `537a66d8` with the switch on against the same
+build with it off, each API restarted before every run. Faults are distinct server failures counted
+the competition's way.
+
+- **person-controller, `memory.pluralIdentifiers`.**
+  - Operations answered 2XX: 8 in every seed, against 7.
+  - `/api/persons/{ids}` answered 2XX 533 times a run, against never.
+  - The same gap answered 500 2,216 times against 2,728 (-19%). The memory is one source among
+    several in the plan, and the other sources still invent.
+  - 2XX overall: 6,961 against 6,707.
+  - Distinct faults: 133.6 against 132.8, level.
+  - Branch coverage reads 3.33% in every run either way, so it does not tell the two apart.
+- **features-service, `memory.namesByResource`.**
+  - Operations answered 2XX: 17 in every seed, against 14.8 (14 to 16).
+  - Branch coverage: 40.5% in every seed, against 32.1% (29.8% to 39.3%).
+  - Distinct faults: 50.6 against 50.0, level.
+  - 500 "not found": 3,236 against 3,202, level.
+  - The gain is in the deep operations that need two or three names that belong together, each
+    answered 2XX once to three times a run more: `PUT .../features/{featureName}`,
+    `DELETE .../configurations/{configurationName}/features/{featureName}`,
+    `GET .../configurations/{configurationName}/features` and
+    `DELETE .../configurations/{configurationName}`. Product names were already reused through
+    M9.7, so `GET /products/{productName}` answered 2XX about 200 times a run either way.
 
 ### What was not done
 
@@ -1024,4 +1046,20 @@ operations that take a body declares `_links` or `_embedded` in it, at any depth
 
 ### Measured
 
-Measured: (numbers to come)
+market, the shipped plan at `537a66d8` with `generation.omitHalProperties` on against off, three
+minutes a run, the API restarted before every run. There were four runs on and three off, because
+the maintainer stopped the batch there as enough.
+
+- **With it off**, 909 to 937 requests a run carried `_links`. Every one was answered 500
+  "Expected relation name": about 375 a run were `POST /register`, and the rest were
+  `PUT /customer/cart` and `PUT /customer/contacts`.
+- **With it on**, no request carried either property, and none was answered that way.
+- **Everything else**:
+  - operations answered 2XX: 12 either way;
+  - 2XX: 7,323 against 7,161;
+  - branch coverage: 5.6% either way;
+  - distinct faults: 126.5 against 125.7, level.
+
+  The same operations were already reached by the requests without `_links`. So what the change
+  buys is about 920 requests a run that no longer go to an answer known in advance, and nothing
+  measured is lost.
