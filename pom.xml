@@ -94,7 +94,7 @@
              class path. Same reasoning as snakeyaml below; a worse failure, because it only shows
              up when everything is assembled. -->
         <jackson-annotations.version>2.22</jackson-annotations.version>
-        <json-schema-validator.version>3.0.7</json-schema-validator.version>
+        <json-schema-validator.version>3.0.8</json-schema-validator.version>
         <!-- Builds a string that matches a regular expression, which is what a specification's
              `pattern` asks for. Carries no dependencies of its own, and takes the run's own seeded
              java.util.random.RandomGenerator, so a run built on it is still repeated exactly. -->
