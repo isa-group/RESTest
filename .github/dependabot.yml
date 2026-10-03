@@ -26,6 +26,13 @@ updates:
           - org.apache.maven.plugins*
           - org.jacoco*
           - org.pitest*
+      # Pairs whose versions must move together, or the build mixes two releases of one library.
+      jackson:
+        patterns:
+          - com.fasterxml.jackson*
+      swagger:
+        patterns:
+          - io.swagger*
 
   # Keeps the commit-SHA pins in .github/workflows current. Dependabot rewrites both the SHA and
   # the trailing version comment, which is why that comment is required rather than decorative.

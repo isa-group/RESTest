@@ -20,7 +20,8 @@ You cannot edit anything. Report; do not fix.
 - No AI abstraction anywhere. Search the diff for `Llm`, `openai`, `anthropic`, `langchain`, `ollama`.
 - Nothing in the repository references the evaluation platform, in a file's contents or in its
   name, outside the documents named in `BENCHMARK_MAY_BE_NAMED_IN` in `SourceTreeRulesTest`. Run
-  that test rather than searching by hand.
+  that test rather than searching by hand:
+  `./mvnw -q -pl restest-arch-tests -am verify -Dtest=SourceTreeRulesTest -Dsurefire.failIfNoSpecifiedTests=false`.
 - Nothing from "Out of scope for v2.0" in `docs/DESIGN.md` has been started.
 - No architecture test, coverage threshold or mutation threshold has been weakened or disabled.
   Check the diff for changes to test files that remove or relax assertions.

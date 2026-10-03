@@ -10,8 +10,8 @@ Five real APIs: `flight-search`, `gestao-hospital`, `kafka-rest-proxy`, `noteboo
 `pet-clinic`. These are what the tool is evaluated against first, so this is the priority corpus —
 new parser, generation and oracle tests should exercise it before reaching into `community/`. All
 five declare `openapi: 3.0.x`. Exact provenance (upstream project, pinned commit, fetch date) is
-recorded in `ROADMAP.md` rather than duplicated here, so there is one place to update if a file is
-re-fetched.
+recorded in [the roadmap 2.0 was built by](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md#the-golden-corpus), the one place
+to update if a file is re-fetched.
 
 One licensing note worth carrying alongside the files themselves: of the five upstream projects, only
 `spring-petclinic/spring-petclinic-rest` (`pet-clinic`) is Apache-2.0. `confluentinc/kafka-rest`

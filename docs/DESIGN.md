@@ -128,7 +128,7 @@ The one architectural choice the principles above do not state. A run may persis
 observed, which is what makes honest post-hoc analysis possible: one run is one SQLite file,
 readable by anything that reads SQLite, and there is no second store.
 
-It is off unless `--store` asks for it. Measured at M1.7, keeping a run costs 661 MiB at the default
+It is off unless `--store` asks for it. Measured when it was built, keeping a run costs 661 MiB at the default
 budget and nothing in an ordinary run reads it back. Generation never reads it either way: the parts
 of the tool that need a memory listen to the event stream and keep their own bounded index, because
 they want what happened *recently* rather than everything, and querying the store would put a
@@ -196,8 +196,8 @@ intended:
   packages the tool for the benchmark and drives the campaigns. Deleting it changes nothing here.
 - **Nothing here references the benchmark.** No dictionaries shipped by it, no thresholds derived
   from its verification rules, no assumptions about its layout. A test fails the build if the
-  platform's name appears in any file of this repository other than the handful of documents — this
-  one among them — that explain the relationship.
+  platform's name appears in any file of this repository other than the one decision record that
+  explains the relationship.
 
 A tool that has absorbed assumptions from the benchmark it is measured on is both worse engineering
 and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reasoning and the layout.
@@ -210,7 +210,7 @@ lap, a mutation operator, a series of requests — has a switch in them
 ([ADR-0025](adr/0025-settings.md)), and a run records which switches it ran with. An ablation is
 therefore a file handed over with `--settings` or `--campaign` rather than a branch per variant, and
 its results say what they measured. [The switches](switches.md) lists every one, gives the files
-that turn off a whole increment or milestone at once and the plan without the memory of what the
+that turn off a whole idea or family of ideas at once and the plan without the memory of what the
 API returned, which is a source rather than a switch, and names the three older behaviours that
 have no switch yet. A test holds that page to the tool.
 
@@ -224,8 +224,8 @@ and stateful testing, black-box and white-box — are in the [glossary](#glossar
 ### AutoRestTest
 
 [AutoRestTest](https://github.com/selab-gatech/autoresttest), from Georgia Tech, came first in
-fault detection, efficiency and effectiveness in the most recent public comparison of black-box REST
-API testing tools. It works in two phases. Before testing begins it builds a dependency graph by
+fault detection, efficiency and effectiveness in a 2026 public comparison of black-box REST API
+testing tools. It works in two phases. Before testing begins it builds a dependency graph by
 comparing the *names* of parameters, body properties and response properties across operations —
 with a table of static word vectors, not a language model — and it asks a language model for a pool
 of candidate values for every parameter, refining them with the error replies of a couple of probe
@@ -287,7 +287,7 @@ regression-testing documented behaviour but is not designed to discover undocume
 
 ### RESTest 1.x
 
-[RESTest 1.x](https://github.com/isa-group/RESTest/tree/master), also from the ISA Research Group,
+[RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x), also from the ISA Research Group,
 implements constraint-based testing (CBT) driven by IDL, random testing, and ART in a single
 configurable pipeline. Limited stateful support is available via hand-written test flow
 configurations. RESTest 2.0 is a ground-up rewrite; the reasoning is in
@@ -309,12 +309,12 @@ as it ships.
 | [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 2.0, 3.0 | B | Random, IDL-constrained | CRUD nominal flows, error flows | Random, example-based, IDL-constrained | Status code classification, schema validation |
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
-| [RESTest 1.x](https://github.com/isa-group/RESTest/tree/master) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
+| [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
 | **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
 
 ## Out of scope for v2.0
 
-Deferred until v2.0 is functional and measured. Nothing here is started without explicit approval,
+Nothing here is started without explicit approval,
 even where it looks easy. Each entry names the seam it will use, so none of them requires
 re-architecting — which is the point of listing them at all.
 

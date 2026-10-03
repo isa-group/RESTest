@@ -45,7 +45,7 @@ and are taken where the order of work reaches what they serve.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 7.2a ▶ | **A container image and a GitHub Release on every tag.** A `Dockerfile` of the tool's own, at the root of the repository, which compiles RESTest from the source in one stage and runs it on a Java 21 runtime in the next, for `linux/amd64` and `linux/arm64`; `restest` as the entry point. On every tag the release workflow publishes it to GitHub's container registry, and JReleaser publishes a GitHub Release with a distribution archive — the jars and a launcher for Unix and for Windows — the PDF of the manual that `docs/manual/pdf.sh` builds, and checksums. The smoke job builds the image and runs it, not only the jars. The README's installation and use, the manual's chapter on installing, and `docs/DESIGN.md`'s distribution and stack gain the image. The workflow is run once by hand against `v2.0.0`, so that 2.0.0 has its image and archives. Nothing under `src/main` and no dependency changes | `docker run ghcr.io/isa-group/restest run <spec> --url <base>` works, and a release can be downloaded and run with nothing but Java |
+| 7.2a ▶ | **A container image and a GitHub Release on every tag.** A `Dockerfile` of the tool's own, at the root of the repository, which compiles RESTest from the source in one stage and runs it on a Java 21 runtime in the next, for `linux/amd64` and `linux/arm64`; `restest` as the entry point; nothing in it that knows how the tool is measured. On every version tag the release workflow publishes it to GitHub's container registry, and JReleaser publishes a GitHub Release with a distribution archive — the jars and a launcher for Unix and for Windows — the PDF of the manual that `docs/manual/pdf.sh` builds, and checksums, and then runs the image it published. The smoke job builds the image and runs it, not only the jars. The README's installation and use, the manual's chapter on installing, and `docs/DESIGN.md`'s distribution and stack gain the image. The workflow is run once by hand against `v2.0.0`, so that 2.0.0 has its image and archives. Nothing under `src/main` and no dependency changes | `docker run ghcr.io/isa-group/restest run <spec> --url <base>` works, and a release can be downloaded and run with nothing but Java |
 | 7.1 ⏭ | Maven Central publication through the Central Portal | `restest-core` usable as a dependency |
 | 7.2b ⏭ | Homebrew, SDKMAN, jbang | `brew install restest` |
 | 7.3 ⏭ 🛑 | GraalVM native binary with an executing smoke test; GitHub Action; documentation site, built from the Markdown the documentation is written in | Sub-100 ms startup, no Java needed, usable in anyone's CI |
@@ -68,7 +68,7 @@ them is built it is replayed over recorded runs to show it would not have stoppe
 | # | Increment | What it enables |
 |---|---|---|
 | 13.1 ⏭ | **Stop when the API refuses the run's credentials.** A rule about the whole API, never about one operation: once every answer over a stretch of the run — the opening lap's, and after it the last *N* — is 401, or 401 and 403, and nothing in it was accepted, the run stops sending, says which credentials it held and that the API refused them, and writes what a run cut short writes. The stretch, whether 403 counts, and the switch are settings. Once the rest of 2.6 lets the tool sign itself in, the requests before the sign-in do not count | A mistyped or forgotten key is found out in seconds, rather than after an hour of requests the API refused one by one; and an API whose owner revoked a key stops receiving them |
-| 13.2 ⏭ | **Wait when told to wait.** A 429, or a 503 that carries `Retry-After`, pauses every request to the API for as long as the header says — in either of its forms, a number of seconds or a date — or, where there is no header, for a wait that doubles each time up to a ceiling; the engine then starts again from its fewest requests in flight and climbs as it already does. The `RateLimit` fields being drafted at the IETF are read where an API sends them. A run still told to wait after *K* pauses, or told to wait past the end of its budget, stops as 13.1 does. The time spent waiting is reported as idle time, with its cause. Whether the request that was turned away is sent again after the wait is the row's to decide | An API that asks the tool to slow down is obeyed. Today a 429 is an ordinary answer, and a quick one, so the engine's limiter reads it as room to send *more* |
+| 13.2 ⏭ | **Wait when told to wait.** A 429, or a 503 that carries `Retry-After`, pauses every request to the API for as long as the header says — in either of its forms, a number of seconds or a date — or, where there is no header, for a wait that doubles each time up to a ceiling; the engine then starts again from its fewest requests in flight and climbs as it already does. The `RateLimit` fields being drafted at the IETF are read where an API sends them. A run still told to wait after *K* pauses, or told to wait past the end of its budget, stops as 13.1 does. The time spent waiting is reported as idle time, with its cause. Whether the request that was turned away is sent again after the wait is the row's to decide. No API RESTest 2.0 was measured against ever answered 429 or 503, so it is checked against a stub | An API that asks the tool to slow down is obeyed. Today a 429 is an ordinary answer, and a quick one, so the engine's limiter reads it as room to send *more* |
 | 13.3 ⏭ | **A ceiling on the rate.** The most requests a second the run may send, beside the most it may have in flight, which exists already: a setting, off by default | A person testing somebody else's staging server can promise its owner a rate, in one line |
 | 13.4 ⏭ | **Stop when the API stops answering.** When every request over a stretch goes unanswered — refused, reset, timed out — the engine keeps one in flight until one is answered, and the run stops once the API has been silent for a stated time, saying when it went silent. The limiter already falls to one request in flight as unanswered requests pile up; what is new is stopping, and saying so | A run that brought an API down stops making it worse, and the report says at what moment the API went silent — which is a finding in itself when the run is what silenced it |
 
@@ -202,10 +202,32 @@ borrowing an identifier.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 2.6 ⏭ | The rest of authentication. API keys, and a bearer token or a cookie somebody already holds, ship in 2.0 through `--auth`. Still to come: a user name with a password, handed over the same way; OAuth2 client credentials; a sign-in the tool performs itself — register, log in, and carry the token or cookie that comes back; refreshing what expires; and several credentials at once, which access-control oracles would need. The sign-in and the several users are what the authentication file of Web Fuzzing Commons describes, and four related tools already read it. ADR-0029 says how these fit behind the door `--auth` opens | Protected APIs stop returning 401 for everything |
+| 2.6 ⏭ | The rest of authentication. API keys, and a bearer token or a cookie somebody already holds given with its place, ship in 2.0 through `--auth`. Still to come: a bearer token, and a user name with a password, handed over the way a key is — named after the scheme the document declares, and sent only with the operations that ask for it, where 2.0 refuses a key given under a bearer scheme's name; OAuth2 client credentials; a sign-in the tool performs itself — register, log in, and carry the token or cookie that comes back; refreshing what expires; and several credentials at once — several users, which access-control oracles would need, or several keys taken in turn, as RESTest 1.x did. The sign-in and the several users are what the authentication file of Web Fuzzing Commons describes, and four related tools already read it. ADR-0029 says how these fit behind the door `--auth` opens | Protected APIs stop returning 401 for everything |
 | 2.7b ⏭ | Dictionary writer and disk cache. It waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8 | Good values computed once are kept, rather than worked out again every run |
 | 2.8 ⏭ | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking. A slow provider must not stall the run, and that is proven by its own test | Any program in any language can suggest input values without slowing the run |
 | 2.10b ⏭ | **A strategy's share honoured as a stretch of the clock** rather than drawn per request. A run with no memory chosen by the clock would no longer be repeated from its seed alone ([ADR-0026](docs/adr/0026-what-a-run-sends-first.md) §7), which is what the row has to settle | A share of the budget is honoured as one, rather than on average |
+
+### Smaller things 2.0 left for 2.x
+
+Each becomes a row of its own when it is taken.
+
+- **A coin of its own for optional parameters.** With `generation.optionalParametersBySize` off,
+  each optional parameter is decided on a coin weighted by `generation.optionalBodyChance`, the
+  number that also decides whether a request sends a body it may leave out, so an experiment cannot
+  change one without the other. [The settings](docs/settings.md#four-things-worth-knowing) say so;
+  a setting of its own corrects it.
+- **Accepted values without the cycle.** A value an accepted request carried is offered to the
+  other operations and not back to its own. But a value seen again replaces what was known of it: an
+  e-mail address goes from a registration to a login, the login is accepted, the memory then holds
+  the address as the login's, and the registration is offered it again and refused as already made.
+  The fix: a value keeps every operation that has accepted it, replaced neither when it is sent
+  again nor when a reply shows it, and is offered to none of them again.
+- **Whether `report.json` says that a run broke**, beside the exit code `4` that already does.
+- **Ideas measurements during 2.0 raised and did not settle**, each to be measured on the priority
+  corpus before it is built: drawing how many optional body properties to send before which, as is
+  done for parameters; a date where a date and time is declared; small whole numbers first; digits
+  for open text that an API reads as a number; two more strings among the values that push at an
+  API.
 
 ## M8 — Evaluation
 
@@ -259,6 +281,7 @@ a run learn from what it has already seen. 🛑 None is started without explicit
 
 The OpenAPI documents the tests run against live in `restest-spec/src/test/resources/specifications/`,
 in three directories: a priority corpus of five real APIs, which every increment exercises first, a
-wider corpus of real documents, and small fixtures written for one test each. Where each document
-comes from, and the commit it was taken at, is in
-[that directory's README](restest-spec/src/test/resources/specifications/README.md).
+wider corpus of real documents, and small fixtures written for one test each, described in
+[that directory's README](restest-spec/src/test/resources/specifications/README.md). Where each of
+the five priority documents was fetched from, and at which commit, is recorded with
+[the record of 2.0](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md#the-golden-corpus).

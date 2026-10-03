@@ -2,10 +2,10 @@
 description: Start the next increment from the roadmap (or the one given as an argument)
 ---
 
-Start work on an increment of RESTest 2.0.
+Start work on an increment of RESTest 2.
 
-Argument (optional): the increment number, e.g. `1.2`. If none is given, take the next unstarted
-increment from `ROADMAP.md` in order.
+Argument (optional): the increment number, e.g. `7.2a`. If none is given, take the next unstarted
+increment from `ROADMAP.md`, in the order of work it states.
 
 Current branch and status:
 

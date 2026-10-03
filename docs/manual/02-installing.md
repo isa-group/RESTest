@@ -82,7 +82,10 @@ From the root of the checkout:
 
 ```bash
 git pull
-./mvnw -q install -DskipTests
+./mvnw -q clean install -DskipTests
 ```
+
+`clean` throws away what the last build left behind, so that the jars of the version you had are not
+found beside the ones of the version you now have.
 
 The [next chapter](03-a-first-run.md) starts a practice API and runs RESTest against it.

@@ -14,7 +14,7 @@ what to look things up in afterwards.
 | [The campaign file](campaign-format.md) | The plan a run follows: where its values come from, how much of it pushes at the API, which operations it may touch |
 | [The dictionary format](dictionary-format.md) | Lists of values of your own, handed over with `--dictionary` |
 | [The settings](settings.md) | Every number that says how the tool behaves, with its default, and the four ways to change one |
-| [The switches](switches.md) | The settings that turn one thing a run does off, and what each was found to be worth |
+| [The switches](switches.md) | The settings that turn one thing a run does off, what leaving each on costs, and files that turn off a whole idea |
 
 ## Building RESTest
 

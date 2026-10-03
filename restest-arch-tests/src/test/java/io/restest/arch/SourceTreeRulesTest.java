@@ -101,7 +101,7 @@ class SourceTreeRulesTest {
     /**
      * The platform RESTest is measured against lives in a repository of its own, and this one must
      * know nothing about it. This test searches every file the repository contains and fails if the
-     * platform's name appears outside the handful of documents that explain the relationship.
+     * platform's name appears outside the one document that explains the relationship.
      *
      * <p>Checked as text rather than as a compiled dependency, because the danger is not only a
      * compiled reference. A path, a property name, a build property pinning the platform's version

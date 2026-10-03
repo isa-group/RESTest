@@ -13,7 +13,7 @@ restest run api.yaml --url http://localhost:9966 --settings settings.yaml
 
 The decisions behind all of this are in [ADR-0025](adr/0025-settings.md). The settings that are
 `true` or `false` and each turn off one thing the tool does are also listed on a page of their own,
-[the switches](switches.md), which says what turning each off does, what it was found to be worth,
+[the switches](switches.md), which says what turning each off does, what leaving it on costs,
 and gives the files that turn off a whole idea at once.
 
 ## Settings are not a plan

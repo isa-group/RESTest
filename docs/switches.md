@@ -366,8 +366,7 @@ strategies:
 
 Hand it over with `--campaign`. It takes identifiers by resource away too, since a gap filled from
 the things of its kind is filled from the same memory. What the memory is worth was measured when it
-was added, against a containerised pet clinic started afresh before every run: 27.8 of its
-operations answered 2XX without it and 31.6 with it, better on every one of five seeds.
+was added; the record of 2.0 has the numbers.
 
 A plan written for an earlier version of RESTest leaves out whatever strategies came after it: one
 written before accepted requests were changed, for example, has no strategy that changes them and

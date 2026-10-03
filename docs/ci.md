@@ -36,9 +36,9 @@ amendment explains why that beats the alternatives.
 
 ### The smoke job
 
-The second job, added at M1.7, runs the tool itself — `restest run` — against two open-source APIs
-in containers, runs it inside a plain Java 21 runtime (M1.11) — once as it is, and once with an API
-key in its environment (M11.3) — and then checks that the launcher starts:
+The second job runs the tool itself — `restest run` — against two open-source APIs
+in containers, runs it inside a plain Java 21 runtime — once as it is, and once with an API
+key in its environment — and then checks that the launcher starts:
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress verify -Psmoke
@@ -86,14 +86,14 @@ reading a document from a web address, which nothing else does.
 
 JaCoCo's agent is attached to every module's test run, and `report` runs at `verify`. A module only
 produces `target/site/jacoco/` once it has tests: with no tests there is no execution data, so the
-report goal skips and says so. Since M1.1a `restest-core` has both, so an HTML report is written
+report goal skips and says so. `restest-core` has both, so an HTML report is written
 under its `target/site/jacoco/` on every build — the first coverage output the project has had.
 
 The ubuntu / 25 row uploads whatever exists as the `jacoco-report` artifact, with
 `if-no-files-found: warn`. Warn rather than ignore on purpose: a silent green upload of nothing
 would hide both an empty build and a real break later.
 
-Since M1.6 there is a blocking threshold, on the two modules `docs/DESIGN.md` names under "Quality
+There is a blocking threshold on the two modules `docs/DESIGN.md` names under "Quality
 gates" and on no others: **90% of lines and 85% of branches**, enforced by the `check` goal
 configured in `restest-core/pom.xml` and `restest-oracles/pom.xml`. Both clear it with
 room to spare — `restest-core` 96% of lines and 94% of branches, `restest-oracles` 97% and 95%, when
@@ -129,8 +129,8 @@ around the exact number, which would assert the number rather than the behaviour
 ### Why the rules are tested
 
 A rule with no subjects passes whether it is correct or broken, which is the failure mode ADR-0004
-was written to prevent. Until M1.1a the production modules held nothing but `module-info.java`, so
-that was the state of every rule here, and three things guard against it.
+was written to prevent. While the production modules held nothing but `module-info.java`, that was
+the state of every rule here, and three things guard against it.
 
 First, no check reports a pass over an empty set. `ProductionArchitectureTest`, the bytecode scan
 and the harness-coverage comparison each skipped, **with the reason recorded against the skipped
@@ -157,16 +157,16 @@ The test compares how many classes each module compiled into `target/classes` ag
 rules actually imported. Counts, not presence — "at least one class arrived" would pass a module
 that compiled five hundred and shipped one.
 
-`allowEmptyShould(true)` remains on the individual production checks, for a reason that outlasts
-M0.2: the modules fill in across different milestones, so a rule scoped to one of them — the parser
+`allowEmptyShould(true)` remains on the individual production checks, for a reason that
+outlasts the first weeks: the modules fill in at different times, so a rule scoped to one of them — the parser
 confinement rule, now that `restest-core` holds classes and `restest-spec` does not yet —
 legitimately has an empty subject set for a while. What it must not excuse is every rule being empty
-at once, and since M1.1a that cannot happen quietly: the inward-dependency and no-network rules both
+at once, and that cannot happen quietly: the inward-dependency and no-network rules both
 have subjects, and `HarnessCoverageTest` fails if a module ever leaves the import.
 
 ### One rule narrowed, on evidence
 
-`noStaticMutableState` ignores *synthetic* fields since M1.1a. A `switch` over an enum declared in
+`noStaticMutableState` ignores *synthetic* fields. A `switch` over an enum declared in
 another class file makes the compiler generate a lookup table nobody wrote, and the two compilers
 this repository meets disagree about it. Both were checked on the same source:
 
@@ -264,17 +264,14 @@ same class, which is where to add one if you widen it again.
 ## Dependency updates
 
 `.github/dependabot.yml` asks for weekly pull requests for Maven dependencies and for the workflow
-actions, but **it is not in effect yet**. GitHub reads that file only from the repository's default
-branch, which is `master`, and `master` stays untouched until v2.0 replaces it (roadmap row 12.5).
-Until then nothing watches v2's dependencies: no update pull requests and no security alerts. Check
-for updates by hand before a freeze instead:
+actions. GitHub reads that file from the repository's default branch, `master`. The pairs that must
+move together have groups of their own — `jackson-core` with `jackson-annotations`, and
+`swagger-parser` with `swagger-core` — beside the test libraries and the build plugins. To see what
+is out of date without waiting for Monday:
 
 ```bash
 ./mvnw -q versions:display-dependency-updates versions:display-plugin-updates
 ```
-
-When the file takes effect, the pairs that must move together need groups of their own:
-`jackson-core` with `jackson-annotations`, and `swagger-parser` with `swagger-core`.
 
 Actions are pinned to commit SHAs, not tags. A tag can be repointed at any commit by whoever owns
 the action; a SHA cannot. The version in the trailing comment is what lets Dependabot recognise the
