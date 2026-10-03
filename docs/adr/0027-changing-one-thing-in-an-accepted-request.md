@@ -490,3 +490,10 @@ Schemathesis, RESTler, EvoMaster, RestTestGen and AutoRestTest showed RESTest's 
   over every other. And since the changes draw on the list, a list called `fuzzing` handed to a run
   whose plan does no pushing is no longer reported as one nothing will be sent from, unless
   `mutation.wrongType` is off.
+- **The measurement**: the eleven APIs of the 2026 edition, twenty minutes each, one run, against
+  the commit before these rows. Unique server failures by the benchmark's count, erc20 left out,
+  154 against 204 - better on six APIs and worse on none - and 563 against 835 by the reference
+  paper's; the kinds of exception named in the replies, 48 in both. Operations covered and branch
+  coverage did not move beyond one run's chance. A third campaign without the pushing strategy lost
+  23 of the 204 and coverage with them, so the strategy that pushes keeps its quarter.
+
