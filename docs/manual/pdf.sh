@@ -28,7 +28,7 @@ fi
 date=$(git -C "$root" log -1 --format=%cs "$ref")
 
 # pandoc with LaTeX and the Eisvogel template, at a version that does not move under the script.
-image=pandoc/extra:3.11.0-debian
+image=pandoc/extra:3.11.0-debian@sha256:fa8ccae75418449568f10f1842706aee1885ab24fba54f5aec08516260fc0166
 
 mkdir -p "$root/target"
 cd "$root"
