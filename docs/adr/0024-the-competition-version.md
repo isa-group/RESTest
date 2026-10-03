@@ -192,3 +192,18 @@ repository is made public as the replication package.
   decision expensive and puts it on the critical path. One Markdown source built to both HTML and
   PDF was approved instead, and only the choice of which to publish is left, at no cost. *Taken on
   1 October: the Markdown as GitHub shows it, and a PDF on the release (ROADMAP 12.3).*
+
+## Amendment (3 October 2026): 2.0.0 before the image
+
+§1 said that v2.0 closed includes a container image and a distribution archive published from the
+tag, and that `v2.0.0` is tagged on `master` on the day of the submission. The maintainer moved both
+on 3 October, once every row that changes a request had been merged and the code was taken as final:
+
+- `master` is replaced and `v2.0.0` tagged and released now, rather than on 8 October, so that the
+  day of the submission carries no release work. A code change the competition still needs after
+  this ships as 2.0.x, and the harness repository is pinned to whichever commit that is.
+- The image and the archive follow in 7.2a, on `master`. Its release workflow is run once by hand
+  against `v2.0.0`, so 2.0.0 gets its image and archives without a version of its own for them.
+- The clean-up `master` receives (ROADMAP 12.5) covers what a visitor reads; the decision records,
+  this one included, stay as they are, as the record of how 2.0 was decided. The whole record is on
+  the tag `history/2.0-development`.
