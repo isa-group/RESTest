@@ -12,11 +12,25 @@ file](../campaign-format.md).
 ./restest run --print-campaign
 ```
 
-```
-TO BE RUN: ./restest run --print-campaign
+writes out the plan, with comments that explain each part. Its strategies and their shares, picked
+out of it:
+
+```bash
+./restest run --print-campaign | grep -E 'name:|share:'
 ```
 
-It reads like this. A plan is a handful of **strategies**, each a way of building a request, with a
+```
+  - name: nominal
+    share: 45
+  - name: sequences
+    share: 10
+  - name: mutation
+    share: 20
+  - name: fuzzing
+    share: 25
+```
+
+A plan is a handful of **strategies**, each a way of building a request, with a
 **share** of the run out of a hundred:
 
 - `nominal` builds requests meant to be accepted.
@@ -65,7 +79,7 @@ method and path:
 
 ```yaml
 operations:
-  only: [listOwners, getOwner, "GET /pettypes"]
+  only: [listOwners, getOwner, "GET /api/pettypes"]
 ```
 
 An operation named here that the document does not have is reported before any request is sent,

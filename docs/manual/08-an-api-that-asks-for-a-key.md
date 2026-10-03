@@ -19,7 +19,11 @@ Run against the pet shop without a key, and the run says so before its first req
 ```
 
 ```
-TO BE RUN: the pet shop without a key (the first lines)
+RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
+
+19 of 19 operations can be tested, seed -2597290240742393242, budget 10s
+  2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
+  what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 ```
 
 The document declares a key called `api_key`, sent in a header of the same name, and two of the
@@ -33,11 +37,18 @@ pet shop's operations ask for it.
 ```
 
 ```
-TO BE RUN: the pet shop with --auth special-key (the first lines)
+RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
+
+19 of 19 operations can be tested, seed 5938395244660637024, budget 10s
+  the key given with --auth goes with 3 of them, in the header api_key; what the run writes says REDACTED-AUTH in its place
+  what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 ```
 
 RESTest sends the key where the document says, with the operations that ask for it, and nowhere
-else.
+else. It goes with three operations where two asked for it, because the pet shop's deletion of a pet
+also declares, among its own parameters, a header called `api_key`: an input named like the key is
+filled with the key. The last part of that line is the word the run writes wherever the key went,
+`REDACTED-AUTH`.
 
 `--auth` takes a key in one of three ways:
 

@@ -16,11 +16,36 @@ the API is.
 ## Seeing them
 
 ```bash
-./restest run --print-settings
+./restest run --print-settings | head -26
 ```
 
 ```
-TO BE RUN: ./restest run --print-settings (the first lines)
+# The settings this run uses, and where each of its values came from.
+#
+# Save this, change a line, and hand it back with --settings <file>. The same
+# values can be given as --set engine.maxConcurrency=8 on the command line, or as
+# RESTEST_ENGINE_MAX_CONCURRENCY=8 in the environment. What is typed on the command
+# line wins over the environment, which wins over a file, which wins over what
+# RESTest does when nobody has said otherwise.
+#
+# These are settings of the tool. Where a run's values come from, and which
+# operations it may touch, is a plan instead: --print-campaign writes one out.
+#
+# A setting written as a comment, such as "# callTimeout", follows others until
+# somebody gives it: change one of those and it moves with them. Take away the #
+# in front of its name to fix it at that value instead.
+
+engine:
+  # how long to wait for the API to accept a connection at all
+  connectTimeout: "10s"       # default
+  # how long to wait for the API to answer once connected
+  readTimeout: "30s"          # default
+  # how long to wait while sending a request body
+  writeTimeout: "10s"         # default
+  # the longest one request may take, its whole reply included, however slowly that arrives
+  # callTimeout: "1m"         # default
+  # the fewest requests kept in flight, however badly the API behaves
+  minConcurrency: 1           # default
 ```
 
 Every setting is printed, grouped, with a line saying what it does and a note saying where its value

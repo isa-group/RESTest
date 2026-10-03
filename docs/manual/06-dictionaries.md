@@ -69,7 +69,19 @@ jq '.dictionaries' restest-out/report.json
 ```
 
 ```
-TO BE RUN: jq '.dictionaries' with clinic.yaml
+{
+  "read": [
+    {
+      "name": "fuzzing",
+      "from": "the list of values to push with that is built into RESTest"
+    },
+    {
+      "name": "clinic",
+      "from": "clinic.yaml"
+    }
+  ],
+  "refused": []
+}
 ```
 
 A file under `read` was read. Being read is not the same as being used — the plan decides which

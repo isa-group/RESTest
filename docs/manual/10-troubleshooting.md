@@ -52,9 +52,10 @@ say whether the document declares one, and how to hand it over: see [chapter
 8](08-an-api-that-asks-for-a-key.md).
 
 **Nearly all `404`.** The requests are going to the wrong place. `--url` given with a path uses that
-path instead of the one the document declares, so `--url http://localhost:9966` keeps the document's
-`/petclinic/api` while `--url http://localhost:9966/api` replaces it. Compare the address in a
-fault's `curl` command with one you know works.
+path instead of the one the document declares, so for the clinic, whose document declares
+`http://localhost:9966/petclinic`, `--url http://localhost:9966` keeps `/petclinic` while
+`--url http://localhost:9966/other` replaces it. Compare the address in a fault's `curl` command with
+one you know works.
 
 **Mostly `400`.** The API refuses the values. Read a few of the replies — `jq '.findings'` in the
 report, or `run.sqlite` with `--store` — to see what it objects to, and hand over values it accepts

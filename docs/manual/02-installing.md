@@ -12,7 +12,9 @@ java -version
 ```
 
 ```
-TO BE RUN: java -version
+openjdk version "25.0.4.1" 2026-08-18
+OpenJDK Runtime Environment Homebrew (build 25.0.4.1)
+OpenJDK 64-Bit Server VM Homebrew (build 25.0.4.1, mixed mode, sharing)
 ```
 
 The first line has to say 21 or a higher number. If it says something lower, or the command is not
@@ -54,7 +56,8 @@ RESTest's own tests, which take longer than the build and which you do not need 
 ```
 
 ```
-TO BE RUN: ./restest version
+RESTest 2.0.0-SNAPSHOT
+Java 25.0.4.1 (Homebrew), Mac OS X 26.6.2 aarch64
 ```
 
 The first line says which RESTest you have, and the second which Java it runs on and on what
