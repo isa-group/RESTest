@@ -18,6 +18,17 @@ base URL; from those it generates test cases, executes them, and reports the fai
 The design target is deliberately narrow and deliberately hard: **an unknown API, no human
 configuration, a fixed time budget.** Everything below follows from those three constraints.
 
+What v2.0 does with them, as it ships: it reads the document into a model of its own, skipping and
+naming what it cannot test; sends every operation once with the request it is most likely to accept;
+then, until the budget runs out, builds requests from a plan of weighted sources — the values the
+document states, what the API has already returned, values invented to fit what the document says,
+lists of values a person hands over — while part of the run pushes at the API with values nobody
+sensible would send, changes accepted requests one thing at a time, and sends short series around the
+things it creates. Every reply is judged by two rules, a reply of 500 and a reply whose body is not
+the shape the document promised, and reported on the screen and in `report.json` with a `curl`
+command that repeats it. What a user sees of all this is in [`docs/`](README.md); how it is built is
+the rest of this page.
+
 v2.0 is a rewrite rather than a refactor of RESTest 1.x. The reasoning is recorded in
 [ADR-0002](adr/0002-rewrite-not-refactor.md); no source files carry over, though ideas, the IDL
 grammar and the test corpus do.
@@ -29,8 +40,8 @@ grammar and the test corpus do.
 | Specification formats | OpenAPI 2.0 (by conversion), 3.0.x and 3.1.x, through a single parser backend. Not 3.2, which is too recent to justify a second backend, and not 4.x, which has no specification text |
 | Testing style | Black-box only: the specification and the API's responses, never its source |
 | Test kinds | Stateless single requests, and stateful sequences across several operations |
-| Distribution | v2.0: command-line tool and container image, published from every tag. Library dependency, package managers and native binary follow in 2.x |
-| Release line | **v2.0 is the version submitted to the 2027 REST League** (tools due 9 October 2026). What that put first and what it left for 2.1 is [ADR-0024](adr/0024-the-competition-version.md); the calendar is in [`ROADMAP.md`](../ROADMAP.md) |
+| Distribution | A command-line tool, built from source |
+| Release line | **v2.0 is the version submitted to the 2027 REST League** (tools due 9 October 2026). The reasoning is [ADR-0024](adr/0024-the-competition-version.md); the calendar is in [`ROADMAP.md`](../ROADMAP.md) |
 
 Black-box is a property of the *tool*, not of the evaluation. Measuring how much of an API's code a
 run exercises requires instrumenting that API, which a benchmark harness does from outside; the tool
@@ -54,7 +65,6 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **Solver** | The component that does that computation. Behind an interface, so it is replaceable. |
 | **SPI** (Service Provider Interface) | A deliberately small Java interface that the core defines and *somebody else* implements. The core says "give me values for this parameter" without knowing who answers. Adding a capability then means writing one small class and putting it on the classpath — no change to the core. This is the mechanism that makes the tool extensible. |
 | **Event stream** | An internal broadcast: the engine announces what it is doing ("request sent", "response received", "failure found") and any number of independent listeners react. Adding an eighth report format does not touch the engine. |
-| **ODG** (Operation Dependency Graph) | A map, inferred automatically, of which operations produce data that other operations need. It tells the tool that `POST /pets` should run before `GET /pets/{id}`. |
 | **AUC** (Area Under the Curve) | A measure of *how fast* a tool achieves something, not just how much it achieves in the end. A tool that covers 15 operations in the first minute scores far better than one covering 15 in the last minute. |
 | **Idle time** | The fraction of the test budget during which the tool had no request in flight — time spent computing instead of testing. Reported on every run. |
 | **Opening lap** | The first round of a run: every operation sent once, each with the request it is most likely to accept, in steps — lists, then creations, then reads of one thing, then changes, then deletions — each waiting for the answers to the one before. It is what gets operations answered in the first seconds, which is what AUC rewards. Charged to the budget, reported as a phase of its own, and switched off with `schedule.openingLap=false`. |
@@ -62,12 +72,10 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **Fuzzing** | Sending deliberately malformed or extreme inputs to see whether the API handles them correctly. |
 | **Mutation** (of a request) | Taking a request the API *accepted* and sending it again with exactly one thing changed — a required value left out, a number one past the largest allowed, a body that is not JSON at all — so that whatever the API does next can be put down to that one change. Not to be confused with *mutation testing* below, which changes our own code. |
 | **Intent** | What a test case says was expected of the API when it was built: that it would be accepted, that it would be refused (and what was broken to make it so), that it is pushing at the API with awkward values, or nothing in particular. Recorded with every request, so that a rule judging the reply later knows which answer would have been right. |
-| **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. The same project publishes a file format for authentication — users, headers sent with every request, a sign-in whose token later requests carry — which four related tools read, and which is how RESTest's own authentication is meant to grow after v2.0 ([ADR-0029](adr/0029-the-key-an-api-asks-for.md) §11). |
+| **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. The same project publishes a file format for authentication — users, headers sent with every request, a sign-in whose token later requests carry — which four related tools read ([ADR-0029](adr/0029-the-key-an-api-asks-for.md) §11). |
 | **Security scheme, API key** | How a document says an API wants callers to prove who they are. It declares each way under a name — a *key* in a header, the query or a cookie; a bearer token; OAuth 2 — and says which operations need which. The document never holds the key itself: the person running the tool hands it over with `--auth`, RESTest sends it where the document says, and hides it in everything a run writes. |
 | **RESTGym** | The Docker-based infrastructure behind the SBFT REST League: it runs testing tools against a fixed set of instrumented APIs and computes comparable metrics. We drive it for milestone campaigns from a separate repository; nothing in this one references it. |
-| **ANTLR4** | A library for turning a grammar — the formal definition of a language such as IDL — into a parser. |
 | **ArchUnit** | A library for writing *tests about the structure of the code itself*, for example "no class in the core may depend on the network layer", so architectural rules fail the build instead of eroding silently. |
-| **Native image** | Compiling the tool into a standalone executable that starts in well under a second, with no Java installation required. |
 
 ## Design principles
 
@@ -95,9 +103,9 @@ explains why that is compiled rather than conventional.
 
 ```
 restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy
-                  dependencies beyond a streaming JSON reader and writer.
+                  dependencies beyond a streaming JSON reader and writer and a YAML reader.
 restest-spec      the only module allowed to reference the third-party OAS parser.
-restest-idl       IDL language, constraints, solver interface.
+restest-idl       IDL language, constraints, solver interface. Empty in v2.0.
 restest-gen       generation phases, value providers, scheduler.
 restest-exec      HTTP engine.
 restest-store     interaction store.
@@ -119,9 +127,8 @@ in everything that comes back before anything sees it.
 ### The interaction store
 
 The one architectural choice the principles above do not state. A run may persist everything it
-observed, which is what makes offline re-checking, corpus oracles and honest post-hoc analysis
-possible: one run is one SQLite file, readable by anything that reads SQLite. NDJSON is one of the
-report formats at M3.5, not a second store.
+observed, which is what makes honest post-hoc analysis possible: one run is one SQLite file,
+readable by anything that reads SQLite, and there is no second store.
 
 It is off unless `--store` asks for it. Measured at M1.7, keeping a run costs 661 MiB at the default
 budget and nothing in an ordinary run reads it back. Generation never reads it either way: the parts
@@ -134,15 +141,11 @@ database inside the request loop. The store is for looking back; the event strea
 ## Extension points
 
 These are architectural requirements rather than features, and they are the whole of what
-"extensible" means here. Each is verified during its milestone by writing a throwaway
-implementation, demonstrating it, and deleting it — so that the seam is known to be real rather than
-assumed. In v2.0 the non-blocking engine and `Oracle` have shipped implementations — the engine
-and its idle-time accounting since M1, the two oracles since 1.6 — which is a stronger proof than a
-throwaway one. Not yet exercised, and proven when their milestones are taken after v2.0:
-`ExternalDataProvider`, `ConstraintSource` and `FlowSource`, and `CorpusOracle`
-([ADR-0024](adr/0024-the-competition-version.md)). `FeedbackListener` has no milestone: its first
-implementation was to be the budget hygiene of 9.4, which was set aside before it was built
-([ADR-0017](adr/0017-what-we-take-from-autoresttest.md), M9.4 amendment).
+"extensible" means here. A seam is known to be real rather than assumed when something is built on
+it. In v2.0 two are: the non-blocking engine, with its idle-time accounting, and `Oracle`, with the
+two rules a run judges replies by. The other four are design constraints the rest of the code keeps
+room for, and v2.0 has no code for them; the items under [Out of scope for
+v2.0](#out-of-scope-for-v20) name which of them each would use.
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
 named after any technology, and no dependency on any model library.
@@ -168,7 +171,7 @@ how to reproduce it locally.
   termination outside the command-line module; nothing outside the command-line module reads the
   environment or the system properties, so that every number a run uses arrives by constructor and
   two runs in one program can differ.
-- **Mutation testing** on the oracle and constraint packages — deliberately corrupt our own code and
+- **Mutation testing** on the oracles — deliberately corrupt our own code and
   check that the tests notice. "Our tool finds bugs" is more credible when our own oracle logic has
   a measured score.
 - **Integration tests** against containerised open-source APIs.
@@ -176,11 +179,6 @@ how to reproduce it locally.
 - **A golden corpus of specifications** — large, real, ugly ones, with recursive references,
   composition chains and OAS 3.1 type arrays — asserting "parses without throwing, and reports
   exactly N skipped operations".
-- **Per-request overhead regression test** against a local stub with fixed latency. The comparison
-  is against our own measured overhead, not an arbitrary throughput floor, because throughput
-  depends on the API's response time and a fixed threshold would punish us for slow APIs.
-- **Native binary smoke test that actually runs the binary**, because a native build that succeeds
-  and then dies on first use is the classic failure mode.
 
 ## Evaluation
 
@@ -304,8 +302,8 @@ configurations. RESTest 2.0 is a ground-up rewrite; the reasoning is in
 
 The columns *stateless techniques* and *stateful techniques* name the core algorithmic strategy, not
 every configuration option. **OAS** — specification versions the tool accepts. **BB/WB** — B =
-black-box only; B+W = black-box and white-box modes both available. The last two rows show RESTest
-2.0 as it ships, and what the roadmap adds after it.
+black-box only; B+W = black-box and white-box modes both available. The last row shows RESTest 2.0
+as it ships.
 
 | Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
 |---|---|---|---|---|---|---|---|
@@ -318,26 +316,6 @@ black-box only; B+W = black-box and white-box modes both available. The last two
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/master) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
 | **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
-| RESTest 2.x (planned) | Java | 2.0, 3.0.x, 3.1.x | B | + CBT (IDL), ART, external providers | + property-level dependency graph, CRUD lifecycle model, declared links | + IDL-constrained, external providers | + WFC catalogue, HTTP-semantics, stateful and constraint-aware oracles, corpus oracles |
-
-## After v2.0
-
-Planned, numbered in [`ROADMAP.md`](../ROADMAP.md), and taken in order once v2.0 has shipped — no
-approval is needed to start them, unlike the table that follows. [ADR-0024](adr/0024-the-competition-version.md)
-says why each waited — all but M13, added on 29 September 2026 and taken first, whose reasons are
-in the roadmap.
-
-| Item | Roadmap rows |
-|---|---|
-| Safeguards: stop when the API refuses the run's credentials, wait when told to wait, a ceiling on the rate, stop when the API stops answering | M13 |
-| The WFC oracle catalogue, HTTP-semantics oracles, per-operation oracle configuration | 3.1, 3.2, 3.4 |
-| `CorpusOracle`, offline re-checking, the report formats beyond console and JSON | 3.3, 3.5, 3.6 |
-| The dependency graph over every property, with its synonym table and its measurement | rest of 4.1, 4.2 |
-| Declared links, the CRUD lifecycle model, stateful oracles, Arazzo | 4.3, rest of 4.4, 4.5, 4.6 |
-| IDL, the constraint solver, constraint-based generation and its oracles | M5 |
-| Live constraint and flow sources; the overhead regression test | M6 |
-| The rest of authentication — bearer tokens and user names with passwords handed over the way API keys are, OAuth2, a sign-in the tool performs itself, several credentials at once — since API keys ship in v2.0 as 11.3; the external value provider; the dictionary cache | rest of 2.6, 2.8, 2.7b |
-| Maven Central, package managers, the native binary | 7.1, 7.2b, 7.3 |
 
 ## Out of scope for v2.0
 
@@ -388,11 +366,9 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Build | Maven with wrapper | 3.9.16 |
 | OAS parser | `io.swagger.parser.v3:swagger-parser`, behind our own interface | 2.1.47 |
 | JSON Schema validation | `com.networknt:json-schema-validator`, confined to `restest-oracles` ([ADR-0014](adr/0014-response-conformance.md)) | 3.0.7 |
-| Command-line framework | picocli, with its code generator for native binaries | 4.7.7 |
+| Command-line framework | picocli | 4.7.7 |
 | HTTP client | OkHttp — network interceptors give exact request and response capture | 5.5.0 |
 | Concurrency | Virtual threads | JDK 21+ |
-| IDL parser | ANTLR4 | 4.13.x |
-| Constraint solver | Choco, behind an interface | 4.10.x |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
 | JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.1 |
 | YAML reader for the files a person writes | `org.yaml:snakeyaml`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M11.1) | 2.6 |
@@ -404,15 +380,12 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Mutation testing | PIT | 1.30.0 |
 | Architecture tests | ArchUnit | 1.5.0 |
 | Coverage | JaCoCo | 0.8.15 |
-| Release automation | JReleaser | 1.26.0 |
-| Maven Central publication | `central-publishing-maven-plugin` (Central Portal) | 0.11.0 |
 
 ## External references
 
 Standards:
 
 - OpenAPI Specification — https://spec.openapis.org/oas/
-- Arazzo Specification — https://spec.openapis.org/arazzo/
 - Web Fuzzing Commons, the shared fault catalogue — https://github.com/WebFuzzing/Commons
 
 Evaluation:

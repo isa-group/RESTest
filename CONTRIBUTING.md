@@ -7,12 +7,27 @@ RESTest 2.0 is a rewrite. It is being built in small, reviewable increments on t
 
 Read, in this order:
 
-1. `README.md` — what the tool does.
-2. `CLAUDE.md` — the rules of the project. Short, and binding on humans as much as on assistants.
-3. `ROADMAP.md` — what is being built, in what order, and where the review points are.
-4. `docs/adr/` — why the system is shaped the way it is. Eleven short files.
-5. `docs/DESIGN.md` — the architecture, the extension points and the quality gates, with a
+1. `README.md` — what the tool does, and how to install and run it.
+2. `docs/README.md` — the index of the documentation: a page per subject, from the command line to
+   every key of `report.json`.
+3. `CLAUDE.md` — the rules of the project. Short, and binding on humans as much as on assistants.
+4. `ROADMAP.md` — what is being built, in what order, and where the review points are.
+5. `docs/adr/` — why the system is shaped the way it is, one decision per file.
+6. `docs/DESIGN.md` — the architecture, the extension points and the quality gates, with a
    glossary of the terms used throughout the repository.
+
+## What 2.0 is, and what 2.x will be
+
+2.0 is a command-line tool that tests a REST API from its OpenAPI document alone: it builds requests
+from the document and from what the API answers, sends them for a fixed time, changes accepted
+requests one thing at a time, sends short series around the things it creates, and reports every
+reply of 500 and every reply that is not the shape the document promised. What it does is described
+in `README.md` and `docs/`, and how it is built in `docs/DESIGN.md`.
+
+What comes after it is in `ROADMAP.md`: the rows marked ⏭, taken in the order its "After v2.0"
+section gives. Those rows are planned and need no further approval to start. What is out of scope —
+the list under "Out of scope for v2.0" in `docs/DESIGN.md` — is not started without explicit
+approval, even where it looks easy.
 
 ## The loop
 

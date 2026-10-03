@@ -1,67 +1,64 @@
-# RESTest 2.0
+<img src="RESTLogo_Black.png" alt="RESTest" width="200">
 
 [![CI](https://github.com/isa-group/RESTest/actions/workflows/ci.yml/badge.svg?branch=v2)](https://github.com/isa-group/RESTest/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-> **This branch (`v2`) is a complete rewrite.** It is not backwards-compatible with RESTest 1.x.
-> The 1.x code and documentation remain on `master`.
+> **RESTest 2 is a complete rewrite.** From version 2.0 on, RESTest shares no code with RESTest 1.x
+> and is not compatible with it: the command line, the files it reads and the reports it writes are
+> all new, and nothing written for 1.x works with it. The last version of RESTest 1.x is
+> [1.6.0](https://github.com/isa-group/RESTest/releases/tag/restest-1.6.0).
 
-A black-box testing tool for REST APIs. Provide an OpenAPI specification; RESTest generates and
-executes test cases and reports the failures it finds — with zero configuration to get started.
+# RESTest
 
-## Status
+A black-box testing tool for REST APIs. Give it an OpenAPI document and the address of the API it
+describes; RESTest invents requests from the document, sends them for as long as you allow, checks
+every reply against what the document promised, and reports what it found wrong — each fault with a
+`curl` command that sends the same request again.
 
-Active development. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan and
-[`docs/DESIGN.md`](docs/DESIGN.md) for the architecture and design rationale.
+Nothing has to be configured first. RESTest reads OpenAPI 2.0, 3.0 and 3.1, and it never looks at
+the API's code: the document and the replies are all it needs, so the API can be written in any
+language and run anywhere.
 
-## License
+## Installation and use
 
-Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+### What you need
 
-## Building
+Java 21 or later — a JDK to build RESTest, and a plain Java runtime to run it afterwards — and git.
 
-Requires JDK 21 or later and Git.
+### Install from source
 
 ```bash
-git clone https://github.com/isa-group/RESTest.git
+git clone --branch v2 https://github.com/isa-group/RESTest.git
 cd RESTest
-git switch v2
-./mvnw verify
+./mvnw -q install -DskipTests
 ```
 
-That builds all ten modules, runs the test suite and checks the architecture rules. Every push and
-pull request runs the same command on Linux, macOS and Windows against Java 21, 25 and 26 — see
-[docs/ci.md](docs/ci.md).
+The first build downloads what RESTest is built from and takes a few minutes; the ones after it, less
+than one. `./restest`, at the root of the checkout, then runs what was built. On Windows, run it from
+Git Bash.
 
-## Running it
+### Your first run
 
-One command, an OpenAPI document and an address:
+One command, a document and an address. This one tests the pet shop that the OpenAPI project keeps
+online as a demonstration, for ten seconds:
 
 ```bash
-./mvnw -q install -DskipTests
 ./restest run https://petstore3.swagger.io/api/v3/openapi.json \
-    --url https://petstore3.swagger.io/api/v3 --budget 10s --seed 20260914
+    --url https://petstore3.swagger.io/api/v3 --budget 10s
 ```
 
-That last one is somebody else's public demonstration server, and RESTest tests an operation that
-creates something by creating something: a run leaves pets, orders and users behind wherever it is
-pointed. Keep the budget short if you are a guest there, and point `--url` at a copy of your own for
-anything longer — or for anything you would mind having written to.
+That server is somebody else's, and RESTest tests an operation that creates something by creating
+something: a run leaves pets, orders and users behind wherever it is pointed. Keep runs there short,
+and point `--url` at a copy of your own for anything longer, or for anything you would mind having
+written to.
 
-Building needs a JDK; running what was built does not: RESTest runs on a plain Java 21 runtime, an
-`eclipse-temurin:21-jre` image included. A build that asks for containers — `./mvnw verify -Pit`, and
-the smoke job on every pull request — compiles the tool and runs it inside one of those images to
-check that this stays true.
-
-RESTest reads the document, invents requests from it, sends them for as long as you gave it, judges
-every reply against what the document promised, and prints each disagreement with a `curl` command
-that does it again. This is the shape of what it prints, from one run of the command above; the
-numbers in it are that run's and yours will be different:
+What it prints begins like this, saying what it will test and then printing each fault as it finds
+it. The numbers are one run's, and yours will be different:
 
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-19 of 19 operations can be tested, seed 20260914, budget 10s
+19 of 19 operations can be tested, seed -2533421039499011723, budget 10s
   2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
@@ -69,168 +66,183 @@ F100  HTTP Status 500
       getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
       the API answered 500, so it fell over while handling this request
       curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+```
 
+A fault of the other kind, later in the same run, says what in the reply was not the shape the
+document gives:
+
+```
+F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+      getPetById - GET https://petstore3.swagger.io/api/v3/pet/1022725  ->  200
+      the body does not match the shape the specification declares for it, answering 200 as application/json
+        /status: does not have a value in the enumeration ["available", "pending", "sold"]
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/pet/1022725' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0'
+```
+
+After fifty faults the screen stops printing them, and the run ends with a summary:
+
+```
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-567 requests to 19 operations in 10.4s, 13% of it idle
-  opening lap: 19 requests in 2.3s, 9 of 19 operations answered 2xx
-  171 2xx, 245 4xx, 151 5xx
-  112 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 245 refusals above
-  34 of them changed one thing in a request the API had accepted, 34 of them breaking what the description states
+716 requests to 19 operations in 10.3s, 13% of it idle
+  opening lap: 19 requests in 2.1s, 8 of 19 operations answered 2xx
+  186 2xx, 242 4xx, 288 5xx
+  141 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 242 refusals above
+  44 of them changed one thing in a request the API had accepted
+  4 of them were steps of 2 series about a thing the run created: createTwice 2, deleteTwice 2; 13 creation(s) meant to begin one were not accepted
   11 operation(s) answered 500, 11 answered some 5xx
-184 faults:
-  151 x F100  HTTP Status 500
-  33 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (126.1 KiB)
+336 faults:
+  288 x F100  HTTP Status 500
+  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (163.1 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
-The line under the first one says how the run began. Before anything is chosen by chance, every
-operation it can test is sent once, with the request it is most likely to accept — only what the API
-requires, a body wherever the document describes one, and for each value the best any source has,
-the document's closed list of accepted values where it states one and then a value the API has
-already handed back — in steps: the lists of what is there, then what
-creates, then what reads one thing, then what changes, and deletions last, each step waiting for the
-answers to the one before so that an identifier just handed back can be sent by the next. It is paid
-for out of the budget like everything else. Measured against two containerised APIs restarted before
-every run, five seeds, a minute each: kafka-rest-proxy had 28.6 of its operations answered 2XX two
-seconds in with that round against 14.2 without it, pet-clinic 30.8 against 19.6 five seconds in,
-and the area under that curve — which is what the competitions RESTest is measured in reward — rose
-17% and 15%. `--set schedule.openingLap=false` switches it off.
+### Reading what it says
 
-The line after it — `171 2xx, 245 4xx, 151 5xx` — is worth a glance even when nothing is wrong. If
-almost everything comes back refused, the requests were the problem rather than the API.
+- **The top** says what will be tested: how many of the document's operations RESTest can send
+  requests to, the seed and the budget, and anything worth knowing before the first request — here,
+  that two operations want a key nobody gave.
+- **Each fault** is printed as it is found: its kind, by a number from a catalogue other testing
+  tools share (`F100` is a reply of 500), the request and what the API answered, what is wrong, and
+  a `curl` command that does it again.
+- **The summary** says how much was sent and how it was answered. `186 2xx, 242 4xx, 288 5xx` is
+  worth a glance even when nothing is wrong: if almost everything was refused, the requests were the
+  problem rather than the API. `11 operation(s) answered 500` counts operations rather than replies,
+  and is the number worth quoting, since one broken operation asked six hundred times is six hundred
+  broken replies.
+- **`report.json`**, in `restest-out/`, has all of it for a program to read: every fault counted,
+  every operation and kind of fault that went wrong, the first few faults of each kind written out
+  whole, every operation that could not be tested and why, and every setting the run used.
 
-The last line before the faults counts operations rather than replies, and that is the number worth
-quoting. A run spends its whole budget, so one broken operation asked six hundred times produces six
-hundred broken replies; how much of the API is broken is the other number.
+[What a run leaves behind](docs/report.md) goes through every line and every key, and [The faults
+RESTest reports](docs/faults.md) says what each kind of fault means.
 
-This run could try all nineteen operations. When a document has some RESTest cannot test — a file
-upload, say, a parameter written in a style requests are not assembled in yet, or an operation it
-found but could not read — the count says so (`17 of 19 operations can be tested`), and the summary
-names them after its verdict, because "no faults found" says nothing about an operation that was
-never tried. The screen names the first five, each with the reason; `report.json` names every one.
+## What a run does
 
-One file is left behind: `report.json`, for anything that reads a run rather than looks at it. It
-counts every fault exactly, lists every operation and kind of fault that went wrong, says how the
-API answered across every attempt, names every operation it found and could not try, and why,
-and writes the first few faults of each kind out whole — the request, the reply and a `curl`
-command that does it again. Faults are counted twice over: by their catalogue number, which is what
-makes a run comparable with another tool's, and by the class of status code that carried them,
-which is what a developer looks for first.
+1. **It reads the document**, and sets aside what it cannot test — a file upload the API insists on,
+   say — naming each
+   operation and the reason, so that `no faults found` is never read as covering an operation that
+   was never tried.
+2. **It sends every operation once**, with the request it is most likely to accept, before anything
+   is left to chance: lists first, then creations, reads of one thing, changes and deletions, each
+   step waiting for the answers to the one before so that an identifier just handed back can be
+   used by the next. [The first round of a run](docs/campaign-format.md#the-first-round-of-a-run).
+3. **Then, until the budget runs out, it draws requests**, by the plan RESTest carries:
+   - nearly half are built to be accepted, from the values the document states, from what the API has
+     already returned — identifiers that exist rather than invented ones — from values it makes up
+     to suit what the document says, and from lists of your own;
+   - about a quarter push at the API with values nobody sensible would send — an empty word, a
+     number one past the largest 32-bit integer, text where a number belongs — since an API that
+     falls over on one of those has a fault whatever was sent
+     ([how much of a run pushes](docs/campaign-format.md#how-much-of-a-run-pushes-at-the-api));
+   - about a fifth take a request the API accepted and send it again with exactly one thing broken,
+     which gets past every check the API makes but one
+     ([changing one thing](docs/campaign-format.md#changing-one-thing-in-a-request-that-worked));
+   - about a tenth turn a creation into the first step of a short series about the thing created —
+     delete it and read it again, create it twice
+     ([series](docs/campaign-format.md#series-of-requests-around-a-thing-the-run-created)).
+4. **It judges every reply**: a 500 is a fault, and so is a reply whose body is not the shape the
+   document promised.
 
-Add `--store` and a second file, `run.sqlite`, keeps every request and reply, so the run can be
-examined again later without asking the API anything. It is off by default because a minute against
-a fast API keeps hundreds of megabytes, and nothing in an ordinary run reads them back. A directory
-holds one run: starting another in the same place replaces what is there, so a run worth keeping is
-given a directory of its own with `--out`.
+The whole budget is used, reading the document included. The share of it in which RESTest had
+nothing in flight is reported as *idle*, and kept as close to nothing as possible.
 
-A quarter of the requests in a run are not meant to work. They are built from values nobody sensible
-would send — an empty word, a number one past the end of a 32-bit integer, text where a number
-belongs — because an API that falls over on one of those is a fault whatever was sent, and ordinary
-requests never ask. The summary says how many requests were of that kind, so their refusals do not
-read as the API turning away ordinary traffic. The quarter is a line of the plan RESTest carries,
-which `restest run --print-campaign` writes out: a copy handed back with `--campaign` can give it
-another share, or leave that strategy out.
+Because a run learns from the API's replies, running the same command twice makes two similar runs
+rather than the same one, even with the same `--seed`. `--store` keeps every request and reply of the
+run you had, in `restest-out/run.sqlite`, and [Getting the seed
+back](docs/switches.md#getting-the-seed-back) has the files that make a run repeatable from its seed.
 
-Another fifth take a request the API has already accepted and send it again with exactly one thing
-changed: something it requires left out, a number one past the largest it allows, a word where it
-wants a number, a value off the closed list it states, a number too large for the kind of number the
-document names — or the body broken as a whole: no bytes at all, JSON cut off halfway, a list where
-an object belongs, the right body under the wrong media type. An API checks what it is sent
-before acting on it, and a request with many things wrong is turned away by the first check; one
-with a single thing wrong gets past every check but that one, which is where the failures a correct
-request never reaches tend to be. The summary says how many requests were changed this way. Every
-kind of change can be switched off, and [docs/settings.md](docs/settings.md#mutation) lists them.
-The other way round, the values *you* know are good — real identifiers, the
-surnames the API actually holds — go in a YAML file next to the specification and are handed over
-with `--dictionary`, which takes a file or a directory and may be repeated;
-[docs/dictionary-format.md](docs/dictionary-format.md) is the format.
+## Making a run yours
 
-A run also learns from the API as it goes. When a request comes back with a reply the API was happy
-with, what that reply contained is kept, and the next request that needs a value of the same name
-sends one the API itself produced — an identifier that exists rather than an invented number that
-reaches a 404, and, where the document names the shape of what an operation wants sent, a whole
-thing the API returned with one value in it changed (or, when nothing in it can be varied, sent
-as it came back and recorded as that). Measured against two containerised APIs,
-restarting each before every run: 27.8 of pet-clinic's operations answered 2XX without this and
-31.6 with it, better on every one of five seeds.
+Every one of these is optional.
 
-It costs one promise, and so do two other things a run does. Changing accepted requests costs it,
-since which requests were accepted is the API's answer too. So does the tenth of the run that turns
-a creation into the first request of a short series about the thing created — delete it and read it
-again, create it twice — each step built from the answer to the one before. What such a run sends
-depends on what the API answered, so `--seed` on its own no longer repeats it — it makes a similar
-run rather than the same one. `--store` keeps every request and reply of the run you actually had,
-which is the record to go back to; sending those requests again is a later milestone's job. Taking
-`source: observed` out of the plan below, where three of its strategies name it, and switching both
-the changes and the series off puts the old promise back exactly:
-[docs/switches.md](docs/switches.md#getting-the-seed-back) has the plan and the file of settings
-that do it.
+**Values you know are good** — identifiers that exist, the names the API actually holds — go in a
+YAML file and are handed over with `--dictionary`, which takes a file or a directory and may be
+repeated:
 
-Which of those a run prefers, and in what proportion, is itself a file. `restest run
---print-campaign` writes out the plan RESTest follows when it is given none: which sources fill in
-a value and in what order, how much of the run pushes at the API, and which operations it may touch
-at all. Save it, change a line, hand it back with `--campaign`. One line worth knowing about is the
-filter, since a run writes to whatever it is pointed at — `methods: [GET, HEAD, OPTIONS, TRACE]`
-keeps it to the requests HTTP calls *safe*. [docs/campaign-format.md](docs/campaign-format.md) is
-the format.
+```yaml
+version: 1
+name: pet-ids
+keyedBy: name
+values:
+  petId: [1, 2, 3]
+```
 
-That plan is about the API. How the tool itself behaves — how many requests it keeps in flight, how
-long an invented word is, how much of a reply it keeps, how long it waits — is a separate thing,
-because those numbers would mean the same against a different API on the same machine. `restest run
---print-settings` writes out all seventy-nine of them, each with a line saying what it does and a note
-saying where its value came from, and that output is a file you hand back with `--settings`. One of
-them without a file: `--set engine.maxConcurrency=1`, which is the answer to an API that falls over
-when asked two things at once. The same names work as environment variables,
-`RESTEST_ENGINE_MAX_CONCURRENCY=1`, which is how a container is configured. Every run writes the lot
-into `report.json`, so a directory of results carries the configuration that produced it.
-[docs/settings.md](docs/settings.md) is the list, and it shows the file `--print-settings` writes so
-you can see one without building anything. Thirty-two of the settings are switches, `true` or
-`false`, each turning off one thing the tool does, so that what it is worth can be measured by
-running the same tool with it and without it. [docs/switches.md](docs/switches.md) lists them with
-what each was found to be worth, and gives the files that turn off a whole idea at once.
+```bash
+./restest run openapi.yaml --url http://localhost:8080 --dictionary pet-ids.yaml
+```
 
-An API that asks for a key answers every request without it with a 401, and a run of refusals
-finds nothing behind them. The pet shop's document asks for one on two operations, and the run above
-says so under its count of operations. `--auth` hands the key over, and RESTest sends it where the
-document says — in a header, the query or a cookie — with the operations that ask for it:
+[The dictionary format](docs/dictionary-format.md).
+
+**The plan** — where values come from, how much of a run pushes at the API, which operations it may
+touch — is a file. `--print-campaign` writes out the one RESTest follows; save it, change a line,
+and hand it back with `--campaign`.
+
+```bash
+./restest run --print-campaign > plan.yaml
+./restest run openapi.yaml --url http://localhost:8080 --campaign plan.yaml
+```
+
+A block worth knowing, since a run writes to whatever it is pointed at: added to the plan, this keeps
+it to the requests HTTP calls *safe*, the ones that change nothing.
+
+```yaml
+operations:
+  methods: [GET, HEAD, OPTIONS, TRACE]
+```
+
+[The campaign file](docs/campaign-format.md).
+
+**How the tool behaves** — how many requests it keeps in flight, how long it waits, how much of a
+reply it keeps — is a setting. `--set` changes one, `--settings` reads a file of them, and each is
+also an environment variable, which is how a container is configured. `--print-settings` writes every
+one out, with what it does and where its value came from:
+
+```bash
+./restest run openapi.yaml --url http://localhost:8080 --set engine.maxConcurrency=1
+RESTEST_ENGINE_MAX_CONCURRENCY=1 ./restest run openapi.yaml --url http://localhost:8080
+```
+
+That one is the answer to an API that falls over when it is asked two things at once. [The
+settings](docs/settings.md), and [the switches](docs/switches.md) — the settings that each turn off
+one thing a run does.
+
+**An API that asks for a key** refuses every request without it. `--auth` hands it over, and RESTest
+sends it where the document says, with the operations that ask for it:
 
 ```bash
 ./restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s --auth special-key
 ```
 
-`special-key` on its own is enough when the document declares one key, as the pet shop does. With
-several, name the one it is for: `--auth api_key=special-key`. For a document that declares none,
-say where the key goes, and it goes with every request: `--auth header:X-API-Key=…`, or `query:` or
-`cookie:` in place of `header:`. That is also how a bearer token or a session cookie you already hold
-goes: `--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…`. Repeat `--auth` for
-several. `RESTEST_AUTH` holds the same as one `--auth`, so that a key need not be typed where a shell
-remembers it. It goes to whatever API a run tests while it is set, so set it for the run it is meant
-for — `RESTEST_AUTH=… ./restest run …` — rather than once for every run. Before its first request a run says where each key goes:
+A bearer token or a session cookie you already hold goes the same way:
+`--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…`. The key is written into
+nothing the run leaves behind: the screen, `report.json` and its `curl` commands show `REDACTED-AUTH`
+where it went — or, for a key given with its name or its place, a longer word such as
+`REDACTED-AUTH.api_key`, which the run names before its first request. A `curl` command copied from a
+report is run by putting the key back in place of that word. [Handing over a key or a token](docs/command-line.md#handing-over-a-key-or-a-token).
 
-```
-  the key given with --auth goes with 3 of them, in the header api_key; what the run writes says REDACTED-AUTH in its place
-```
+## Exit codes
 
-The key is written into nothing the run leaves behind. The screen, `report.json` with its `curl`
-commands, and the stored run all show `REDACTED-AUTH` where it went, or `REDACTED-AUTH.api_key`
-for a named scheme. So a `curl` command copied from a report is run by putting the key back there.
-An API that repeats the key back in its replies has it hidden there too, and the run says at the
-end how many replies did.
-[ADR-0029](docs/adr/0029-the-key-an-api-asks-for.md) has the rules: which operations get a key, what
-fills an input the document declares under the key's name, and what is refused.
+A run ends with `0` when it found nothing wrong, `1` when it found at least one fault, and another
+number when it could not do its job — a wrong command line, nothing it could test, RESTest itself
+breaking, or a run stopped with Ctrl-C. A build server can go red on anything but `0`.
+[The exit codes](docs/command-line.md#exit-codes) says what each number means.
 
-Nothing else is required. `--url` is only needed when the document does not name an address you
-can reach; it says which machine, so an API the document describes as living under a directory is
-still tested there unless you give a path of your own. `--budget` defaults to a minute. The whole
-of that budget is used, reading the document included — the percentage the run reports is how much
-of the time RESTest had nothing in flight, which is the number this project measures itself on.
+`./restest help run` lists every option, and [the command line](docs/command-line.md) has the same on
+one page; `./restest version` says which RESTest and which Java you have.
 
-The command answers `0` when it found nothing wrong, `1` when it found a fault, and something else
-when it could not do its job. `restest help run` lists every option and what each number means, and
-[docs/command-line.md](docs/command-line.md) has the same on one page, with the variables the tool
-reads and what stays the same across every 2.x version; `restest version` says which RESTest and
-which Java you have. The `./restest` script runs the build in this checkout — proper packaging comes
-later.
+## Documentation
+
+[`docs/`](docs/README.md) has a page for each subject: the command line, what a run leaves behind,
+the faults, the plan, dictionaries, the settings and the switches — and, for working on RESTest
+itself, the design, continuous integration and the decision records.
+
+## Contributing
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says how a change is proposed, built and reviewed.
+
+## License
+
+Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
