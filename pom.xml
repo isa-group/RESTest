@@ -68,7 +68,7 @@
         <!-- Versions fixed by the stack table in docs/DESIGN.md. -->
         <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
-        <archunit.version>1.5.0</archunit.version>
+        <archunit.version>1.5.1</archunit.version>
         <jacoco.version>0.8.15</jacoco.version>
         <picocli.version>4.7.7</picocli.version>
         <testcontainers.version>2.0.5</testcontainers.version>
