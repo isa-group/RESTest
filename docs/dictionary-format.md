@@ -260,15 +260,17 @@ value the document has already refused. The one exception is an enumeration none
 could be put where that parameter goes — every one of them empty, in a path — which is read as no
 enumeration at all, because the alternative is an operation that can never be tested.
 
-> **A list replaces what RESTest would otherwise have sent for the values it covers — it is not added
-> to it.** A file offering two surnames under `string` makes *every* piece of text in the API send one
-> of those two, for the whole run: every text parameter, and every text property of every body, since
-> a list is asked for each piece of a value as well as for the value itself. Keying narrowly does not
-> change that; it changes how much it covers. A list keyed by `name` covers every place of that name,
-> a parameter and a property alike; one keyed by `operationAndParameter` covers the places you name
-> and leaves the rest of the API alone, which is usually what somebody adding "a few good names"
-> wants. Having your values sent *as well as* invented ones is a different thing, and RESTest cannot
-> do it yet.
+> **In the plan RESTest carries, a list is one voice among several, not a replacement.** Its requests
+> meant to work draw from a weighted group: the document's samples and defaults, values invented to
+> fit, what the API has returned, and your lists. Every source in the group that has an answer for a
+> place is asked, and one answer is drawn by weight. Your lists weigh 40 of 100, so where all five
+> answer, about two requests in five carry one of your values, and more where fewer of the others
+> have anything to say. How widely a list is keyed decides where it is a voice: two surnames under
+> `string` are offered for every piece of text in the API, every text parameter and every text
+> property of every body, while a list keyed by `operationAndParameter` is offered only at the places
+> you name. To make your lists the only answer wherever they have one, write a plan that asks
+> `dictionaries: given` before the group: sources outside a group are asked in order, and the first
+> answer is taken ([the campaign file](campaign-format.md#sources)).
 
 ### `observed` is not one of these
 
