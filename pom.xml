@@ -77,7 +77,7 @@
              swagger-parser upgrade that changes it is a visible, reviewed version bump rather than
              whatever Maven's dependency mediation happens to resolve (ADR-0007's own complaint about
              RESTest 1.x's undeclared swagger-parser dependency, repeated one level down). -->
-        <snakeyaml.version>2.6</snakeyaml.version>
+        <snakeyaml.version>2.7</snakeyaml.version>
         <!-- Same reasoning as snakeyaml below: restest-spec's own source writes the parsed document
              back out with io.swagger.v3.core.util.Json, so the library that provides it is pinned
              here rather than left to whatever swagger-parser happens to resolve. Must move with
