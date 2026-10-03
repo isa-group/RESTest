@@ -141,9 +141,11 @@ class FuzzingFindsWhatNominalMissesTest {
 
         // The changes made to accepted requests switched off in both runs, so that the list of
         // awkward values is the only thing that differs between them.
-        String withAwkwardValues = run(directory.resolve("with"), document,
+        // Longer than the other runs here: the empty search term is one of the many awkward values
+        // a run holds, drawn by chance, and two seconds on a slow build machine may not reach it.
+        String withAwkwardValues = runFor("5s", directory.resolve("with"), document,
                 "--set", "mutation.violations=false");
-        String withoutThem = run(directory.resolve("without"), document,
+        String withoutThem = runFor("5s", directory.resolve("without"), document,
                 "--campaign", plan(directory, NEVER_PUSHES).toString(),
                 "--set", "mutation.violations=false");
 
@@ -345,10 +347,14 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     private static String run(Path out, Path document, String... extra) {
+        return runFor("2s", out, document, extra);
+    }
+
+    private static String runFor(String budget, Path out, Path document, String... extra) {
         java.util.List<String> arguments = new java.util.ArrayList<>(java.util.List.of(
                 "run", document.toString(),
                 "--url", api.baseUrl(),
-                "--budget", "2s",
+                "--budget", budget,
                 "--out", out.toString()));
         arguments.addAll(java.util.List.of(extra));
         StringWriter screen = new StringWriter();
