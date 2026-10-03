@@ -138,8 +138,15 @@ clinic again between them.
 ## Asking the stored run
 
 A run made with `--store` keeps every request and reply in `run.sqlite`, an ordinary SQLite database
-with one table, `interaction`. [`sqlite3`](https://sqlite.org/cli.html), SQLite's own command-line
-tool, asks it anything:
+with one table, `interaction`. Every run replaces what the one before left in `restest-out/`, the
+stored run included, so if your last run was not made with `--store` — the one stopped with Ctrl-C at
+the end of the last chapter was not — make one now:
+
+```bash
+./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --store
+```
+
+[`sqlite3`](https://sqlite.org/cli.html), SQLite's own command-line tool, asks it anything:
 
 ```bash
 sqlite3 restest-out/run.sqlite "SELECT operation, status_code, COUNT(*) FROM interaction GROUP BY operation, status_code ORDER BY operation, status_code" | head -12
