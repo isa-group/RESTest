@@ -148,6 +148,14 @@ whose own name is not written like an identifier, such as `{username}`, only tak
 exactly its name. Two settings govern it: `memory.identifiersByResource` switches it off, and
 `memory.identifiersByResourceFirst` asks the name first instead ([the settings](settings.md)).
 
+Two more kinds of gap are filled the same way. One named for several identifiers, such as `{ids}` in
+`/persons/{ids}`, takes one identifier, exactly as `{id}` would. One named for a thing's name, such
+as `{productName}`, takes the `name` of one of the products the API returned, and never an
+identifier; and an API that lists its products as nothing but their names — `["car", "bike"]` — has
+each of those words kept as the name of one product. A name run into one word, such as `{username}`,
+is not written like a thing's name and still takes only a property called exactly that.
+`memory.pluralIdentifiers` and `memory.namesByResource` switch the two off.
+
 Asked for a whole thing the document gives a name to — "send me an `Owner`" — it offers an owner the
 API returned, with the parts the API only ever *sends* taken out of it (that is what `readOnly`
 means) and one value inside it replaced by a different one. Sending an unchanged copy would usually

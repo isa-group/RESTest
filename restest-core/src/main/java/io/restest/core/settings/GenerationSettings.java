@@ -77,6 +77,11 @@ import java.util.Objects;
  * @param impliedFormatChance how often it does, where a kind is implied, between 0 and 1. The rest
  *     are ordinary invented words, because a value the API refuses for being well formed is worth
  *     finding as well
+ * @param omitHalProperties whether {@code _links} and {@code _embedded} are taken out of every
+ *     body before it is sent, however deep inside it they are. A common way of writing JSON, HAL,
+ *     keeps those two names for what a server writes into its replies - links to related things,
+ *     and things carried inside another - and an API that reads them in a request reads them its
+ *     own way, whatever the description says they look like. Off, they are sent as built
  */
 public record GenerationSettings(
         int optionalNestingDepth,
@@ -97,11 +102,12 @@ public record GenerationSettings(
         int sendableAttempts,
         int writableBodyAttempts,
         boolean impliedFormats,
-        double impliedFormatChance) {
+        double impliedFormatChance,
+        boolean omitHalProperties) {
 
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
-            0.5, 0.5, 0.5, true, 8, 8, 8, 8, true, 0.5);
+            0.5, 0.5, 0.5, true, 8, 8, 8, 8, true, 0.5, true);
 
     public GenerationSettings {
         Objects.requireNonNull(lowestNumber, "lowestNumber");

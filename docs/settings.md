@@ -160,6 +160,8 @@ generation:
   impliedFormats: true        # default
   # how often it does where a kind is implied, between 0 and 1; the rest are ordinary invented words
   impliedFormatChance: 0.5    # default
+  # whether _links and _embedded, which HAL keeps for what a server writes, are taken out of every body before it is sent
+  omitHalProperties: true     # default
 
 mutation:
   # whether accepted requests are changed in ways the description forbids
@@ -232,6 +234,10 @@ memory:
   identifiersByResourceFirst: true # default
   # whether the values a request carried are remembered too when the API accepted it, such as the password a registration was accepted with
   rememberAcceptedRequests: true # default
+  # whether a gap such as {ids} in /persons/{ids} is filled like {id}, with the id of one of the persons the API returned; only while identifiersByResource is on
+  pluralIdentifiers: true     # default
+  # whether a gap such as {productName} is filled with the name of one of the products the API returned, a plain list of words included; only while identifiersByResource is on
+  namesByResource: true       # default
 
 document:
   # how long to wait for a description fetched over the network
@@ -374,6 +380,7 @@ spelling `--budget` takes.
 | `writableBodyAttempts` | `8` | how many bodies are drawn while looking for one its media type can carry |
 | `impliedFormats` | `true` | whether an invented word takes the kind its name or description implies, such as an e-mail address for email, where none is declared |
 | `impliedFormatChance` | `0.5` | how often it does where a kind is implied, between 0 and 1; the rest are ordinary invented words |
+| `omitHalProperties` | `true` | whether _links and _embedded, which HAL keeps for what a server writes, are taken out of every body before it is sent |
 
 ### `mutation.*`
 
@@ -441,6 +448,8 @@ switches](switches.md#switching-off-everything-one-increment-added) has that fil
 | `identifiersByResource` | `true` | whether a gap such as {petId} in /pets/{petId} is filled from the ids of the pets the API returned; off, only a value named petId fills it |
 | `identifiersByResourceFirst` | `true` | whether those pets are asked before any value named petId; off, the name is asked first |
 | `rememberAcceptedRequests` | `true` | whether the values a request carried are remembered too when the API accepted it, such as the password a registration was accepted with |
+| `pluralIdentifiers` | `true` | whether a gap such as {ids} in /persons/{ids} is filled like {id}, with the id of one of the persons the API returned; only while identifiersByResource is on |
+| `namesByResource` | `true` | whether a gap such as {productName} is filled with the name of one of the products the API returned, a plain list of words included; only while identifiersByResource is on |
 
 ### `document.*`
 

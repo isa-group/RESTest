@@ -39,6 +39,9 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 | `memory.identifiersByResourceFirst` | `true` | 9.2 | asks for a value carrying the gap's own name first, and for the things of its kind only when there is none. It changes nothing while `memory.identifiersByResource` is off |
 | `generation.impliedFormats` | `true` | 9.6 | invents an ordinary word where a name or a description implies a kind the document does not declare — an e-mail address for `billing_email`, a test card number for `ccNumber`, a country code where the description says "ISO 3166", a date in the form the description writes out — as it did before 9.6. How often it sends the implied kind when on is `generation.impliedFormatChance`, a number rather than a switch |
 | `memory.rememberAcceptedRequests` | `true` | 9.7 | remembers only what the API's replies carried, as before 9.7, and no longer the values of the requests it accepted — the e-mail address and password a registration went with are then not there for the login after it |
+| `memory.pluralIdentifiers` | `true` | 9.8 | fills a gap named for several identifiers, such as `{ids}` in `/persons/{ids}` or `{petIds}`, only with a value some reply carried under that very name, as before 9.8, and no longer with the `id` of one of the persons the API returned. It changes nothing while `memory.identifiersByResource` is off |
+| `memory.namesByResource` | `true` | 9.8 | fills a gap named for a thing's name, such as `{productName}`, only with a value some reply carried under that very name, as before 9.8, and no longer with the `name` of one of the products the API returned; and no longer keeps a reply that is a plain list of words, such as `["car", "bike"]` from `GET /products`, as the names of that many products. A gap called `{name}` takes the `name` of the things its address is about either way, as it has since 9.2. It changes nothing while `memory.identifiersByResource` is off |
+| `generation.omitHalProperties` | `true` | 9.9 | sends `_links` and `_embedded` in a body when it was built with them, at any depth, as before 9.9 — invented to the description, sent back from a reply or taken from a sample. HAL keeps those two names for what a server writes, and an API built on HAL reads them in a request its own way, whatever its description says they look like |
 | `generation.optionalParametersBySize` | `true` | 2.9 | decides each optional parameter on a coin of its own, so the request carrying only what the API requires is drawn once in 2ⁿ attempts for an operation with n optional parameters, rather than about half the time. That coin is weighted by `generation.optionalBodyChance`, so 2ⁿ holds at its default of 0.5; [the settings](settings.md#four-things-worth-knowing) say why |
 
 ### Breaking things in more ways
@@ -103,6 +106,8 @@ repository.
 | 9.2's order | Nothing | 8.4: nothing measurable |
 | 9.6, implied kinds | Half the invented words at places whose name or description implies a kind, which would otherwise be ordinary words — the share `generation.impliedFormatChance` sets | Its own measurement, five seeds of three minutes, on against off: market answered 12.0 operations against 10.6, payments on every seed against none, branch coverage 5.6% against 3.6% and 60 distinct server failures against 48; flight-search's registration answered 14 to 24 times a run against once. Not yet screened |
 | 9.7, accepted values | A second source for the memory beside the replies, held to the same `memory.*` limits; the values of every accepted request, filed as a reply's are | Its own measurement, five seeds, on against off: flight-search answered 23.0 operations against 19.8 and branch coverage 29.6% against 26.3%, its login, refresh and logout answering for the first time, at the price of registrations refused as already made, which doubled; user-management 12 operations against 11; the four other APIs measured, pet-clinic, kafka-rest-proxy, notebook-manager and gestao-hospital, within their spread. Not yet screened |
+| 9.8, plural and name gaps | Nothing beyond 9.2's memory of things by kind, where a reply that is a plain list of words is now kept as things with one property each, held to the same `memory.*` limits | Its own measurement, five seeds of three minutes, each switch on against off: person-controller answered 8 operations against 7 on every seed, `/api/persons/{ids}` 533 times a run against never; features-service answered 17.0 operations against 14.8 and branch coverage 40.5% against 32.1%; distinct server failures level on both. Over the corpus, 106 of the 1,838 gaps in addresses are named for a name, in five documents, and none for several identifiers. Not yet screened |
+| 9.9, HAL's own properties | One walk over every body before it is sent | Its own measurement on market, three minutes a run, on against off (four runs and three): about 920 requests a run carried `_links` with it off, each answered 500 "Expected relation name", and none with it on; operations (12), branch coverage (5.6%) and distinct server failures level. No request body in the corpus declares `_links` or `_embedded`. Not yet screened |
 | 2.9, optional parameters by number | Nothing | 8.4: nothing measurable, as the increment predicted, since few of the APIs measured have more than one optional parameter anywhere. Left on by the maintainer's decision, for the 232 operations of the wider corpus that have four or more |
 | 10.1, one value changed | Its part of the fifth of the run given to the strategy that changes accepted requests; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) | 8.5: 108 unique server failures without it and 147 with it. It also gives branch coverage its early lead, 17.9% at ten seconds against 15.2% |
 | 10.2, bodies of the wrong shape | Its part of the same fifth, and the seed | 8.5: 113 unique server failures without it and 147 with it |
@@ -154,6 +159,21 @@ generation:
 ```yaml
 memory:
   rememberAcceptedRequests: false
+```
+
+**9.8, gaps named for several identifiers or for a thing's name**
+
+```yaml
+memory:
+  pluralIdentifiers: false
+  namesByResource: false
+```
+
+**9.9, HAL's own properties in a body**
+
+```yaml
+generation:
+  omitHalProperties: false
 ```
 
 **2.9, how many optional parameters drawn first**
@@ -214,7 +234,7 @@ sequences:
 These three, beside the tool as shipped, are the four ways of running it that an ablation by
 milestone compares.
 
-**Reach: 2.9, 9.1, 9.2, 9.6 and 9.7**
+**Reach: 2.9, 9.1, 9.2, 9.6, 9.7, 9.8 and 9.9**
 
 ```yaml
 schedule:
@@ -223,10 +243,13 @@ schedule:
 generation:
   optionalParametersBySize: false
   impliedFormats: false
+  omitHalProperties: false
 
 memory:
   identifiersByResource: false
   rememberAcceptedRequests: false
+  pluralIdentifiers: false
+  namesByResource: false
 ```
 
 **Break: 10.1, 10.2 and 10.3.** The two strategies that change accepted requests and send series
@@ -255,10 +278,13 @@ schedule:
 generation:
   optionalParametersBySize: false
   impliedFormats: false
+  omitHalProperties: false
 
 memory:
   identifiersByResource: false
   rememberAcceptedRequests: false
+  pluralIdentifiers: false
+  namesByResource: false
 
 mutation:
   violations: false

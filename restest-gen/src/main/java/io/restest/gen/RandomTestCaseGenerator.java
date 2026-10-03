@@ -785,7 +785,20 @@ public final class RandomTestCaseGenerator {
             return Optional.empty();
         }
         return writableBody(operation, declared, mediaType.get(), strategy.values())
-                .map(value -> new BodyValue(mediaType.get(), value.value(), value.origin()));
+                .map(value -> new BodyValue(mediaType.get(),
+                        withoutWhatTheServerWrites(value.value()), value.origin()));
+    }
+
+    /**
+     * A complete body as it is sent: without {@code _links} and {@code _embedded}, which HAL keeps
+     * for what a server writes, unless {@code generation.omitHalProperties} is off. Here rather
+     * than anywhere a body is put together, because every body ends up here, whatever it was made
+     * from.
+     */
+    private JsonValue withoutWhatTheServerWrites(JsonValue body) {
+        return settings.generation().omitHalProperties()
+                ? HalProperties.withoutTheServersOwn(body)
+                : body;
     }
 
     /**
