@@ -547,3 +547,19 @@ alone; [the switches](../switches.md), *Some with no switch, by choice*, says so
 planned. `mutation.oversizedLength` now also says how many digits the number far past a format's
 width has. Seventy-six settings in eight groups.
 
+## Amendment (M9.8-M9.9)
+
+**Date:** 2026-10-03
+
+**Three switches, all on by default.** `memory.pluralIdentifiers` and `memory.namesByResource` are
+9.8's: off, a gap named for several identifiers (`{ids}`) or for a thing's name (`{productName}`)
+takes only a value carrying its own name, and a reply that is a plain list of words is not kept as
+things, as before 9.8. Both sit under `memory.*` beside `memory.identifiersByResource`, because they
+widen what the memory of things by kind keeps and answers, and both change nothing while it is off;
+their descriptions say so. `generation.omitHalProperties` is 9.9's: off, a body is sent with
+`_links` and `_embedded` when it was built with them, as before 9.9. It is under `generation.*`
+because it decides what a body the tool builds may carry, whatever source filled it. Which names
+are written like several identifiers or like a thing's name, and which two names HAL keeps for the
+server, are facts about spelling and about HAL rather than numbers anybody tunes, so they stay in the
+code ([ADR-0021](0021-how-a-request-body-is-built.md), M9.8 and M9.9 amendments). Seventy-nine
+settings in eight groups.

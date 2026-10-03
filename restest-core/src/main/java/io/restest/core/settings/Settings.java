@@ -185,7 +185,9 @@ public record Settings(
                 typed.yesOrNo("generation.impliedFormats", DEFAULTS.generation.impliedFormats()),
                 typed.number("generation.impliedFormatChance",
                         BigDecimal.valueOf(DEFAULTS.generation.impliedFormatChance()))
-                        .doubleValue()));
+                        .doubleValue(),
+                typed.yesOrNo("generation.omitHalProperties",
+                        DEFAULTS.generation.omitHalProperties())));
         MutationSettings mutation = group("mutation", () -> new MutationSettings(
                 typed.yesOrNo("mutation.violations", DEFAULTS.mutation.violations()),
                 typed.yesOrNo("mutation.dropRequired", DEFAULTS.mutation.dropRequired()),
@@ -231,7 +233,9 @@ public record Settings(
                 typed.yesOrNo("memory.identifiersByResourceFirst",
                         DEFAULTS.memory.identifiersByResourceFirst()),
                 typed.yesOrNo("memory.rememberAcceptedRequests",
-                        DEFAULTS.memory.rememberAcceptedRequests())));
+                        DEFAULTS.memory.rememberAcceptedRequests()),
+                typed.yesOrNo("memory.pluralIdentifiers", DEFAULTS.memory.pluralIdentifiers()),
+                typed.yesOrNo("memory.namesByResource", DEFAULTS.memory.namesByResource())));
         DocumentSettings document = group("document", () -> new DocumentSettings(
                 typed.lengthOfTime("document.fetchTimeout", DEFAULTS.document.fetchTimeout()),
                 typed.wholeNumber("document.mostBytesRead", DEFAULTS.document.mostBytesRead())));
@@ -371,6 +375,7 @@ public record Settings(
                     String.valueOf(generation.writableBodyAttempts());
             case "generation.impliedFormats" -> String.valueOf(generation.impliedFormats());
             case "generation.impliedFormatChance" -> written(generation.impliedFormatChance());
+            case "generation.omitHalProperties" -> String.valueOf(generation.omitHalProperties());
 
             case "mutation.violations" -> String.valueOf(mutation.violations());
             case "mutation.dropRequired" -> String.valueOf(mutation.dropRequired());
@@ -410,6 +415,8 @@ public record Settings(
                     String.valueOf(memory.identifiersByResourceFirst());
             case "memory.rememberAcceptedRequests" ->
                     String.valueOf(memory.rememberAcceptedRequests());
+            case "memory.pluralIdentifiers" -> String.valueOf(memory.pluralIdentifiers());
+            case "memory.namesByResource" -> String.valueOf(memory.namesByResource());
 
             case "document.fetchTimeout" -> LengthOfTime.written(document.fetchTimeout());
             case "document.mostBytesRead" -> String.valueOf(document.mostBytesRead());

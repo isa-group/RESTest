@@ -49,6 +49,17 @@ package io.restest.core.settings;
  * @param rememberAcceptedRequests whether the values a request carried are kept too when the API
  *     accepted it - the e-mail address and password a registration was accepted with, ready for a
  *     login - beside what replies carried. Off, only replies are learned from
+ * @param pluralIdentifiers whether a gap in a web address named the way a list of identifiers is,
+ *     such as {@code {ids}} in {@code /persons/{ids}} or {@code {petIds}}, is filled like the
+ *     single {@code {id}} or {@code {petId}}: with the identifier of one of the things of its
+ *     kind. Off, it takes only a value carrying its own name. Means nothing while
+ *     {@code identifiersByResource} is off
+ * @param namesByResource whether a gap named the way a thing's name is, such as
+ *     {@code {productName}}, is filled with the {@code name} of one of the products the API
+ *     returned, and whether a reply that is a plain list of words, such as {@code ["car", "bike"]}
+ *     from {@code /products}, is kept as the names of that many products. Off, such a gap takes
+ *     only a value carrying its own name, and such a list is not kept as things at all. Means
+ *     nothing while {@code identifiersByResource} is off
  */
 public record MemorySettings(
         int mostValuesUnderOneName,
@@ -58,10 +69,12 @@ public record MemorySettings(
         int asDeepAsAReplyIsRead,
         boolean identifiersByResource,
         boolean identifiersByResourceFirst,
-        boolean rememberAcceptedRequests) {
+        boolean rememberAcceptedRequests,
+        boolean pluralIdentifiers,
+        boolean namesByResource) {
 
     private static final MemorySettings DEFAULTS =
-            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true, true);
+            new MemorySettings(20, 2_000, 10_000, 512 * 1024, 6, true, true, true, true, true);
 
     public MemorySettings {
         atLeastNothing(mostValuesUnderOneName, "mostValuesUnderOneName");

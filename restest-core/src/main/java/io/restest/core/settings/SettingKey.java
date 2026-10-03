@@ -244,6 +244,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("generation", "impliedFormatChance", SettingKind.NUMBER,
                     "how often it does where a kind is implied, between 0 and 1; the rest are "
                             + "ordinary invented words"),
+            key("generation", "omitHalProperties", SettingKind.YES_OR_NO,
+                    "whether _links and _embedded, which HAL keeps for what a server writes, are "
+                            + "taken out of every body before it is sent"),
 
             key("mutation", "violations", SettingKind.YES_OR_NO,
                     "whether accepted requests are changed in ways the description forbids"),
@@ -323,6 +326,14 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("memory", "rememberAcceptedRequests", SettingKind.YES_OR_NO,
                     "whether the values a request carried are remembered too when the API accepted "
                             + "it, such as the password a registration was accepted with"),
+            key("memory", "pluralIdentifiers", SettingKind.YES_OR_NO,
+                    "whether a gap such as {ids} in /persons/{ids} is filled like {id}, with the "
+                            + "id of one of the persons the API returned; only while "
+                            + "identifiersByResource is on"),
+            key("memory", "namesByResource", SettingKind.YES_OR_NO,
+                    "whether a gap such as {productName} is filled with the name of one of the "
+                            + "products the API returned, a plain list of words included; only "
+                            + "while identifiersByResource is on"),
 
             key("document", "fetchTimeout", SettingKind.LENGTH_OF_TIME,
                     "how long to wait for a description fetched over the network"),

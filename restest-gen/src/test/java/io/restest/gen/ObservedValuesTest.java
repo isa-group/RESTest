@@ -419,7 +419,8 @@ class ObservedValuesTest {
                     new MemorySettings(2, MemorySettings.defaults().mostNames(),
                             MemorySettings.defaults().longestValueKept(),
                             MemorySettings.defaults().longestReplyRead(),
-                            MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true));
+                            MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true,
+                            true, true));
 
             for (int identifier = 1; identifier <= 5; identifier++) {
                 small.on(reply(200, "application/json", "{\"id\": " + identifier + "}"));
@@ -437,7 +438,7 @@ class ObservedValuesTest {
                 + "switches it off")
         void a_memory_of_nothing() {
             ObservedValues none = new ObservedValues(anApiReturning(PET),
-                    new MemorySettings(0, 0, 0, 0, 0, false, false, false));
+                    new MemorySettings(0, 0, 0, 0, 0, false, false, false, false, false));
 
             none.on(reply(200, "application/json", "{\"id\": 1}"));
 
@@ -474,7 +475,8 @@ class ObservedValuesTest {
                     MemorySettings.defaults().mostValuesUnderOneName(), 3,
                     MemorySettings.defaults().longestValueKept(),
                     MemorySettings.defaults().longestReplyRead(),
-                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true));
+                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true, true,
+                    true));
 
             seen.on(reply(200, "application/json", "{\"id\": 1}"));
             seen.on(reply(200, "application/json", "{\"name\": \"Fluffy\"}"));
@@ -616,7 +618,8 @@ class ObservedValuesTest {
             MemorySettings d = MemorySettings.defaults();
             ObservedValues seen = new ObservedValues(users, new MemorySettings(
                     d.mostValuesUnderOneName(), d.mostNames(), d.longestValueKept(),
-                    d.longestReplyRead(), d.asDeepAsAReplyIsRead(), true, true, false));
+                    d.longestReplyRead(), d.asDeepAsAReplyIsRead(), true, true, false, true,
+                    true));
 
             seen.on(answered(registration, 201, "{\"email\": \"ana@example.com\"}"));
 
@@ -716,6 +719,111 @@ class ObservedValuesTest {
     }
 
     @Nested
+    @DisplayName("a reply that lists its things by name alone")
+    class AListOfNames {
+
+        private static final OperationId FORGET_PET = OperationId.of("forgetPet");
+
+        @Test
+        @DisplayName("keeps each word or number in it as the name of one thing of its kind")
+        void each_word_is_the_name_of_one_thing() {
+            ObservedValues seen = new ObservedValues(anApiReturning(AnySchema.of()));
+
+            seen.on(reply(200, "application/json", "[\"Rex\", \"Tom\", 7]"));
+
+            assertThat(seen.underTheKindOfThingTheyAre().thingsOfKind("pet"))
+                    .extracting(ObservedValues.Observation::value)
+                    .containsExactly(named(JsonValue.of("Rex")), named(JsonValue.of("Tom")),
+                            named(JsonValue.of(7)));
+        }
+
+        @Test
+        @DisplayName("and so does a list of words inside a wrapper with no identifier of its own")
+        void inside_a_wrapper_too() {
+            ObservedValues seen = new ObservedValues(anApiReturning(AnySchema.of()));
+
+            seen.on(reply(200, "application/json", "{\"data\": [\"Rex\"]}"));
+
+            assertThat(seen.underTheKindOfThingTheyAre().thingsOfKind("pet"))
+                    .extracting(ObservedValues.Observation::value)
+                    .containsExactly(named(JsonValue.of("Rex")));
+        }
+
+        @Test
+        @DisplayName("but not the words inside a thing that has words of its own, like its tags")
+        void not_the_words_inside_a_thing() {
+            ObservedValues seen = new ObservedValues(anApiReturning(AnySchema.of()));
+
+            seen.on(reply(200, "application/json",
+                    "[{\"name\": \"Rex\", \"tags\": [\"small\", \"loud\"]}]"));
+
+            assertThat(seen.underTheKindOfThingTheyAre().thingsOfKind("pet"))
+                    .extracting(ObservedValues.Observation::value)
+                    .containsExactly(named(JsonValue.of("Rex")));
+        }
+
+        @Test
+        @DisplayName("but not a word too long for anybody to send")
+        void not_a_word_too_long_to_send() {
+            MemorySettings d = MemorySettings.defaults();
+            ObservedValues seen = new ObservedValues(anApiReturning(AnySchema.of()),
+                    new MemorySettings(d.mostValuesUnderOneName(), d.mostNames(), 3,
+                            d.longestReplyRead(), d.asDeepAsAReplyIsRead(), true, true, true,
+                            true, true));
+
+            seen.on(reply(200, "application/json", "[\"Rex\", \"Rexanne\"]"));
+
+            assertThat(seen.underTheKindOfThingTheyAre().thingsOfKind("pet"))
+                    .extracting(ObservedValues.Observation::value)
+                    .containsExactly(named(JsonValue.of("Rex")));
+        }
+
+        @Test
+        @DisplayName("nothing from a deletion, whose things are gone")
+        void nothing_from_a_deletion() {
+            Operation forget = Operation.of(HttpMethod.DELETE, "/pets")
+                    .withId(FORGET_PET)
+                    .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+            ObservedValues seen = new ObservedValues(anApiReturning(AnySchema.of(), forget));
+
+            seen.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Interaction.answered(
+                    TestCase.of(FORGET_PET, List.of()),
+                    HttpRequestRecord.of(HttpMethod.DELETE, "https://api.example/pets"),
+                    new HttpResponseRecord(StatusLine.of(200),
+                            List.of(Header.of("Content-Type", "application/json")),
+                            Optional.of(Payload.of("[\"Rex\"]".getBytes(StandardCharsets.UTF_8),
+                                    "application/json"))),
+                    Instant.EPOCH, Duration.ofMillis(3))));
+
+            assertThat(seen.underTheKindOfThingTheyAre().thingsOfKind("pet")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("nothing when names are not kept by kind, or nothing is")
+        void nothing_when_switched_off() {
+            MemorySettings d = MemorySettings.defaults();
+            for (boolean byResource : List.of(true, false)) {
+                ObservedValues seen = new ObservedValues(anApiReturning(AnySchema.of()),
+                        new MemorySettings(d.mostValuesUnderOneName(), d.mostNames(),
+                                d.longestValueKept(), d.longestReplyRead(),
+                                d.asDeepAsAReplyIsRead(), byResource, true, true, true,
+                                !byResource));
+
+                seen.on(reply(200, "application/json", "[\"Rex\"]"));
+
+                assertThat(seen.underTheKindOfThingTheyAre().size())
+                        .describedAs(byResource ? "with the names of things off"
+                                : "with nothing kept by kind, though the names of things are on")
+                        .isZero();
+            }
+        }
+
+        private static JsonValue named(JsonValue word) {
+            return JsonValue.object(Map.of("name", word));
+        }
+    }
+
+    @Nested
     @DisplayName("how a full memory makes room")
     class HowAFullMemoryMakesRoom {
 
@@ -723,7 +831,7 @@ class ObservedValuesTest {
                 MemorySettings.defaults().mostValuesUnderOneName(), 1,
                 MemorySettings.defaults().longestValueKept(),
                 MemorySettings.defaults().longestReplyRead(),
-                MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true);
+                MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true, true, true);
 
         @Test
         @DisplayName("a memory allowed no names keeps none, however many values a name may hold")
@@ -732,7 +840,8 @@ class ObservedValuesTest {
                     MemorySettings.defaults().mostValuesUnderOneName(), 0,
                     MemorySettings.defaults().longestValueKept(),
                     MemorySettings.defaults().longestReplyRead(),
-                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true));
+                    MemorySettings.defaults().asDeepAsAReplyIsRead(), true, true, true, true,
+                    true));
 
             none.on(reply(200, "application/json", "{\"id\": 1, \"name\": \"Fluffy\"}"));
 

@@ -895,3 +895,115 @@ logout it opens are worth more.
 - Matching names by likeness, which is 4.1's: `user_email` in one request does not answer `email` in
   another.
 - Learning which pairs of operations go together from what the API answered.
+
+## Amendment (M9.8)
+
+**Date:** 2026-10-03
+
+**A gap named for several identifiers is filled like one named for one, and a gap named for a
+thing's name takes the `name` of a thing of that kind - a word of a reply that lists its things by
+name alone included.**
+
+### Why
+
+M9.2 fills a gap from the things its kind of address returned only when the gap is written like an
+identifier, and two kinds of gap it did not recognise were measured missing:
+
+- **Several identifiers.** person-controller's `GET` and `DELETE /api/persons/{ids}` declare a word,
+  and were sent invented ones, answered 500 by the server's `parseHexString`. The 24-character
+  identifiers the address wants are in the `id` of every person the API returns.
+- **A thing's name.** In a three-minute run of `v2` at `fe040224`, features-service answered 500
+  "not found" 3,271 times, and 862 of its 1,275 `PUT` and `DELETE` requests on a product's features
+  named a product that was never created. `GET /products` answered 2XX 638 times - with a list of
+  bare words, `["car", "bike"]`, which no rule kept, because no word in it has a name.
+
+Counted over the corpus by `NameGapsAndHalPropertiesAcrossTheCorpusTest`: of the 1,838 gaps in the
+addresses of the forty-six documents, none is named for several identifiers - person-controller is
+not in the corpus - and 106 are named for a name, `{xName}` or `{name}`, in five documents:
+FeaturesService, GitHub, Restcountries, flight-search and kafka-rest-proxy.
+
+### How
+
+- **Several identifiers.** A gap's name is written like several identifiers when it is `ids` or
+  `_ids`, in any capitals, or ends in `Ids`, `IDs`, `IDS`, `_ids`, `-ids`, `_IDs`, `_IDS`, `-IDs` or
+  `-IDS`. While `memory.pluralIdentifiers` is on, such a gap is filled exactly as its singular would
+  be: its kinds are the address's and the one its name names (`petIds` is a pet's), it takes M9.2's
+  four steps, the looser fourth included, and it is filled with **one** identifier - which an
+  address asking for several most surely accepts. Only gaps are read this way. What a reply carries
+  is still judged by the singular rule alone, because that rule is also what tells a thing from a
+  wrapper around things, and a pet with a list of its owners' identifiers is still a pet.
+- **A thing's name.** A gap's name is written like a thing's name when it ends in `Name`, `_name`,
+  `-name`, `NAME`, `_NAME` or `-NAME` with something before it. While `memory.namesByResource` is
+  on, such a gap has one kind, the one its own name names - `{productName}` is a product's - and not
+  the address's, since what comes before it may be some other kind of thing whose `name` is not the
+  one asked for. Its steps are M9.2's first, a property named exactly like the gap, and then `name`
+  in any capitals or the kind followed by a name ending (`productName`, `product_name`). It never
+  takes an identifier, and never the looser fourth step.
+- **A reply that lists its things by name alone**, decided by the maintainer on 3 October: while
+  `memory.namesByResource` is on, every word or number that is an element of a list in a reply kept
+  by kind - at any depth M9.2's walk already reaches - is kept as a thing of that kind with one
+  property, `name`. features-service's `GET /products` keeps two products named `car` and `bike`,
+  and `.../configurations` and `.../configurations/{configurationName}/features` keep configurations
+  and features the same way. They fill `{productName}`, and `{name}` right after `/products/`, and
+  never an identifier gap, because `name` is not written like an identifier. Nothing is kept from a
+  `DELETE`, as before.
+- **`{name}` was already filled this way.** Since M9.2 a gap takes a property named exactly like it,
+  so kafka-rest-proxy's `{name}` after `/configs/` takes the `name` of the configurations its kind
+  of address returned. That is pinned by a test now, with either switch.
+- **`{username}` is unchanged.** Its "name" is run into one word, in lower case, and is not a name
+  ending; such a gap still takes only a property called exactly `username`.
+- **Where a value came from** keeps M9.2's words, and is made grammatical where the kind comes from
+  the gap's name, which names one thing: "the 'name' of one product an earlier reply returned"
+  beside "the 'id' of one of the pettypes an earlier reply returned".
+- Both switches change nothing while `memory.identifiersByResource` is off. Which spellings mean
+  several identifiers or a thing's name are facts about spelling, kept in the code beside M9.2's.
+
+### Measured
+
+Measured: (numbers to come)
+
+### What was not done
+
+- **Kinds named in another language than the address's**: gestao-hospital's `{produto_id}` under
+  `/estoque/` is a product in a hospital's stock, and nothing written says that `produto` and
+  `estoque` name the same things. That is likeness between names, which stays with 4.1.
+- **Several identifiers sent as several**: a gap named for several is sent one, not a list joined
+  by commas. One is what every such address accepts, and the corpus has no gap of the kind to
+  measure a list on.
+
+## Amendment (M9.9)
+
+**Date:** 2026-10-03
+
+**A body is sent without `_links` and `_embedded`, which HAL keeps for what a server writes.**
+
+### Why
+
+HAL, the way of writing JSON described in draft-kelly-json-hal-11, reserves two property names for
+the server: `_links`, the links from a resource to what is related to it, keyed by the kind of
+relation, and `_embedded`, resources carried inside another. market's description declares
+`_links` in its request bodies as a list of `Link` objects; its server reads it as HAL's object
+keyed by relation, and answers 406 or 500 "Expected relation name" to a body that carries one as
+the description says.
+
+Counted over the corpus by `NameGapsAndHalPropertiesAcrossTheCorpusTest`: none of the 340
+operations that take a body declares `_links` or `_embedded` in it, at any depth.
+
+### How
+
+- **Removed where a body is complete**, in `RandomTestCaseGenerator`, at the one point every body
+  passes through before it becomes part of a request. So every source is covered at once: a body
+  invented to the description, a whole thing returned by the API and sent back, a value from the
+  memory, a dictionary's value and the description's own samples. Both names go at every depth,
+  inside objects and inside the elements of lists.
+- **Even where a description requires them.** The row says every body, and no document of the corpus
+  requires either; one that did would be asking the client to write the server's own links.
+- **A change to an accepted request** starts from a body that went through this, and only changes
+  members that body already carries, so it carries neither; a test pins it.
+- **`links`, without the underscore, is untouched.** It is an ordinary property: notebook-manager
+  accepted a body carrying it 18,814 times of 19,602.
+- `generation.omitHalProperties` switches it off.
+
+### Measured
+
+Measured: (numbers to come)

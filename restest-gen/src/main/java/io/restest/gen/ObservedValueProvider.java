@@ -152,33 +152,79 @@ public final class ObservedValueProvider implements ValueProvider {
     }
 
     /**
-     * One kind of thing a gap may be the identifier of: the word it is kept under, and the word
-     * the document wrote for it, which is the one a person reading where a value came from knows.
+     * One kind of thing a gap may be the identifier or the name of: the word it is kept under, and
+     * the word the document wrote for it, which is the one a person reading where a value came from
+     * knows - in the address, where it names all of them, or in the gap's own name, where it names
+     * one.
      */
-    private record Kind(String kept, String written) {
+    private record Kind(String kept, String written, boolean writtenInTheAddress) {
+
+        /** "one of the pettypes", as an address writes them, or "one pet", as a gap's name does. */
+        String oneOfThem() {
+            return writtenInTheAddress ? "one of the " + written : "one " + written;
+        }
     }
 
     /**
      * The kinds of thing whose identifier this gap may be: the one the address names just before
      * it, and then the one the gap's own name names, when the two differ.
+     *
+     * <p>A gap named for a thing's name, such as {@code {productName}}, has one kind only, the one
+     * its name names: what comes before it in the address may be some other kind of thing, whose
+     * {@code name} is not the one asked for.
      */
     private List<Kind> kindsOfThingFor(ValueRequest request) {
         List<Kind> kinds = new ArrayList<>();
+        if (namedLikeAName(request)) {
+            ObservedValues.nameWithoutTheNameEnding(request.name())
+                    .ifPresent(written -> ObservedValues.kindOfThingNamed(written)
+                            .ifPresent(kept -> kinds.add(new Kind(kept, written, false))));
+            if (!kinds.isEmpty()) {
+                return kinds;
+            }
+        }
         model.operation(request.operation())
                 .flatMap(operation -> ObservedValues.fixedPartBefore(operation.path(),
                         request.name()))
                 .ifPresent(written -> ObservedValues.kindOfThingNamed(written)
-                        .ifPresent(kept -> kinds.add(new Kind(kept, written))));
-        ObservedValues.nameWithoutTheIdentifierEnding(request.name())
-                .ifPresent(written -> ObservedValues.kindOfThingNamed(written)
-                        .filter(kept -> kinds.stream().noneMatch(kind -> kind.kept().equals(kept)))
-                        .ifPresent(kept -> kinds.add(new Kind(kept, written))));
+                        .ifPresent(kept -> kinds.add(new Kind(kept, written, true))));
+        Optional<String> inTheName = ObservedValues.nameWithoutTheIdentifierEnding(request.name());
+        if (inTheName.isEmpty() && seen.settings().pluralIdentifiers()) {
+            inTheName = ObservedValues.nameWithoutThePluralIdentifierEnding(request.name());
+        }
+        inTheName.ifPresent(written -> ObservedValues.kindOfThingNamed(written)
+                .filter(kept -> kinds.stream().noneMatch(kind -> kind.kept().equals(kept)))
+                .ifPresent(kept -> kinds.add(new Kind(kept, written, false))));
         return kinds;
+    }
+
+    /**
+     * Whether a gap's name is written the way an identifier is - or, while
+     * {@code memory.pluralIdentifiers} is on, the way several are: {@code {ids}} in
+     * {@code /persons/{ids}} is filled exactly as {@code {id}} would be, with one identifier.
+     */
+    private boolean namedLikeAnIdentifier(ValueRequest request) {
+        return ObservedValues.looksLikeAnIdentifier(request.name())
+                || seen.settings().pluralIdentifiers()
+                        && ObservedValues.looksLikeSeveralIdentifiers(request.name());
+    }
+
+    /**
+     * Whether a gap's name is written the way a thing's name is, such as {@code {productName}},
+     * and those gaps are being filled from the names of the things of their kind.
+     */
+    private boolean namedLikeAName(ValueRequest request) {
+        return seen.settings().namesByResource()
+                && !ObservedValues.looksLikeAnIdentifier(request.name())
+                && ObservedValues.looksLikeAName(request.name());
     }
 
     /** How sure a property of a thing is to be that thing's identifier. */
     private enum Likeness {
-        /** Named like the gap itself, or {@code id}, or the kind of thing followed by id. */
+        /**
+         * Named like the gap itself, or {@code id}, or the kind of thing followed by id - or, for a
+         * gap named for a thing's name, {@code name}, or the kind of thing followed by name.
+         */
         CONVINCING,
         /** Only written the way identifiers are, like {@code ownerId} inside a pet. */
         ONLY_LOOKS_LIKE_ONE
@@ -202,17 +248,20 @@ public final class ObservedValueProvider implements ValueProvider {
      * one called {@code id}: a thing that carries both, such as a cluster with an {@code id} and a
      * {@code cluster_id}, is telling us which one the address wants.
      *
-     * <p>Only a gap whose own name is written like an identifier - {@code {petId}},
-     * {@code {id}} - takes a property that is not named exactly like it. A gap called
-     * {@code {username}} or {@code {slug}} is asking for something else, and a thing's {@code id}
-     * put there would only push aside the document's own sample for it.
+     * <p>Only two kinds of gap take a property that is not named exactly like them. One whose own
+     * name is written like an identifier - {@code {petId}}, {@code {id}} - takes the thing's
+     * {@code id}, and failing that whatever is written like an identifier. One named for a thing's
+     * name - {@code {productName}} - takes the product's {@code name}, and never an identifier. A
+     * gap called {@code {username}} or {@code {slug}} is asking for something else, and a thing's
+     * {@code id} put there would only push aside the document's own sample for it.
      */
     private Optional<GeneratedValue> anIdentifierOfTheThingsFor(ValueRequest request,
             List<Kind> kinds, Likeness likeness) {
-        boolean namedLikeAnIdentifier = ObservedValues.looksLikeAnIdentifier(request.name());
+        boolean namedLikeAnIdentifier = namedLikeAnIdentifier(request);
         if (likeness == Likeness.ONLY_LOOKS_LIKE_ONE && !namedLikeAnIdentifier) {
             return Optional.empty();
         }
+        boolean namedLikeAName = !namedLikeAnIdentifier && namedLikeAName(request);
         for (Kind kind : kinds) {
             List<ObservedValues.Observation> things =
                     seen.underTheKindOfThingTheyAre().thingsOfKind(kind.kept());
@@ -221,6 +270,8 @@ public final class ObservedValueProvider implements ValueProvider {
                 steps.add(name -> name.equals(request.name()));
                 if (namedLikeAnIdentifier) {
                     steps.add(name -> ObservedValues.isTheIdentifierOf(name, kind.kept()));
+                } else if (namedLikeAName) {
+                    steps.add(name -> ObservedValues.isTheNameOf(name, kind.kept()));
                 }
             } else {
                 steps.add(ObservedValues::looksLikeAnIdentifier);
@@ -240,7 +291,7 @@ public final class ObservedValueProvider implements ValueProvider {
                     int chosen = random.nextInt(usable.size());
                     return Optional.of(new GeneratedValue(usable.get(chosen).value(),
                             new ValueOrigin.Derived(usable.get(chosen).from(), "the '"
-                                    + from.get(chosen) + "' of one of the " + kind.written()
+                                    + from.get(chosen) + "' of " + kind.oneOfThem()
                                     + " an earlier reply returned")));
                 }
             }

@@ -53,6 +53,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SplittableRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -230,7 +232,8 @@ class IdentifiersByResourceTest {
             MemorySettings on = MemorySettings.defaults();
             Api api = new Api(new MemorySettings(on.mostValuesUnderOneName(), 1,
                     on.longestValueKept(), on.longestReplyRead(), on.asDeepAsAReplyIsRead(),
-                    true, true, on.rememberAcceptedRequests()));
+                    true, true, on.rememberAcceptedRequests(), on.pluralIdentifiers(),
+                    on.namesByResource()));
             api.replies("listPetTypes", 200, "[{\"id\": 1}]");
             api.replies("listFlights", 200, "[{\"id\": 2}]");
 
@@ -426,6 +429,275 @@ class IdentifiersByResourceTest {
         }
     }
 
+    @Nested
+    @DisplayName("a gap named for several identifiers")
+    class AGapNamedForSeveralIdentifiers {
+
+        private static final String AN_OBJECT_ID = "65f0a1b2c3d4e5f6a7b8c9d0";
+
+        @Test
+        @DisplayName("is recognised however it is spelt, and only in the plural")
+        void is_recognised_however_it_is_spelt() {
+            assertThat(List.of("ids", "IDs", "_ids", "petIds", "petIDs", "PET_IDS", "pet_ids",
+                    "pet-ids", "pet_IDs", "pet-IDS"))
+                    .allMatch(ObservedValues::looksLikeSeveralIdentifiers);
+            assertThat(List.of("id", "petId", "kids", "valids", "Ids_", "idsOfPets"))
+                    .noneMatch(ObservedValues::looksLikeSeveralIdentifiers);
+            assertThat(ObservedValues.kindOfThingInThePluralName("petIds")).contains("pet");
+            assertThat(ObservedValues.kindOfThingInThePluralName("user_ids")).contains("user");
+            assertThat(ObservedValues.kindOfThingInThePluralName("PET_IDS")).contains("pet");
+            assertThat(ObservedValues.kindOfThingInThePluralName("ids"))
+                    .describedAs("a bare ids names no kind of thing")
+                    .isEmpty();
+            assertThat(ObservedValues.looksLikeAnIdentifier("petIds"))
+                    .describedAs("what a reply carries is judged by the singular alone, because "
+                            + "that is what tells a thing from a wrapper around things")
+                    .isFalse();
+        }
+
+        @Test
+        @DisplayName("takes the id of one of the things its address is about, as {id} would")
+        void takes_one_id_of_its_kind() {
+            Api api = new Api();
+            api.replies("listPersons", 200, "[{\"id\": \"" + AN_OBJECT_ID + "\","
+                    + " \"name\": \"Ana\"}]");
+
+            GeneratedValue offered = api.offers("getPersons", "ids", StringSchema.of())
+                    .orElseThrow();
+
+            assertThat(offered.value())
+                    .describedAs("one identifier, which is what an address asking for several "
+                            + "most surely accepts")
+                    .isEqualTo(JsonValue.of(AN_OBJECT_ID));
+            assertThat(((ValueOrigin.Derived) offered.origin()).description())
+                    .isEqualTo("the 'id' of one of the persons an earlier reply returned");
+        }
+
+        @Test
+        @DisplayName("takes the thing's own id before an identifier of something else it carries")
+        void the_thing_s_own_id_first() {
+            Api api = new Api();
+            api.replies("listPersons", 200, "[{\"id\": \"p-1\", \"ownerId\": \"o-9\"}]");
+
+            assertThat(fiftyDraws(api, "getPersons", "ids", StringSchema.of()))
+                    .containsExactly(JsonValue.of("p-1"));
+        }
+
+        @Test
+        @DisplayName("takes the kind its own name names, where the address names another")
+        void the_kind_in_its_name() {
+            Api api = new Api();
+            api.replies("listUsers", 200, "[{\"id\": \"u-7\"}]");
+
+            GeneratedValue offered = api.offers("getGroupMembers", "user_ids", StringSchema.of())
+                    .orElseThrow();
+
+            assertThat(offered.value()).isEqualTo(JsonValue.of("u-7"));
+            assertThat(((ValueOrigin.Derived) offered.origin()).description())
+                    .describedAs("the kind as the gap's name writes it, which names one")
+                    .isEqualTo("the 'id' of one user an earlier reply returned");
+            api.replies("listPets", 200, "[{\"petId\": 11}]");
+            assertThat(api.offers("getPets", "petIds", AN_INTEGER).map(GeneratedValue::value))
+                    .describedAs("the kind followed by id, as for {petId}")
+                    .contains(JsonValue.of(11));
+        }
+
+        @Test
+        @DisplayName("takes what only looks like an identifier, when nothing better is known")
+        void what_only_looks_like_one() {
+            Api api = new Api();
+            api.replies("listPersons", 200,
+                    "[{\"personRef\": \"r-1\", \"typeId\": \"t-2\"}]");
+
+            assertThat(fiftyDraws(api, "getPersons", "ids", StringSchema.of()))
+                    .containsExactly(JsonValue.of("t-2"));
+        }
+
+        @Test
+        @DisplayName("switched off, takes only a value carrying its own name, as before")
+        void switched_off() {
+            Api api = new Api(settings(true, true, false, true));
+            api.replies("listPersons", 200, "[{\"id\": \"" + AN_OBJECT_ID + "\"}]");
+
+            assertThat(api.offers("getPersons", "ids", StringSchema.of())).isEmpty();
+            assertThat(api.offers("getGroupMembers", "user_ids", StringSchema.of())).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("a gap named for a thing's name")
+    class AGapNamedForAThingsName {
+
+        @Test
+        @DisplayName("is recognised by how names are written, and not by a name run into one word")
+        void is_recognised_by_how_names_are_written() {
+            assertThat(List.of("productName", "topic_name", "secret-name", "PRODUCT_NAME",
+                    "configurationNAME", "repo-NAME"))
+                    .allMatch(ObservedValues::looksLikeAName);
+            assertThat(List.of("name", "Name", "_name", "username", "filename", "hostname",
+                    "nameOfProduct"))
+                    .noneMatch(ObservedValues::looksLikeAName);
+            assertThat(ObservedValues.kindOfThingWhoseNameThisIs("productName"))
+                    .contains("product");
+            assertThat(ObservedValues.kindOfThingWhoseNameThisIs("secret_name"))
+                    .contains("secret");
+            assertThat(ObservedValues.kindOfThingWhoseNameThisIs("configurations_NAME"))
+                    .isEqualTo(ObservedValues.kindOfThingNamed("configuration"));
+            assertThat(List.of("name", "NAME", "Name", "productName", "product_name"))
+                    .allMatch(property -> ObservedValues.isTheNameOf(property, "product"));
+            assertThat(List.of("storeName", "id", "title", "_name"))
+                    .noneMatch(property -> ObservedValues.isTheNameOf(property, "product"));
+        }
+
+        @Test
+        @DisplayName("takes the name of one of the things its own name names")
+        void takes_the_name_of_one_of_its_kind() {
+            Api api = new Api();
+            api.replies("listProducts", 200, "[{\"id\": 2, \"name\": \"car\"}]");
+
+            GeneratedValue offered = api.offers("getProduct", "productName", StringSchema.of())
+                    .orElseThrow();
+
+            assertThat(offered.value()).isEqualTo(JsonValue.of("car"));
+            assertThat(((ValueOrigin.Derived) offered.origin()).description())
+                    .isEqualTo("the 'name' of one product an earlier reply returned");
+        }
+
+        @Test
+        @DisplayName("never takes an identifier, though one is all the thing has")
+        void never_an_identifier() {
+            Api api = new Api();
+            api.replies("listProducts", 200, "[{\"id\": \"p-1\", \"typeId\": \"t-2\"}]");
+
+            assertThat(api.offers("getProduct", "productName", StringSchema.of())).isEmpty();
+        }
+
+        @Test
+        @DisplayName("takes a property named exactly like it first, then the kind followed by name")
+        void its_own_name_first() {
+            Api api = new Api();
+            api.replies("listProducts", 200,
+                    "[{\"name\": \"car\", \"productName\": \"car-x\"}]");
+            assertThat(fiftyDraws(api, "getProduct", "productName", StringSchema.of()))
+                    .containsExactly(JsonValue.of("car-x"));
+
+            Api spelt = new Api();
+            spelt.replies("listProducts", 200, "[{\"id\": 1, \"product_name\": \"bike\"}]");
+            assertThat(spelt.offers("getProduct", "productName", StringSchema.of())
+                    .map(GeneratedValue::value)).contains(JsonValue.of("bike"));
+        }
+
+        @Test
+        @DisplayName("takes a word of a reply that lists its things by name alone")
+        void a_word_of_a_list_of_names() {
+            Api api = new Api();
+            api.replies("listProducts", 200, "[\"car\", \"bike\"]");
+
+            assertThat(fiftyDraws(api, "getProduct", "productName", StringSchema.of()))
+                    .containsExactlyInAnyOrder(JsonValue.of("car"), JsonValue.of("bike"));
+        }
+
+        @Test
+        @DisplayName("each gap of an address takes the names of its own kind of thing")
+        void each_gap_its_own_kind() {
+            Api api = new Api();
+            api.replies("listProducts", 200, "[\"car\"]");
+            api.replies("listFeatures", 200, "[{\"id\": 1, \"name\": \"gps\"}]");
+            api.replies("listConfigurations", 200, "[\"basic\"]");
+
+            assertThat(fiftyDraws(api, "addFeature", "productName", StringSchema.of()))
+                    .containsExactly(JsonValue.of("car"));
+            assertThat(fiftyDraws(api, "addFeature", "featureName", StringSchema.of()))
+                    .containsExactly(JsonValue.of("gps"));
+            assertThat(fiftyDraws(api, "deleteConfiguration", "configurationName",
+                    StringSchema.of())).containsExactly(JsonValue.of("basic"));
+        }
+
+        @Test
+        @DisplayName("takes the kind its own name names, not the one its address is about")
+        void the_kind_in_its_name_not_the_address() {
+            Api api = new Api();
+            api.replies("listStores", 200, "[{\"id\": 1, \"name\": \"Main Street\"}]");
+            api.replies("listProducts", 200, "[\"car\"]");
+
+            assertThat(fiftyDraws(api, "getStock", "productName", StringSchema.of()))
+                    .describedAs("a store's name is a real name of the wrong thing")
+                    .containsExactly(JsonValue.of("car"));
+        }
+
+        @Test
+        @DisplayName("{name} takes the name of the things its address is about, as it already did")
+        void a_bare_name_takes_the_name_of_its_kind() {
+            for (boolean names : List.of(true, false)) {
+                Api api = new Api(settings(true, true, true, names));
+                api.replies("listTopicConfigs", 200, "{\"kind\": \"KafkaTopicConfigList\","
+                        + " \"data\": [{\"name\": \"retention.ms\", \"value\": \"100\"}]}");
+
+                assertThat(fiftyDraws(api, "getTopicConfig", "name", StringSchema.of()))
+                        .describedAs("with the names of things %s", names ? "on" : "off")
+                        .containsExactly(JsonValue.of("retention.ms"));
+            }
+            Api api = new Api();
+            api.replies("listProducts", 200, "[\"car\"]");
+            assertThat(api.offers("getProductByItsName", "name", StringSchema.of())
+                    .map(GeneratedValue::value))
+                    .describedAs("and a word of a list of names, too")
+                    .contains(JsonValue.of("car"));
+        }
+
+        @Test
+        @DisplayName("{username} still takes only a property named username")
+        void username_is_unchanged() {
+            Api api = new Api();
+            api.replies("listUsers", 200, "[{\"id\": \"u-7\", \"name\": \"Alice Smith\"}]");
+            api.replies("listUsers", 200, "[\"alice\"]");
+
+            assertThat(api.offers("getUser", "username", StringSchema.of()))
+                    .describedAs("a user's name, or a word a list of users carried, is not a "
+                            + "username")
+                    .isEmpty();
+        }
+
+        @Test
+        @DisplayName("an identifier gap never takes a word of a list of names")
+        void an_identifier_gap_never_takes_a_name() {
+            Api api = new Api();
+            api.replies("listProducts", 200, "[\"car\", \"bike\"]");
+
+            assertThat(api.offers("getProductById", "productId", StringSchema.of())).isEmpty();
+            assertThat(api.offers("getProductByItsId", "id", StringSchema.of())).isEmpty();
+        }
+
+        @Test
+        @DisplayName("switched off, takes only a value carrying its own name, as before")
+        void switched_off() {
+            Api api = new Api(settings(true, true, true, false));
+            api.replies("listProducts", 200, "[\"car\"]");
+            api.replies("listProducts", 200, "[{\"id\": 2, \"name\": \"bike\"}]");
+
+            assertThat(api.seen.underTheKindOfThingTheyAre().thingsOfKind("product"))
+                    .describedAs("a list of names is not kept as things")
+                    .extracting(ObservedValues.Observation::value)
+                    .containsExactly(JsonValue.object(Map.of(
+                            "id", JsonValue.of(2), "name", JsonValue.of("bike"))));
+            assertThat(api.offers("getProduct", "productName", StringSchema.of())).isEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("with both switches off, plural and name gaps are filled exactly as before")
+    void both_switches_off() {
+        Api api = new Api(settings(true, true, false, false));
+        api.replies("listPersons", 200, "[{\"id\": \"p-1\"}]");
+        api.replies("listProducts", 200, "[\"car\"]");
+        api.replies("listProducts", 200, "[{\"id\": 2, \"name\": \"bike\"}]");
+
+        assertThat(api.offers("getPersons", "ids", StringSchema.of())).isEmpty();
+        assertThat(api.offers("getProduct", "productName", StringSchema.of())).isEmpty();
+        assertThat(fiftyDraws(api, "getProductByItsName", "name", StringSchema.of()))
+                .containsExactly(JsonValue.of("bike"));
+    }
+
     /** Everything a gap is offered in fifty asks, so that one lucky draw proves nothing. */
     private static Set<JsonValue> fiftyDraws(Api api, String operation, String gap,
             CanonicalSchema schema) {
@@ -437,10 +709,16 @@ class IdentifiersByResourceTest {
     }
 
     private static MemorySettings settings(boolean byResource, boolean byResourceFirst) {
+        return settings(byResource, byResourceFirst, true, true);
+    }
+
+    private static MemorySettings settings(boolean byResource, boolean byResourceFirst,
+            boolean pluralIdentifiers, boolean namesByResource) {
         MemorySettings on = MemorySettings.defaults();
         return new MemorySettings(on.mostValuesUnderOneName(), on.mostNames(),
                 on.longestValueKept(), on.longestReplyRead(), on.asDeepAsAReplyIsRead(),
-                byResource, byResourceFirst, on.rememberAcceptedRequests());
+                byResource, byResourceFirst, on.rememberAcceptedRequests(), pluralIdentifiers,
+                namesByResource);
     }
 
     /** A small API of lists and reads of one thing, and a memory listening to it. */
@@ -476,6 +754,27 @@ class IdentifiersByResourceTest {
                     "productId"));
             operations.add(list("listUsers", "/users"));
             operations.add(readOne("getUser", HttpMethod.GET, "/users/{username}", "username"));
+            operations.add(list("listPersons", "/api/persons"));
+            operations.add(at("getPersons", HttpMethod.GET, "/api/persons/{ids}"));
+            operations.add(at("getPets", HttpMethod.GET, "/pets/{petIds}"));
+            operations.add(at("getGroupMembers", HttpMethod.GET, "/groups/{user_ids}"));
+            operations.add(at("getProduct", HttpMethod.GET, "/products/{productName}"));
+            operations.add(at("getProductById", HttpMethod.GET, "/products/{productId}"));
+            operations.add(at("getProductByItsId", HttpMethod.GET, "/products/{id}"));
+            operations.add(at("getProductByItsName", HttpMethod.GET, "/products/{name}"));
+            operations.add(at("listFeatures", HttpMethod.GET, "/products/{productName}/features"));
+            operations.add(at("addFeature", HttpMethod.POST,
+                    "/products/{productName}/features/{featureName}"));
+            operations.add(at("listConfigurations", HttpMethod.GET,
+                    "/products/{productName}/configurations"));
+            operations.add(at("deleteConfiguration", HttpMethod.DELETE,
+                    "/products/{productName}/configurations/{configurationName}"));
+            operations.add(list("listStores", "/stores"));
+            operations.add(at("getStock", HttpMethod.GET, "/stores/{productName}"));
+            operations.add(at("listTopicConfigs", HttpMethod.GET,
+                    "/v3/clusters/{cluster_id}/topics/{topic_name}/configs"));
+            operations.add(at("getTopicConfig", HttpMethod.GET,
+                    "/v3/clusters/{cluster_id}/topics/{topic_name}/configs/{name}"));
             this.model = ApiModel.of("things", "1", operations);
             this.seen = new ObservedValues(model, settings);
             this.provider = new ObservedValueProvider(model, seen, new SplittableRandom(92L),
@@ -507,6 +806,18 @@ class IdentifiersByResourceTest {
             return Operation.of(method, path,
                             List.of(Parameter.of(gap, ParameterLocation.PATH, true, AN_INTEGER)))
                     .withId(OperationId.of(id))
+                    .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+        }
+
+        /** An operation with a word for every gap in its address. */
+        private static Operation at(String id, HttpMethod method, String path) {
+            List<Parameter> gaps = new ArrayList<>();
+            Matcher gap = Pattern.compile("\\{([^}]+)}").matcher(path);
+            while (gap.find()) {
+                gaps.add(Parameter.of(gap.group(1), ParameterLocation.PATH, true,
+                        StringSchema.of()));
+            }
+            return Operation.of(method, path, gaps).withId(OperationId.of(id))
                     .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         }
     }

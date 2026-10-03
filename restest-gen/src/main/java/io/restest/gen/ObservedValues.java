@@ -87,9 +87,13 @@ import java.util.function.Function;
  * type's identifier {@code id}, not {@code petTypeId}. So what the API returned at an address is
  * also kept under <b>the kind of thing that address is about</b> - everything {@code GET /pettypes}
  * lists goes under "pet type" - and the {@link ObservedValueProvider} fills {@code {petTypeId}}
- * with the {@code id} of one of them. This one is not a list of values anybody could write in a
- * file, because what it is keyed by is worked out from the document's addresses rather than
- * written down, and it is kept only when {@link MemorySettings#identifiersByResource()} is on.
+ * with the {@code id} of one of them. A gap named for a thing's name, such as
+ * {@code {productName}}, is filled with the {@code name} of one of the products in the same way,
+ * and an API that lists its products as nothing but their names - {@code ["car", "bike"]} - has
+ * each of those words kept as the name of one product. This one is not a list of values anybody
+ * could write in a file, because what it is keyed by is worked out from the document's addresses
+ * rather than written down, and it is kept only when
+ * {@link MemorySettings#identifiersByResource()} is on.
  *
  * <p>It also keeps what the API <em>accepted</em>, which no reply may ever show: when a request is
  * answered with a success, the values it carried are filed under their names exactly as a reply's
@@ -219,7 +223,7 @@ public final class ObservedValues implements RunListener {
             remember(reply, shapeOfOneThingIn(operation, response), interaction.id(), 0);
             if (settings.identifiersByResource()) {
                 kindOfThingReturnedBy(operation).ifPresent(kind ->
-                        rememberTheThingsIn(reply, kind, interaction.id(), 0));
+                        rememberTheThingsIn(reply, kind, interaction.id(), 0, false));
             }
         });
     }
@@ -287,20 +291,32 @@ public final class ObservedValues implements RunListener {
     /**
      * Keeps the things one reply is made of under the kind of thing they are.
      *
-     * <p>A list is a list of things, each kept. An object is a thing. But an object with nothing
-     * in it named like an identifier is usually a wrapper around the things rather than one of
-     * them - {@code {"data": [...]}}, or {@code {"_embedded": {"pets": [...]}}} - so what is inside
-     * it is looked at as well, as far down as a reply is ever read. An object that does carry an
-     * identifier is a thing, and what is inside it - a pet's owner, an owner's pets - is some other
-     * kind of thing and is not filed under this one.
+     * <p>A list is a list of things, each kept - and a word or a number in a list, while
+     * {@link MemorySettings#namesByResource()} is on, is the name of one, as long as no object on
+     * the way down to it had words or numbers of its own: the words in a pet's {@code tags} are not
+     * the names of pets, while those in {@code {"data": [...]}} are. An object is a thing.
+     * But an object with nothing in it named like an identifier is usually a wrapper around the
+     * things rather than one of them - {@code {"data": [...]}}, or
+     * {@code {"_embedded": {"pets": [...]}}} - so what is inside it is looked at as well, as far
+     * down as a reply is ever read. An object that does carry an identifier is a thing, and what is
+     * inside it - a pet's owner, an owner's pets - is some other kind of thing and is not filed
+     * under this one.
      */
-    private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from, int depth) {
+    private void rememberTheThingsIn(JsonValue reply, String kind, InteractionId from, int depth,
+            boolean insideAThing) {
         if (depth > settings.asDeepAsAReplyIsRead()) {
             return;
         }
         switch (reply) {
-            case JsonValue.JsonArray list -> list.elements().forEach(element ->
-                    rememberTheThingsIn(element, kind, from, depth + 1));
+            case JsonValue.JsonArray list -> list.elements().forEach(element -> {
+                if (isAWordOrANumber(element)) {
+                    if (settings.namesByResource() && !insideAThing) {
+                        rememberTheNamedThing(element, kind, from);
+                    }
+                } else {
+                    rememberTheThingsIn(element, kind, from, depth + 1, insideAThing);
+                }
+            });
             case JsonValue.JsonObject thing -> {
                 Map<String, JsonValue> single = new LinkedHashMap<>();
                 thing.members().forEach((name, value) -> {
@@ -322,7 +338,8 @@ public final class ObservedValues implements RunListener {
                     for (JsonValue inside : thing.members().values()) {
                         if (inside instanceof JsonValue.JsonObject
                                 || inside instanceof JsonValue.JsonArray) {
-                            rememberTheThingsIn(inside, kind, from, depth + 1);
+                            rememberTheThingsIn(inside, kind, from, depth + 1,
+                                    insideAThing || !single.isEmpty());
                         }
                     }
                 }
@@ -330,6 +347,31 @@ public final class ObservedValues implements RunListener {
             default -> { }
         }
     }
+
+    /**
+     * Keeps one word of a list that is nothing but words as a thing of this kind with that word
+     * for its name.
+     *
+     * <p>Some APIs list their things by name and nothing else: {@code GET /products} answering
+     * {@code ["car", "bike"]}. Those words are the names of two products, and a later address
+     * asking for a product's name - {@code /products/{productName}} - is asking for one of them.
+     * Kept as a thing whose only property is {@code name}, it is offered exactly as a product the
+     * API wrote out in full would be, and never where an identifier is wanted, since {@code name}
+     * is not written like one.
+     */
+    private void rememberTheNamedThing(JsonValue word, String kind, InteractionId from) {
+        if (smallEnoughToSend(word)) {
+            underTheKindOfThingTheyAre.remember(kind,
+                    new JsonValue.JsonObject(Map.of(A_THINGS_NAME, word)), from);
+        }
+    }
+
+    private static boolean isAWordOrANumber(JsonValue value) {
+        return value instanceof JsonValue.JsonString || value instanceof JsonValue.JsonNumber;
+    }
+
+    /** What a thing known only by a word in a list is taken to call that word. */
+    static final String A_THINGS_NAME = "name";
 
     /**
      * The kind of thing an address is about: the last fixed part of it, once the gaps at its end
@@ -371,12 +413,7 @@ public final class ObservedValues implements RunListener {
      * end that way, or that is nothing but the ending.
      */
     static Optional<String> nameWithoutTheIdentifierEnding(String name) {
-        for (String ending : IDENTIFIER_ENDINGS) {
-            if (name.endsWith(ending) && name.length() > ending.length()) {
-                return Optional.of(name.substring(0, name.length() - ending.length()));
-            }
-        }
-        return Optional.empty();
+        return withoutTheEnding(name, IDENTIFIER_ENDINGS);
     }
 
     /**
@@ -462,6 +499,101 @@ public final class ObservedValues implements RunListener {
     /** How identifiers are written at the end of a name. A fact about spelling, not a choice. */
     private static final List<String> IDENTIFIER_ENDINGS =
             List.of("Id", "ID", "_id", "-id", "_ID", "-ID");
+
+    /**
+     * Whether a name is written the way several identifiers are: {@code ids} or {@code _ids}, or
+     * ending in {@code Ids}, {@code IDs}, {@code IDS}, {@code _ids}, {@code -ids}, {@code _IDs},
+     * {@code _IDS}, {@code -IDs} or {@code -IDS}.
+     *
+     * <p>Asked only of a gap in an address, which is filled with one of them. Never of what a
+     * reply carries: whether an object there has an identifier is what decides if it is a thing or
+     * a wrapper around things, and a pet with a list of its owners' identifiers is still a pet.
+     */
+    static boolean looksLikeSeveralIdentifiers(String name) {
+        return name.equalsIgnoreCase("ids") || name.equalsIgnoreCase("_ids")
+                || nameWithoutThePluralIdentifierEnding(name).isPresent();
+    }
+
+    /**
+     * The kind of thing a gap's name says it holds the identifiers of: {@code petIds} holds pets',
+     * {@code user_ids} users'. Nothing for a name that does not end the way several identifiers
+     * are written.
+     */
+    static Optional<String> kindOfThingInThePluralName(String gap) {
+        return nameWithoutThePluralIdentifierEnding(gap).flatMap(ObservedValues::kindOfThingNamed);
+    }
+
+    /**
+     * A name with the ending several identifiers are written with taken off: {@code pet} out of
+     * {@code petIds}. Nothing for a name that does not end that way, or that is nothing but the
+     * ending.
+     */
+    static Optional<String> nameWithoutThePluralIdentifierEnding(String name) {
+        return withoutTheEnding(name, PLURAL_IDENTIFIER_ENDINGS);
+    }
+
+    /**
+     * How several identifiers are written at the end of a name. A fact about spelling, too. The
+     * ones that begin with {@code _} or {@code -} come first, so that what is left of
+     * {@code pet_IDS} is {@code pet} rather than {@code pet_}.
+     */
+    private static final List<String> PLURAL_IDENTIFIER_ENDINGS =
+            List.of("_ids", "-ids", "_IDs", "_IDS", "-IDs", "-IDS", "Ids", "IDs", "IDS");
+
+    /**
+     * Whether a name is written the way a thing's name is: ending in {@code Name}, {@code _name},
+     * {@code -name}, {@code NAME}, {@code _NAME} or {@code -NAME}, with something before it -
+     * {@code productName}, {@code topic_name}. Not {@code username} or {@code filename}, where
+     * "name" is part of one word, nor {@code name} on its own, which names no kind of thing.
+     */
+    static boolean looksLikeAName(String name) {
+        return nameWithoutTheNameEnding(name).isPresent();
+    }
+
+    /**
+     * The kind of thing a gap's name says it is the name of: {@code productName} is a product's,
+     * {@code secret_name} a secret's. Nothing for a name that does not end the way names are
+     * written.
+     */
+    static Optional<String> kindOfThingWhoseNameThisIs(String gap) {
+        return nameWithoutTheNameEnding(gap).flatMap(ObservedValues::kindOfThingNamed);
+    }
+
+    /**
+     * A name with the ending a thing's name is written with taken off: {@code product} out of
+     * {@code productName}, {@code topic} out of {@code topic_name}.
+     */
+    static Optional<String> nameWithoutTheNameEnding(String name) {
+        return withoutTheEnding(name, NAME_ENDINGS);
+    }
+
+    /**
+     * Whether a property is named the way the name of this kind of thing is: {@code name}, in any
+     * capitals, or the kind followed by name - {@code productName} or {@code product_name} for a
+     * product.
+     */
+    static boolean isTheNameOf(String property, String kind) {
+        return property.equalsIgnoreCase(A_THINGS_NAME)
+                || kindOfThingWhoseNameThisIs(property).filter(kind::equals).isPresent();
+    }
+
+    /**
+     * How a thing's name is written at the end of a longer name. A fact about spelling, not a
+     * choice; a lower-case "name" run into the word before it is left out, because it is part of
+     * that word more often than not. The ones that begin with {@code _} or {@code -} come first,
+     * as with several identifiers.
+     */
+    private static final List<String> NAME_ENDINGS =
+            List.of("_name", "-name", "_NAME", "-NAME", "Name", "NAME");
+
+    private static Optional<String> withoutTheEnding(String name, List<String> endings) {
+        for (String ending : endings) {
+            if (name.endsWith(ending) && name.length() > ending.length()) {
+                return Optional.of(name.substring(0, name.length() - ending.length()));
+            }
+        }
+        return Optional.empty();
+    }
 
     private static List<String> partsOf(String path) {
         return Arrays.stream(path.split("/")).filter(part -> !part.isEmpty()).toList();
