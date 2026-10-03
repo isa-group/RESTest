@@ -237,7 +237,7 @@ one page; `./restest version` says which RESTest and which Java you have.
 
 [The manual](docs/manual/README.md) is the place to start: it is read from beginning to end, and
 takes you from a first run against a practice API on your own machine to RESTest in your continuous
-integration. `docs/manual/pdf.sh` builds it as one PDF.
+integration. `docs/manual/pdf.sh` builds it as one PDF, with Docker.
 
 [`docs/`](docs/README.md) has a page for each subject: the command line, what a run leaves behind,
 the faults, the plan, dictionaries, the settings and the switches — and, for working on RESTest

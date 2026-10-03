@@ -10,8 +10,8 @@ the details, is in [the exit codes](../command-line.md#exit-codes).
 |---|---|
 | `0` | The run finished and found nothing wrong |
 | `1` | The run finished and found at least one fault |
-| `2` | The command was wrong, or a file it named could not be used. Nothing was sent |
-| `3` | Nothing was tested: no operation could be, nothing answered, or the budget ran out first |
+| `2` | The command was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent |
+| `3` | Nothing was tested: the document could not be read or has no operation that can be tried, nothing answered, or the budget ran out first |
 | `4` | RESTest itself went wrong, so what it printed may be incomplete |
 | `130` | The run was stopped with Ctrl-C |
 | `143` | The run was stopped with `kill` or `docker stop` |
@@ -47,7 +47,8 @@ API, and the report says what. Anything else is a finding about the run: the API
 address was wrong, a file was misspelt. [Chapter 10](10-troubleshooting.md) goes through them.
 
 One thing to watch for in a script that starts the API and RESTest together: RESTest starts
-quickly, and an API that is still starting answers nothing, which is `3`. Wait until the API answers
+quickly, and an API that is still starting answers nothing — not even its own document, when it
+serves one — which is `3`. Wait until the API answers
 before running RESTest, as the example below does.
 
 ## In GitHub Actions
@@ -66,11 +67,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       api:
-        image: springcommunity/spring-petclinic-rest
+        image: springcommunity/spring-petclinic-rest:4.0.2
         ports:
           - 9966:9966
     steps:
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: '21'
@@ -93,11 +94,15 @@ jobs:
 
       - name: Keep the report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: restest-report
           path: restest-out/report.json
 ```
+
+Each action is pinned to a commit rather than to a version tag, which whoever owns an action can
+move to other code at any time; the comment says which version the commit is, and Dependabot keeps
+both up to date.
 
 The step that tests the API fails the job when RESTest ends with anything but `0`, which is usually
 what a build wants. `if: always()` keeps the report even then, and it is the report that says what

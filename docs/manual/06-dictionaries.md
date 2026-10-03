@@ -50,10 +50,13 @@ Save it as `clinic.yaml` and hand it over with `--dictionary`:
   format](../dictionary-format.md#the-five-keyings) has them all.
 - `values` holds the lists.
 
-**A list replaces what RESTest would have sent for the places it covers; it is not added to it.**
-With the file above, every `lastName` the run sends is one of those five. That is usually what you
-want for values that must exist. For values you only want sent now and then, key the list narrowly,
-to the operations where they matter.
+**A list is one voice among several.** For a request meant to be accepted, the plan RESTest
+carries asks every source that has an answer — the document's sample, an invented value, what the
+API has returned, your lists — and draws one of the answers, giving your lists 40 parts in 100. With
+the file above, then, about half the surnames the run sends are yours; requests that push
+at the API or change one thing in an accepted request send others again. To have your values sent
+whenever a list has one, change the plan so that it asks your lists before the others: [The
+dictionary format](../dictionary-format.md#which-lists-get-used-for-what) says how.
 
 ## Checking that it was read
 

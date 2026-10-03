@@ -10,8 +10,8 @@ rebuilt. Every setting, with its default and what it does, is in [The settings](
 Settings and plans are two different files, and the difference is worth having clear. A plan
 ([chapter 5](05-plans.md)) is about **the API**: where values come from, which operations to touch.
 A setting is about **the tool**: it would mean the same against any other API on the same machine.
-Twenty requests in flight at once suits a fast API on a big machine and none on a laptop, whatever
-the API is.
+How many requests to keep in flight at once is a setting, for instance: it depends on the machine
+and on how much load you are willing to put on the API, not on what the API does.
 
 ## Seeing them
 

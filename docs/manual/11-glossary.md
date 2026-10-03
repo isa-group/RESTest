@@ -43,7 +43,7 @@ accepts and what each answers. The one thing a run needs.
 to be accepted, before anything is left to chance.
 
 **Operation.** One thing an API can be asked to do, named by a method and a path, such as
-`GET /owners/{ownerId}`, and usually by an `operationId` the document gives it, such as `getOwner`.
+`GET /api/owners/{ownerId}`, and usually by an `operationId` the document gives it, such as `getOwner`.
 
 **Plan.** The file that says how a run builds its requests, where their values come from, and which
 operations it may touch. Also called a campaign file. See [chapter 5](05-plans.md).
@@ -66,8 +66,8 @@ in flight, how long it waits. See [chapter 7](07-settings.md).
 **Source.** A place a value can come from: the document's closed list of values, its samples, its
 defaults, a value invented to fit, the memory of what the API returned, or a dictionary.
 
-**Status code.** The three-digit number at the start of every reply. `2xx` means success, `4xx` that
-the request was refused, `5xx` that the server failed.
+**Status code.** The three-digit number at the start of every reply. `2xx` means success, `3xx` a
+redirection to somewhere else, `4xx` that the request was refused, `5xx` that the server failed.
 
 **Stored run.** `run.sqlite`, written with `--store`: every request and reply of a run, to look at
 later without asking the API anything.

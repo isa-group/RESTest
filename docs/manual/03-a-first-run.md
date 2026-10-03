@@ -10,11 +10,14 @@ clinic: owners, their pets, the pets' visits, and the vets who see them. Its dev
 a Docker image, so one command starts it:
 
 ```bash
-docker run -d --name petclinic -p 9966:9966 springcommunity/spring-petclinic-rest
+docker run -d --name petclinic -p 9966:9966 springcommunity/spring-petclinic-rest:4.0.2
 ```
 
 The image is built for Intel and AMD processors. On a Mac with Apple silicon, Docker runs it in
 emulation and warns that the platforms do not match: it works, and takes a little longer to start.
+
+The `4.0.2` after its name is the version every output in this manual came from; a later one may
+describe itself differently.
 
 It keeps its data in memory, which makes it a good API to practise on: RESTest can create, change
 and delete whatever it likes, and removing the container and starting it again gives you a clinic as
@@ -125,7 +128,7 @@ was:
 
 ```bash
 docker rm -f petclinic
-docker run -d --name petclinic -p 9966:9966 springcommunity/spring-petclinic-rest
+docker run -d --name petclinic -p 9966:9966 springcommunity/spring-petclinic-rest:4.0.2
 ```
 
 ## Keeping everything a run sent

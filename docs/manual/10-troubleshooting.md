@@ -9,10 +9,12 @@ When a run does not do what you expected, it nearly always says why, either in a
 script found nothing to run: build it with `./mvnw -q install -DskipTests` ([chapter
 2](02-installing.md)), and read what that prints if it fails.
 
-**`UnsupportedClassVersionError`**, or *has been compiled by a more recent version of the Java
-Runtime*, and the exit code `1`. The Java that ran RESTest is older than 21. `java -version` says
-which one the terminal finds; install Java 21 or later, or point `JAVA_HOME` and `PATH` at it. That
-`1` comes from Java, not from RESTest, and says nothing about the API.
+**`Unrecognized option: --enable-native-access=ALL-UNNAMED`**, or **`UnsupportedClassVersionError`**
+(*has been compiled by a more recent version of the Java Runtime*), and the exit code `1`. The Java
+that runs `./restest` is older than 21: the first message comes from Java 16 or older, the second from
+17 to 20. `./restest` uses the `java` the terminal finds first, which need not be the one that built
+RESTest; `java -version` says which it is. Put Java 21 or later first on the `PATH`. That `1` comes
+from Java, not from RESTest, and says nothing about the API.
 
 **On Windows, `./restest` is not recognised.** It is a shell script: run it from Git Bash.
 
@@ -26,19 +28,34 @@ meant it to keep away from. Fix the line it names, and run again.
 
 ## Nothing was tested: exit code `3`
 
-The run ended without evidence about the API, and the last line says which of these it was.
+The run ended without evidence about the API, and its lines say which of these it was.
 
-**`nothing at … answered any of the … requests`.** RESTest reached nothing at the address it was
-using. Either the API is not running yet — usual when a script starts the API and RESTest together,
-since RESTest starts quickly — or the address is wrong. The first line of the run says which address
-it used. Check it with `curl`, wait for the API to answer, and run again.
+**`nothing could be read from …`**, under `the document describes no operation that could be
+tested`. RESTest could not fetch or open the document at all. With the clinic, which serves its
+own document, this is what a run says when the clinic is not running yet, or not yet ready, or the
+address is mistyped:
+
+```
+restest: the document describes no operation that could be tested
+1 part(s) of the document could not be read:
+  location: nothing could be read from 'http://localhost:9966/petclinic/v3/api-docs'
+```
+
+Check the address with `curl`, wait for the API to answer, and run again. For a document that is a
+file, check its path.
+
+**`nothing at … answered any of the … requests`.** The document was read, but nothing answered at
+the address the requests went to. Either the API is not running yet — usual when a script starts the
+API and RESTest together, since RESTest starts quickly — or the address is wrong. The first line of
+the run says which address it used.
 
 **`the budget of … ran out before a single request could be sent`.** Reading the document and
 starting up take a moment, paid out of the budget. Give the run more time.
 
-**`the document describes no operation that could be tested`**, or a count of the operations that
-could not be. RESTest read the document and found nothing it can send. The lines before it say why;
-an upload that the API insists on, for example, is one kind of request it does not build.
+**`the document describes no operation that could be tested`** with no `nothing could be read`
+under it, or a count of the operations that could not be. RESTest read the document and found
+nothing it can send. The lines after it say why; an upload that the API insists on, for example, is
+one kind of request it does not build.
 
 **No address.** A document whose `servers` gives no address RESTest can reach — none at all, or only
 a path such as `/api/v3` — needs one: give it with `--url`.
@@ -57,9 +74,15 @@ path instead of the one the document declares, so for the clinic, whose document
 `--url http://localhost:9966/other` replaces it. Compare the address in a fault's `curl` command with
 one you know works.
 
-**Mostly `400`.** The API refuses the values. Read a few of the replies — `jq '.findings'` in the
-report, or `run.sqlite` with `--store` — to see what it objects to, and hand over values it accepts
-in a dictionary ([chapter 6](06-dictionaries.md)). Remember that some refusals are meant: the
+**Mostly `400`.** The API refuses the values. The report keeps only faults, and a refusal is not
+one, so run again with `--store` and read a few of the refusals from the stored run:
+
+```bash
+sqlite3 restest-out/run.sqlite "SELECT operation, json_extract(document, '$.outcome.body.text') FROM interaction WHERE status_code = 400 LIMIT 5"
+```
+
+What the API objects to is usually in its own words there. Hand over values it accepts in a
+dictionary ([chapter 6](06-dictionaries.md)). Remember that some refusals are meant: the
 summary says how many requests pushed at the API on purpose or changed one thing in a request it
 had accepted.
 

@@ -42,6 +42,12 @@ function Pandoc(doc)
       end
     end
   end
+  -- A chapter with no title of its own, or with two, would send every link after it to the wrong
+  -- chapter without anything saying so.
+  if seen ~= #files then
+    error(#files .. " chapters were given and " .. seen .. " first-level headings found: every "
+        .. "chapter has to begin with exactly one")
+  end
 
   return doc:walk({
     Link = function(link)

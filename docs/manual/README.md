@@ -27,19 +27,6 @@ here point to them rather than repeat them.
 10. [Troubleshooting](10-troubleshooting.md) — what to do when a run does not do what you expected.
 11. [Glossary](11-glossary.md) — the words this manual uses.
 
-## What you need
-
-A computer with Java 21 or later, git, and — for the practice API the examples run against — Docker.
-Chapter 2 says how to check each. Nothing else: RESTest needs no account, no server of its own and
-no configuration.
-
-## Conventions
-
-Commands are written for a shell such as bash or zsh, run from the root of the RESTest checkout:
-
-```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
-```
-
-Output is shown the way it appears, in a block of its own. The numbers in it are one run's; yours
-will be different, because a run sends values chosen by chance and learns from what the API answers.
+[Before you start](01-what-restest-is-for.md#before-you-start), at the end of the first chapter,
+says what you need and how the examples are written. `docs/manual/pdf.sh` builds the whole manual as
+one PDF; it needs Docker.

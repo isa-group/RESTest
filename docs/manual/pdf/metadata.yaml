@@ -10,9 +10,7 @@ classoption: [oneside]
 colorlinks: true
 linkcolor: blue
 urlcolor: blue
-# Long lines of output and long commands wrap instead of running off the page.
+# Long lines of output wrap instead of running off the page. The template already does this for code
+# with a language named; output blocks have none, and are wrapped the same way here.
 header-includes: |
-  \usepackage{fvextra}
-  \fvset{breaklines, breakanywhere}
-  \RecustomVerbatimEnvironment{verbatim}{Verbatim}{}
-  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines, breakanywhere, commandchars=\\\{\}}
+  \RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines, breakanywhere, fontsize=\small}

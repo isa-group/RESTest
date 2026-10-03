@@ -161,8 +161,8 @@ addSpecialty|400|18
 ```
 
 Each row's `document` column holds the whole exchange as JSON — what the request was meant to be,
-where every value in it came from, what was sent and what came back — in the same shape as a fault
-in `report.json`:
+where every value in it came from, what was sent and what came back — in the same shape as the
+exchange a fault in `report.json` carries under `interaction`:
 
 ```bash
 sqlite3 restest-out/run.sqlite "SELECT document FROM interaction WHERE status_code = 500 ORDER BY sent_at_nanos LIMIT 1" | jq .

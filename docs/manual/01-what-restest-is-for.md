@@ -64,4 +64,24 @@ from writes, chapter 5 shows how to keep it to the requests that change nothing.
   document stops matching it. Chapter 9 shows how.
 - **On an API you do not know**, to find out quickly what its document promises and what it keeps.
 
+## Before you start
+
+**What you need.** A computer with Java 21 or later and git, to build and run RESTest, and Docker,
+for the practice API every example runs against. [Chapter 2](02-installing.md) says how to check
+each. Chapters 3 and 4 also use three small command-line tools many systems already have: `curl`, to
+ask the API something directly, [`jq`](https://jqlang.org/), to read JSON, and
+[`sqlite3`](https://sqlite.org/cli.html), to read a stored run. RESTest itself needs no account, no
+server of its own and no configuration.
+
+**How the examples are written.** Commands are for a shell such as bash or zsh, run from the root of
+the RESTest checkout:
+
+```bash
+./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
+```
+
+What they print is shown the way it appears, in a block of its own, copied from a real run. The
+numbers in it are that run's; yours will be different, because a run sends values chosen by chance
+and learns from what the API answers.
+
 The [next chapter](02-installing.md) installs RESTest.
