@@ -1,7 +1,8 @@
 # RESTest documentation
 
-One page per subject. The [README](../README.md) at the root of the repository is where to start:
-it installs the tool and makes a first run. These pages are what to look things up in afterwards.
+One page per subject. The [README](../README.md) at the root of the repository installs the tool and
+makes a first run, and [the manual](manual/README.md) is read from beginning to end. These pages are
+what to look things up in afterwards.
 
 ## Using RESTest
 

@@ -1,0 +1,18 @@
+# What the PDF of the manual says about itself, and how it looks. Read by docs/manual/pdf.sh; the
+# subtitle, the date and the commit links point at are given there.
+title: The RESTest manual
+author: ISA Research Group, Universidad de Sevilla
+lang: en-GB
+titlepage: true
+toc-own-page: true
+book: true
+classoption: [oneside]
+colorlinks: true
+linkcolor: blue
+urlcolor: blue
+# Long lines of output and long commands wrap instead of running off the page.
+header-includes: |
+  \usepackage{fvextra}
+  \fvset{breaklines, breakanywhere}
+  \RecustomVerbatimEnvironment{verbatim}{Verbatim}{}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines, breakanywhere, commandchars=\\\{\}}
