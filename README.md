@@ -1,3 +1,6 @@
+> This branch holds RESTest 1.x, which is no longer developed. RESTest 2, a complete rewrite, is on
+> [`master`](https://github.com/isa-group/RESTest).
+
 <img src="https://github.com/isa-group/RESTest/blob/master/RESTLogo_Black.png?raw=true" alt="RESTest Logo" width="200px"/>
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest)
