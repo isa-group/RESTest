@@ -1,7 +1,8 @@
-# Contributing to RESTest 2.0
+# Contributing to RESTest
 
-RESTest 2.0 is a rewrite. It is being built in small, reviewable increments on the `v2` branch;
-`master` still holds RESTest 1.x and is not touched until the rewrite is complete.
+RESTest 2 is a rewrite of RESTest 1.x, built in small, reviewable increments. Work targets `master`.
+RESTest 1.x is on the `v1.x` branch and its tags; the record of how 2.0 was built — every increment,
+measurement and decision — is the tag `history/2.0-development`.
 
 ## Before you write anything
 
@@ -11,7 +12,7 @@ Read, in this order:
 2. `docs/README.md` — the index of the documentation: a page per subject, from the command line to
    every key of `report.json`.
 3. `CLAUDE.md` — the rules of the project. Short, and binding on humans as much as on assistants.
-4. `ROADMAP.md` — what is being built, in what order, and where the review points are.
+4. `ROADMAP.md` — what 2.x will add, in what order, and where the review points are.
 5. `docs/adr/` — why the system is shaped the way it is, one decision per file.
 6. `docs/DESIGN.md` — the architecture, the extension points and the quality gates, with a
    glossary of the terms used throughout the repository.
@@ -24,21 +25,21 @@ requests one thing at a time, sends short series around the things it creates, a
 reply of 500 and every reply that is not the shape the document promised. What it does is described
 in `README.md` and `docs/`, and how it is built in `docs/DESIGN.md`.
 
-What comes after it is in `ROADMAP.md`: the rows marked ⏭, taken in the order its "After v2.0"
-section gives. Those rows are planned and need no further approval to start. What is out of scope —
+What comes after it is in `ROADMAP.md`, in the order its "The order of work" section gives. Those
+rows are planned and need no further approval to start. What is out of scope —
 the list under "Out of scope for v2.0" in `docs/DESIGN.md` — is not started without explicit
 approval, even where it looks easy.
 
 ## The loop
 
-One increment from `ROADMAP.md` = one branch = one pull request into `v2`.
+One increment from `ROADMAP.md` = one branch = one pull request into `master`.
 
 ```bash
-git switch v2 && git pull
-git switch -c feat/m2-4-format-aware-values
+git switch master && git pull
+git switch -c feat/m7-2a-container-image
 # ... work ...
 ./mvnw verify
-gh pr create --base v2
+gh pr create --base master
 ```
 
 Branch names are `feat/m<milestone>-<n>-<slug>`. Pull requests are squash-merged.
@@ -86,6 +87,6 @@ the same increment. Ordinary implementation choices belong in the pull request's
 ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
 ```
 
-Milestone campaigns against the published benchmark are run from a repository of their own, which
-has its own instructions; [ADR-0011](docs/adr/0011-evaluation-harness.md) says which repository and
-why it is not this one. Nothing here builds against it, and the tool never needs it.
+Evaluation campaigns are run from a repository of their own, which has its own instructions;
+[ADR-0011](docs/adr/0011-evaluation-harness.md) says why it is not this one. Nothing here builds
+against it, and the tool never needs it.

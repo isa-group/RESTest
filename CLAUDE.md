@@ -1,4 +1,4 @@
-# RESTest 2.0 — project memory
+# RESTest 2 — project memory
 
 This file is loaded at the start of every Claude Code session in this repository.
 Keep it under 200 lines. Facts and rules belong here; procedures belong in `docs/`.
@@ -8,12 +8,12 @@ Keep it under 200 lines. Facts and rules belong here; procedures belong in `docs
 A complete rewrite of RESTest, a black-box testing tool for REST APIs. Input: an OpenAPI
 specification. Output: generated and executed test cases, plus a report of the failures found.
 Architecture and rationale: `docs/DESIGN.md`. Decisions: `docs/adr/`.
-Work breakdown: `ROADMAP.md`.
+What 2.x will add, in order: `ROADMAP.md`. How 2.0 was built: the tag `history/2.0-development`.
 
 **Design target:** an unknown API, no human configuration, a fixed time budget.
 
-**Release target:** v2.0 is the version submitted to the 2027 REST League (tools due 2026-10-09).
-`ROADMAP.md` is ordered by that calendar and says what waits for 2.1; the reasoning is ADR-0024.
+**Released:** 2.0.0, tagged `v2.0.0` on `master`. Semantic versioning from here on: a fix is 2.0.x,
+an addition 2.x.
 
 ## Language
 
@@ -32,10 +32,11 @@ No exceptions.
 
 ## Branching and increments
 
-- `master` is untouched until v2.0 is complete. All work targets the long-lived `v2` branch.
+- All work targets `master`. `v2`, where 2.0 was built, is frozen and tagged
+  `history/2.0-development`; RESTest 1.x is on the `v1.x` branch and its tags.
 - One increment = one branch = one pull request, named `feat/<milestone>-<n>-<slug>`,
-  e.g. `feat/m1-2-specification-parser`.
-- Squash-merge into `v2`. Never merge into `master`.
+  e.g. `feat/m7-2a-container-image`.
+- Squash-merge into `master`.
 - Take the next increment from `ROADMAP.md`, in the order of work it states — not in numerical
   order — unless told otherwise.
 
@@ -72,12 +73,10 @@ was edited.
 - **No AI abstractions.** No `LlmProvider`, no `restest-ai` module, no dependency on any model
   library. "Ready for AI" means open formats, the generic `ExternalDataProvider` interface, and
   constraint and flow sources that can fire mid-run. See ADR-0008.
-- **No benchmark platform in this repository.** Searching it for "restgym" — in file contents and
-  in file names — must return hits only in the documents that explain the relationship: this file,
-  `ROADMAP.md`, `docs/DESIGN.md`, `docs/adr/0011-evaluation-harness.md` and
-  `.claude/agents/reviewer.md`. `SourceTreeRulesTest` holds the list and enforces it; that list is
-  the authority, and this sentence follows it. The adapter and the campaign scripts live in
-  `isa-group/restgym-restest2`, which is private for now. See ADR-0011, amended at M1.9.
+- **No evaluation platform in this repository.** The harness RESTest is measured with lives in a
+  repository of its own, and nothing here builds against it, depends on it or names it — in a file's
+  contents or in its name — outside the documents `SourceTreeRulesTest` lists; that list is the
+  authority. See ADR-0011.
 - **Nothing from the deferred backlog** ("Out of scope for v2.0" in `docs/DESIGN.md`) without
   explicit approval, even
   if it looks easy. That list includes dependency inference, semantic-oracle inference, metamorphic

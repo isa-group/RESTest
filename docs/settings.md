@@ -25,7 +25,7 @@ API: somebody writes one per API, and it means the same thing on every machine. 
 [the campaign file](campaign-format.md).
 
 **Settings** say how the tool behaves. They travel with a machine or with an experiment: a
-concurrency that suits your laptop is wrong on the benchmark's machine, and an experiment that turns
+concurrency that suits your laptop is wrong on a build server, and an experiment that turns
 a behaviour off should not have to rewrite a file about the API.
 
 The test for which one something belongs in: *would it mean the same thing for a different API on
@@ -393,7 +393,7 @@ builds its requests the ordinary way.
 Five of the kinds, from `wrongRoot` to `beyondItsWidth`, break the body as a whole rather than one
 value in it — its kind, its bytes, its media type — or push a number past what its declared format
 can hold. They aim at the code that reads a body before the API's own code runs. [The
-switches](switches.md#switching-off-everything-one-increment-added) has the files that turn off, at
+switches](switches.md#switching-off-one-idea) has the files that turn off, at
 once, the kinds that change one value or these last five.
 
 | Setting | Default | What it does |
@@ -425,7 +425,7 @@ created itself — see [the campaign file](campaign-format.md#series-of-requests
 Each series starts with that strategy's own creation, asks one question, and sends each of its steps
 once the answer to the one before has arrived, with the identifier the API gave the thing. With every
 series off, such a strategy builds its requests the ordinary way; [the
-switches](switches.md#switching-off-everything-one-increment-added) has that file.
+switches](switches.md#switching-off-one-idea) has that file.
 
 | Setting | Default | What it does |
 |---|---|---|

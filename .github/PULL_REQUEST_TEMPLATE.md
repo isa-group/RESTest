@@ -60,7 +60,7 @@ A small diagram is welcome when it replaces a paragraph.
 - [ ] Per-request overhead: <!-- X ms (previous Y ms) -->
 - [ ] Smoke run, two containerised APIs: operations covered <!-- X (previous Y) -->, unique faults <!-- Z (previous W) -->
 - [ ] Idle time: <!-- X% of budget -->
-- [ ] Artefact: <!-- report file, terminal transcript, or benchmark table -->
+- [ ] Artefact: <!-- report file, terminal transcript, or table of results -->
 
 ## Decisions taken
 
@@ -75,8 +75,8 @@ you decided not to act on, and why. If a decision is expensive to reverse, it ne
 
 ---
 
-- [ ] Targets `v2`, not `master`
+- [ ] Targets `master`
 - [ ] English throughout, including comments and test names
 - [ ] Nothing from the deferred backlog ("Out of scope for v2.0" in `docs/DESIGN.md`)
-- [ ] No AI abstraction; no benchmark-platform reference outside the documents the rule permits
+- [ ] No AI abstraction; no evaluation-platform reference outside the documents the rule permits
 - [ ] Reviewed by the `reviewer` subagent

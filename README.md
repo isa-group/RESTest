@@ -1,12 +1,13 @@
 <img src="RESTLogo_Black.png" alt="RESTest" width="200">
 
-[![CI](https://github.com/isa-group/RESTest/actions/workflows/ci.yml/badge.svg?branch=v2)](https://github.com/isa-group/RESTest/actions/workflows/ci.yml)
+[![CI](https://github.com/isa-group/RESTest/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/isa-group/RESTest/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 > **RESTest 2 is a complete rewrite.** From version 2.0 on, RESTest shares no code with RESTest 1.x
 > and is not compatible with it: the command line, the files it reads and the reports it writes are
 > all new, and nothing written for 1.x works with it. The last version of RESTest 1.x is
-> [1.6.0](https://github.com/isa-group/RESTest/releases/tag/restest-1.6.0).
+> [1.6.0](https://github.com/isa-group/RESTest/releases/tag/restest-1.6.0), and its code is on the
+> [`v1.x`](https://github.com/isa-group/RESTest/tree/v1.x) branch.
 
 # RESTest
 
@@ -28,7 +29,7 @@ Java 21 or later — a JDK to build RESTest, and a plain Java runtime to run it 
 ### Install from source
 
 ```bash
-git clone --branch v2 https://github.com/isa-group/RESTest.git
+git clone https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q install -DskipTests
 ```

@@ -67,22 +67,20 @@ import org.junit.jupiter.api.io.TempDir;
  * ({@link Settings#defaults()}), against the command line reading each of the page's files
  * ({@link Restest}), and against the plan RESTest carries ({@link Campaigns#shipped()}), of which the
  * plan on the page is a copy with one source taken out. The files are checked for what their
- * labels promise as well: the file for a whole idea turns all of it off, the file for a milestone
- * is the files for its parts together, and the file that gives a run its seed back leaves nothing a
+ * labels promise as well: the file for one idea turns off only what the page puts in that idea, the
+ * file for a whole idea turns all of it off, the file for a family of ideas is the files for its
+ * ideas together, and the file that gives a run its seed back leaves nothing a
  * run would send depending on what the API answered, which {@link RandomTestCaseGenerator} is asked
  * about a real document. Nothing here has an opinion about what the switches should be.
  */
 class DocumentedSwitchesTest {
 
     /**
-     * One row of the page's tables of switches: the switch, what it is by default, the increment it
-     * came with, and the rest.
+     * One row of the page's tables of switches: the switch, what it is by default, the idea it is
+     * part of, and the rest.
      */
     private static final Pattern ROW = Pattern.compile(
             "^\\| `([a-z]+\\.[A-Za-z]+)` \\| `([^`]*)` \\| ([^|]*) \\| .* \\|$", Pattern.MULTILINE);
-
-    /** A label that is the number of one increment, such as 10.2. */
-    private static final Pattern AN_INCREMENT = Pattern.compile("\\d+\\.\\d+");
 
     /** A setting named anywhere on the page, in a sentence as much as in a table. */
     private static final Pattern NAMED = Pattern.compile(
@@ -93,6 +91,21 @@ class DocumentedSwitchesTest {
 
     /** The label the page gives a file: the words in bold before it, up to a comma or a colon. */
     private static final Pattern LABEL = Pattern.compile("^\\*\\*([^,:*]+)");
+
+    /** The idea the series are part of, and the label of the file that turns them off. */
+    private static final String SERIES = "Series";
+
+    /** The ideas that change a request the API accepted, each with a file of its own. */
+    private static final List<String> THE_CHANGES = List.of(
+            "One value changed", "Words that only look like their format", "Bodies of the wrong shape");
+
+    /**
+     * The ideas whose files make up the file for reach: every idea of the first table but the order
+     * identifiers are looked for in, which changes nothing a run reaches on its own.
+     */
+    private static final List<String> REACH = List.of("Optional parameters by number",
+            "The opening lap", "Identifiers by resource", "Implied kinds", "Accepted values",
+            "Plural and name gaps", "HAL's own properties");
 
     /** The heading the file that gives a run its seed back sits under. */
     private static final String THE_SEED = "Getting the seed back";
@@ -275,58 +288,57 @@ class DocumentedSwitchesTest {
     @Test
     @DisplayName("the file for the series turns off every series the tool has, and nothing else")
     void the_file_for_the_series_turns_off_every_series() {
-        assertThat(valuesIn(labelled("10.3")))
-                .describedAs("the file for 10.3 is supposed to turn off every series there is, so "
-                        + "that a run handed it sends none")
+        assertThat(valuesIn(labelled(SERIES)))
+                .describedAs("the file for the series is supposed to turn off every series there "
+                        + "is, so that a run handed it sends none")
                 .isEqualTo(allOff(series()));
     }
 
     @Test
-    @DisplayName("the files for 10.1, 10.2 and 10.6 turn off every kind of change between them, "
-            + "and no kind in two of them")
+    @DisplayName("the files for the three ideas that change accepted requests turn off every kind "
+            + "of change between them, and no kind in two of them")
     void the_files_for_the_changes_turn_off_every_kind_between_them() {
         Map<String, String> between = new TreeMap<>();
-        for (String increment : List.of("10.1", "10.2", "10.6")) {
-            Map<String, String> its = valuesIn(labelled(increment));
+        for (String idea : THE_CHANGES) {
+            Map<String, String> its = valuesIn(labelled(idea));
             assertThat(its.keySet().stream().filter(between::containsKey).toList())
-                    .describedAs("a kind of change came with one increment, so it is in one file "
-                            + "only, and %s's shares none with the files before it", increment)
+                    .describedAs("a kind of change is part of one idea, so it is in one file only, "
+                            + "and the file for '%s' shares none with the files before it", idea)
                     .isEmpty();
             between.putAll(its);
         }
         assertThat(between)
-                .describedAs("between them, the files for 10.1, 10.2 and 10.6 are supposed to turn "
-                        + "off every kind of change the tool can make to an accepted request")
+                .describedAs("between them, the files for %s are supposed to turn off every kind "
+                        + "of change the tool can make to an accepted request", THE_CHANGES)
                 .isEqualTo(allOff(kindsOfChange()));
     }
 
     @Test
-    @DisplayName("a file for one increment turns off only switches the page says came with it")
-    void a_file_for_an_increment_turns_off_only_what_it_added() {
-        Map<String, String> cameWith = new LinkedHashMap<>();
-        rows().forEach(row -> cameWith.put(row.name(), row.cameWith()));
+    @DisplayName("a file for one idea turns off only switches the page says are part of it")
+    void a_file_for_an_idea_turns_off_only_what_is_part_of_it() {
+        Map<String, String> partOf = new LinkedHashMap<>();
+        rows().forEach(row -> partOf.put(row.name(), row.partOf()));
 
-        List<Block> forOneIncrement = blocks().stream()
-                .filter(block -> AN_INCREMENT.matcher(block.label()).matches())
+        List<Block> forOneIdea = blocks().stream()
+                .filter(block -> partOf.containsValue(block.label()))
                 .toList();
-        assertThat(forOneIncrement).isNotEmpty();
-        assertThat(forOneIncrement).allSatisfy(block ->
+        assertThat(forOneIdea).isNotEmpty();
+        assertThat(forOneIdea).allSatisfy(block ->
                 assertThat(valuesIn(block.text()).keySet()).allSatisfy(name ->
-                        assertThat(cameWith.get(name))
-                                .describedAs("the file for %s turns off %s, which the page's table "
-                                        + "says came with %s", block.label(), name,
-                                        cameWith.get(name))
+                        assertThat(partOf.get(name))
+                                .describedAs("the file for '%s' turns off %s, which the page's "
+                                        + "table says is part of '%s'", block.label(), name,
+                                        partOf.get(name))
                                 .isEqualTo(block.label())));
     }
 
     @Test
-    @DisplayName("the file for a milestone is the files for its increments put together")
-    void the_file_for_a_milestone_is_its_increments_together() {
+    @DisplayName("the file for a family is the files for its ideas put together")
+    void the_file_for_a_family_is_its_ideas_together() {
         assertThat(valuesIn(labelled("Reach")))
-                .describedAs("the file for reach is supposed to be the files for 2.9, 9.1, 9.2, "
-                        + "9.6, 9.7, 9.8 and 9.9")
-                .isEqualTo(together("2.9", "9.1", "9.2", "9.6", "9.7", "9.8", "9.9"));
-        Map<String, String> breaking = new TreeMap<>(valuesIn(labelled("10.3")));
+                .describedAs("the file for reach is supposed to be the files for %s", REACH)
+                .isEqualTo(together(REACH.toArray(String[]::new)));
+        Map<String, String> breaking = new TreeMap<>(valuesIn(labelled(SERIES)));
         breaking.put("mutation.violations", "false");
         assertThat(valuesIn(labelled("Break")))
                 .describedAs("the file for break is supposed to turn off every change to an "
@@ -384,7 +396,7 @@ class DocumentedSwitchesTest {
     }
 
     /** One switch as the page lists it. */
-    private record Row(String name, String byDefault, String cameWith) {
+    private record Row(String name, String byDefault, String partOf) {
     }
 
     private static List<Row> rows() {

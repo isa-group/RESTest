@@ -41,10 +41,9 @@ grammar and the test corpus do.
 | Testing style | Black-box only: the specification and the API's responses, never its source |
 | Test kinds | Stateless single requests, and stateful sequences across several operations |
 | Distribution | A command-line tool, built from source |
-| Release line | **v2.0 is the version submitted to the 2027 REST League** (tools due 9 October 2026). The reasoning is [ADR-0024](adr/0024-the-competition-version.md); the calendar is in [`ROADMAP.md`](../ROADMAP.md) |
 
 Black-box is a property of the *tool*, not of the evaluation. Measuring how much of an API's code a
-run exercises requires instrumenting that API, which a benchmark harness does from outside; the tool
+run exercises requires instrumenting that API, which an evaluation harness does from outside; the tool
 itself never sees it.
 
 ## Glossary
@@ -74,7 +73,6 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **Intent** | What a test case says was expected of the API when it was built: that it would be accepted, that it would be refused (and what was broken to make it so), that it is pushing at the API with awkward values, or nothing in particular. Recorded with every request, so that a rule judging the reply later knows which answer would have been right. |
 | **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. The same project publishes a file format for authentication — users, headers sent with every request, a sign-in whose token later requests carry — which four related tools read ([ADR-0029](adr/0029-the-key-an-api-asks-for.md) §11). |
 | **Security scheme, API key** | How a document says an API wants callers to prove who they are. It declares each way under a name — a *key* in a header, the query or a cookie; a bearer token; OAuth 2 — and says which operations need which. The document never holds the key itself: the person running the tool hands it over with `--auth`, RESTest sends it where the document says, and hides it in everything a run writes. |
-| **RESTGym** | The Docker-based infrastructure behind the SBFT REST League: it runs testing tools against a fixed set of instrumented APIs and computes comparable metrics. We drive it for milestone campaigns from a separate repository; nothing in this one references it. |
 | **ArchUnit** | A library for writing *tests about the structure of the code itself*, for example "no class in the core may depend on the network layer", so architectural rules fail the build instead of eroding silently. |
 
 ## Design principles
@@ -185,19 +183,17 @@ how to reproduce it locally.
 The quality gates above answer "does the tool work". They do not answer "is it any good", which
 needs a comparison against other tools on the same APIs with the same budget.
 
-That comparison runs on **RESTGym**, the Docker-based infrastructure behind the SBFT REST League: it
-executes testing tools against a fixed set of instrumented APIs and computes comparable metrics.
-Comparability with published results is exactly what it provides, which is why we use it rather than
-inventing a private benchmark. A campaign pins the exact version of both the benchmark and the tool,
-so it can be re-run months later and get the same numbers.
+That comparison runs on a public benchmark infrastructure that executes testing tools against a
+fixed set of instrumented APIs and computes comparable metrics. Comparability with published results
+is exactly what it provides, which is why it is used rather than a private benchmark of our own. A
+campaign pins the exact version of both the benchmark and the tool, so it can be re-run months later
+and get the same numbers.
 
 Two boundaries make that a measurement rather than a dependency, and both are enforced rather than
 intended:
 
-- **The harness is not in this repository at all.** It lives in
-  [`isa-group/restgym-restest2`](https://github.com/isa-group/restgym-restest2) — private until the
-  replication package is published — which packages the tool for the benchmark and drives the
-  campaigns. Deleting it changes nothing here.
+- **The harness is not in this repository at all.** It lives in a repository of its own, which
+  packages the tool for the benchmark and drives the campaigns. Deleting it changes nothing here.
 - **Nothing here references the benchmark.** No dictionaries shipped by it, no thresholds derived
   from its verification rules, no assumptions about its layout. A test fails the build if the
   platform's name appears in any file of this repository other than the handful of documents — this
@@ -227,9 +223,9 @@ and stateful testing, black-box and white-box — are in the [glossary](#glossar
 
 ### AutoRestTest
 
-[AutoRestTest](https://github.com/selab-gatech/autoresttest), from Georgia Tech, won all three
-challenges of the REST League tool competition at SBFT 2026 — fault detection, efficiency and
-effectiveness. It works in two phases. Before testing begins it builds a dependency graph by
+[AutoRestTest](https://github.com/selab-gatech/autoresttest), from Georgia Tech, came first in
+fault detection, efficiency and effectiveness in the most recent public comparison of black-box REST
+API testing tools. It works in two phases. Before testing begins it builds a dependency graph by
 comparing the *names* of parameters, body properties and response properties across operations —
 with a table of static word vectors, not a language model — and it asks a language model for a pool
 of candidate values for every parameter, refining them with the error replies of a couple of probe
@@ -248,8 +244,7 @@ independent optimisation objective, which avoids the stalling that affects singl
 A white-box mode instruments the application at the bytecode level and feeds coverage feedback
 directly into the search; a black-box mode operates on the specification alone. Stateful testing
 works by inferring which operations produce resources that others consume and constructing call
-sequences from that dependency graph. EvoMaster adopts the WFC fault catalogue and participates in
-the SBFT REST League.
+sequences from that dependency graph. EvoMaster adopts the WFC fault catalogue.
 
 ### RESTler
 
@@ -339,15 +334,14 @@ re-architecting — which is the point of listing them at all.
 | Flow discovery from execution traces | `FlowSource` |
 
 Three of these rows have an open question against them, all raised by
-[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) after studying the tool that won the 2026
-competition, and all of the same kind: each would have a run learn from what it has already seen.
+[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) after studying AutoRestTest, and all of the
+same kind: each would have a run learn from what it has already seen.
 
 - Whether the choice of which operation to call next may be steered by counters over what each
   operation has been answering. *Its narrowest version — withdrawing budget from operations whose
   recent answers all say the request can never work as asked, with no reward and no learning rate —
-  is 9.4 in [`ROADMAP.md`](../ROADMAP.md), approved on 22 September 2026 and set aside before it
-  was built on 27 September, once its list was narrowed to the answers that do not depend on what
-  the tool sends; the reward-shaped version stays here.*
+  was approved for 2.0 and set aside before it was built, once its list was narrowed to the answers
+  that do not depend on what the tool sends; the reward-shaped version stays here.*
 - Whether the choice among inferred dependency candidates may be scored by what the API answered.
 - Whether a warm-up may read the *text* of an error reply rather than only its status code.
 
@@ -388,16 +382,9 @@ Standards:
 - OpenAPI Specification — https://spec.openapis.org/oas/
 - Web Fuzzing Commons, the shared fault catalogue — https://github.com/WebFuzzing/Commons
 
-Evaluation:
-
-- RESTGym, the benchmark infrastructure used for milestone campaigns —
-  https://github.com/restgym/restgym
-- The RESTest adapter and campaign scripts for it, private until the replication package is
-  published — https://github.com/isa-group/restgym-restest2
-
 ## Contributing
 
-Read [`CONTRIBUTING.md`](../CONTRIBUTING.md) first. In short: work targets the `v2` branch, one
+Read [`CONTRIBUTING.md`](../CONTRIBUTING.md) first. In short: work targets `master`, one
 increment from [`ROADMAP.md`](../ROADMAP.md) per branch per pull request, English throughout, and a
 design question with more than one defensible answer becomes an ADR rather than a silent choice in
 the code.

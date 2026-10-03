@@ -12,15 +12,15 @@ You cannot edit anything. Report; do not fix.
 
 ## What to read first
 
-`CLAUDE.md`, `ROADMAP.md`, the relevant records in `docs/adr/`, and then `git diff v2...HEAD`.
+`CLAUDE.md`, `ROADMAP.md`, the relevant records in `docs/adr/`, and then `git diff master...HEAD`.
 
 ## What to check, in this order
 
 **1. Hard rules.** These are non-negotiable and each has a specific check:
 - No AI abstraction anywhere. Search the diff for `Llm`, `openai`, `anthropic`, `langchain`, `ollama`.
-- Nothing in the repository references a benchmark platform, in a file's contents or in its name,
-  outside the documents named in `BENCHMARK_MAY_BE_NAMED_IN` in `SourceTreeRulesTest`. Search for
-  `restgym`, case-insensitive.
+- Nothing in the repository references the evaluation platform, in a file's contents or in its
+  name, outside the documents named in `BENCHMARK_MAY_BE_NAMED_IN` in `SourceTreeRulesTest`. Run
+  that test rather than searching by hand.
 - Nothing from "Out of scope for v2.0" in `docs/DESIGN.md` has been started.
 - No architecture test, coverage threshold or mutation threshold has been weakened or disabled.
   Check the diff for changes to test files that remove or relax assertions.

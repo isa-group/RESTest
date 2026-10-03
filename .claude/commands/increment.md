@@ -11,9 +11,9 @@ Current branch and status:
 
 !`git branch --show-current && git status --short`
 
-Increments already merged into `v2`:
+Increments already merged into `master`:
 
-!`git log v2 --oneline -15 2>/dev/null || echo "(no v2 branch yet)"`
+!`git log master --oneline -15`
 
 Follow these steps and do not skip any:
 
@@ -28,7 +28,7 @@ Follow these steps and do not skip any:
    will introduce, the tests you will write, and anything you are deliberately leaving for later.
    Wait for approval before editing.
 
-4. **Create the branch**: `git switch -c feat/m<milestone>-<n>-<slug>` from an up-to-date `v2`.
+4. **Create the branch**: `git switch -c feat/m<milestone>-<n>-<slug>` from an up-to-date `master`.
 
 5. **Implement**, smallest demonstrable change first. Write the test alongside the code. Do not weaken
    an existing test to make a new one pass.

@@ -37,7 +37,7 @@ docker --version
 ## Building from source
 
 ```bash
-git clone --branch v2 https://github.com/isa-group/RESTest.git
+git clone https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q install -DskipTests
 ```
@@ -56,7 +56,7 @@ RESTest's own tests, which take longer than the build and which you do not need 
 ```
 
 ```
-RESTest 2.0.0-SNAPSHOT
+RESTest 2.0.0
 Java 25.0.4.1 (Homebrew), Mac OS X 26.6.2 aarch64
 ```
 

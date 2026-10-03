@@ -90,17 +90,13 @@ class SourceTreeRulesTest {
      * The files allowed to name the benchmark platform RESTest is measured on, and nothing else in
      * the repository may.
      *
-     * <p>These five explain the relationship - what the platform is, why the project is measured on
-     * it, and where the code that drives it lives. Every one of them is prose written for a person.
-     * Anywhere else, the name is the first sign of the coupling this project has decided not to
-     * have.
+     * <p>The one decision record that explains the relationship - what the platform is, why the
+     * project is measured on it, and where the code that drives it lives. It is prose written for a
+     * person. Anywhere else, the name is the first sign of the coupling this project has decided not
+     * to have.
      */
     private static final List<String> BENCHMARK_MAY_BE_NAMED_IN = List.of(
-            "CLAUDE.md",
-            "ROADMAP.md",
-            "docs/DESIGN.md",
-            "docs/adr/0011-evaluation-harness.md",
-            ".claude/agents/reviewer.md");
+            "docs/adr/0011-evaluation-harness.md");
 
     /**
      * The platform RESTest is measured against lives in a repository of its own, and this one must
@@ -173,7 +169,9 @@ class SourceTreeRulesTest {
         Path named = Files.createDirectory(root.resolve(platform + "-harness"));
         Files.writeString(named.resolve("Dockerfile"), "FROM eclipse-temurin:21-jre");
         Path submodule = Files.createDirectory(root.resolve(shouted + "-tool"));
-        Files.writeString(root.resolve("CLAUDE.md"), "measured on " + platform);
+        Path exempt = root.resolve(BENCHMARK_MAY_BE_NAMED_IN.get(0));
+        Files.createDirectories(exempt.getParent());
+        Files.writeString(exempt, "measured on " + platform);
 
         List<Path> files = List.of(
                 root.resolve("innocent.txt"),
@@ -181,7 +179,7 @@ class SourceTreeRulesTest {
                 root.resolve("shouting.md"),
                 named.resolve("Dockerfile"),
                 submodule,
-                root.resolve("CLAUDE.md"));
+                exempt);
 
         assertThat(benchmarkMentions(root, files))
                 .describedAs("a file naming the platform in any case, a file inside a directory "
