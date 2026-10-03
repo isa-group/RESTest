@@ -195,6 +195,7 @@ public record Settings(
                 typed.yesOrNo("mutation.breakAnEnumeration",
                         DEFAULTS.mutation.breakAnEnumeration()),
                 typed.yesOrNo("mutation.breakAPattern", DEFAULTS.mutation.breakAPattern()),
+                typed.yesOrNo("mutation.breakAFormat", DEFAULTS.mutation.breakAFormat()),
                 typed.yesOrNo("mutation.sendNull", DEFAULTS.mutation.sendNull()),
                 typed.yesOrNo("mutation.sendEmpty", DEFAULTS.mutation.sendEmpty()),
                 typed.yesOrNo("mutation.oversize", DEFAULTS.mutation.oversize()),
@@ -378,6 +379,7 @@ public record Settings(
             case "mutation.outsideABound" -> String.valueOf(mutation.outsideABound());
             case "mutation.breakAnEnumeration" -> String.valueOf(mutation.breakAnEnumeration());
             case "mutation.breakAPattern" -> String.valueOf(mutation.breakAPattern());
+            case "mutation.breakAFormat" -> String.valueOf(mutation.breakAFormat());
             case "mutation.sendNull" -> String.valueOf(mutation.sendNull());
             case "mutation.sendEmpty" -> String.valueOf(mutation.sendEmpty());
             case "mutation.oversize" -> String.valueOf(mutation.oversize());

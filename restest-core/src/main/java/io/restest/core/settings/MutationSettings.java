@@ -46,6 +46,9 @@ package io.restest.core.settings;
  *     smallest number allowed, one character longer than the longest word
  * @param breakAnEnumeration send a value that is not on the closed list the documentation states
  * @param breakAPattern send a word the stated spelling rule refuses
+ * @param breakAFormat send a word that looks like the kind of word the documentation names but is
+ *     not one: {@code 2021-02-30} where it says {@code date}, {@code a@b.} where it says
+ *     {@code email}
  * @param sendNull send nothing at all, written as {@code null}, for a property of the body that
  *     may not be null
  * @param sendEmpty send an empty word, list or object where the documentation forbids one
@@ -54,14 +57,16 @@ package io.restest.core.settings;
  * @param wrongRoot send the whole body as another kind of thing than the documentation declares - a
  *     list holding it where an object is declared, say
  * @param emptyBody send a body of no bytes at all where the documentation says a body is required
- * @param notJson send a body that is not JSON: the accepted one cut off halfway, or plain words
+ * @param notJson send a body that is not JSON: the accepted one cut off halfway or broken in one of
+ *     the ways a reader of JSON stops at, or plain words
  * @param wrongContentType send the accepted body unchanged, under a media type the documentation
  *     does not offer for it
  * @param beyondItsWidth send a number past the largest or smallest the kind of number its
  *     documentation names can hold: 2147483648 where it says {@code int32}
  * @param acceptedKept how many of the requests each operation accepted are kept to be changed; the
  *     most recent ones, since an older one may refer to something deleted since
- * @param oversizedLength how many characters an oversized word has
+ * @param oversizedLength how many characters an oversized word has, and how many digits the
+ *     number far past what a format holds has
  * @param oversizedItems how many items an oversized list has
  */
 public record MutationSettings(
@@ -72,6 +77,7 @@ public record MutationSettings(
         boolean outsideABound,
         boolean breakAnEnumeration,
         boolean breakAPattern,
+        boolean breakAFormat,
         boolean sendNull,
         boolean sendEmpty,
         boolean oversize,
@@ -86,7 +92,7 @@ public record MutationSettings(
 
     private static final MutationSettings DEFAULTS = new MutationSettings(
             true,
-            true, true, true, true, true, true, true, true, true,
+            true, true, true, true, true, true, true, true, true, true,
             true, true, true, true, true,
             16, 10_000, 1_000);
 
@@ -104,7 +110,8 @@ public record MutationSettings(
     /** These settings with every change off, so that nothing accepted is ever changed. */
     public MutationSettings withNothingChanged() {
         return new MutationSettings(false, dropRequired, wrongLocation, wrongType, outsideABound,
-                breakAnEnumeration, breakAPattern, sendNull, sendEmpty, oversize, wrongRoot,
+                breakAnEnumeration, breakAPattern, breakAFormat, sendNull, sendEmpty, oversize,
+                wrongRoot,
                 emptyBody, notJson, wrongContentType, beyondItsWidth, acceptedKept,
                 oversizedLength, oversizedItems);
     }

@@ -443,3 +443,57 @@ they give.
 - **features-service** sent 28% fewer requests.
 - **Before that**, the sixty-second measurements of 10.1 and 10.2 had found nothing by exception kind
   that the violations had not.
+
+## Amendment (M10.4-M10.7)
+
+**Date:** 2026-10-02
+
+**The changes draw on many more values, and there is a fifteenth kind**, by the maintainer's
+decision on 2 October, after the official results of the 2026 edition showed CATS finding 79 unique
+server failures on pet-clinic to RESTest's 30-39, and a comparison with the fuzzing values of CATS,
+Schemathesis, RESTler, EvoMaster, RestTestGen and AutoRestTest showed RESTest's few and alike.
+
+- **`wrongType` draws from a long list (10.4).** Inside a body, the value of the wrong kind is any of
+  the values the lists called `fuzzing` hold - the one RESTest carries and any a person handed over
+  under that name - and a few of the class's own: `1.5` and `0.5`, `"1"`, `"1.5"`, `"true"`, `[[]]`,
+  `[[], []]`, `[{}]`. In a parameter declared a number or a yes-or-no it is any word among those
+  that does not read as one, with `1.5`, `1e3`, ` 1`, `0x1A`, `NaN`, `Infinity` and a few more -
+  and arrives as written: never one a header would arrive without the space it starts or ends with,
+  never one that cannot travel where the parameter goes, never one as long as an oversized word in an
+  address or a header. A whole number is judged by its value in either place, so `1e3` is one.
+  What is sent is judged against the declared kind and not against the class of the accepted
+  value: `1.5` is not a whole number although both are numbers. A value of the declared kind that
+  breaks a limit or a closed list is still left to the kinds that break those, so that what each
+  change records stays true.
+- **`notJson` has four more ways (10.5):** the accepted body followed by a word; with a line break
+  written raw inside its first piece of text; with the colon after its first property's name left
+  out; and with a comma after its last item. A number thousands of digits long is valid JSON, so it
+  joined `beyondItsWidth` instead, inside a body only and as many digits long as
+  `mutation.oversizedLength`: in a web address it would make the address too long to arrive.
+- **`breakAFormat` is the fifteenth kind (10.6)**, with a switch of its own. Where the document names
+  a format with fixed rules - `date`, `date-time`, `time`, `email`, `uuid`, `uri` or `url`,
+  `ipv4`, `ipv6`, `hostname` - it sends a word that looks like one and is not: `2021-02-30`, an hour
+  past 23, `a@b.`, an identifier one group short, `256.1.1.1`. Not where a closed list is stated,
+  which `breakAnEnumeration` breaks.
+- **The list RESTest carries grows from 48 values to 88 (10.7):** a whole number with a fraction and
+  written as a word in the whole numbers, a word and a yes-or-no in the numbers, numbers with a
+  fraction in the yes-or-nos, lists of empty lists, nested objects; letters that grow when their
+  case changes, Zalgo text, invisible characters, template and format-string markers, one SQL and
+  one script injection, sentences, and ten thousand characters.
+- **Only `breakAFormat` has a switch of its own**, by the maintainer's decision. The other three
+  widen kinds that already exist, and `mutation.wrongType`, `mutation.notJson`,
+  `mutation.beyondItsWidth` still turn each off whole. What cannot be done without a code change
+  is to send the narrower list alone: the five values of before for `wrongType`, its two ways for
+  `notJson`.
+- **Only lists written for a whole kind of value lend to `wrongType`**: a list called `fuzzing`
+  keyed by `name` or by `operationAndParameter` is about named places, and its values are not sprayed
+  over every other. And since the changes draw on the list, a list called `fuzzing` handed to a run
+  whose plan does no pushing is no longer reported as one nothing will be sent from, unless
+  `mutation.wrongType` is off.
+- **The measurement**: the eleven APIs of the 2026 edition, twenty minutes each, one run, against
+  the commit before these rows. Unique server failures by the benchmark's count, erc20 left out,
+  154 against 204 - better on six APIs and worse on none - and 563 against 835 by the reference
+  paper's; the kinds of exception named in the replies, 48 in both. Operations covered and branch
+  coverage did not move beyond one run's chance. A third campaign without the pushing strategy lost
+  23 of the 204 and coverage with them, so the strategy that pushes keeps its quarter.
+

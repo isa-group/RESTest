@@ -91,11 +91,29 @@ final class Shapes {
      */
     static boolean couldSatisfy(ApiModel model, JsonValue value, CanonicalSchema wanted,
             int mostDepth) {
-        return couldSatisfy(model, value, wanted, 0, mostDepth);
+        return couldSatisfy(model, value, wanted, 0, mostDepth, true);
+    }
+
+    /**
+     * Whether a value is of the kind this shape declares - a word, a whole number, a number, a
+     * yes-or-no, a list, an object - whether or not it is on a closed list the document states.
+     *
+     * <p>The question a value of the wrong kind is chosen by: a word that is not on the list of
+     * accepted words is still a word, and sending it breaks the list rather than the kind.
+     *
+     * @param model the document's shapes
+     * @param value the value
+     * @param wanted the shape
+     * @param mostDepth how many shapes inside one another, or names in a row, are followed
+     * @return whether it is of that kind
+     */
+    static boolean ofTheKind(ApiModel model, JsonValue value, CanonicalSchema wanted,
+            int mostDepth) {
+        return couldSatisfy(model, value, wanted, 0, mostDepth, false);
     }
 
     private static boolean couldSatisfy(ApiModel model, JsonValue value, CanonicalSchema wanted,
-            int depth, int mostDepth) {
+            int depth, int mostDepth, boolean onTheList) {
         // Counted, because a document may point one shape at another and that one back again. It
         // parses cleanly and it is nobody's mistake to make a request for; following it without
         // counting ends the run, which design principle 2 forbids for any document at all.
@@ -103,7 +121,7 @@ final class Shapes {
             return false;
         }
         List<JsonValue> allowed = wanted.metadata().enumeration();
-        if (!allowed.isEmpty() && !allowed.contains(value)) {
+        if (onTheList && !allowed.isEmpty() && !allowed.contains(value)) {
             return false;
         }
         return switch (wanted) {
@@ -118,9 +136,10 @@ final class Shapes {
             case AnySchema ignored -> true;
             case ChoiceSchema choice -> choice.alternatives().stream()
                     .anyMatch(alternative -> couldSatisfy(model, value, alternative, depth + 1,
-                            mostDepth));
+                            mostDepth, onTheList));
             case SchemaReference reference -> model.resolve(reference)
-                    .map(named -> couldSatisfy(model, value, named, depth + 1, mostDepth))
+                    .map(named -> couldSatisfy(model, value, named, depth + 1, mostDepth,
+                            onTheList))
                     .orElse(false);
             // Nothing satisfies a shape that accepts nothing, and a shape nobody could read is not
             // one to guess at.

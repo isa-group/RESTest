@@ -1400,6 +1400,33 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("a list to push with, in a run that does no pushing but changes accepted requests, "
+            + "is not named: a value of the wrong kind is drawn from it - unless that change is "
+            + "switched off")
+    void a_list_to_push_with_still_feeds_the_changes() throws Exception {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        Campaign shipped = Campaigns.shipped();
+        Campaign.PlannedStrategy ordinary = shipped.strategies().stream()
+                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted()
+                        && !way.sendsSequences())
+                .findFirst().orElseThrow();
+        Campaign.PlannedStrategy changes = shipped.strategies().stream()
+                .filter(Campaign.PlannedStrategy::mutatesAccepted).findFirst().orElseThrow();
+        Campaign noPushing = new Campaign(List.of(
+                new Campaign.PlannedStrategy(ordinary.name(), 80, ordinary.sources()),
+                new Campaign.PlannedStrategy(changes.name(), 20, changes.sources(), true, false)),
+                shipped.operations());
+
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), noPushing)
+                .listsGivenButNotUsed()).isEmpty();
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), noPushing,
+                Settings.from(Map.of("mutation.wrongType", "false"))).listsGivenButNotUsed())
+                .containsExactly("fuzzing");
+    }
+
+    @Test
     @DisplayName("a run given no list to push with builds every request to work")
     void without_such_a_list_nothing_pushes() {
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(

@@ -27,6 +27,7 @@ import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.AnySchema;
@@ -36,6 +37,7 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
+import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
@@ -46,6 +48,7 @@ import io.restest.core.settings.MutationSettings;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,11 +70,17 @@ import java.util.random.RandomGenerator;
  * a fault in the code that handles it.
  *
  * <p>The thing changed is one value in the request - a parameter, or one property inside a JSON
- * body, however deep - or the body as a whole. There are fourteen kinds of change, and every one
+ * body, however deep - or the body as a whole. There are fifteen kinds of change, and every one
  * breaks something the API's documentation states - a required value left out, a number one past
- * the largest allowed, a word where a number is declared, a body that is not JSON where JSON is what
- * the API takes - so the API is expected to refuse it, and the request says so. Each kind can be
- * switched off, and so can all of them at once.
+ * the largest allowed, a word where a number is declared, a date that cannot be one, a body that is
+ * not JSON where JSON is what the API takes - so the API is expected to refuse it, and the request
+ * says so. Each kind can be switched off, and so can all of them at once.
+ *
+ * <p>A value of the wrong kind is drawn from a long list rather than a short one, because what an
+ * API does with one depends on which it gets: the awkward values the run holds to push at the API
+ * with - the list RESTest carries, and any a person handed over under the same name - and a few
+ * more of its own, a number with a fraction where a whole one is declared among them. Only the
+ * ones the documentation refuses for that place are ever sent there.
  *
  * <p>The changes to a body as a whole are aimed at what an API does before any of its own code runs:
  * reading the body and turning it into something its code can use. That reading is code too, and it
@@ -130,6 +139,72 @@ final class Mutations {
     /** What is sent where a number or a yes-or-no is declared: plainly neither. */
     private static final String NEITHER_A_NUMBER_NOR_A_YES_OR_NO = "abc";
 
+    /**
+     * Values of one kind to send where another is declared, besides the awkward values the run
+     * holds: a word, a number and a yes-or-no; a number with a fraction, which no whole number is;
+     * a number and a yes-or-no written as words; an empty object; and lists holding nothing, empty
+     * lists, or an empty object.
+     */
+    private static final List<JsonValue> OF_OTHER_KINDS = List.of(
+            JsonValue.of(NEITHER_A_NUMBER_NOR_A_YES_OR_NO), JsonValue.of(1), JsonValue.TRUE,
+            JsonValue.of(new BigDecimal("1.5")), JsonValue.of(new BigDecimal("0.5")),
+            JsonValue.of("1"), JsonValue.of("1.5"), JsonValue.of("true"),
+            JsonValue.object(Map.of()), JsonValue.array(List.of()),
+            JsonValue.array(JsonValue.array(List.of())),
+            JsonValue.array(JsonValue.array(List.of()), JsonValue.array(List.of())),
+            JsonValue.array(JsonValue.object(Map.of())));
+
+    /**
+     * Words to send where a parameter is declared a number or a yes-or-no, besides the awkward
+     * words the run holds: plainly neither, a number with a fraction, one written with an exponent,
+     * with a space before or after it, in hexadecimal or with a comma for its point, what a reader
+     * of numbers calls not a number and infinity, a lone sign, and the yes-or-no a person might
+     * write. Only the ones that are not what the parameter is declared to be are sent.
+     */
+    private static final List<String> NEITHER_WRITTEN_AS_DECLARED = List.of(
+            NEITHER_A_NUMBER_NOR_A_YES_OR_NO, "1.5", "1e3", " 1", "1 ", "0x1A", "1,5", "NaN",
+            "Infinity", "-", "true", "yes", "1");
+
+    /** A number as a document's text writes one. */
+    private static final Pattern ANY_NUMBER = Pattern.compile(
+            "-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?");
+
+    /**
+     * Words that look like the kind of word a format names and are not one of them, for each format
+     * whose rules are fixed and widely known: a day a month does not have, a month past twelve, an
+     * hour past twenty-three, a date written another way; an address with nothing after its last
+     * dot or two signs where one goes; an identifier too short, or with a letter no hexadecimal
+     * number has; a web address without its colon; an internet address with a part past 255, or one
+     * part too few or too many.
+     */
+    private static final Map<String, List<String>> NOT_QUITE = Map.of(
+            "date", List.of("2021-02-30", "2021-13-01", "2021-00-10", "2021-1-5", "2021/01/05"),
+            "date-time", List.of("2021-02-30T10:00:00Z", "2021-01-01T25:00:00Z",
+                    "2021-01-01T10:61:00Z", "2021-01-01T10:00:00", "2021-01-01 10:00:00Z"),
+            "time", List.of("25:00:00Z", "10:61:00Z", "10:00:61Z", "10.00.00Z"),
+            "email", List.of("a@b.", "@example.com", "user@", "a@@example.com",
+                    "user.example.com", "user@exa mple.com"),
+            "uuid", List.of("123e4567-e89b-12d3-a456", "123e4567-e89b-12d3-a456-42661417400g",
+                    "123e4567e89b12d3a456426614174000x"),
+            "uri", List.of("http//example.com", "://example.com", "http://exa mple.com"),
+            "ipv4", List.of("256.1.1.1", "1.2.3", "1.2.3.4.5"),
+            "ipv6", List.of("2001:db8::g", ":::1", "2001:db8:::1"),
+            "hostname", List.of("-example.com", "exa_mple.com", "example..com"));
+
+    /** Formats that are another name for one above. */
+    private static final Map<String, String> ALSO_CALLED = Map.of("url", "uri");
+
+    /** The kinds of value the lists of awkward values are asked about. */
+    private static final List<CanonicalSchema> EVERY_KIND = List.of(StringSchema.of(),
+            NumberSchema.of(NumberKind.INTEGER), NumberSchema.of(NumberKind.NUMBER),
+            BooleanSchema.of(), ArraySchema.of(AnySchema.of()), ObjectSchema.of(Map.of()));
+
+    /** What the lists are asked on behalf of: no operation in particular. */
+    private static final OperationId NO_OPERATION_IN_PARTICULAR = OperationId.of("any");
+
+    /** What is written after a body to make it something more than JSON. */
+    private static final String TRAILING_WORD = "bla";
+
     /** How much of a value a description quotes before it stops. */
     private static final int QUOTED_AT_MOST = 40;
 
@@ -158,6 +233,9 @@ final class Mutations {
     private final MutationSettings settings;
     private final GenerationSettings generation;
     private final RandomGenerator random;
+    private final List<JsonValue> ofOtherKinds;
+    /** The number far past every width, built the first time it is wanted; see {@link #farPast}. */
+    private BigDecimal farPast;
 
     /**
      * Something to change accepted requests with.
@@ -167,13 +245,74 @@ final class Mutations {
      * @param generation how deep inside a body a change may go, and the longest word and list a
      *     change one past a limit may build
      * @param random where every choice comes from
+     * @param awkward the awkward values the run holds, from {@link #awkwardValuesIn}, which values
+     *     of the wrong kind are drawn from as well as a few of this class's own
      */
     Mutations(ApiModel model, MutationSettings settings, GenerationSettings generation,
-            RandomGenerator random) {
+            RandomGenerator random, List<JsonValue> awkward) {
         this.model = Objects.requireNonNull(model, "model");
         this.settings = Objects.requireNonNull(settings, "settings");
         this.generation = Objects.requireNonNull(generation, "generation");
         this.random = Objects.requireNonNull(random, "random");
+        Set<JsonValue> kinds = new LinkedHashSet<>(OF_OTHER_KINDS);
+        for (JsonValue value : Objects.requireNonNull(awkward, "awkward")) {
+            if (!(value instanceof JsonValue.JsonNull)) {
+                kinds.add(value);
+            }
+        }
+        this.ofOtherKinds = List.copyOf(kinds);
+    }
+
+    /**
+     * The number as many digits long as an oversized word, built once, the first time a change
+     * wants it: reading ten thousand digits is work, and this is the thread that builds requests.
+     */
+    private BigDecimal farPast() {
+        if (farPast == null) {
+            farPast = digits(settings.oversizedLength());
+        }
+        return farPast;
+    }
+
+    /**
+     * Whether the changes made here draw on the lists of awkward values, which they do whenever a
+     * value of the wrong kind is among the changes switched on.
+     *
+     * @return whether they do
+     */
+    boolean drawsOnTheAwkwardValues() {
+        return Operator.WRONG_TYPE.isOn(settings);
+    }
+
+    /**
+     * Every value the lists of awkward values hold for a word, a whole number, a number, a
+     * yes-or-no, a list and an object - the lists a run pushes at the API with, which are the ones
+     * named for that: the one RESTest carries, and any a person handed over under the same name.
+     * Only a list written for a whole kind of value is asked; one written for a named parameter or
+     * for one operation's is about that place alone, and its values do not belong everywhere.
+     * Other lists are values meant to work, and are not asked.
+     *
+     * @param dictionaries the lists the run holds
+     * @return the awkward values, each once, in the order the lists hold them
+     */
+    static List<JsonValue> awkwardValuesIn(List<Dictionary> dictionaries) {
+        Set<JsonValue> found = new LinkedHashSet<>();
+        for (Dictionary dictionary : dictionaries) {
+            if (!RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(dictionary.name())
+                    || dictionary.isAboutOneValueInParticular()) {
+                continue;
+            }
+            for (CanonicalSchema kind : EVERY_KIND) {
+                for (JsonValue value : dictionary.valuesFor(ValueRequest.of(
+                        NO_OPERATION_IN_PARTICULAR, "value", ParameterLocation.BODY, kind))) {
+                    // Never null, which is a change of its own.
+                    if (!(value instanceof JsonValue.JsonNull)) {
+                        found.add(value);
+                    }
+                }
+            }
+        }
+        return List.copyOf(found);
     }
 
     /**
@@ -328,11 +467,12 @@ final class Mutations {
                     && canBeLeftOutOrMoved(place) && !destinations(place, operation).isEmpty();
             case WRONG_TYPE -> place.inTheBody()
                     ? !kindsItIsNot(place).isEmpty()
-                    : place.shape() instanceof NumberSchema || place.shape() instanceof BooleanSchema;
+                    : !wordsItIsNot(place).isEmpty();
             case OUTSIDE_A_BOUND -> !stepsPastALimit(place).isEmpty();
             case BREAK_AN_ENUMERATION -> !acceptedList(place).isEmpty();
             case BREAK_A_PATTERN -> place.shape() instanceof StringSchema text
                     && text.pattern().isPresent() && place.value() instanceof JsonValue.JsonString;
+            case BREAK_A_FORMAT -> !notQuite(place).isEmpty();
             case SEND_NULL -> place.inTheBody() && !(place.value() instanceof JsonValue.JsonNull)
                     && !mayBeNull(place);
             case SEND_EMPTY -> canBeEmptied(place) && emptyIsForbidden(place);
@@ -360,12 +500,9 @@ final class Mutations {
             }
             case WRONG_TYPE -> {
                 JsonValue with;
-                if (place.inTheBody()) {
-                    List<JsonValue> kinds = kindsItIsNot(place);
-                    with = kinds.get(random.nextInt(kinds.size()));
-                } else {
-                    with = JsonValue.of(NEITHER_A_NUMBER_NOR_A_YES_OR_NO);
-                }
+                List<JsonValue> kinds = place.inTheBody()
+                        ? kindsItIsNot(place) : wordsItIsNot(place);
+                with = kinds.get(random.nextInt(kinds.size()));
                 yield Optional.of(new Edit.Replace(with, "sent " + quoted(with) + " for "
                         + place.described() + ", declared as " + kindOf(place.shape())));
             }
@@ -380,6 +517,13 @@ final class Mutations {
                     "sent " + quoted(with) + " for " + place.described() + ", which its pattern "
                             + ((StringSchema) place.shape()).pattern().orElseThrow()
                             + " refuses"));
+            case BREAK_A_FORMAT -> {
+                List<String> words = notQuite(place);
+                JsonValue with = JsonValue.of(words.get(random.nextInt(words.size())));
+                yield Optional.of(new Edit.Replace(with, "sent " + quoted(with) + " for "
+                        + place.described() + ", which is not a valid "
+                        + formatOf(place).orElseThrow()));
+            }
             case SEND_NULL -> Optional.of(new Edit.Replace(JsonValue.NULL, "sent null for "
                     + place.described() + ", which may not be null"));
             case SEND_EMPTY -> emptyOfItsKind(place).map(with -> new Edit.Replace(with,
@@ -410,9 +554,11 @@ final class Mutations {
             case BEYOND_ITS_WIDTH -> {
                 List<Extreme> beyond = beyondItsWidth(place);
                 Extreme chosen = beyond.get(random.nextInt(beyond.size()));
+                String digits = chosen.value().abs().toPlainString();
                 yield Optional.of(new Edit.Replace(JsonValue.of(chosen.value()), "sent "
-                        + chosen.value().toPlainString() + " for " + place.described() + ", "
-                        + chosen.what()));
+                        + (digits.length() <= QUOTED_AT_MOST ? chosen.value().toPlainString()
+                                : "a number " + digits.length() + " digits long")
+                        + " for " + place.described() + ", " + chosen.what()));
             }
         };
     }
@@ -550,20 +696,70 @@ final class Mutations {
     // --- the wrong kind of value -----------------------------------------------------------------
 
     /**
-     * Values of other kinds that the shape does not also accept, for a place inside a body. Never
-     * {@code null}, which is a change of its own.
+     * Values of other kinds than the one the shape declares, for a place inside a body: every one
+     * of the run's values of the wrong kind that is not of the kind declared there - a number with
+     * a fraction is not a whole number, a number written as a word is a word. Never {@code null},
+     * which is a change of its own. A value of the declared kind that breaks a limit or a closed
+     * list is left to the changes that break those.
      */
     private List<JsonValue> kindsItIsNot(Place place) {
         List<JsonValue> others = new ArrayList<>();
-        for (JsonValue candidate : List.of(JsonValue.of(NEITHER_A_NUMBER_NOR_A_YES_OR_NO),
-                JsonValue.of(1), JsonValue.TRUE, JsonValue.object(Map.of()),
-                JsonValue.array(List.of()))) {
-            if (!sameKind(candidate, place.value())
-                    && !Shapes.couldSatisfy(model, candidate, place.declared(), hops())) {
+        for (JsonValue candidate : ofOtherKinds) {
+            if (!Shapes.ofTheKind(model, candidate, place.declared(), hops())) {
                 others.add(candidate);
             }
         }
         return others;
+    }
+
+    /**
+     * Words that are not what this parameter is declared to be, where it is declared a number or a
+     * yes-or-no: this class's own and every word among the run's values of the wrong kind, except
+     * the ones that read as such a number, or as {@code true} or {@code false}. And only words that
+     * arrive as written: not the empty word, which is a change of its own; not one that cannot
+     * travel where this parameter goes; not, in a header, one with spaces at either end, which the
+     * client that sends requests takes off, so that {@code " 1"} would arrive as {@code 1}; and not
+     * one as long as an oversized word, which in a web address or a header makes the request too
+     * long to arrive at all - a refusal, but of the length rather than the kind.
+     */
+    private List<JsonValue> wordsItIsNot(Place place) {
+        if (!(place.shape() instanceof NumberSchema) && !(place.shape() instanceof BooleanSchema)) {
+            return List.of();
+        }
+        Set<String> words = new LinkedHashSet<>(NEITHER_WRITTEN_AS_DECLARED);
+        for (JsonValue candidate : ofOtherKinds) {
+            if (candidate instanceof JsonValue.JsonString word) {
+                words.add(word.value());
+            }
+        }
+        List<JsonValue> others = new ArrayList<>();
+        for (String word : words) {
+            JsonValue value = JsonValue.of(word);
+            boolean arrivesAsWritten = !word.isEmpty()
+                    && word.codePointCount(0, word.length()) < settings.oversizedLength()
+                    && RequestBuilder.canBeSentFrom(value, place.location())
+                    && (place.location() != ParameterLocation.HEADER
+                            || word.equals(word.strip()));
+            if (arrivesAsWritten && !readsAsDeclared(word, place.shape())) {
+                others.add(value);
+            }
+        }
+        return others;
+    }
+
+    /**
+     * Whether a word is how this parameter's declared kind is written: a number as the document's
+     * own text writes one, and a whole number where its value is one however it is written - as a
+     * value in a body is judged, so that {@code 1e3} is a whole number in either place.
+     */
+    private static boolean readsAsDeclared(String word, CanonicalSchema shape) {
+        return switch (shape) {
+            case NumberSchema number -> ANY_NUMBER.matcher(word).matches()
+                    && (number.kind() != NumberKind.INTEGER
+                            || new BigDecimal(word).stripTrailingZeros().scale() <= 0);
+            case BooleanSchema ignored -> word.equals("true") || word.equals("false");
+            default -> true;
+        };
     }
 
     private static boolean sameKind(JsonValue one, JsonValue other) {
@@ -573,6 +769,7 @@ final class Mutations {
     private static String kindOf(CanonicalSchema shape) {
         return switch (shape) {
             case StringSchema ignored -> "a word";
+            case NumberSchema number when number.kind() == NumberKind.INTEGER -> "a whole number";
             case NumberSchema ignored -> "a number";
             case BooleanSchema ignored -> "true or false";
             case ArraySchema ignored -> "a list";
@@ -724,6 +921,34 @@ final class Mutations {
             }
         }
         return Optional.empty();
+    }
+
+    // --- not quite the format --------------------------------------------------------------------
+
+    /** The format this place's word is declared to have, in lower case, when it names one. */
+    private static Optional<String> formatOf(Place place) {
+        return place.shape() instanceof StringSchema text
+                ? text.format().map(format -> format.toLowerCase(Locale.ROOT))
+                : Optional.empty();
+    }
+
+    /**
+     * Words that look like this place's format and are not of it, other than the one accepted: only
+     * for a word whose declared format has fixed rules, and not where the document also states a
+     * closed list of accepted words, which breaking is a change of its own.
+     */
+    private static List<String> notQuite(Place place) {
+        if (!(place.value() instanceof JsonValue.JsonString accepted)
+                || !acceptedList(place).isEmpty()) {
+            return List.of();
+        }
+        return formatOf(place)
+                .map(format -> NOT_QUITE.getOrDefault(ALSO_CALLED.getOrDefault(format, format),
+                        List.of()))
+                .orElse(List.of())
+                .stream()
+                .filter(word -> !word.equals(accepted.value()))
+                .toList();
     }
 
     // --- nothing ---------------------------------------------------------------------------------
@@ -885,8 +1110,12 @@ final class Mutations {
 
     /**
      * The ways of sending the accepted body as text that is not JSON: cut off halfway, which is how
-     * a body arrives when whatever sent it stopped early, or plain words. A way whose result still
-     * reads as JSON - half of {@code 12} is {@code 1} - is not one.
+     * a body arrives when whatever sent it stopped early; plain words; the body with a word after
+     * it; with a line break written raw inside its first piece of text, where JSON wants it
+     * escaped; with the colon after its first property's name left out; and with a comma after its
+     * last item. Each is a different mistake a reader of JSON stops at, and says something
+     * different about. A way whose result still reads as JSON - half of {@code 12} is {@code 1} -
+     * is not one, and nor is one the body has nothing for: a number has no text to break a line in.
      */
     private static List<Edit.Rewrite> notJson(Place place) {
         List<Edit.Rewrite> ways = new ArrayList<>();
@@ -901,7 +1130,51 @@ final class Mutations {
         }
         ways.add(new Edit.Rewrite(PLAINLY_NOT_JSON, "sent the words '" + PLAINLY_NOT_JSON
                 + "' as the body, which is not JSON"));
+        notJsonEither(ways, whole + TRAILING_WORD, "sent the body followed by the word '"
+                + TRAILING_WORD + "', which is not JSON");
+        // Written out without spaces, the first quotation mark in the text opens its first word.
+        int quote = whole.indexOf('"');
+        if (quote >= 0) {
+            notJsonEither(ways, whole.substring(0, quote + 1) + "\n" + whole.substring(quote + 1),
+                    "sent the body with a line break written raw inside its first piece of text, "
+                            + "which is not JSON");
+        }
+        if (place.value() instanceof JsonValue.JsonObject object && !object.members().isEmpty()) {
+            notJsonEither(ways, withoutTheFirstColon(object), "sent the body with the colon after "
+                    + "its first property's name left out, which is not JSON");
+        }
+        boolean hasItems = place.value() instanceof JsonValue.JsonObject object
+                        && !object.members().isEmpty()
+                || place.value() instanceof JsonValue.JsonArray list && !list.elements().isEmpty();
+        if (hasItems) {
+            notJsonEither(ways, whole.substring(0, whole.length() - 1) + ","
+                            + whole.substring(whole.length() - 1),
+                    "sent the body with a comma after its last item, which is not JSON");
+        }
         return ways;
+    }
+
+    /** Adds this way of sending a body that is not JSON, provided it indeed is not. */
+    private static void notJsonEither(List<Edit.Rewrite> ways, String text, String description) {
+        if (!isJson(text)) {
+            ways.add(new Edit.Rewrite(text, description));
+        }
+    }
+
+    /** An object written out with no colon between its first property's name and its value. */
+    private static String withoutTheFirstColon(JsonValue.JsonObject object) {
+        StringBuilder written = new StringBuilder("{");
+        boolean first = true;
+        for (Map.Entry<String, JsonValue> member : object.members().entrySet()) {
+            if (!first) {
+                written.append(',');
+            }
+            written.append(JsonText.write(JsonValue.of(member.getKey())))
+                    .append(first ? " " : ":")
+                    .append(JsonText.write(member.getValue()));
+            first = false;
+        }
+        return written.append('}').toString();
     }
 
     private static boolean isJson(String text) {
@@ -946,13 +1219,34 @@ final class Mutations {
         }
         List<Extreme> beyond = new ArrayList<>();
         widthNamed(place).ifPresent(width -> {
-            for (Extreme extreme : width.beyond()) {
+            List<Extreme> extremes = new ArrayList<>(width.beyond());
+            // And one far past it, as long as an oversized word: past what a reader of numbers
+            // agrees to read at all, which is a limit of its own and a check of its own. Only
+            // inside a body, since in a web address a number that long makes the address too long
+            // to arrive, which is a different refusal.
+            if (place.inTheBody()) {
+                extremes.add(new Extreme(farPast(), "far past what " + width.named()
+                        + " can hold"));
+            }
+            for (Extreme extreme : extremes) {
                 if (!letThrough(number, acceptedList(place), extreme.value())) {
                     beyond.add(extreme);
                 }
             }
         });
         return beyond;
+    }
+
+    /**
+     * A whole number of exactly this many digits, counting down from nine and round again, with no
+     * zero in it: a number ending in zeros could be written shorter, and would not be this long.
+     */
+    private static BigDecimal digits(int howMany) {
+        StringBuilder written = new StringBuilder(howMany);
+        for (int at = 0; at < howMany; at++) {
+            written.append((char) ('9' - at % 9));
+        }
+        return new BigDecimal(written.toString());
     }
 
     /** Whether the document's own bounds, on the side of this number, or its closed list admit it. */
@@ -1166,6 +1460,7 @@ final class Mutations {
         OUTSIDE_A_BOUND("outsideABound", Reach.ONE_VALUE),
         BREAK_AN_ENUMERATION("breakAnEnumeration", Reach.ONE_VALUE),
         BREAK_A_PATTERN("breakAPattern", Reach.ONE_VALUE),
+        BREAK_A_FORMAT("breakAFormat", Reach.ONE_VALUE),
         SEND_NULL("sendNull", Reach.ONE_VALUE),
         SEND_EMPTY("sendEmpty", Reach.ONE_VALUE),
         OVERSIZE("oversize", Reach.ONE_VALUE),
@@ -1219,6 +1514,7 @@ final class Mutations {
                 case OUTSIDE_A_BOUND -> settings.outsideABound();
                 case BREAK_AN_ENUMERATION -> settings.breakAnEnumeration();
                 case BREAK_A_PATTERN -> settings.breakAPattern();
+                case BREAK_A_FORMAT -> settings.breakAFormat();
                 case SEND_NULL -> settings.sendNull();
                 case SEND_EMPTY -> settings.sendEmpty();
                 case OVERSIZE -> settings.oversize();

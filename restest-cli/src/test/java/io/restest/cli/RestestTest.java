@@ -16,6 +16,8 @@
 package io.restest.cli;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
@@ -518,6 +520,10 @@ class RestestTest {
                       responses: {'200': {description: one vet}}
                 """);
         api.stubFor(get(urlMatching("/vets/[0-9]+")).willReturn(aResponse().withStatus(200)));
+        // Everything else a plain 404. Left to itself the stub server describes a request it has no
+        // answer for by writing the address into a format string, and an address holding '%n',
+        // which the awkward values include, makes the stub itself answer 500.
+        api.stubFor(any(anyUrl()).atPriority(10).willReturn(aResponse().withStatus(404)));
 
         int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
                 "--seed", "20260924", "--out", directory.resolve("out").toString());

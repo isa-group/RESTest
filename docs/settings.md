@@ -176,6 +176,8 @@ mutation:
   breakAnEnumeration: true    # default
   # send a word the stated pattern refuses
   breakAPattern: true         # default
+  # send a word that looks like the stated format but is not, such as 2021-02-30 for a date
+  breakAFormat: true          # default
   # send null for a body property that may not be null
   sendNull: true              # default
   # send an empty word, list or object where the description forbids one
@@ -186,7 +188,7 @@ mutation:
   wrongRoot: true             # default
   # send a body of no bytes at all where the description requires one
   emptyBody: true             # default
-  # send a body that is not JSON: the accepted one cut off halfway, or plain words
+  # send a body that is not JSON: the accepted one cut off or broken, or plain words
   notJson: true               # default
   # send the accepted body under a media type the description does not offer
   wrongContentType: true      # default
@@ -194,7 +196,7 @@ mutation:
   beyondItsWidth: true        # default
   # how many of each operation's accepted requests are kept to be changed, newest first
   acceptedKept: 16            # default
-  # how many characters an oversized word has
+  # how long an oversized word is in characters, and a far too wide number in digits
   oversizedLength: 10000      # default
   # how many items an oversized list has
   oversizedItems: 1000        # default
@@ -385,7 +387,7 @@ Five of the kinds, from `wrongRoot` to `beyondItsWidth`, break the body as a who
 value in it — its kind, its bytes, its media type — or push a number past what its declared format
 can hold. They aim at the code that reads a body before the API's own code runs. [The
 switches](switches.md#switching-off-everything-one-increment-added) has the files that turn off, at
-once, the nine kinds that change one value or these last five.
+once, the kinds that change one value or these last five.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -396,16 +398,17 @@ once, the nine kinds that change one value or these last five.
 | `outsideABound` | `true` | send a value one step past a limit the description states |
 | `breakAnEnumeration` | `true` | send a value that is not on the closed list the description states |
 | `breakAPattern` | `true` | send a word the stated pattern refuses |
+| `breakAFormat` | `true` | send a word that looks like the stated format but is not, such as 2021-02-30 for a date |
 | `sendNull` | `true` | send null for a body property that may not be null |
 | `sendEmpty` | `true` | send an empty word, list or object where the description forbids one |
 | `oversize` | `true` | send a word or list far longer than the longest the description allows |
 | `wrongRoot` | `true` | send the whole body as another kind of thing, such as a list where an object is declared |
 | `emptyBody` | `true` | send a body of no bytes at all where the description requires one |
-| `notJson` | `true` | send a body that is not JSON: the accepted one cut off halfway, or plain words |
+| `notJson` | `true` | send a body that is not JSON: the accepted one cut off or broken, or plain words |
 | `wrongContentType` | `true` | send the accepted body under a media type the description does not offer |
 | `beyondItsWidth` | `true` | send a number past what its declared format holds, such as 2147483648 for int32 |
 | `acceptedKept` | `16` | how many of each operation's accepted requests are kept to be changed, newest first |
-| `oversizedLength` | `10000` | how many characters an oversized word has |
+| `oversizedLength` | `10000` | how long an oversized word is in characters, and a far too wide number in digits |
 | `oversizedItems` | `1000` | how many items an oversized list has |
 
 ### `sequences.*`

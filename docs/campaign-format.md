@@ -243,25 +243,26 @@ carries gives its `mutation` strategy the same sources as `nominal`, so that its
 are exactly the ones `nominal` would build.
 
 What is changed is one value — a parameter, or one property inside a JSON body, however deep — or
-the JSON body as a whole, and how is one of fourteen kinds, each breaking something the
+the JSON body as a whole, and how is one of fifteen kinds, each breaking something the
 description states:
 
 | The kind of change | What is sent |
 |---|---|
 | `dropRequired` | a required parameter or body property left out |
 | `wrongLocation` | a required query parameter, header or cookie sent as one of the other two |
-| `wrongType` | a value of another kind: a word where a number is declared |
+| `wrongType` | a value of another kind, drawn from a long list: a word where a number is declared, `1.5` where a whole number is, `"1"` or `[[]]` or `{}`, any value of another kind in the lists of awkward values the run holds. In a parameter declared a number or a yes-or-no, a word that does not read as one - `abc`, `1.5`, `0x1A`, `NaN`, `yes` - and arrives as written: none a header would lose a space of, none too long for an address |
 | `outsideABound` | one step past a stated limit: one below the smallest number, one character more than the longest word, one item more than a list may hold |
 | `breakAnEnumeration` | a value that is not on the closed list: `AVAILABLE` where `available` is |
 | `breakAPattern` | a word close to the accepted one that its stated pattern refuses |
+| `breakAFormat` | a word that looks like the stated format and is not: `2021-02-30` or `2021-13-01` for a `date`, an hour past 23 for a `date-time`, `a@b.` for an `email`, an identifier one group short for a `uuid`, `256.1.1.1` for an `ipv4` |
 | `sendNull` | `null` for a body property that may not be null |
 | `sendEmpty` | an empty word, list or object where the description forbids one |
 | `oversize` | a word of ten thousand characters, or a list of a thousand items, where the description states a smaller most |
 | `wrongRoot` | the whole body as another kind of thing: the accepted object inside a list, a word, a number, `true` |
 | `emptyBody` | a body of no bytes at all, where the description says a body is required |
-| `notJson` | a body that is not JSON: the accepted one cut off halfway, or plain words |
+| `notJson` | a body that is not JSON: the accepted one cut off halfway, plain words, the accepted one followed by a word, with a line break written raw inside a piece of text, with a colon left out, or with a comma after its last item |
 | `wrongContentType` | the accepted body, unchanged, under `text/plain`, `application/xml` or a form's media type, whichever the operation does not take |
-| `beyondItsWidth` | a number past what its format holds: `2147483648` where the description says `int32` |
+| `beyondItsWidth` | a number past what its format holds: `2147483648` where the description says `int32`; and, inside a body, one as many digits long as an oversized word, past what a reader of numbers agrees to read at all |
 
 Since each breaks something the description states, the request records that it expects to be
 refused. It also records what was changed, and in which accepted request, so a stored run can put
