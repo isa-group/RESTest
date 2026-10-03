@@ -99,7 +99,7 @@
              `pattern` asks for. Carries no dependencies of its own, and takes the run's own seeded
              java.util.random.RandomGenerator, so a run built on it is still repeated exactly. -->
         <rgxgen.version>3.0</rgxgen.version>
-        <slf4j.version>2.0.17</slf4j.version>
+        <slf4j.version>2.0.20</slf4j.version>
         <pitest.version>1.30.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
 
