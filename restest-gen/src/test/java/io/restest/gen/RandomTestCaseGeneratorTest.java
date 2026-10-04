@@ -329,8 +329,12 @@ class RandomTestCaseGeneratorTest {
                         Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty())),
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
 
-        TestCase testCase = generatorFor(withDeclaredValues).generate(withDeclaredValues)
-                .orElseThrow();
+        // A plan of ordinary requests alone: which strategy the first request falls to depends on
+        // every number drawn before it, and what is checked here is the label each value carries,
+        // not which strategy's labels they are.
+        TestCase testCase = new RandomTestCaseGenerator(model(withDeclaredValues), 20260912L,
+                List.of(), planOf(step(Campaign.Builtin.ENUM), step(Campaign.Builtin.RANDOM)))
+                .generate(withDeclaredValues).orElseThrow();
 
         assertThat(testCase.parameterValue("status", ParameterLocation.QUERY).orElseThrow()
                 .origin()).isEqualTo(
