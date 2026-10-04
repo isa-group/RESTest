@@ -40,7 +40,8 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 | `memory.pluralIdentifiers` | `true` | Plural and name gaps | fills a gap named for several identifiers, such as `{ids}` in `/persons/{ids}` or `{petIds}`, only with a value some reply carried under that very name, and no longer with the `id` of one of the persons the API returned. It changes nothing while `memory.identifiersByResource` is off |
 | `memory.namesByResource` | `true` | Plural and name gaps | fills a gap named for a thing's name, such as `{productName}`, only with a value some reply carried under that very name, and no longer with the `name` of one of the products the API returned; and no longer keeps a reply that is a plain list of words, such as `["car", "bike"]` from `GET /products`, as the names of that many products. A gap called `{name}` takes the `name` of the things its address is about either way. It changes nothing while `memory.identifiersByResource` is off |
 | `generation.omitHalProperties` | `true` | HAL's own properties | sends `_links` and `_embedded` in a body when it was built with them, at any depth — invented to the description, sent back from a reply or taken from a sample. HAL keeps those two names for what a server writes, and an API built on HAL reads them in a request its own way, whatever its description says they look like |
-| `generation.optionalParametersBySize` | `true` | Optional parameters by number | decides each optional parameter on a coin of its own, so the request carrying only what the API requires is drawn once in 2ⁿ attempts for an operation with n optional parameters, rather than about half the time. That coin is weighted by `generation.optionalBodyChance`, so 2ⁿ holds at its default of 0.5; [the settings](settings.md#four-things-worth-knowing) say why |
+| `generation.freshWhereMade` | `true` | Made afresh | fills the body of a `POST` the way it fills any other body: a property the API has returned a value for — a user name, an e-mail address — may be given that value, and a registration carrying one is refused as already made. How often, when on, such a property is invented afresh instead is `generation.freshWhereMadeChance`, a number rather than a switch. A property named like an identifier is given what the API returned either way |
+| `generation.optionalParametersBySize` | `true` | Optional parameters by number | decides each optional parameter on a coin of its own, weighted by `generation.optionalBodyChance`, so the request carrying only what the API requires is drawn once in 10ⁿ attempts for an operation with n optional parameters, rather than about half the time. That is at the coin's default of 0.9; with `generation.optionalBodyChance` at 0.5, its default before 2.1, it is once in 2ⁿ. [The settings](settings.md#four-things-worth-knowing) say why |
 
 ### Breaking things in more ways
 
@@ -99,6 +100,7 @@ would.
 | Accepted values | A second source for the memory beside the replies, held to the same `memory.*` limits; the values of every accepted request, filed as a reply's are. A value an API refuses to take twice, such as a user name in a registration, can be refused as already used |
 | Plural and name gaps | Nothing beyond the memory of things by kind, where a reply that is a plain list of words is kept as things with one property each, held to the same `memory.*` limits |
 | HAL's own properties | One walk over every body before it is sent |
+| Made afresh | Three in ten of the `POST` bodies invention builds — the share `generation.freshWhereMadeChance` sets — carry invented values where they would have carried ones the API returned. Now and then a value the API returned is the one it would take, such as the name of a category a new product has to be filed under |
 | Optional parameters by number | Nothing |
 | One value changed | Its part of the fifth of the run given to the strategy that changes accepted requests; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) |
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same fifth, and the seed |
@@ -167,6 +169,14 @@ memory:
 ```yaml
 generation:
   omitHalProperties: false
+```
+
+**Made afresh** — the body of a `POST` filled with values of its own rather than what the API
+returned
+
+```yaml
+generation:
+  freshWhereMade: false
 ```
 
 **Optional parameters by number** — how many optional parameters drawn first
@@ -238,6 +248,7 @@ generation:
   optionalParametersBySize: false
   impliedFormats: false
   omitHalProperties: false
+  freshWhereMade: false
 
 memory:
   identifiersByResource: false
@@ -273,6 +284,7 @@ generation:
   optionalParametersBySize: false
   impliedFormats: false
   omitHalProperties: false
+  freshWhereMade: false
 
 memory:
   identifiersByResource: false

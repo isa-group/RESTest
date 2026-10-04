@@ -39,6 +39,8 @@ import io.restest.core.settings.ScheduleSettings;
 import io.restest.core.settings.SequenceSettings;
 import io.restest.core.settings.Settings;
 import io.restest.gen.Campaign;
+import io.restest.gen.Campaigns;
+import io.restest.gen.Dictionaries;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.Scheduler;
 import io.restest.gen.WhichOperations;
@@ -425,7 +427,12 @@ class RunLoopTest {
         // of one pet from nothing, and only waiting for them to be heard gets pet seven into it.
         engine.repliesWith(testCase -> testCase.operation().value().equals("listPets")
                 ? "[{\"id\": 7, \"name\": \"Rex\", \"petId\": 7}]" : "[]");
-        RandomTestCaseGenerator generator = generator();
+        // With a creation's body never filled afresh. The name in it is the sign that the list was
+        // heard, and a body filled afresh would invent the name instead of taking the one the list
+        // brought back, whatever the memory had heard by then.
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260914L,
+                Dictionaries.fuzzing().map(List::of).orElse(List.of()), Campaigns.carried(),
+                Settings.from(Map.of("generation.freshWhereMade", "false")));
         List<TestCase> planned = new CopyOnWriteArrayList<>();
         java.util.concurrent.atomic.AtomicBoolean heldUpOnce =
                 new java.util.concurrent.atomic.AtomicBoolean();

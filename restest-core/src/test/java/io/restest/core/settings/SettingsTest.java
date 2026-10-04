@@ -77,6 +77,18 @@ class SettingsTest {
                     .describedAs("%s has no value to print", key.fullName())
                     .isNotBlank();
         }
+
+        @Test
+        @DisplayName("an optional property goes in eight times in ten and an optional body nine, "
+                + "and a body that makes something is filled afresh three times in ten")
+        void what_a_body_carries_by_default() {
+            GenerationSettings generation = Settings.defaults().generation();
+
+            assertThat(generation.optionalPropertyChance()).isEqualTo(0.8);
+            assertThat(generation.optionalBodyChance()).isEqualTo(0.9);
+            assertThat(generation.freshWhereMade()).isTrue();
+            assertThat(generation.freshWhereMadeChance()).isEqualTo(0.3);
+        }
     }
 
     @Nested
@@ -293,11 +305,38 @@ class SettingsTest {
 
             assertThat(Settings.from(otherWayRound)).isEqualTo(Settings.from(raised));
         }
+
+        @Test
+        @DisplayName("filling a body that makes something afresh is switched off in one line, and "
+                + "how often is a number of its own")
+        void fresh_where_made_is_read() {
+            Settings changed = Settings.from(Map.of(
+                    "generation.freshWhereMade", "false",
+                    "generation.freshWhereMadeChance", "0.75"));
+
+            assertThat(changed.generation().freshWhereMade()).isFalse();
+            assertThat(changed.generation().freshWhereMadeChance()).isEqualTo(0.75);
+            assertThat(changed.written(SettingKey.named("generation.freshWhereMade")
+                    .orElseThrow())).isEqualTo("false");
+            assertThat(changed.written(SettingKey.named("generation.freshWhereMadeChance")
+                    .orElseThrow())).isEqualTo("0.75");
+        }
     }
 
     @Nested
     @DisplayName("what is refused")
     class Refusals {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-0.1", "1.5"})
+        @DisplayName("how often a body is filled afresh is a share, so one below 0 or above 1 is "
+                + "refused, naming it")
+        void a_chance_outside_a_share(String said) {
+            assertThatThrownBy(() -> Settings.from(Map.of("generation.freshWhereMadeChance", said)))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageStartingWith("generation: freshWhereMadeChance")
+                    .hasMessageContaining("between 0 and 1");
+        }
 
         @Test
         @DisplayName("a name that is not a setting is refused, with the one it most looks like")

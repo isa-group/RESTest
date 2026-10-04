@@ -1063,3 +1063,13 @@ the maintainer stopped the batch there as enough.
   The same operations were already reached by the requests without `_links`. So what the change
   buys is about 920 requests a run that no longer go to an answer known in advance, and nothing
   measured is lost.
+
+## Amendment (2.1)
+
+**Date:** 2026-10-04
+
+§1's order - the sources that know something first, invention only when none answers - has one
+exception from 2.1 on, recorded where the sources are: in the body of a `POST`, three times in ten,
+a value the API returned is passed over for a property that is not an identifier, and the property
+is invented ([ADR-0020](0020-what-a-dictionary-is.md), 2.1 amendment).
+
