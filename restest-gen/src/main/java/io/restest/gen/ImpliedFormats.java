@@ -53,7 +53,8 @@ final class ImpliedFormats {
 
     /** The kinds a name or a description can imply. */
     enum Kind { EMAIL, URI, UUID, DATE, DATE_TIME, DURATION, PHONE, CARD, CURRENCY, COUNTRY,
-        LANGUAGE, HTTP_DATE, EPOCH_SECONDS, EPOCH_MILLIS, TEMPLATE }
+        LANGUAGE, HTTP_DATE, EPOCH_SECONDS, EPOCH_MILLIS, TEMPLATE, PASSWORD, USERNAME,
+        PERSON_NAME, NAME, GENDER }
 
     /**
      * What a name or a description implies, and the rule that recognised it.
@@ -93,6 +94,11 @@ final class ImpliedFormats {
                 case EPOCH_SECONDS -> FormattedStrings.epochSeconds(random);
                 case EPOCH_MILLIS -> FormattedStrings.epochMillis(random);
                 case TEMPLATE -> template.orElseThrow().valueFor(random);
+                case PASSWORD -> FormattedStrings.password(random);
+                case USERNAME -> FormattedStrings.username(random);
+                case PERSON_NAME -> FormattedStrings.personName(random);
+                case NAME -> FormattedStrings.nameOfLetters(random);
+                case GENDER -> FormattedStrings.gender(random);
             };
         }
     }
@@ -181,7 +187,24 @@ final class ImpliedFormats {
             endsIn("N7", Kind.PHONE, "phone", "mobile", "tel", "telephone"),
             endsIn("N8", Kind.CARD, "card", "creditcard", "cardnumber", "ccnumber"),
             endsIn("N9", Kind.CURRENCY, "currency"),
-            endsIn("N10", Kind.LANGUAGE, "language", "lang", "locale", "mothertongue"));
+            endsIn("N10", Kind.LANGUAGE, "language", "lang", "locale", "mothertongue"),
+            // What an API checks before it lets anybody in: a password strong enough for the
+            // usual rule, a user name short and plain enough, a person's name made of letters.
+            // An invented word of thirty random letters and digits fails all three.
+            endsIn("N11", Kind.PASSWORD, "password", "passwd", "pwd", "passphrase"),
+            // "login" alone is a user name; at the end of a longer name - lastLogin - it is when
+            // somebody last logged in, which N1 and N5 do not catch and this must not either. Where
+            // the description says it may be an e-mail address, it is not a plain user name.
+            unless("\\be-?mail", endsIn("N12", Kind.USERNAME, "username", "loginname", "nickname")),
+            unless("\\be-?mail", wholeName("N12", Kind.USERNAME, "login")),
+            endsIn("N13", Kind.PERSON_NAME, "firstname", "givenname", "forename", "middlename",
+                    "lastname", "surname", "familyname", "fullname"),
+            endsIn("N14", Kind.GENDER, "gender", "sex"),
+            // A bare "name" is a product's, a pet's or a notebook's as often as a person's. What
+            // they share is that a name of letters is one, so that is what is sent - a fresh one
+            // each time, since many APIs refuse to make two things of the same name. A longer
+            // name ending in "name" - companyName, fileName, displayName - is left alone.
+            wholeName("N15", Kind.NAME, "name"));
 
     private ImpliedFormats() {
     }
@@ -316,6 +339,23 @@ final class ImpliedFormats {
     /** A name of two words or more whose last is {@code at}: {@code createdAt}, {@code arrives_at}. */
     private static Rule lastWordAt(String id, Kind kind) {
         return place -> place.words().size() > 1 && place.words().getLast().equals("at")
+                ? Optional.of(new Implied(kind, id, Optional.empty())) : Optional.empty();
+    }
+
+    /**
+     * A rule read only where the description does not say something that overrules the name: a
+     * user name the description says may be an e-mail address is not a plain user name.
+     */
+    private static Rule unless(String expression, Rule rule) {
+        Pattern not = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+        return place -> not.matcher(place.description()).find() ? Optional.empty()
+                : rule.match(place);
+    }
+
+    /** A name that is one of these and nothing more: {@code login}, but not {@code lastLogin}. */
+    private static Rule wholeName(String id, Kind kind, String... names) {
+        Set<String> wanted = Set.of(names);
+        return place -> place.words().size() == 1 && wanted.contains(place.words().getFirst())
                 ? Optional.of(new Implied(kind, id, Optional.empty())) : Optional.empty();
     }
 

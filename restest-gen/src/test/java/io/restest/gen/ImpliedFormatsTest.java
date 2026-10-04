@@ -185,7 +185,22 @@ class ImpliedFormatsTest {
             "currency, CURRENCY, N9",
             "setLang, LANGUAGE, N10",
             "motherTongue, LANGUAGE, N10",
-            "Accept-Language, LANGUAGE, N10"})
+            "Accept-Language, LANGUAGE, N10",
+            "password, PASSWORD, N11",
+            "newPassword, PASSWORD, N11",
+            "user_pwd, PASSWORD, N11",
+            "username, USERNAME, N12",
+            "userName, USERNAME, N12",
+            "user_name, USERNAME, N12",
+            "login, USERNAME, N12",
+            "nickname, USERNAME, N12",
+            "firstName, PERSON_NAME, N13",
+            "last_name, PERSON_NAME, N13",
+            "surname, PERSON_NAME, N13",
+            "fullName, PERSON_NAME, N13",
+            "name, NAME, N15",
+            "gender, GENDER, N14",
+            "sex, GENDER, N14"})
         void a_name_implies_a_kind(String name, Kind kind, String rule) {
             Optional<Implied> implied = ImpliedFormats.of(name, "");
 
@@ -195,7 +210,9 @@ class ImpliedFormatsTest {
 
         @ParameterizedTest(name = "{0} implies nothing")
         @CsvSource({"at", "format", "seat", "emailVerified", "urlString", "cardHolder",
-            "phoneNumber", "cc", "country", "date", "startDate", "altLanguages", "name", "id"})
+            "phoneNumber", "cc", "country", "date", "startDate", "altLanguages", "id",
+            "lastLogin", "loginAttempts", "passwordPolicy", "fileName", "companyName",
+            "displayName", "namespace", "unisex"})
         void a_name_that_is_not_one(String name) {
             assertThat(ImpliedFormats.of(name, "")).isEmpty();
         }
@@ -221,6 +238,20 @@ class ImpliedFormatsTest {
             assertThat(new Implied(kind, "test", template).valueFor(random))
                     .describedAs(kind.name()).isNotBlank();
         }
-        assertThat(List.of(Kind.values())).hasSize(15);
+        assertThat(List.of(Kind.values())).hasSize(20);
     }
+
+    @Test
+    @DisplayName("a user name the description says may be an e-mail address is not a plain one")
+    void a_user_name_that_may_be_an_email() {
+        assertThat(ImpliedFormats.of("userName", "Could be an email, login, or username"))
+                .map(Implied::kind).isNotEqualTo(Optional.of(Kind.USERNAME));
+        assertThat(ImpliedFormats.of("userName", "The login of the account"))
+                .map(Implied::kind).contains(Kind.USERNAME);
+        assertThat(ImpliedFormats.of("login", "What the user signs in with: their e-mail address"))
+                .map(Implied::kind).isNotEqualTo(Optional.of(Kind.USERNAME));
+        assertThat(ImpliedFormats.of("login", "")).map(Implied::kind).contains(Kind.USERNAME);
+    }
+
+
 }

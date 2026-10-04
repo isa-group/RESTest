@@ -564,7 +564,19 @@ server, are facts about spelling and about HAL rather than numbers anybody tunes
 code ([ADR-0021](0021-how-a-request-body-is-built.md), M9.8 and M9.9 amendments). Seventy-nine
 settings in eight groups.
 
-## Amendment (2.1)
+## Amendment (2.1, the kinds a name implies)
+
+**Date:** 2026-10-04
+
+**The five rules 2.1 adds to the table of kinds a name implies ride `generation.impliedFormats`,
+with no switch of their own.** The table is still not a setting, as the M9.6 amendment says, though
+one of the new rules, a bare `name`, is kept below the bar the corpus sets by the maintainer's choice
+rather than as the fact the corpus measures; that choice is recorded where the rule is
+([ADR-0022](0022-the-characters-a-value-is-made-of.md), 2.1 amendment) and on the page of switches.
+A campaign that wants the new rules alone apart from the old compares two versions of RESTest. No
+setting is added.
+
+## Amendment (2.1, settings for a body that makes something)
 
 **Date:** 2026-10-04
 
