@@ -472,9 +472,10 @@ name it is: most of its fifty-three are the names of things.
 
 ### What was not done
 
-- `format: password`. A kind the document declares and RESTest cannot build could have been read as
-  a clue like a name, but the only places in the corpus that declare it are API keys, which are not
-  passwords.
+- `format: password` on its own. The standard uses it to say a value is to be hidden from view, not
+  what kind of text it is, so it no longer stops a name from being read: a property called
+  `password` that is marked that way gets a strong password by its name. The mark alone implies
+  nothing, since the only places in the corpus that carry it are API keys, which are not passwords.
 - Postal codes, days and months, file names, and values a description lists in prose ("like
   `en-US`, `de-DE`, `fr`, or `auto`"): each would reach something the 1-4 October campaigns showed
   missing, and each is left until it is measured on its own.
