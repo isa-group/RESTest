@@ -659,14 +659,20 @@ this was one of three reasons; the other two are the defaults below.
   afresh. Filled afresh, every property inside it is still asked of the same sources in the same
   order, but an answer that is a value the API returned — in a reply, or in a request it accepted —
   is passed over, and the property is invented. Where its name or description implies a kind
-  ([ADR-0022](0022-the-characters-a-value-is-made-of.md), M9.6 amendment), it is invented as that
-  kind: a fresh e-mail address where an e-mail address goes.
+  ([ADR-0022](0022-the-characters-a-value-is-made-of.md), M9.6 and 2.1 amendments) and the
+  document gives it no sample, it is invented as that kind as often as
+  `generation.impliedFormatChance` says: a fresh e-mail address where an e-mail address goes, half
+  the time by default.
 - **Identifiers are untouched.** A property named the way one identifier or several are written —
   `id`, `ownerId`, `pet_id`, `tagIds` — is given what the API returned, exactly as before, because
   it names the existing thing the new one belongs to: a pet made for an owner the API has never
   heard of is refused for the opposite reason.
-- **Every other source is untouched**: a closed list, a sample the document wrote, a list somebody
-  handed over, a default. None of them is a copy of something the API holds.
+- **Every other source answers as it did**: a closed list, a sample the document wrote, a list
+  somebody handed over, a default. None of them is a copy of something the API holds. One
+  consequence is left as it is: where the draw among the sources falls on the memory and its answer
+  is passed over, the property is invented rather than drawn again among the others, so in a body
+  filled afresh a sample or a handed-over list is chosen a little less often than in another body.
+  Drawing again among the rest was weighed and left for after the measurement.
 - **Nothing else is touched.** The body of any other method and a parameter of a `POST` are filled
   as they were. So is a `POST`'s body when the answer chosen for it as a whole is the memory's — one
   the API returned, with one value changed — rather than invention's. With the switch off, or for a
@@ -684,16 +690,20 @@ memory is where those come from. Passing it over every time would trade one refu
 three bodies in ten leave seven to be filled as before. The share is a number in the settings,
 because it is a decision rather than a fact. `POST` because it is the method a request that makes
 something nearly always uses. A `PUT` replaces a thing, and the values of the thing it replaces are
-the right ones to send it.
+the right ones to send it. A `POST` that makes nothing - a login, a search, a token refreshed - is
+filled afresh as often, and loses a value it needed three times in ten at most; telling the two
+kinds of `POST` apart from the document was weighed and left for after the measurement.
 
 ### Two defaults change with it
 
 `generation.optionalPropertyChance` goes from 0.5 to 0.8, and `generation.optionalBodyChance` from
 0.5 to 0.9, for the same reason: bodies that make something were refused for what they lacked.
 Documents under-declare `required`, so a property an API cannot do without is often written as
-optional, and it was left out of half the bodies. And Swagger 2 makes a body optional unless the
-document says otherwise, though almost no API accepts a request without the body it describes, so
-half the requests to such an operation were refused before anything was tested.
+optional, and it was left out of half the bodies. And a body is optional unless the document says
+otherwise, in OpenAPI 3 as in Swagger 2, though almost no API accepts a request without the body it
+describes, so half the requests to such an operation were refused before anything was tested. The
+body's chance applies to every method that can carry one - `POST`, `PUT`, `PATCH`, `DELETE` - and to
+none that cannot.
 [ADR-0025](0025-settings.md)'s 2.1 amendment records both.
 
 ### Measured

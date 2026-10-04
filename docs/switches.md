@@ -100,7 +100,7 @@ would.
 | Accepted values | A second source for the memory beside the replies, held to the same `memory.*` limits; the values of every accepted request, filed as a reply's are. A value an API refuses to take twice, such as a user name in a registration, can be refused as already used |
 | Plural and name gaps | Nothing beyond the memory of things by kind, where a reply that is a plain list of words is kept as things with one property each, held to the same `memory.*` limits |
 | HAL's own properties | One walk over every body before it is sent |
-| Made afresh | Three bodies of a `POST` in ten — the share `generation.freshWhereMadeChance` sets — carry invented values where they would have carried ones the API returned. Now and then a value the API returned is the one it would take, such as the name of a category a new product has to be filed under |
+| Made afresh | Three in ten of the `POST` bodies invention builds — the share `generation.freshWhereMadeChance` sets — carry invented values where they would have carried ones the API returned. Now and then a value the API returned is the one it would take, such as the name of a category a new product has to be filed under |
 | Optional parameters by number | Nothing |
 | One value changed | Its part of the fifth of the run given to the strategy that changes accepted requests; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) |
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same fifth, and the seed |

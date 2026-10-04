@@ -601,3 +601,8 @@ the coin every optional parameter is decided on, so the file that switches 2.9 o
 optional parameter nine times in ten where it sent it half the time. The page of switches says so,
 and a coin of its own for optional parameters, which the roadmap lists among the smaller things
 2.0 left, would separate the two. Eighty-one settings in eight groups.
+
+`GenerationSettings`, the record that carries these settings in Java, gains the two new components,
+so code that builds one by hand has to add them. What RESTest keeps from one minor version to the
+next is its command line and its files ([ADR-0015](0015-command-line-contract.md)), not the shape
+of this record.
