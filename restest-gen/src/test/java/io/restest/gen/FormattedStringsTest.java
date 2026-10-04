@@ -143,6 +143,66 @@ class FormattedStringsTest {
     }
 
     @Nested
+    @DisplayName("what an API checks before it lets anybody in")
+    class SigningUp {
+
+        /** The rule for a password found most often in the wild, letter for letter. */
+        private static final java.util.regex.Pattern STRONG = java.util.regex.Pattern.compile(
+                "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+
+        @Test
+        @DisplayName("a password passes the usual rule, every time, and is twelve to sixteen long")
+        void a_password_is_strong() {
+            java.util.random.RandomGenerator random = Schemas.fixedRandom();
+            java.util.Set<Character> firsts = new java.util.HashSet<>();
+            for (int draw = 0; draw < 2000; draw++) {
+                String password = FormattedStrings.password(random);
+                assertThat(password).matches(STRONG).hasSizeBetween(12, 16);
+                firsts.add(password.charAt(0));
+            }
+            assertThat(firsts).describedAs("the characters it must have are not always in front")
+                    .anyMatch(Character::isDigit).anyMatch(Character::isLowerCase);
+        }
+
+        @Test
+        @DisplayName("a user name is short, starts with a letter, and is small letters and digits")
+        void a_username_is_plain() {
+            java.util.random.RandomGenerator random = Schemas.fixedRandom();
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            for (int draw = 0; draw < 2000; draw++) {
+                String name = FormattedStrings.username(random);
+                assertThat(name).matches("[a-z][a-z0-9]{5,10}");
+                seen.add(name);
+            }
+            assertThat(seen).describedAs("names nobody has taken yet").hasSizeGreaterThan(1990);
+        }
+
+        @Test
+        @DisplayName("a name of letters is fresh each time, and letters alone")
+        void a_name_of_letters_is_fresh() {
+            java.util.random.RandomGenerator random = Schemas.fixedRandom();
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            for (int draw = 0; draw < 2000; draw++) {
+                String name = FormattedStrings.nameOfLetters(random);
+                assertThat(name).matches("[A-Z][a-z]{5,8}");
+                seen.add(name);
+            }
+            assertThat(seen).describedAs("names nothing has been given yet").hasSizeGreaterThan(1990);
+        }
+
+        @Test
+        @DisplayName("a person's name is letters alone, and a gender one of the usual words")
+        void names_and_genders() {
+            java.util.random.RandomGenerator random = Schemas.fixedRandom();
+            for (int draw = 0; draw < 200; draw++) {
+                assertThat(FormattedStrings.personName(random)).matches("[A-Z][a-z]+");
+                assertThat(FormattedStrings.gender(random)).isIn("male", "female", "MALE",
+                        "FEMALE", "Male", "Female", "M", "F", "other");
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("a kind it has never heard of")
     class Unknown {
 

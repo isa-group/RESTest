@@ -292,7 +292,9 @@ public final class RandomValueProvider implements ValueProvider {
      * kind of its own - and only some of the time.
      *
      * <p>Only where the document leaves the value open: no kind named, no closed list, no sample of
-     * its own, any of which says more than a name could. A spelling rule and the lengths still hold,
+     * its own, any of which says more than a name could. A password is not a kind of text in that
+     * sense: the document marks it only so that it is hidden from view, so a property called
+     * {@code password} that is marked that way is still read by its name. A spelling rule and the lengths still hold,
      * and a value they refuse is not sent: what is sent instead is what would have been sent
      * anyway. And only as often as the settings say, because the API's answer to an ordinary word
      * in an e-mail address's place is worth having too.
@@ -300,9 +302,13 @@ public final class RandomValueProvider implements ValueProvider {
      * <p>Nothing is drawn where nothing is implied, so that a place no rule recognises is invented
      * exactly as it was before any of this existed.
      */
+    /** The one kind a document can name that says how a value is shown, not what it is. */
+    private static final String ONLY_HIDDEN = "password";
+
     private Optional<String> ofTheKindImplied(ValueRequest request, StringSchema schema,
             long lowest, long stated, Optional<MatchingStrings> spelling) {
-        if (!settings.impliedFormats() || schema.format().isPresent()
+        if (!settings.impliedFormats()
+                || schema.format().filter(format -> !format.equals(ONLY_HIDDEN)).isPresent()
                 || !schema.metadata().enumeration().isEmpty()
                 || !schema.metadata().examples().isEmpty() || !request.examples().isEmpty()) {
             return Optional.empty();
