@@ -291,8 +291,9 @@ public final class RandomValueProvider implements ValueProvider {
      * A value of the kind the place's name or description implies, where the document declares no
      * kind of its own - and only some of the time.
      *
-     * <p>Only where the document leaves the value open: no kind named, no closed list, no sample of
-     * its own, any of which says more than a name could. A spelling rule and the lengths still hold,
+     * <p>Only where the document leaves the value open: no kind named that this tool can build, no
+     * closed list, no sample of its own, any of which says more than a name could. A kind named that
+     * nothing here can build - a password - is a clue like a name, and read as one. A spelling rule and the lengths still hold,
      * and a value they refuse is not sent: what is sent instead is what would have been sent
      * anyway. And only as often as the settings say, because the API's answer to an ordinary word
      * in an e-mail address's place is worth having too.
@@ -302,15 +303,18 @@ public final class RandomValueProvider implements ValueProvider {
      */
     private Optional<String> ofTheKindImplied(ValueRequest request, StringSchema schema,
             long lowest, long stated, Optional<MatchingStrings> spelling) {
-        if (!settings.impliedFormats() || schema.format().isPresent()
+        Optional<ImpliedFormats.Implied> declared =
+                schema.format().flatMap(ImpliedFormats::ofDeclared);
+        if (!settings.impliedFormats() || (schema.format().isPresent() && declared.isEmpty())
                 || !schema.metadata().enumeration().isEmpty()
                 || !schema.metadata().examples().isEmpty() || !request.examples().isEmpty()) {
             return Optional.empty();
         }
         Place place = new Place(request.operation(), request.location(), request.name(),
                 schema.metadata().description());
-        Optional<ImpliedFormats.Implied> kind = implied.computeIfAbsent(place,
-                ignored -> ImpliedFormats.of(request.name(), descriptionOf(request, schema)));
+        Optional<ImpliedFormats.Implied> kind = declared.isPresent() ? declared
+                : implied.computeIfAbsent(place, ignored ->
+                        ImpliedFormats.of(request.name(), descriptionOf(request, schema)));
         if (kind.isEmpty() || random.nextDouble() >= settings.impliedFormatChance()) {
             return Optional.empty();
         }

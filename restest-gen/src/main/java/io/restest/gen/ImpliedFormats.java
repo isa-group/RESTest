@@ -46,6 +46,9 @@ import java.util.regex.Pattern;
  * entry here and seeing the effect in that count. Nothing else in RESTest knows how a name or a
  * description is matched.
  *
+ * <p>A kind the document does declare but this tool has no way of building - a password - is read
+ * as a third clue, the same way a name that says so is.
+ *
  * <p>It only says what kind is meant. Whether to send one, and what to do when the document's own
  * spelling rule refuses it, is invention's business.
  */
@@ -53,7 +56,8 @@ final class ImpliedFormats {
 
     /** The kinds a name or a description can imply. */
     enum Kind { EMAIL, URI, UUID, DATE, DATE_TIME, DURATION, PHONE, CARD, CURRENCY, COUNTRY,
-        LANGUAGE, HTTP_DATE, EPOCH_SECONDS, EPOCH_MILLIS, TEMPLATE }
+        LANGUAGE, HTTP_DATE, EPOCH_SECONDS, EPOCH_MILLIS, TEMPLATE, PASSWORD, USERNAME,
+        PERSON_NAME, GENDER }
 
     /**
      * What a name or a description implies, and the rule that recognised it.
@@ -93,6 +97,10 @@ final class ImpliedFormats {
                 case EPOCH_SECONDS -> FormattedStrings.epochSeconds(random);
                 case EPOCH_MILLIS -> FormattedStrings.epochMillis(random);
                 case TEMPLATE -> template.orElseThrow().valueFor(random);
+                case PASSWORD -> FormattedStrings.password(random);
+                case USERNAME -> FormattedStrings.username(random);
+                case PERSON_NAME -> FormattedStrings.personName(random);
+                case GENDER -> FormattedStrings.gender(random);
             };
         }
     }
@@ -181,7 +189,30 @@ final class ImpliedFormats {
             endsIn("N7", Kind.PHONE, "phone", "mobile", "tel", "telephone"),
             endsIn("N8", Kind.CARD, "card", "creditcard", "cardnumber", "ccnumber"),
             endsIn("N9", Kind.CURRENCY, "currency"),
-            endsIn("N10", Kind.LANGUAGE, "language", "lang", "locale", "mothertongue"));
+            endsIn("N10", Kind.LANGUAGE, "language", "lang", "locale", "mothertongue"),
+            // What an API checks before it lets anybody in: a password strong enough for the
+            // usual rule, a user name short and plain enough, a person's name made of letters.
+            // An invented word of thirty random letters and digits fails all three.
+            endsIn("N11", Kind.PASSWORD, "password", "passwd", "pwd", "passphrase",
+                    "passwordconfirmation"),
+            // "login" alone is a user name; at the end of a longer name - lastLogin - it is when
+            // somebody last logged in, which N1 and N5 do not catch and this must not either.
+            endsInUnless("N12", Kind.USERNAME, "\\be-?mail", "username", "loginname", "nickname"),
+            wholeName("N12", Kind.USERNAME, "login"),
+            // A bare "name" is as often a product's or a pet's as a person's, and a person's name
+            // made of letters is a good name for either. A longer name ending in "name" -
+            // companyName, fileName, displayName - is not a person's, and is left alone.
+            endsIn("N13", Kind.PERSON_NAME, "firstname", "givenname", "forename", "middlename",
+                    "lastname", "surname", "familyname", "fullname"),
+            wholeName("N15", Kind.PERSON_NAME, "name"),
+            endsIn("N14", Kind.GENDER, "gender", "sex"));
+
+    /**
+     * Declared kinds this tool cannot build a value for and still reads as a clue. A document that
+     * writes {@code format: password} is saying the same thing a property called {@code password}
+     * says, and gets the same answer.
+     */
+    private static final Map<String, Kind> DECLARED_BUT_NOT_BUILT = Map.of("password", Kind.PASSWORD);
 
     private ImpliedFormats() {
     }
@@ -203,6 +234,18 @@ final class ImpliedFormats {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * What a kind the document declares, and this tool cannot build, implies.
+     *
+     * @param format the kind, exactly as the document wrote it
+     * @return the kind and the rule that recognised it, or nothing for every other declared kind
+     */
+    static Optional<Implied> ofDeclared(String format) {
+        Objects.requireNonNull(format, "format");
+        return Optional.ofNullable(DECLARED_BUT_NOT_BUILT.get(format))
+                .map(kind -> new Implied(kind, "F1", Optional.empty()));
     }
 
     /**
@@ -316,6 +359,24 @@ final class ImpliedFormats {
     /** A name of two words or more whose last is {@code at}: {@code createdAt}, {@code arrives_at}. */
     private static Rule lastWordAt(String id, Kind kind) {
         return place -> place.words().size() > 1 && place.words().getLast().equals("at")
+                ? Optional.of(new Implied(kind, id, Optional.empty())) : Optional.empty();
+    }
+
+    /**
+     * The same as {@link #endsIn}, unless the description says something that overrules the name:
+     * a user name the description says may be an e-mail address is not a plain user name.
+     */
+    private static Rule endsInUnless(String id, Kind kind, String unless, String... endings) {
+        Rule byName = endsIn(id, kind, endings);
+        Pattern not = Pattern.compile(unless, Pattern.CASE_INSENSITIVE);
+        return place -> not.matcher(place.description()).find() ? Optional.empty()
+                : byName.match(place);
+    }
+
+    /** A name that is one of these and nothing more: {@code login}, but not {@code lastLogin}. */
+    private static Rule wholeName(String id, Kind kind, String... names) {
+        Set<String> wanted = Set.of(names);
+        return place -> place.words().size() == 1 && wanted.contains(place.words().getFirst())
                 ? Optional.of(new Implied(kind, id, Optional.empty())) : Optional.empty();
     }
 

@@ -21,7 +21,9 @@ import java.time.LocalDate;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -49,8 +51,10 @@ import java.util.random.RandomGenerator;
  *
  * <p>A kind it has never heard of is not a problem and not an error: it says nothing, and whoever
  * asked invents an ordinary word instead. That covers the names a document invents for itself, and
- * the several kinds - a password, a regular expression, a template - where an ordinary word is
- * already a perfectly good answer.
+ * the several kinds - a regular expression, a template - where an ordinary word is already a
+ * perfectly good answer. A password is not one of them: the rule most APIs hold a password to
+ * refuses an ordinary word, so a strong one is built here and asked for the way the kinds a name
+ * implies are, through {@link ImpliedFormats}.
  */
 final class FormattedStrings {
 
@@ -103,7 +107,86 @@ final class FormattedStrings {
     private static final List<String> LANGUAGES = List.of("en", "es", "fr", "de", "it", "pt",
             "en-US", "en-GB", "es-ES", "pt-BR", "de-DE", "fr-FR");
 
+    private static final String UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String DIGITS = "0123456789";
+
+    /**
+     * The seven symbols of the rule most often used to check a password, which accepts these and
+     * nothing else besides letters and digits.
+     */
+    private static final String SYMBOLS = "@$!%*?&";
+
+    private static final int SHORTEST_PASSWORD = 12;
+    private static final int LONGEST_PASSWORD = 16;
+
+    /** A user name starts with a letter and stays well under the fifteen characters some APIs allow. */
+    private static final int SHORTEST_USERNAME = 6;
+    private static final int LONGEST_USERNAME = 11;
+
+    /** Given and family names, made of letters alone, as the strictest check of a name wants. */
+    private static final List<String> PERSON_NAMES = List.of("Alice", "Maria", "Laura", "Sofia",
+            "Emma", "Olivia", "Grace", "Hannah", "John", "David", "Daniel", "Lucas", "Peter",
+            "Thomas", "James", "Mark", "Smith", "Garcia", "Johnson", "Brown", "Miller", "Davis",
+            "Martin", "Lopez", "Wilson", "Taylor", "Moore", "Clark", "Rossi", "Weber", "Novak",
+            "Silva");
+
+    /** The ways a person's gender or sex is most often written where no list says which. */
+    private static final List<String> GENDERS = List.of("male", "female", "MALE", "FEMALE", "Male",
+            "Female", "M", "F", "other");
+
     private FormattedStrings() {
+    }
+
+    /**
+     * A password the usual rule accepts: twelve to sixteen characters, with at least one capital,
+     * one small letter, one digit and one symbol, in no fixed order.
+     */
+    static String password(RandomGenerator random) {
+        int length = SHORTEST_PASSWORD + random.nextInt(LONGEST_PASSWORD - SHORTEST_PASSWORD + 1);
+        String any = UPPERCASE + LOWERCASE + DIGITS + SYMBOLS;
+        List<Character> characters = new ArrayList<>(length);
+        characters.add(oneCharacterOf(UPPERCASE, random));
+        characters.add(oneCharacterOf(LOWERCASE, random));
+        characters.add(oneCharacterOf(DIGITS, random));
+        characters.add(oneCharacterOf(SYMBOLS, random));
+        while (characters.size() < length) {
+            characters.add(oneCharacterOf(any, random));
+        }
+        // Shuffled by hand from the run's own numbers, so the same seed gives the same password.
+        for (int i = characters.size() - 1; i > 0; i--) {
+            Collections.swap(characters, i, random.nextInt(i + 1));
+        }
+        StringBuilder password = new StringBuilder(length);
+        characters.forEach(password::append);
+        return password.toString();
+    }
+
+    /**
+     * A user name nobody has taken yet: a small letter, then small letters and digits, short enough
+     * for the limits APIs put on one.
+     */
+    static String username(RandomGenerator random) {
+        int length = SHORTEST_USERNAME + random.nextInt(LONGEST_USERNAME - SHORTEST_USERNAME + 1);
+        StringBuilder name = new StringBuilder(length).append(oneCharacterOf(LOWERCASE, random));
+        String rest = LOWERCASE + DIGITS;
+        while (name.length() < length) {
+            name.append(oneCharacterOf(rest, random));
+        }
+        return name.toString();
+    }
+
+    /** A person's given or family name, of letters alone. */
+    static String personName(RandomGenerator random) {
+        return oneOf(PERSON_NAMES, random);
+    }
+
+    /** A person's gender, written one of the usual ways. */
+    static String gender(RandomGenerator random) {
+        return oneOf(GENDERS, random);
+    }
+
+    private static char oneCharacterOf(String characters, RandomGenerator random) {
+        return characters.charAt(random.nextInt(characters.length()));
     }
 
     /** A telephone number nobody answers, written the international way. */

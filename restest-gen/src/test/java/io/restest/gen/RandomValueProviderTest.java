@@ -844,6 +844,21 @@ class RandomValueProviderTest {
         }
 
         @Test
+        @DisplayName("a password the document declares is built strong, and only when switched on")
+        void a_declared_password_is_strong() {
+            StringSchema password = StringSchema.ofFormat("password");
+            RandomValueProvider always = provider(EMPTY, implying(true, 1.0), 17L);
+            RandomValueProvider off = provider(EMPTY, implying(false, 1.0), 17L);
+            RandomValueProvider nothingImplied = provider(EMPTY, implying(true, 1.0), 17L);
+            for (int draw = 0; draw < 20; draw++) {
+                assertThat(text(always, "secret", password)).matches(
+                        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,16}$");
+                assertThat(text(off, "secret", password))
+                        .isEqualTo(text(nothingImplied, "widgetName", StringSchema.of()));
+            }
+        }
+
+        @Test
         @DisplayName("a property deep inside a body is given its kind too")
         void inside_a_body() {
             ObjectSchema user = ObjectSchema.of(java.util.Map.of("contact",
