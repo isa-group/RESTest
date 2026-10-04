@@ -412,10 +412,10 @@ descriptions more strictly and touch no place of either document, so the table s
 
 **Date:** 2026-10-04
 
-**A name now also implies a password, a user name, a person's name and a gender, and a document
-that declares `format: password` gets a strong password.** The amendment above left passwords and
-people's names out; the campaigns of 1-4 October showed what that costs, on APIs the competition
-does not disclose in advance and no dictionary covers.
+**A name now also implies a password, a user name, a person's name, a name of letters and a
+gender.** The amendment above left passwords and people's names out; the campaigns of 1-4 October
+showed what that costs, on APIs the competition does not disclose in advance and no dictionary
+covers.
 
 ### Why
 
@@ -428,28 +428,29 @@ nowhere in its document, and met by any value a person would have typed.
 
 ### What is added to the table
 
-Four name rules, after the ten already there, and one declared kind:
+Five name rules, after the ten already there:
 
 - **N11, a password**: a name ending in `password`, `passwd`, `pwd` or `passphrase`. Sent as twelve
   to sixteen characters with at least one capital, one small letter, one digit and one of
   `@$!%*?&` - the characters of the rule most often used to check a password, which accepts those
   symbols and no others.
 - **N12, a user name**: a name ending in `username`, `loginname` or `nickname`, or that is `login`
-  and nothing more (`lastLogin` is when somebody last logged in). Not where the description says
-  the value may be an e-mail address. Sent as a small letter and five to ten more small letters and
-  digits, fresh each time, so it is neither too long nor already taken.
+  and nothing more (`lastLogin` is when somebody last logged in); in either case not where the
+  description says the value may be an e-mail address. Sent as a small letter and five to ten more
+  small letters and digits, fresh each time, so it is neither too long nor already taken.
 - **N13, a person's name**: a name ending in `firstName`, `givenName`, `forename`, `middleName`,
   `lastName`, `surname`, `familyName` or `fullName`. Sent as a real given or family name, of letters
-  alone.
-- **N15, a bare `name`**, read as N13 is. Kept below the bar, by the maintainer's choice and said so
-  in the test: its misses in the corpus are the names of other things - a secret, a branch, a
-  release - for which a name of letters alone is still one the API takes, and it is the only rule
-  that reaches a registration asking for a person's name under that one word. A longer name ending
-  in `name` - `companyName`, `fileName`, `displayName` - is left alone.
+  alone. Two people may share a name, so a short list is enough.
 - **N14, a gender**: a name ending in `gender` or `sex`, sent as one of the usual ways of writing
   one (`male`, `FEMALE`, `M`...).
-- **F1, `format: password`**: a kind the document declares and RESTest has no way of building is a
-  clue like a name, and read as one. Every other declared kind still settles the value.
+- **N15, a bare `name`**: a product's, a pet's or a notebook's as often as a person's. What they
+  share is that a name of letters is one, so that is what is sent - built rather than taken from a
+  list, a capital and small letters taking turns between consonants and vowels, fresh each time,
+  since many APIs refuse to make two things of the same name. A longer name ending in `name` -
+  `companyName`, `fileName`, `displayName` - is left alone. Kept below the bar by the maintainer's
+  choice, and said so in the test: its misses in the corpus are names written with digits, slashes
+  or underscores - a secret, a branch, a release - and it is the only rule that reaches a
+  registration that refuses a name with a digit in it under that one word.
 
 Same switch, same chance: `generation.impliedFormats`, and `generation.impliedFormatChance` of the
 time, a half by default. The corpus, held against what its documents declare or show:
@@ -462,14 +463,21 @@ time, a half by default. The corpus, held against what its documents declare or 
 | N14 gender | 2 | 0 | 1 |
 | N15 bare `name` | 53 | 7 | 40 |
 
-What counts as right for the four, where no pattern above recognises a sample: a password sample is
+What counts as right for these, where no pattern above recognises a sample: a password sample is
 any word without a space, since a sample as weak as `foo` is still a password and a strong one is
 accepted where it is; a user name's samples are letters, digits, dots, underscores and hyphens; a
-person's name's are letters, spaces, hyphens, apostrophes and full stops; a gender's are one of the
-usual words.
+name's - a person's or any - are letters, spaces, hyphens, apostrophes and full stops; a gender's
+are one of the usual words. For N15 that is a statement about the shape of a name, not about whose
+name it is: most of its fifty-three are the names of things.
 
 ### What was not done
 
-Postal codes, days and months, file names, and values a description lists in prose ("like `en-US`,
-`de-DE`, `fr`, or `auto`"): each would reach something the 1-4 October campaigns showed missing, and
-each is left until it is measured on its own.
+- `format: password`. A kind the document declares and RESTest cannot build could have been read as
+  a clue like a name, but the only places in the corpus that declare it are API keys, which are not
+  passwords.
+- Postal codes, days and months, file names, and values a description lists in prose ("like
+  `en-US`, `de-DE`, `fr`, or `auto`"): each would reach something the 1-4 October campaigns showed
+  missing, and each is left until it is measured on its own.
+- Lengths a place states below a kind's own - a password allowed ten characters at most, a user
+  name allowed eight - are not built to: the value is refused by the length, as every implied value
+  too long for its place is, and what would have been sent anyway is sent.

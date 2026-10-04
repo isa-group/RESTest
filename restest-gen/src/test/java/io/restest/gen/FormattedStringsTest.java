@@ -154,10 +154,14 @@ class FormattedStringsTest {
         @DisplayName("a password passes the usual rule, every time, and is twelve to sixteen long")
         void a_password_is_strong() {
             java.util.random.RandomGenerator random = Schemas.fixedRandom();
+            java.util.Set<Character> firsts = new java.util.HashSet<>();
             for (int draw = 0; draw < 2000; draw++) {
                 String password = FormattedStrings.password(random);
                 assertThat(password).matches(STRONG).hasSizeBetween(12, 16);
+                firsts.add(password.charAt(0));
             }
+            assertThat(firsts).describedAs("the characters it must have are not always in front")
+                    .anyMatch(Character::isDigit).anyMatch(Character::isLowerCase);
         }
 
         @Test
@@ -171,6 +175,19 @@ class FormattedStringsTest {
                 seen.add(name);
             }
             assertThat(seen).describedAs("names nobody has taken yet").hasSizeGreaterThan(1990);
+        }
+
+        @Test
+        @DisplayName("a name of letters is fresh each time, and letters alone")
+        void a_name_of_letters_is_fresh() {
+            java.util.random.RandomGenerator random = Schemas.fixedRandom();
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            for (int draw = 0; draw < 2000; draw++) {
+                String name = FormattedStrings.nameOfLetters(random);
+                assertThat(name).matches("[A-Z][a-z]{5,8}");
+                seen.add(name);
+            }
+            assertThat(seen).describedAs("names nothing has been given yet").hasSizeGreaterThan(1990);
         }
 
         @Test

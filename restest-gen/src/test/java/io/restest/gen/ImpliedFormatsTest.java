@@ -189,7 +189,6 @@ class ImpliedFormatsTest {
             "password, PASSWORD, N11",
             "newPassword, PASSWORD, N11",
             "user_pwd, PASSWORD, N11",
-            "password_confirmation, PASSWORD, N11",
             "username, USERNAME, N12",
             "userName, USERNAME, N12",
             "user_name, USERNAME, N12",
@@ -199,7 +198,7 @@ class ImpliedFormatsTest {
             "last_name, PERSON_NAME, N13",
             "surname, PERSON_NAME, N13",
             "fullName, PERSON_NAME, N13",
-            "name, PERSON_NAME, N15",
+            "name, NAME, N15",
             "gender, GENDER, N14",
             "sex, GENDER, N14"})
         void a_name_implies_a_kind(String name, Kind kind, String rule) {
@@ -239,7 +238,7 @@ class ImpliedFormatsTest {
             assertThat(new Implied(kind, "test", template).valueFor(random))
                     .describedAs(kind.name()).isNotBlank();
         }
-        assertThat(List.of(Kind.values())).hasSize(19);
+        assertThat(List.of(Kind.values())).hasSize(20);
     }
 
     @Test
@@ -249,15 +248,10 @@ class ImpliedFormatsTest {
                 .map(Implied::kind).isNotEqualTo(Optional.of(Kind.USERNAME));
         assertThat(ImpliedFormats.of("userName", "The login of the account"))
                 .map(Implied::kind).contains(Kind.USERNAME);
+        assertThat(ImpliedFormats.of("login", "What the user signs in with: their e-mail address"))
+                .map(Implied::kind).isNotEqualTo(Optional.of(Kind.USERNAME));
+        assertThat(ImpliedFormats.of("login", "")).map(Implied::kind).contains(Kind.USERNAME);
     }
 
-    @Test
-    @DisplayName("a password the document declares is read as a clue; a kind it can build is not")
-    void a_declared_password_is_a_clue() {
-        assertThat(ImpliedFormats.ofDeclared("password")).map(Implied::kind)
-                .contains(Kind.PASSWORD);
-        assertThat(ImpliedFormats.ofDeclared("password")).map(Implied::rule).contains("F1");
-        assertThat(ImpliedFormats.ofDeclared("email")).isEmpty();
-        assertThat(ImpliedFormats.ofDeclared("int32")).isEmpty();
-    }
+
 }

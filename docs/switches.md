@@ -35,7 +35,7 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 | `schedule.openingLap` | `true` | The opening lap | starts drawing requests at once, instead of first sending every operation once with the request it is likeliest to accept |
 | `memory.identifiersByResource` | `true` | Identifiers by resource | fills a gap such as `{petTypeId}` in `/pettypes/{petTypeId}` only with a value some reply carried under that very name, and no longer with the `id` of one of the pet types `GET /pettypes` listed |
 | `memory.identifiersByResourceFirst` | `true` | The order identifiers are looked for in | asks for a value carrying the gap's own name first, and for the things of its kind only when there is none. It changes nothing while `memory.identifiersByResource` is off |
-| `generation.impliedFormats` | `true` | Implied kinds | invents an ordinary word where a name or a description implies a kind the document does not declare — an e-mail address for `billing_email`, a test card number for `ccNumber`, a country code where the description says "ISO 3166", a date in the form the description writes out, a password strong enough for the usual rule for `password` or `format: password`, a short fresh user name for `username`, a name of letters alone for `firstName` or a bare `name`, a gender for `gender`. How often it sends the implied kind when on is `generation.impliedFormatChance`, a number rather than a switch |
+| `generation.impliedFormats` | `true` | Implied kinds | invents an ordinary word where a name or a description implies a kind the document does not declare — an e-mail address for `billing_email`, a test card number for `ccNumber`, a country code where the description says "ISO 3166", a date in the form the description writes out, a password strong enough for the usual rule for `password`, a short fresh user name for `username`, a person's name of letters for `firstName`, a fresh name of letters for a bare `name`, a gender for `gender`. How often it sends the implied kind when on is `generation.impliedFormatChance`, a number rather than a switch |
 | `memory.rememberAcceptedRequests` | `true` | Accepted values | remembers only what the API's replies carried, and no longer the values of the requests it accepted — the e-mail address and password a registration went with are then not there for the login after it |
 | `memory.pluralIdentifiers` | `true` | Plural and name gaps | fills a gap named for several identifiers, such as `{ids}` in `/persons/{ids}` or `{petIds}`, only with a value some reply carried under that very name, and no longer with the `id` of one of the persons the API returned. It changes nothing while `memory.identifiersByResource` is off |
 | `memory.namesByResource` | `true` | Plural and name gaps | fills a gap named for a thing's name, such as `{productName}`, only with a value some reply carried under that very name, and no longer with the `name` of one of the products the API returned; and no longer keeps a reply that is a plain list of words, such as `["car", "bike"]` from `GET /products`, as the names of that many products. A gap called `{name}` takes the `name` of the things its address is about either way. It changes nothing while `memory.identifiersByResource` is off |
@@ -457,6 +457,11 @@ of its own, since each widens a kind that already has one:
 - the list of awkward values RESTest carries holds 88 values. A plan without the pushing strategy
   sends none of them in requests made entirely of awkward values; a value of the wrong kind still
   draws on them.
+
+The kinds a name implies were widened in 2.1 - a password, a user name, a person's name, a name of
+letters for a bare `name`, a gender - and the new rules have no switch of their own either:
+`generation.impliedFormats` turns every implied kind off whole, the old ones with the new. Telling
+the two apart is a comparison of two versions of RESTest, not of two settings.
 
 ## What has no switch yet
 

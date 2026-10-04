@@ -53,8 +53,8 @@ import java.util.random.RandomGenerator;
  * asked invents an ordinary word instead. That covers the names a document invents for itself, and
  * the several kinds - a regular expression, a template - where an ordinary word is already a
  * perfectly good answer. A password is not one of them: the rule most APIs hold a password to
- * refuses an ordinary word, so a strong one is built here and asked for the way the kinds a name
- * implies are, through {@link ImpliedFormats}.
+ * refuses an ordinary word, so a strong one is built here for a place whose name says it is one,
+ * as {@link ImpliedFormats} works out.
  */
 final class FormattedStrings {
 
@@ -130,6 +130,11 @@ final class FormattedStrings {
             "Martin", "Lopez", "Wilson", "Taylor", "Moore", "Clark", "Rossi", "Weber", "Novak",
             "Silva");
 
+    private static final String CONSONANTS = "bcdfghjklmnprstvz";
+    private static final String VOWELS = "aeiou";
+    private static final int SHORTEST_NAME = 6;
+    private static final int LONGEST_NAME = 9;
+
     /** The ways a person's gender or sex is most often written where no list says which. */
     private static final List<String> GENDERS = List.of("male", "female", "MALE", "FEMALE", "Male",
             "Female", "M", "F", "other");
@@ -178,6 +183,21 @@ final class FormattedStrings {
     /** A person's given or family name, of letters alone. */
     static String personName(RandomGenerator random) {
         return oneOf(PERSON_NAMES, random);
+    }
+
+    /**
+     * A name nothing has been given yet, of letters alone: a capital, then small letters taking
+     * turns between consonants and vowels, so that it reads as a name - {@code Kavimo}, {@code Lerusa}
+     * - and is fresh each time, since many APIs refuse to make two things of the same name.
+     */
+    static String nameOfLetters(RandomGenerator random) {
+        int length = SHORTEST_NAME + random.nextInt(LONGEST_NAME - SHORTEST_NAME + 1);
+        StringBuilder name = new StringBuilder(length);
+        for (int letter = 0; letter < length; letter++) {
+            name.append(oneCharacterOf(letter % 2 == 0 ? CONSONANTS : VOWELS, random));
+        }
+        name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
+        return name.toString();
     }
 
     /** A person's gender, written one of the usual ways. */

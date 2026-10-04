@@ -844,18 +844,27 @@ class RandomValueProviderTest {
         }
 
         @Test
-        @DisplayName("a password the document declares is built strong, and only when switched on")
-        void a_declared_password_is_strong() {
-            StringSchema password = StringSchema.ofFormat("password");
-            RandomValueProvider always = provider(EMPTY, implying(true, 1.0), 17L);
-            RandomValueProvider off = provider(EMPTY, implying(false, 1.0), 17L);
-            RandomValueProvider nothingImplied = provider(EMPTY, implying(true, 1.0), 17L);
-            for (int draw = 0; draw < 20; draw++) {
-                assertThat(text(always, "secret", password)).matches(
+        @DisplayName("a sign-up body gets a strong password, a short user name and a name of letters")
+        void a_sign_up_body() {
+            ObjectSchema signUp = ObjectSchema.of(java.util.Map.of("password", StringSchema.of(),
+                    "username", StringSchema.of(), "name", StringSchema.of()),
+                    java.util.Set.of("password", "username", "name"));
+            RandomValueProvider always = provider(EMPTY, implying(true, 1.0), 19L);
+            java.util.Set<String> names = new java.util.HashSet<>();
+            for (int draw = 0; draw < 50; draw++) {
+                java.util.Map<String, JsonValue> members = ((JsonValue.JsonObject) always.offer(
+                        new io.restest.core.gen.ValueRequest(ADD_USER, "body", "body",
+                                ParameterLocation.BODY, signUp, List.of(), Optional.empty()))
+                        .orElseThrow().value()).members();
+                assertThat(((JsonValue.JsonString) members.get("password")).value()).matches(
                         "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,16}$");
-                assertThat(text(off, "secret", password))
-                        .isEqualTo(text(nothingImplied, "widgetName", StringSchema.of()));
+                assertThat(((JsonValue.JsonString) members.get("username")).value())
+                        .matches("[a-z][a-z0-9]{5,10}");
+                String name = ((JsonValue.JsonString) members.get("name")).value();
+                assertThat(name).matches("[A-Z][a-z]+");
+                names.add(name);
             }
+            assertThat(names).describedAs("a fresh name each time").hasSizeGreaterThan(45);
         }
 
         @Test

@@ -73,8 +73,9 @@ class ImpliedFormatsAcrossTheCorpusTest {
     private static final Pattern PHONE = Pattern.compile("\\+?[\\d\\s().-]{7,20}");
 
     /**
-     * What a password, a user name, a person's name and a gender look like where a document shows
-     * one. A password is any word without a space - a sample as weak as foo is still a password, and a strong one is accepted where it is; the other three are read from their samples.
+     * What a password, a user name, a name and a gender look like where a document shows one. A
+     * password is any word without a space: a sample as weak as foo is still a password, and a
+     * strong one is accepted where it is. The others are read from their samples.
      */
     private static final Pattern NO_SPACE = Pattern.compile("\\S+");
     private static final Pattern A_USER_NAME = Pattern.compile("[A-Za-z0-9._-]{2,32}");
@@ -130,10 +131,10 @@ class ImpliedFormatsAcrossTheCorpusTest {
             // N10, the names of a language, is kept below the bar by the maintainer's choice: one
             // of its misses is a reply's list of language names, and it is the only rule that
             // reaches the languages an API such as LanguageTool asks for by name alone.
-            // N15, a bare "name" taken for a person's, is kept below it by the same choice: its
-            // misses are names of other things - a secret, a branch, a release - for which a name
-            // of letters alone is still a name the API takes, and it is the only rule that reaches
-            // a registration asking for a person's name under that one word.
+            // N15, a bare "name" sent as a name of letters, is kept below it by the same choice:
+            // its misses are names written with digits, slashes or underscores - a secret, a
+            // branch, a release - and it is the only rule that reaches a registration that refuses
+            // a name with a digit in it under that one word.
             if (known >= 3 && !rule.equals("N10") && !rule.equals("N15")) {
                 assertThat(numbers[0] * 10)
                         .describedAs("%s: %d right of %d", rule, numbers[0], known)
@@ -286,8 +287,9 @@ class ImpliedFormatsAcrossTheCorpusTest {
 
     private static boolean agrees(Implied implied, String truth, List<String> values,
             SplittableRandom random) {
-        // A password, a user name, a person's name or a gender has no shape a pattern above would
-        // recognise, so where the samples are of no other kind they are held against the kind's own.
+        // A password, a user name, a name or a gender has no shape a pattern above would
+        // recognise, so where the samples are of no other kind they are held against the kind's
+        // own.
         if (truth.equals("OTHER")) {
             switch (implied.kind()) {
                 case PASSWORD -> {
@@ -296,7 +298,7 @@ class ImpliedFormatsAcrossTheCorpusTest {
                 case USERNAME -> {
                     return allMatch(values, A_USER_NAME);
                 }
-                case PERSON_NAME -> {
+                case PERSON_NAME, NAME -> {
                     return allMatch(values, A_PERSONS_NAME);
                 }
                 case GENDER -> {
