@@ -106,6 +106,8 @@ its row and its number, and `restest-idl` ships in v2.0 as the module descriptor
 - **The tool stays general.** Nothing is tuned to the five known APIs: the undisclosed five are new
   APIs, and a lever that helps on five documents and hurts on the fifty of the wider corpus is not
   merged. Every M9 and M10 row is measured on the priority corpus and checked on the rest.
+  *The submission hands RESTest dictionaries for the five known APIs, as the maintainer decided on
+  3 October; the code stays general (amendment of 4 October).*
 - **The harness stays outside** (ADR-0011). What crosses the boundary is the published command line.
   The container image of 7.2a is the tool's own and knows nothing about being measured; the
   benchmark-compliant image the competition asks for is the harness repository's, built on top of
@@ -207,3 +209,51 @@ on 3 October, once every row that changes a request had been merged and the code
 - The clean-up `master` receives (ROADMAP 12.5) covers what a visitor reads; the decision records,
   this one included, stay as they are, as the record of how 2.0 was decided. The whole record is on
   the tag `history/2.0-development`.
+
+## Amendment (4 October 2026): what the submission is handed
+
+§4 says that nothing is tuned to the five known APIs. That still holds for the tool: 2.0.0 is the
+code submitted, and nothing in it knows which APIs the competition uses. It no longer holds for what
+the submission hands the tool. On 3 October the maintainer decided that the submission runs no
+local language model, and that the image the harness repository builds hands RESTest, for each of
+the five known APIs and for those alone, a dictionary of values prepared before the competition.
+The undisclosed APIs get no dictionary. §5 called those dictionaries the most favourable case, which
+the competition does not offer; for the five known APIs, the submission now takes that case.
+
+The dictionaries were written offline, before any run and to a written rule (about ten values per
+place, from the document first and public knowledge last), in sessions with a coding assistant. The
+five known APIs' files were revised on 2 October so that values that must agree do agree - a flight
+that arrives after it leaves, a login with the password its e-mail registered - a revision that
+followed the analysis of earlier campaigns on those APIs, though its values still come from the
+documents and public knowledge. The other APIs' files were not revised that way, so the files
+submitted are not quite the kind measured in the last paragraph below.
+
+The same image hands every API a plan of its own rather than the one RESTest carries: the same
+sources, with the shares of the four strategies (nominal, sequences, mutation, fuzzing) at 45, 15,
+30 and 10 instead of 45, 10, 20 and 25. Both cross the boundary as §4 requires, on the published
+command line: the dictionaries with `--dictionary`, the plan with `--campaign`. The plan is about
+where a run's time goes, not about any API, so it is no exception to §4. It was chosen on 4 October
+from two overnight campaigns of 2.0.0, sixteen APIs, 20 minutes, two runs each, identical except
+for the plan (`20261003-192803` with RESTest's plan, `20261004-000542` with the new one). On the
+fifteen APIs other than erc20, whose error messages make almost every failure look unique:
+
+- unique server failures by the reference paper's count (one per distinct stack trace, or per
+  distinct message once the values the request carried are taken out) rose from 792 to 919, higher
+  on three APIs and lower on two; by the benchmark's count, with ncs and scs also left out, from 212
+  to 220;
+- operations covered went from 272.5 to 277.5, lower on one API;
+- branch coverage went from 29.3% to 30.0%, lower on two APIs.
+
+No total fell, none of the differences is significant across APIs, and the first ten seconds were
+slower, mostly because one API started late. ADR-0027 kept the pushing strategy's quarter because a
+campaign without it lost faults and coverage; a tenth is not none, and here no total fell. RESTest's
+own plan keeps its shares: evidence this weak is enough to choose between two configurations for
+one event, not to change what every user gets by default.
+
+A third campaign, `20261003-134551`, ran the new plan with a dictionary for every API. Against it,
+the ten APIs other than the known five and erc20 lost branch coverage without their dictionaries,
+from 37.2% to 31.1% - lower on nine APIs, higher on none - though one API, scs, accounts for most of
+it (80.0% to 40.7%; 32.5% to 30.0% without it). Operations fell from 171 to 160.5, and the failures
+found moved both ways without a significant difference. That is what a model writing dictionaries
+inside the hour could have been worth if it wrote files as good as these, which, written offline
+and with time to spare, are probably a ceiling for it.
