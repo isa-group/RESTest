@@ -108,6 +108,28 @@ class SettingsCommandTest {
         }
 
         @Test
+        @DisplayName("filling a body that makes something afresh is printed with how often, and "
+                + "reads back as itself once switched off")
+        void fresh_where_made_is_printed(@TempDir Path directory) throws Exception {
+            assertThat(run("run", "--set", "generation.freshWhereMade=false", "--print-settings"))
+                    .isZero();
+            assertThat(screen.toString())
+                    .containsPattern("\\n  freshWhereMade: false +# command line\\n")
+                    .containsPattern("\\n  freshWhereMadeChance: 0\\.3 +# default\\n")
+                    .containsPattern("\\n  optionalPropertyChance: 0\\.8 +# default\\n")
+                    .containsPattern("\\n  optionalBodyChance: 0\\.9 +# default\\n");
+            Path saved = directory.resolve("fresh.yaml");
+            Files.writeString(saved, screen.toString());
+            screen.getBuffer().setLength(0);
+
+            assertThat(run("run", "--settings", saved.toString(), "--print-settings")).isZero();
+
+            assertThat(screen.toString())
+                    .containsPattern("\\n  freshWhereMade: false +# file\\n")
+                    .containsPattern("\\n  freshWhereMadeChance: 0\\.3 +# file\\n");
+        }
+
+        @Test
         @DisplayName("what is printed is a file the tool reads back as the very same values, "
                 + "which is what makes it something to save and change one line of")
         void what_is_printed_can_be_handed_back(@TempDir Path directory) throws Exception {

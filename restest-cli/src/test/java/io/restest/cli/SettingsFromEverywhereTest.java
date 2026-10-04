@@ -112,6 +112,30 @@ class SettingsFromEverywhereTest {
             assertThat(gathered.settings().engine().maxConcurrency()).isEqualTo(8);
             assertThat(gathered.sourceOf(MAX_CONCURRENCY)).isEqualTo(SettingSource.COMMAND_LINE);
         }
+
+        @Test
+        @DisplayName("filling a body that makes something afresh, from a file and from the command "
+                + "line")
+        void fresh_where_made_from_a_file_and_the_command_line(@TempDir Path directory)
+                throws Exception {
+            Path file = fileSaying(directory, """
+                    generation:
+                      freshWhereMade: false
+                      freshWhereMadeChance: 0.6
+                    """);
+
+            SettingsInEffect fromTheFile =
+                    SettingsFromEverywhere.gather(Optional.of(file), Map.of(), List.of());
+            SettingsInEffect typed = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),
+                    List.of("generation.freshWhereMadeChance=1"));
+
+            assertThat(fromTheFile.settings().generation().freshWhereMade()).isFalse();
+            assertThat(fromTheFile.settings().generation().freshWhereMadeChance()).isEqualTo(0.6);
+            assertThat(fromTheFile.sourceOf(SettingKey.named("generation.freshWhereMade")
+                    .orElseThrow())).isEqualTo(SettingSource.FILE);
+            assertThat(typed.settings().generation().freshWhereMade()).isTrue();
+            assertThat(typed.settings().generation().freshWhereMadeChance()).isEqualTo(1.0);
+        }
     }
 
     @Nested

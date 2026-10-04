@@ -247,6 +247,12 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("generation", "omitHalProperties", SettingKind.YES_OR_NO,
                     "whether _links and _embedded, which HAL keeps for what a server writes, are "
                             + "taken out of every body before it is sent"),
+            key("generation", "freshWhereMade", SettingKind.YES_OR_NO,
+                    "whether, in the body of a POST, a property the API has shown values for is "
+                            + "sometimes invented afresh, so that what is made is not a copy of "
+                            + "something that exists; identifiers never are"),
+            key("generation", "freshWhereMadeChance", SettingKind.NUMBER,
+                    "how often it happens, between 0 and 1, decided once for each body"),
 
             key("mutation", "violations", SettingKind.YES_OR_NO,
                     "whether accepted requests are changed in ways the description forbids"),

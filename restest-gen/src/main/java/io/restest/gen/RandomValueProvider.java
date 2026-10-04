@@ -15,11 +15,13 @@
  */
 package io.restest.gen;
 
+import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.HttpMethod;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
@@ -42,6 +44,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +66,14 @@ import java.util.stream.Stream;
  * when nobody answers. That matters more than it sounds: a list of statuses whose members must be one
  * of {@code available}, {@code pending} or {@code sold} is useless if only the list itself is built
  * from the specification and its contents are made up.
+ *
+ * <p>With one exception, for a request that makes something. In the body of a {@code POST}, some
+ * of the time, a value the API itself returned is passed over for every property that is not an
+ * identifier, and that property is invented instead. Asking the better-informed source first would
+ * otherwise send a registration the user name or the e-mail address of somebody the API already
+ * holds, every time it had heard of one, and the API would refuse it as a duplicate before anything
+ * worth testing happened. An identifier is still given what the API returned, because it names the
+ * existing thing the new one belongs to: the owner a new pet is for.
  *
  * <p>It reads what a specification says about the <em>characters</em> a piece of text must be made
  * of, as well as what it says about its length: told that a value is a date, it invents a date;
@@ -97,14 +108,26 @@ public final class RandomValueProvider implements ValueProvider {
 
     /** How long, how deep and how many: what an invented value is allowed to look like. */
     private final GenerationSettings settings;
-    private final Map<Spelling, Optional<MatchingStrings>> spellings = new LinkedHashMap<>();
+    private final Map<Spelling, Optional<MatchingStrings>> spellings;
 
     /**
      * What each place was found to imply, worked out once per place - the rules read, and the
      * parameter's description looked up - because the same place is asked about thousands of
      * times in a run and its name and description do not change.
      */
-    private final Map<Place, Optional<ImpliedFormats.Implied>> implied = new LinkedHashMap<>();
+    private final Map<Place, Optional<ImpliedFormats.Implied>> implied;
+
+    /**
+     * Whether each operation is a {@code POST}, looked up once per operation, because a body is
+     * built for the same few operations thousands of times in a run.
+     */
+    private final Map<OperationId, Boolean> makesSomething = new HashMap<>();
+
+    /**
+     * This same provider, asking sources that pass over what the API returned. Made the first
+     * time a body is to be filled afresh, and kept, so that it is made once in a run.
+     */
+    private RandomValueProvider passingOver;
 
     private record Place(OperationId operation, ParameterLocation location, String name,
             Optional<String> beside) {
@@ -147,15 +170,72 @@ public final class RandomValueProvider implements ValueProvider {
      */
     public RandomValueProvider(ApiModel model, RandomGenerator random, ValueProvider inside,
             GenerationSettings settings) {
+        this(model, random, inside, settings, new LinkedHashMap<>(), new LinkedHashMap<>());
+    }
+
+    /**
+     * The same, keeping what has been read of spelling rules and implied kinds in the places
+     * given, so that a provider and its copy that passes over what the API returned read each
+     * of them once between them.
+     */
+    private RandomValueProvider(ApiModel model, RandomGenerator random, ValueProvider inside,
+            GenerationSettings settings, Map<Spelling, Optional<MatchingStrings>> spellings,
+            Map<Place, Optional<ImpliedFormats.Implied>> implied) {
         this.model = Objects.requireNonNull(model, "model");
         this.random = Objects.requireNonNull(random, "random");
         this.inside = Objects.requireNonNull(inside, "inside");
         this.settings = Objects.requireNonNull(settings, "settings");
+        this.spellings = spellings;
+        this.implied = implied;
     }
 
     @Override
     public Optional<GeneratedValue> offer(ValueRequest request) {
         Objects.requireNonNull(request, "request");
+        RandomValueProvider inventing = afresh(request) ? passingOverWhatTheApiReturned() : this;
+        return inventing.invented(request);
+    }
+
+    /**
+     * Whether this is the body of a request that makes something, drawn to be filled afresh.
+     *
+     * <p>Decided once for the whole body, not for each property in it, so that the properties of
+     * one body are either all filled the ordinary way or all filled afresh. And nothing is drawn at
+     * all unless the settings ask for it and this is the body of a {@code POST}: with the setting
+     * off, or for any other request, a run draws the very numbers it drew before this existed, so a
+     * run started from the same number is the same run.
+     */
+    private boolean afresh(ValueRequest request) {
+        return settings.freshWhereMade()
+                && request.location() == ParameterLocation.BODY
+                // The body as a whole. A part of one asked about on its own - one value of a thing
+                // the API returned, being replaced - belongs to a body somebody else decided.
+                && request.path().equals(ValueRequest.THE_BODY)
+                && makesSomething(request.operation())
+                && random.nextDouble() < settings.freshWhereMadeChance();
+    }
+
+    /**
+     * Whether the operation is a {@code POST}, the method a request that makes something new
+     * nearly always uses.
+     */
+    private boolean makesSomething(OperationId operation) {
+        return makesSomething.computeIfAbsent(operation, id -> model.operation(id)
+                .filter(found -> found.method() == HttpMethod.POST)
+                .isPresent());
+    }
+
+    /** This provider, asking sources that pass over what the API returned. */
+    private RandomValueProvider passingOverWhatTheApiReturned() {
+        if (passingOver == null) {
+            passingOver = new RandomValueProvider(model, random,
+                    new PassingOverWhatTheApiReturned(inside), settings, spellings, implied);
+        }
+        return passingOver;
+    }
+
+    /** A value for the whole of what is asked about, invented from its shape. */
+    private Optional<GeneratedValue> invented(ValueRequest request) {
         // Invented again when what came out could not be put in the request - a word of no letters
         // where the path needs one, a line break on its way into a header. Most shapes that can
         // produce such a value can also produce a usable one, so trying again costs nothing and
@@ -677,5 +757,46 @@ public final class RandomValueProvider implements ValueProvider {
             return inside.offer(about).map(GeneratedValue::value);
         }
         return value(about, shape.get(), depth + 1);
+    }
+
+    /**
+     * The sources a body that makes something asks about what goes inside it, with every value the
+     * API returned passed over for a property that is not an identifier.
+     *
+     * <p>A value the API returned - in a reply, or in a request it accepted - names something that
+     * already exists. For most of a new thing that is the wrong value to send: a user name or an
+     * e-mail address somebody already has gets a registration refused as a duplicate. Passed over,
+     * the property is invented, and where its name or description implies a kind, invented as that
+     * kind - a fresh e-mail address where an e-mail address goes.
+     *
+     * <p>Identifiers are the exception. {@code ownerId} in a new pet names the owner it belongs to,
+     * and an owner the API has never heard of gets the pet refused for the opposite reason. So a
+     * property named the way one identifier or several are written is answered as it always was.
+     * Everything else the sources know - a closed list, a sample the document wrote, a list
+     * somebody handed over, a default - is answered as it always was too, because none of it is a
+     * copy of something the API holds.
+     */
+    private static final class PassingOverWhatTheApiReturned implements ValueProvider {
+
+        private final ValueProvider inside;
+
+        PassingOverWhatTheApiReturned(ValueProvider inside) {
+            this.inside = inside;
+        }
+
+        @Override
+        public Optional<GeneratedValue> offer(ValueRequest request) {
+            Optional<GeneratedValue> known = inside.offer(request);
+            if (known.isPresent() && known.get().origin() instanceof ValueOrigin.Derived
+                    && !namesAnExistingThing(request.name())) {
+                return Optional.empty();
+            }
+            return known;
+        }
+
+        private static boolean namesAnExistingThing(String name) {
+            return ObservedValues.looksLikeAnIdentifier(name)
+                    || ObservedValues.looksLikeSeveralIdentifiers(name);
+        }
     }
 }

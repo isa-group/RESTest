@@ -106,18 +106,26 @@ class RequestsWithoutAKeyTest {
     /**
      * The generator a run builds when it is handed nothing but the document: the lists of values
      * RESTest carries, the plan it carries, and the settings it has when nobody has changed one -
-     * but for the kinds a name implies, which are left out for the reason given where it is
-     * built.
+     * but for the kinds a name implies, and for what goes in a body, which are set back for the
+     * reason given where it is built.
      */
     private static RandomTestCaseGenerator asARunBuildsIt(ApiModel model) {
         Dictionaries.Found found = Dictionaries.gather(List.of(), model);
         Campaigns.Found plan = Campaigns.gather(Optional.empty(), model,
                 found.dictionaries().stream().map(Dictionary::name).collect(Collectors.toSet()));
-        // With the kinds a name implies left out, which came later and change what is invented:
+        // With the kinds a name implies left out, and bodies decided as they were before a body
+        // that makes something could be filled afresh - optional properties and optional bodies at
+        // a half, as they then were - because all of these came later and change what is invented:
         // the file holds what the tool sent before it read anything about keys, and this test is
-        // about keys alone. What the implied kinds send is held by tests of their own.
+        // about keys alone. What the later changes send is held by tests of their own. That the
+        // file still matches, number for number, is also what shows that a run with them set back
+        // draws exactly what it drew before they existed.
         return new RandomTestCaseGenerator(model, SEED, found.dictionaries(), plan.campaign(),
-                Settings.from(Map.of("generation.impliedFormats", "false")));
+                Settings.from(Map.of(
+                        "generation.impliedFormats", "false",
+                        "generation.freshWhereMade", "false",
+                        "generation.optionalPropertyChance", "0.5",
+                        "generation.optionalBodyChance", "0.5")));
     }
 
     /** One request as one line: what would go over the wire, headers and body included. */

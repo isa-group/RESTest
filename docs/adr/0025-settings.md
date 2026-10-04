@@ -564,6 +564,32 @@ server, are facts about spelling and about HAL rather than numbers anybody tunes
 code ([ADR-0021](0021-how-a-request-body-is-built.md), M9.8 and M9.9 amendments). Seventy-nine
 settings in eight groups.
 
+## Amendment (2.1)
+
+**Date:** 2026-10-04
+
+**Two settings for filling a body that makes something afresh.** `generation.freshWhereMade` is the
+switch §4 asks for, on by default. `generation.freshWhereMadeChance`, three in ten by default, is how
+often the body of a `POST` is filled afresh, decided once for each body; it is a number, not a way of
+switching the row off, and the page of switches says so. Which names are written like identifiers,
+and so keep what the API returned, is a fact about spelling and stays in the code, as it did at M9.8.
+[ADR-0020](0020-what-a-dictionary-is.md)'s 2.1 amendment says what the switch does and why.
+
+**`generation.optionalPropertyChance` is 0.8 by default, and `generation.optionalBodyChance` 0.9.**
+Both were a half, the number nobody had to argue for, and a half was costly where a body makes
+something. Documents under-declare `required`, so a property an API needs was left out of half the
+bodies; and a Swagger 2 body is optional unless the document says otherwise, though almost no API
+accepts a request without it, so half the requests to such an operation went without one. With
+both set back to 0.5, a run includes optional properties and bodies as often as 2.0 did, so the two
+can be compared without a code change.
+
+One consequence reaches beyond bodies. With `generation.optionalParametersBySize` on, which is the
+default, `optionalBodyChance` decides only whether an optional body is sent. Switched off, it is also
+the coin every optional parameter is decided on, so the file that switches 2.9 off now sends each
+optional parameter nine times in ten where it sent it half the time. The page of switches says so,
+and a coin of its own for optional parameters, which the roadmap lists among the smaller things
+2.0 left, would separate the two. Eighty-one settings in eight groups.
+
 ## Amendment (2.1, the kinds a name implies)
 
 **Date:** 2026-10-04

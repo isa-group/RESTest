@@ -105,7 +105,7 @@ class DocumentedSwitchesTest {
      */
     private static final List<String> REACH = List.of("Optional parameters by number",
             "The opening lap", "Identifiers by resource", "Implied kinds", "Accepted values",
-            "Plural and name gaps", "HAL's own properties");
+            "Plural and name gaps", "HAL's own properties", "Made afresh");
 
     /** The heading the file that gives a run its seed back sits under. */
     private static final String THE_SEED = "Getting the seed back";
