@@ -82,6 +82,13 @@ import java.util.Objects;
  *     keeps those two names for what a server writes into its replies - links to related things,
  *     and things carried inside another - and an API that reads them in a request reads them its
  *     own way, whatever the description says they look like. Off, they are sent as built
+ * @param freshWhereMade whether, in the body of a {@code POST}, a property the API has already
+ *     shown values for is sometimes invented afresh instead of being given one of them. A request
+ *     that makes something and copies what the API already holds - a user name, an e-mail address
+ *     it returned - is refused as a duplicate before anything worth testing happens. Identifiers
+ *     are still given what the API returned, because they name the existing thing the new one
+ *     belongs to. Off, every property is filled as it always was
+ * @param freshWhereMadeChance how often it does, between 0 and 1, decided once for each body
  */
 public record GenerationSettings(
         int optionalNestingDepth,
@@ -103,11 +110,13 @@ public record GenerationSettings(
         int writableBodyAttempts,
         boolean impliedFormats,
         double impliedFormatChance,
-        boolean omitHalProperties) {
+        boolean omitHalProperties,
+        boolean freshWhereMade,
+        double freshWhereMadeChance) {
 
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
-            0.5, 0.5, 0.5, true, 8, 8, 8, 8, true, 0.5, true);
+            0.8, 0.9, 0.5, true, 8, 8, 8, 8, true, 0.5, true, true, 0.3);
 
     public GenerationSettings {
         Objects.requireNonNull(lowestNumber, "lowestNumber");
@@ -133,6 +142,7 @@ public record GenerationSettings(
         aShare(optionalBodyChance, "optionalBodyChance");
         aShare(optionalParameterContinueChance, "optionalParameterContinueChance");
         aShare(impliedFormatChance, "impliedFormatChance");
+        aShare(freshWhereMadeChance, "freshWhereMadeChance");
         if (decimalPlaces < 0) {
             throw new IllegalArgumentException("decimalPlaces cannot be negative; zero invents "
                     + "whole numbers where decimals are allowed: " + decimalPlaces);

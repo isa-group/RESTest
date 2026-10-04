@@ -141,9 +141,9 @@ generation:
   # beyond this, a demanded number of items is declined rather than built
   mostItems: 100              # default
   # how often an optional property is included anyway, between 0 and 1
-  optionalPropertyChance: 0.5 # default
+  optionalPropertyChance: 0.8 # default
   # how often a request that merely accepts a body sends it anyway, between 0 and 1; a GET or a HEAD never does
-  optionalBodyChance: 0.5     # default
+  optionalBodyChance: 0.9     # default
   # how often one more optional parameter is added on top of the ones already chosen, between 0 and 1
   optionalParameterContinueChance: 0.5 # default
   # whether how many optional parameters go in is drawn first, favouring few; off, each is decided on its own at optionalBodyChance
@@ -162,6 +162,10 @@ generation:
   impliedFormatChance: 0.5    # default
   # whether _links and _embedded, which HAL keeps for what a server writes, are taken out of every body before it is sent
   omitHalProperties: true     # default
+  # whether, in the body of a POST, a property the API has shown values for is sometimes invented afresh, so that what is made is not a copy of something that exists; identifiers never are
+  freshWhereMade: true        # default
+  # how often it happens, between 0 and 1, decided once for each body
+  freshWhereMadeChance: 0.3   # default
 
 mutation:
   # whether accepted requests are changed in ways the description forbids
@@ -370,8 +374,8 @@ spelling `--budget` takes.
 | `decimalPlaces` | `2` | decimal places for a number allowed to have them |
 | `usualMostItems` | `4` | the most items put in a list when the description does not demand more |
 | `mostItems` | `100` | beyond this, a demanded number of items is declined rather than built |
-| `optionalPropertyChance` | `0.5` | how often an optional property is included anyway, between 0 and 1 |
-| `optionalBodyChance` | `0.5` | how often a request that merely accepts a body sends it anyway, between 0 and 1; a GET or a HEAD never does |
+| `optionalPropertyChance` | `0.8` | how often an optional property is included anyway, between 0 and 1 |
+| `optionalBodyChance` | `0.9` | how often a request that merely accepts a body sends it anyway, between 0 and 1; a GET or a HEAD never does |
 | `optionalParameterContinueChance` | `0.5` | how often one more optional parameter is added on top of the ones already chosen, between 0 and 1 |
 | `optionalParametersBySize` | `true` | whether how many optional parameters go in is drawn first, favouring few; off, each is decided on its own at optionalBodyChance |
 | `nullInOneIn` | `8` | one time in this many, a value allowed to be absent is sent as nothing |
@@ -381,6 +385,8 @@ spelling `--budget` takes.
 | `impliedFormats` | `true` | whether an invented word takes the kind its name or description implies, such as an e-mail address for email, where none is declared |
 | `impliedFormatChance` | `0.5` | how often it does where a kind is implied, between 0 and 1; the rest are ordinary invented words |
 | `omitHalProperties` | `true` | whether _links and _embedded, which HAL keeps for what a server writes, are taken out of every body before it is sent |
+| `freshWhereMade` | `true` | whether, in the body of a POST, a property the API has shown values for is sometimes invented afresh, so that what is made is not a copy of something that exists; identifiers never are |
+| `freshWhereMadeChance` | `0.3` | how often it happens, between 0 and 1, decided once for each body |
 
 ### `mutation.*`
 
