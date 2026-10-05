@@ -1,8 +1,10 @@
 # RESTest 2.x — roadmap
 
-RESTest 2.0 is released. This file lists what 2.x is planned to add, in the order it is planned to
-be taken. How 2.0 itself was built — every increment, the measurement each was judged by, and the
-decisions taken on the way — is kept as it was on the tag
+RESTest 2.0 is released, and 2.1.0 after it, with two changes taken outside this plan
+([#375](https://github.com/isa-group/RESTest/pull/375),
+[#376](https://github.com/isa-group/RESTest/pull/376)). This file lists what 2.x is planned to add,
+in the order it is planned to be taken. How 2.0 itself was built — every increment, the measurement
+each was judged by, and the decisions taken on the way — is kept as it was on the tag
 [`history/2.0-development`](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md).
 
 One increment = one branch = one pull request into `master`. Increments keep the numbers they had in
@@ -27,8 +29,8 @@ and what it deliberately leaves out. Nothing in the notes is an increment of its
 
 ## The order of work
 
-1. **7.2a**, the container image and the release archives — and the image of 2.0.0 itself, by
-   running the release workflow once against its tag.
+1. **7.2a**, the container image and the release archives — and the images of 2.0.0 and 2.1.0
+   themselves, by running the release workflow once against each of their tags.
 2. **M13**, the safeguards: from the day 2.0 was tagged it can be pointed at anybody's API, so what
    keeps it from flooding one comes first.
 3. **M3**, **M4**, **M5**, **M6**, then the rest of **M7**, unless what is measured says otherwise.
@@ -45,7 +47,7 @@ and are taken where the order of work reaches what they serve.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 7.2a ▶ | **A container image and a GitHub Release on every tag.** A `Dockerfile` of the tool's own, at the root of the repository, which compiles RESTest from the source in one stage and runs it on a Java 21 runtime in the next, for `linux/amd64` and `linux/arm64`; `restest` as the entry point; nothing in it that knows how the tool is measured. On every version tag the release workflow publishes it to GitHub's container registry, and JReleaser publishes a GitHub Release with a distribution archive — the jars and a launcher for Unix and for Windows — the PDF of the manual that `docs/manual/pdf.sh` builds, and checksums, and then runs the image it published. The smoke job builds the image and runs it, not only the jars. The README's installation and use, the manual's chapter on installing, and `docs/DESIGN.md`'s distribution and stack gain the image. The workflow is run once by hand against `v2.0.0`, so that 2.0.0 has its image and archives. Nothing under `src/main` and no dependency changes | `docker run ghcr.io/isa-group/restest run <spec> --url <base>` works, and a release can be downloaded and run with nothing but Java |
+| 7.2a ▶ | **A container image and a GitHub Release on every tag.** A `Dockerfile` of the tool's own, at the root of the repository, which compiles RESTest from the source in one stage and runs it on a Java 21 runtime in the next, for `linux/amd64` and `linux/arm64`; `restest` as the entry point; nothing in it that knows how the tool is measured. On every version tag the release workflow publishes it to GitHub's container registry, and JReleaser publishes a GitHub Release with a distribution archive — the jars and a launcher for Unix and for Windows — the PDF of the manual that `docs/manual/pdf.sh` builds, and checksums, and then runs the image it published. The smoke job builds the image and runs it, not only the jars. The README's installation and use, the manual's chapter on installing, and `docs/DESIGN.md`'s distribution and stack gain the image. The workflow is run once by hand against `v2.0.0` and once against `v2.1.0`, so that both have their image and archives. Nothing under `src/main` and no dependency changes | `docker run ghcr.io/isa-group/restest run <spec> --url <base>` works, and a release can be downloaded and run with nothing but Java |
 | 7.1 ⏭ | Maven Central publication through the Central Portal | `restest-core` usable as a dependency |
 | 7.2b ⏭ | Homebrew, SDKMAN, jbang | `brew install restest` |
 | 7.3 ⏭ 🛑 | GraalVM native binary with an executing smoke test; GitHub Action; documentation site, built from the Markdown the documentation is written in | Sub-100 ms startup, no Java needed, usable in anyone's CI |

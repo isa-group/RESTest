@@ -56,7 +56,7 @@ RESTest's own tests, which take longer than the build and which you do not need 
 ```
 
 ```
-RESTest 2.0.0
+RESTest 2.1.0
 Java 25.0.4.1 (Homebrew), Mac OS X 26.6.2 aarch64
 ```
 

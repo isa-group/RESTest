@@ -257,3 +257,71 @@ it (80.0% to 40.7%; 32.5% to 30.0% without it). Operations fell from 171 to 160.
 found moved both ways without a significant difference. That is what a model writing dictionaries
 inside the hour could have been worth if it wrote files as good as these, which, written offline
 and with time to spare, are probably a ceiling for it.
+
+## Amendment (5 October 2026): 2.1.0 is the version submitted
+
+The amendment of 3 October said that a code change the competition still needs ships as 2.0.x. The
+changes the maintainer asked for on 4 October add behaviour rather than fix it, so they ship as
+2.1.0, and on 5 October the maintainer decided that **2.1.0 is the version submitted**: the harness
+repository is to be pinned to `v2.1.0`, with the plan and the dictionaries of the amendment of
+4 October unchanged. 2.0.0 stays released, as the first version of the rewrite. What §1 says of
+v2.0 being closed holds of 2.1.0, except the container image and the distribution archive, which
+follow in 7.2a as the amendment of 3 October says, its workflow run by hand against `v2.1.0` as
+well as `v2.0.0`. What §3 and other records leave "for 2.1" is left for a later 2.x: 2.1.0 holds
+none of it.
+
+2.1.0 changes three things in what a run sends:
+
+- **Five more kinds a name implies** ([ADR-0022](0022-the-characters-a-value-is-made-of.md), 2.1
+  amendment): a password that passes the usual strength rule, a short fresh user name, a person's
+  given or family name, a gender, and, for a property called `name` and nothing more, a fresh name
+  of letters - the name of a product, a pet or a notebook as often as a person's. That last rule is
+  kept below the bar the corpus sets, nine right in ten (it is 53 right and 7 wrong), by the
+  maintainer's choice. A field marked `format: password` is now read by its name too.
+- **Three in ten of the `POST` bodies RESTest invents are filled afresh**
+  ([ADR-0020](0020-what-a-dictionary-is.md), 2.1 amendment): a value the API returned is passed over
+  for every property that is not an identifier, so that a registration does not carry the name of a
+  user that already exists.
+- **Optional properties go into a body eight times in ten, and optional bodies are sent nine times
+  in ten**, where both were a half ([ADR-0025](0025-settings.md), 2.1 amendments).
+
+The second has a switch of its own, and the third is two settings that can be put back to a half;
+the new name rules ride the switch of the older ones, `generation.impliedFormats`, and have none of
+their own. Nothing in them knows which APIs the competition uses, so §4 holds for the tool as the
+amendment of 4 October left it: they were drawn from what campaigns showed on APIs no dictionary
+covers, where sign-ups and creations were refused for the values they carried.
+
+They were measured together, in the configuration submitted, sixteen APIs, 20 minutes, two runs
+each: campaign `20261004-142720`, at `ddedf474` (kept on the branch `eval/2.1.0-levers`), whose code
+is that of 2.1.0 and whose documents are older, against `20261004-000542`, the same configuration
+at 2.0.0. The criterion fixed before the launch - nothing lower at p < 0.05, the APIs that get no
+dictionary higher in operations and coverage, the known ones not significantly lower - was met.
+erc20 is left out for the reason given above. gestao-hospital, one of the five known APIs, is set
+apart: that afternoon it refused, about 12,000 times in a row, a creation it had accepted byte for
+byte about 1,000 times a run in the 2.0.0 campaign the night before. 2.1.0 therefore has no
+measurement on it, and it was not measured again before the release. On the other fourteen:
+
+- operations answered with a 2XX went from 259.5 to 268, higher on six APIs and lower on one;
+- unique server failures by the reference paper's count, from 910 to 1,020.5, higher on five and
+  lower on two;
+- branch coverage, from 30.4% to 31.1%, higher on five and lower on four.
+
+On the ten that get no dictionary, operations went from 160.5 to 168, failures from 706 to 821.5
+and branch coverage from 31.1% to 32.1%. Four operations of user-management and market's
+registration, never accepted in a run of 2.0.0, were accepted in both runs, and blog's photos went
+from two accepted creations in two runs to 32 and 42. On the four known APIs measured, operations
+went from 99 to 100, failures from 204 to 199 (lower on one API) and branch coverage from 28.6% to
+28.5% (lower on two, higher on none).
+
+The areas under the curve, by the benchmark's own scoreboard over fifteen APIs with gestao-hospital
+included, went from 324,176 to 329,914 for operations (higher on eight APIs, lower on seven), from
+662,887 to 710,006 for server failures (nine and five) and from 354 to 351 for branch coverage
+(seven and eight), where gestao-hospital's -71.8 and scs's +71.9 cancel out. Scored the way the 2026
+league's leaderboard is, on its APIs other than erc20 at 20 minutes, with the areas extended to an
+hour as a lower bound, 2.1.0 ranks where 2.0.0 did - third in fault detection, first in efficiency
+and in effectiveness - with an effectiveness of 60.21 against 2.0.0's 59.78 without gestao-hospital,
+and of 59.85 against 60.06 with it.
+
+None of the differences across APIs is significant, and the three changes were not measured apart:
+a campaign with the two chances back at a half, which would have told them apart, was prepared and
+not run, by the maintainer's decision.

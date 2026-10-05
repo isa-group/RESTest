@@ -708,5 +708,14 @@ none that cannot.
 
 ### Measured
 
-Not yet. The new defaults and the switch are to be measured on the evaluation harness, each against
-2.0's behaviour, before 2.1.0 is released, and what they were measured to be worth recorded here.
+Together with the five name rules of [ADR-0022](0022-the-characters-a-value-is-made-of.md)'s 2.1
+amendment, not on its own: campaign `20261004-142720` against `20261004-000542` at 2.0.0, in the
+configuration submitted to the competition, sixteen APIs, 20 minutes, two runs each. On the ten APIs
+that get no dictionary, operations answered with a 2XX went from 160.5 to 168, unique server
+failures from 706 to 821.5 and branch coverage from 31.1% to 32.1%; four operations of
+user-management and market's registration, never accepted in a run of 2.0.0, were accepted in both
+runs. flight-search's logins, a `POST` that makes nothing, were accepted about as often as before:
+263 and 240 times, against 257 and 257. A campaign with the two defaults back at a half, which would
+have told the switch from the defaults, was prepared and not run, by the maintainer's decision, so
+no figure here belongs to any one of the changes alone.
+[ADR-0024](0024-the-competition-version.md)'s amendment of 5 October gives the whole result.
