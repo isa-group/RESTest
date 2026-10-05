@@ -16,8 +16,13 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 target="$here/restest-cli/target"
 
-jar=$(ls "$target"/restest-cli-*.jar 2>/dev/null | grep -v -e '-sources\.jar$' -e '-javadoc\.jar$' | head -1 || true)
-if [ -z "${jar:-}" ] || [ ! -d "$target/lib" ]; then
+# The jar of the version this checkout declares, not whichever jar sorts first: a checkout that has
+# built an earlier version still holds that version's jar, and restest-cli-2.1.0-SNAPSHOT.jar sorts
+# before restest-cli-2.1.0.jar. A checkout moved to a version it has not built yet is not built.
+# The carriage returns go first: Git on Windows checks pom.xml out with CRLF line endings.
+version=$(tr -d '\r' < "$here/pom.xml" | sed -n 's:^    <version>\(.*\)</version>$:\1:p' | head -1)
+jar="$target/restest-cli-$version.jar"
+if [ -z "$version" ] || [ ! -f "$jar" ] || [ ! -d "$target/lib" ]; then
   echo "RESTest has not been built in this checkout yet. Run:" >&2
   echo "    ./mvnw -q install -DskipTests" >&2
   # A number the program itself never answers with, so "you have not built this" can never be
