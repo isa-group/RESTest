@@ -162,7 +162,7 @@ answers `0` or `1`, so that one stopped half-way never passes for one that finis
 
 | Number | When |
 |---|---|
-| `127` | The `restest` script at the root of a checkout, when the checkout has not been built yet |
+| `127` | The `restest` script at the root of a checkout, when the checkout has not been built yet at the version it declares |
 | `129` | The terminal the run was started from was closed. The run stops as it does for Ctrl-C and writes what it found; what it prints has nowhere to go |
 | `137` | The run was killed outright — `kill -9`, a container's memory limit, or `docker stop` once its ten seconds are up — and nothing of RESTest ran after it |
 | `1` | Java itself could not start: no RESTest on its class path, or an option it does not know. Nothing of RESTest ran, so this `1` says nothing about the API |
