@@ -31,10 +31,12 @@ and what it deliberately leaves out. Nothing in the notes is an increment of its
 
 1. **7.2a**, the container image and the release archives — and the images of 2.0.0 and 2.1.0
    themselves, by running the release workflow once against each of their tags.
-2. **M13**, the safeguards: from the day 2.0 was tagged it can be pointed at anybody's API, so what
+2. **2.11**, 45/15/30/10 as RESTest's own plan, released as 2.2.0: the next version of the tool, as
+   the maintainer decided on 5 October.
+3. **M13**, the safeguards: from the day 2.0 was tagged it can be pointed at anybody's API, so what
    keeps it from flooding one comes first.
-3. **M3**, **M4**, **M5**, **M6**, then the rest of **M7**, unless what is measured says otherwise.
-4. **8.1** and **8.2**, the evaluation, alongside the rows above: they take machine time rather
+4. **M3**, **M4**, **M5**, **M6**, then the rest of **M7**, unless what is measured says otherwise.
+5. **8.1** and **8.2**, the evaluation, alongside the rows above: they take machine time rather
    than desk time.
 
 The rows carried over from 2.0's own plan — the rest of authentication, the external value provider,
@@ -208,6 +210,7 @@ borrowing an identifier.
 | 2.7b ⏭ | Dictionary writer and disk cache. It waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8 | Good values computed once are kept, rather than worked out again every run |
 | 2.8 ⏭ | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking. A slow provider must not stall the run, and that is proven by its own test | Any program in any language can suggest input values without slowing the run |
 | 2.10b ⏭ | **A strategy's share honoured as a stretch of the clock** rather than drawn per request. A run with no memory chosen by the clock would no longer be repeated from its seed alone ([ADR-0026](docs/adr/0026-what-a-run-sends-first.md) §7), which is what the row has to settle | A share of the budget is honoured as one, rather than on average |
+| 2.11 ⏭ | **45/15/30/10 as RESTest's own plan.** Nominal 45, sequences 15, mutation 30 and fuzzing 10 in `default-campaign.yaml`, in place of 45, 10, 20 and 25, with the comments that describe them. These shares were chosen on 4 October from two campaigns of 2.0.0 on sixteen APIs, and 2.1.0 has been measured with them, handed over with `--campaign`. ADR-0024's amendment of that day kept RESTest's own plan, on evidence it called too weak to change what every user gets, and [ADR-0027](docs/adr/0027-changing-one-thing-in-an-accepted-request.md) kept fuzzing's quarter, so both get an amendment saying why that changes. Every user's run changes, so the release is 2.2.0, not 2.1.1. `RunOrderTest`'s pinned run is written again, and the README, the manual and the reference pages that quote the shares follow | A run with no plan of its own spends its time the way the configuration measured best spends it |
 
 ### Smaller things 2.0 left for 2.x
 
