@@ -78,7 +78,7 @@ jobs:
 
       - name: Build RESTest
         run: |
-          git clone --depth 1 --branch v2.0.0 https://github.com/isa-group/RESTest.git restest
+          git clone --depth 1 --branch v2.1.0 https://github.com/isa-group/RESTest.git restest
           cd restest && ./mvnw -q install -DskipTests
 
       - name: Wait for the API

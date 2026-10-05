@@ -6,8 +6,9 @@ When a run does not do what you expected, it nearly always says why, either in a
 ## RESTest does not start
 
 **`RESTest has not been built in this checkout yet`**, and the exit code `127`. The `./restest`
-script found nothing to run: build it with `./mvnw -q install -DskipTests` ([chapter
-2](02-installing.md)), and read what that prints if it fails.
+script found nothing to run: no build of the version the checkout declares, which is also what you
+see after a `git pull` that moves it to a new version. Build it with `./mvnw -q install -DskipTests`
+([chapter 2](02-installing.md)), and read what that prints if it fails.
 
 **`Unrecognized option: --enable-native-access=ALL-UNNAMED`**, or **`UnsupportedClassVersionError`**
 (*has been compiled by a more recent version of the Java Runtime*), and the exit code `1`. The Java

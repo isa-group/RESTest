@@ -12,8 +12,8 @@ What 2.x will add, in order: `ROADMAP.md`. How 2.0 was built: the tag `history/2
 
 **Design target:** an unknown API, no human configuration, a fixed time budget.
 
-**Released:** 2.0.0, tagged `v2.0.0` on `master`. Semantic versioning from here on: a fix is 2.0.x,
-an addition 2.x.
+**Released:** 2.1.0, tagged `v2.1.0` on `master`; 2.0.0 before it, tagged `v2.0.0`. Semantic
+versioning: a fix is 2.1.x, an addition 2.x.
 
 ## Language
 
