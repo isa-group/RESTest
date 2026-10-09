@@ -142,8 +142,8 @@ These are architectural requirements rather than features, and they are the whol
 "extensible" means here. A seam is known to be real rather than assumed when something is built on
 it. In v2.0 two are: the non-blocking engine, with its idle-time accounting, and `Oracle`, with the
 two rules a run judges replies by. The other four are design constraints the rest of the code keeps
-room for, and v2.0 has no code for them; the items under [Out of scope for
-v2.0](#out-of-scope-for-v20) name which of them each would use.
+room for, and v2.0 has no code for them; the items under [Out of
+scope](#out-of-scope) name which of them each would use.
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
 named after any technology, and no dependency on any model library.
@@ -312,9 +312,9 @@ as it ships.
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
 | **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
 
-## Out of scope for v2.0
+## Out of scope
 
-The list holds for 2.x as well. Nothing here is started without explicit approval,
+Nothing here is started without explicit approval,
 even where it looks easy. Each entry names the seam it will use, so none of them requires
 re-architecting — which is the point of listing them at all.
 

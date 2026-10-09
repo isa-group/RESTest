@@ -63,7 +63,7 @@ so records written from now on cite none.
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted |
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted |
-| [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 |
+| [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 and on 9 October 2026 |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 |

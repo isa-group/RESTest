@@ -1,8 +1,9 @@
 # Contributing to RESTest
 
-RESTest 2 is a rewrite of RESTest 1.x, built in small, reviewable changes. Work targets `master`.
-RESTest 1.x is on the `v1.x` branch and its tags; the record of how 2.0 was built — every increment,
-measurement and decision — is the tag `history/2.0-development`.
+From version 2.0 on, RESTest is a complete rewrite of RESTest 1.x, built in small, reviewable
+changes. Work targets `master`. RESTest 1.x is on the `v1.x` branch and its tags; the record of how
+the rewrite was first built — every increment, measurement and decision — is the tag
+`history/2.0-development`.
 
 ## Before you write anything
 
@@ -16,17 +17,32 @@ Read, in this order:
 5. `docs/DESIGN.md` — the architecture, the extension points and the quality gates, with a
    glossary of the terms used throughout the repository.
 
-## What 2.0 is
+## What RESTest is
 
-2.0 is a command-line tool that tests a REST API from its OpenAPI document alone: it builds requests
-from the document and from what the API answers, sends them for a fixed time, changes accepted
-requests one thing at a time, sends short series around the things it creates, and reports every
-reply of 500 and every reply that is not the shape the document promised. What it does is described
-in `README.md` and `docs/`, and how it is built in `docs/DESIGN.md`.
+A command-line tool that tests a REST API. It builds requests from the API's OpenAPI document and
+from what the API answers, sends them for a fixed time, changes accepted requests one thing at a time,
+sends short series around the things it creates, and reports every reply of 500 and every reply that
+is not the shape the document promised.
+
+The OpenAPI document is all it needs, and that stays its first requirement: a run with nothing else
+must work. A run can also be shaped in three ways, each a plain file handed over on the command line:
+
+- **Settings** (`--settings`, or `--set` for one) — the numbers that say how the tool itself
+  behaves, such as how many requests may be in flight or how hard a run pushes
+  ([the settings](docs/settings.md)).
+- **The campaign file** (`--campaign`) — the plan a run follows: where its values come from, how much
+  of the time goes to each kind of request, and which operations it may touch
+  ([the campaign file](docs/campaign-format.md)).
+- **Dictionaries** (`--dictionary`) — lists of values that are known to suit the API, which a person
+  or a coding agent can write before the run ([the dictionary format](docs/dictionary-format.md)).
+
+Changes that keep these three easy to write, by people and by agents, are as welcome as changes to
+what a run does. What it does is described in `README.md` and `docs/`, and how it is built in
+`docs/DESIGN.md`.
 
 The repository does not keep a plan of what comes next. Before starting something large, open an
-issue to talk about it. What is out of scope — the list under "Out of scope for v2.0" in
-`docs/DESIGN.md` — is not started without explicit approval, even where it looks easy.
+issue to talk about it. What is out of scope — the list under "Out of scope" in `docs/DESIGN.md` —
+is not started without explicit approval, even where it looks easy.
 
 ## The loop
 

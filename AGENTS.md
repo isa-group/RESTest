@@ -10,12 +10,19 @@ made in a pull request ([ADR-0030](docs/adr/0030-the-process-lives-outside-the-r
 
 ## What this project is
 
-A complete rewrite of RESTest, a black-box testing tool for REST APIs. Input: an OpenAPI
-specification. Output: generated and executed test cases, plus a report of the failures found.
-Architecture and rationale: `docs/DESIGN.md`. Decisions: `docs/adr/`. How 2.0 was built: the tag
-`history/2.0-development`.
+RESTest is a black-box testing tool for REST APIs. Input: an OpenAPI specification. Output: generated
+and executed test cases, plus a report of the failures found. From version 2.0 on, RESTest is a
+complete rewrite that shares no code with RESTest 1.x. Architecture and rationale: `docs/DESIGN.md`.
+Decisions: `docs/adr/`.
 
-**Design target:** an unknown API, no human configuration, a fixed time budget.
+**Design target:** an unknown API, no human configuration, a fixed time budget. An OpenAPI document
+is enough: RESTest must work with it as its only input, and that is the first requirement.
+
+**Better with generated inputs.** A frequent way to use RESTest is to have an AI — often the coding
+agent of the person testing their API — write inputs such as dictionaries before a run, and then run
+RESTest with them. RESTest never needs AI to work, and holds none (see the hard rules), but it is
+designed so that such inputs make its results much better, and so that an agent can produce them
+easily: they are plain files in formats the documentation describes, handed over on the command line.
 
 **Releases** are tagged `vX.Y.Z` on `master`. Semantic versioning: a fix is a patch, an addition a
 minor version.
@@ -27,18 +34,17 @@ No exceptions.
 
 ## Javadoc comments
 
-- Never reference `ADR-*`, `docs/DESIGN.md`, `docs/adr/`, a planning document or a work-item code
-  (`M1.3`, `M4.2`...) from a Javadoc comment (`/** ... */`). Javadoc must be self-contained; the only
-  references it may carry are `{@link}`s to other code. This does not apply to plain `//` or
-  `/* */` comments, or to string literals such as `@DisplayName` or `.as(...)` rule descriptions.
+- Javadoc (`/** ... */`) must be self-contained: the only references it may carry are `{@link}`s to
+  other code. This does not apply to plain `//` or `/* */` comments, or to string literals such as
+  `@DisplayName` or `.as(...)` rule descriptions.
 - Keep Javadoc simple and avoid unnecessary technical jargon.
 - At least the class-level comment must explain, in plain language a non-programmer could follow,
   what the class is used for when testing a REST API and how it relates to other classes.
 
 ## Branches and pull requests
 
-- All work targets `master`. `v2`, where 2.0 was built, is frozen and tagged
-  `history/2.0-development`; RESTest 1.x is on the `v1.x` branch and its tags.
+- All work targets `master`. RESTest 1.x, before the rewrite, is on the `v1.x` branch and its tags;
+  how the rewrite was first built is kept at the tag `history/2.0-development`.
 - One change = one branch = one pull request, squash-merged into `master`.
 - Every pull request uses `.github/PULL_REQUEST_TEMPLATE.md` and fills in every section;
   `CONTRIBUTING.md` says what the sections that matter most must contain, and how a pull request is
@@ -60,13 +66,15 @@ No exceptions.
 
 ## Hard rules
 
-- **No AI abstractions.** No `LlmProvider`, no `restest-ai` module, no dependency on any model
-  library. "Ready for AI" means open formats, the generic `ExternalDataProvider` interface, and
-  constraint and flow sources that can fire mid-run. See ADR-0008.
-- **No evaluation platform in this repository.** The harness RESTest is measured with lives in a
-  repository of its own, and nothing here builds against it, depends on it or names it — in a file's
-  contents or in its name — outside the documents `SourceTreeRulesTest` lists; that list is the
-  authority. See ADR-0011.
+- **No AI model inside RESTest.** RESTest integrates no AI model and depends on no model library.
+  AI is used outside it: before a run, to generate inputs such as dictionaries; after a run, to
+  analyse what it produced, such as the likely cause of a fault. It reaches RESTest only through the
+  files RESTest reads and writes. See ADR-0008.
+- **No evaluation platform in this repository.** RESTest is evaluated on a public benchmark
+  platform. The harness that runs its campaigns and the official package that lets the platform build
+  and run RESTest live in repositories of their own, named in ADR-0011. Nothing here builds against
+  them, depends on them or names the platform — in a file's contents or in its name — outside the
+  documents `SourceTreeRulesTest` lists; that list is the authority.
 - **No one's private development tooling in this repository.** The maintainers' plan of what comes
   next, their own way of working beyond what `CONTRIBUTING.md` asks of every contributor, and the
   agents, skills, hooks and reviews of the work they use belong outside RESTest, and nothing here
@@ -77,10 +85,6 @@ No exceptions.
   The decision records, and the links in them to where an old plan is kept, are history: they may
   say what was used then. The rule covers pull-request descriptions too, since a merge can carry
   them into `master`'s history. See ADR-0030.
-- **Nothing from the deferred backlog** ("Out of scope for v2.0" in `docs/DESIGN.md`) without
-  explicit approval, even if it looks easy. That list includes dependency inference,
-  semantic-oracle inference, metamorphic relations, response classifiers and search-based
-  scheduling.
 - **Tuning numbers live in the settings, never in the campaign file, and every behaviour lever
   lands with a switch** (ADR-0025), so an experiment can turn it off without a code change. A
   constant that is a decision rather than a fact does not stay a constant when the code around it is
@@ -92,26 +96,23 @@ No exceptions.
 
 ## Technical baseline
 
-- Every module compiles with `--release 21`, the CLI included (ADR-0003, amended at M0.2). The
-  build toolchain is JDK 25. CI tests 21, 25 and 26 on Linux, macOS and Windows.
+- Every module compiles with `--release 21`, the CLI included. The build toolchain is JDK 25. CI
+  tests 21, 25 and 26 on Linux, macOS and Windows.
 - No preview features in any published API — in particular no Structured Concurrency and no Lazy
   Constants.
 - Maven with the wrapper (`./mvnw`). Every production module has a `module-info.java`.
 - OpenAPI scope: 2.0 (by conversion), 3.0.x and 3.1.x, via a single swagger-parser backend. Not 3.2
-  (too recent, adopted by almost nothing yet) and not 4.x, which has no specification text
-  (ADR-0007, reversed at M1.2).
+  (too recent, adopted by almost nothing yet) and not 4.x, which has no specification text.
 - Stack: swagger-parser (behind our own interface), networknt json-schema-validator (confined to
-  `restest-oracles`, ADR-0014), rgxgen (confined to `restest-gen`, ADR-0022), picocli, OkHttp,
-  virtual threads, ANTLR4, Choco, SQLite, JUnit 6, AssertJ, Testcontainers, WireMock, ArchUnit, PIT,
-  JaCoCo.
+  `restest-oracles`), rgxgen (confined to `restest-gen`), picocli, OkHttp, virtual threads, SQLite,
+  JUnit 6, AssertJ, Testcontainers, WireMock, ArchUnit, PIT, JaCoCo.
 
 ## Module boundaries
 
 ```
 restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy dependencies:
                   the two third-party libraries it carries are the streaming JSON reader and writer
-                  and the YAML reader, both behind `io.restest.core.json` (ADR-0006, amended at
-                  M1.6 and M11.1).
+                  and the YAML reader, both behind `io.restest.core.json`.
 restest-spec      the only module allowed to reference io.swagger.
 restest-idl       IDL language, constraints, solver interface.
 restest-gen       generation phases, value providers, scheduler.
@@ -126,7 +127,7 @@ Dependencies point inwards, towards `restest-core`. Architecture tests enforce t
 
 A tenth module, `restest-arch-tests`, holds those tests. It has no `src/main`, depends on all nine
 at test scope and is never published — ArchUnit reads bytecode, so the rules can only run somewhere
-that sees every module at once. See ADR-0004, Amendment (M0.2), and `docs/ci.md`.
+that sees every module at once. See `docs/ci.md`.
 
 ## Commands
 
@@ -151,11 +152,11 @@ that sees every module at once. See ADR-0004, Amendment (M0.2), and `docs/ci.md`
 | One page per subject: command line, report, faults, plan, dictionaries, settings, switches | `docs/README.md` and the pages it lists |
 | The command line and its exit codes, which a build checks against the tool | `docs/command-line.md` |
 | What the tool does not do yet | `docs/known-limitations.md` |
-| The documents the evaluation platform may be named in | `BENCHMARK_MAY_BE_NAMED_IN` in `restest-arch-tests/src/test/java/io/restest/arch/SourceTreeRulesTest.java` |
 | Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |
 | How a change is proposed and reviewed | `CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md` |
+| The documents the evaluation platform may be named in | `BENCHMARK_MAY_BE_NAMED_IN` in `restest-arch-tests/src/test/java/io/restest/arch/SourceTreeRulesTest.java` |
 
 ## Working style
 

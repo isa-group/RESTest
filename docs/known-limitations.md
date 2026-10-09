@@ -1,8 +1,8 @@
 # Known limitations
 
-What RESTest does not do yet, or does in a way that may surprise you, as of 2.1. Each entry says
-what happens today and, where there is something you can do about it, what that is. The list
-shrinks as the limitations are lifted; a release's notes say when one is.
+What RESTest does not do yet, or does in a way that may surprise you. Each entry says what happens
+today and, where there is something you can do about it, what that is. The list is kept to the
+current release: an entry leaves it in the release that lifts it, and that release's notes say so.
 
 ## Pointed at somebody else's API
 

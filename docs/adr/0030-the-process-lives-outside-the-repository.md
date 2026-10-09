@@ -63,9 +63,8 @@ built, and states its rules in `AGENTS.md`.**
    tooling, which also keeps every dependency on a model out of RESTest (ADR-0008). Two checks the
    removed reviewer made by searching — no model library or AI-named type, no idiom carried over from
    RESTest 1.x — are not tests yet; until they are, a reviewer makes them.
-6. **The scope stays here.** What RESTest will not do, and why, is "Out of scope for v2.0" in
-   `docs/DESIGN.md`, which holds for 2.x as well; the open questions about it are argued in ADR-0017
-   and its amendments.
+6. **The scope stays here.** What RESTest will not do, and why, is "Out of scope" in
+   `docs/DESIGN.md`; the open questions about it are argued in ADR-0017 and its amendments.
 
 ## Consequences
 
