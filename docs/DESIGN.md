@@ -314,7 +314,7 @@ as it ships.
 
 ## Out of scope for v2.0
 
-Nothing here is started without explicit approval,
+The list holds for 2.x as well. Nothing here is started without explicit approval,
 even where it looks easy. Each entry names the seam it will use, so none of them requires
 re-architecting — which is the point of listing them at all.
 
@@ -347,7 +347,9 @@ same kind: each would have a run learn from what it has already seen.
 
 None is taken here, and none is started without explicit approval. What each would cost, and how
 narrow a version of it would still be worth having, is argued under
-[Open questions](adr/0017-what-we-take-from-autoresttest.md#open-questions) in ADR-0017.
+[Open questions](adr/0017-what-we-take-from-autoresttest.md#open-questions) in ADR-0017; its
+[M9.4 amendment](adr/0017-what-we-take-from-autoresttest.md#amendment-m94) records why the narrowest
+version of the first was set aside.
 
 ## Stack
 

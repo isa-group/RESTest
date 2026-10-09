@@ -41,7 +41,8 @@ No exceptions.
   `history/2.0-development`; RESTest 1.x is on the `v1.x` branch and its tags.
 - One change = one branch = one pull request, squash-merged into `master`.
 - Every pull request uses `.github/PULL_REQUEST_TEMPLATE.md` and fills in every section;
-  `CONTRIBUTING.md` says what each section must contain.
+  `CONTRIBUTING.md` says what the sections that matter most must contain, and how a pull request is
+  reviewed.
 
 ## The ten design principles
 
@@ -66,10 +67,14 @@ No exceptions.
   repository of its own, and nothing here builds against it, depends on it or names it — in a file's
   contents or in its name — outside the documents `SourceTreeRulesTest` lists; that list is the
   authority. See ADR-0011.
-- **No development tooling in this repository either.** Plans, process descriptions, agents,
-  skills, hooks and evaluations of the work belong to whoever does it, outside RESTest, and nothing
-  here names them. The one exception is `.claude/settings.json`, which only forbids a few dangerous
-  actions to anyone working here with Claude Code. See ADR-0030.
+- **No one's private development tooling in this repository.** The maintainers' plan of what comes
+  next, their own way of working beyond what `CONTRIBUTING.md` asks of every contributor, and the
+  agents, skills, hooks and reviews of the work they use belong outside RESTest, and nothing here
+  names them, their repositories or a path on somebody's machine. What stays is what every
+  contributor shares: the conventions in `CONTRIBUTING.md`, the evidence about the product that ADRs
+  and pull requests carry, and two files that any user of one coding agent reads — `CLAUDE.md`, which
+  only imports this file, and `.claude/settings.json`, which only forbids a few dangerous commands.
+  See ADR-0030.
 - **Nothing from the deferred backlog** ("Out of scope for v2.0" in `docs/DESIGN.md`) without
   explicit approval, even if it looks easy. That list includes dependency inference,
   semantic-oracle inference, metamorphic relations, response classifiers and search-based
@@ -126,6 +131,8 @@ that sees every module at once. See ADR-0004, Amendment (M0.2), and `docs/ci.md`
 ```bash
 ./mvnw verify                      # build and test everything
 ./mvnw -q verify -pl restest-core  # one module
+./mvnw -q verify -pl restest-arch-tests -am -Dtest='io.restest.arch.**' -Dsurefire.failIfNoSpecifiedTests=false
+                                   # the architecture and documentation rules alone
 ./mvnw verify -Pit                 # everything, container tests included (needs Docker)
 ./mvnw verify -Psmoke              # just the smoke run against two containerised APIs (needs Docker)
 ./restest run <spec> --url <base> --budget 30s   # the tool itself, from this checkout
@@ -141,6 +148,8 @@ that sees every module at once. See ADR-0004, Amendment (M0.2), and `docs/ci.md`
 | The manual, read from beginning to end | `docs/manual/` |
 | One page per subject: command line, report, faults, plan, dictionaries, settings, switches | `docs/README.md` and the pages it lists |
 | The command line and its exit codes, which a build checks against the tool | `docs/command-line.md` |
+| What the tool does not do yet | `docs/known-limitations.md` |
+| The documents the evaluation platform may be named in | `BENCHMARK_MAY_BE_NAMED_IN` in `restest-arch-tests/src/test/java/io/restest/arch/SourceTreeRulesTest.java` |
 | Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |

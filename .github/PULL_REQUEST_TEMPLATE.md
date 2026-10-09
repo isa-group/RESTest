@@ -18,8 +18,8 @@ operations that used to return 400 now return 200."
 
 Bad: "Added the ValueProvider chain and the FormatAwareProvider."
 
-If this increment is groundwork with nothing visible yet, say so plainly and name the increment
-that will make it visible.
+If this change is groundwork with nothing visible yet, say so plainly and say which later change
+will make it visible.
 -->
 
 ## Try it yourself
@@ -28,13 +28,12 @@ that will make it visible.
 Copy-paste commands from a clean checkout, with the real expected output underneath. They must work
 on a laptop with only Java and git installed. Run them yourself first and paste the actual output.
 
-    git fetch && git switch feat/m2-4-format-aware-values
+    git fetch && git switch feat/format-aware-values
     ./mvnw -q install -DskipTests
-    ./restest run examples/petstore.yaml --url https://petstore3.swagger.io/api/v3 --budget 30s
+    ./restest run <the document> --url <the API's address> --budget 30s
 
     Expected:
-      47 test cases, 3 failures, report written to ./restest-report/index.html
-      The "Values by source" panel is new: 31 values came from format-aware generators.
+      the lines the run printed, copied as they are, with the one that changed pointed out
 
 If the change is not visible from the command line, say so and give the next best thing: a test to
 run, a file to open, a number to compare.
@@ -77,6 +76,5 @@ you decided not to act on, and why. If a decision is expensive to reverse, it ne
 
 - [ ] Targets `master`
 - [ ] English throughout, including comments and test names
-- [ ] Nothing from the deferred backlog ("Out of scope for v2.0" in `docs/DESIGN.md`)
-- [ ] No AI abstraction; no evaluation-platform reference outside the documents the rule permits
-- [ ] The hard rules in `AGENTS.md` hold
+- [ ] The hard rules in `AGENTS.md` hold, including nothing from "Out of scope for v2.0" in
+      `docs/DESIGN.md`

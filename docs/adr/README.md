@@ -36,9 +36,16 @@ licence. Do not write one for ordinary implementation choices — those belong i
 
 ## Records that cite a plan
 
-Records written while 2.0 was built cite its plan: milestone codes such as `M1.9` in their status
-lines and amendments, and rows of `ROADMAP.md`. That plan is kept, as it was, at the tag
-[`history/2.0-development`](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md).
+Records written while 2.0 was built cite its plan and the files that described its process: milestone
+codes such as `M1.9` in their status lines and amendments, rows of `ROADMAP.md`, and `CLAUDE.md` or
+the reviewer's checklist as they were then. Those files are kept, as they were:
+
+- for records written while 2.0 was built, at the tag
+  [`history/2.0-development`](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md);
+- for records written after it, such as the later amendments of ADR-0025, at commit
+  [`0b17e7b7`](https://github.com/isa-group/RESTest/blob/0b17e7b7/ROADMAP.md), the last in which this
+  repository held them.
+
 Plans are no longer kept in this repository ([ADR-0030](0030-the-process-lives-outside-the-repository.md)),
 so records written from now on cite none.
 

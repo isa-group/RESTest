@@ -48,18 +48,26 @@ Branch names say what kind of change it is and what it does: `feat/…`, `fix/�
 Use the template. It asks for four things that are not optional:
 
 - **What you can do now that you could not before** — concrete and user-facing, not a list of classes.
-- **Try it yourself** — copy-paste commands from a clean checkout, with the real output. Run them
-  before you paste them.
+- **Try it yourself** — copy-paste commands from a clean checkout, with the real output. They must
+  work on a laptop with only Java and git installed. Run them before you paste them.
 - **How it works** — three paragraphs at most, written for someone who does not program in Java.
 - **Evidence** — real numbers: tests, overhead, the smoke run, idle time.
 
 Titles say what became possible, not what was edited.
 
+## Review
+
+Continuous integration must be green ([`docs/ci.md`](docs/ci.md) says what it checks). A maintainer
+then reads the pull request against the rules in `AGENTS.md`, the decision records it touches and the
+template's sections, runs the "Try it yourself" commands, and asks for changes or merges. A finding
+you disagree with is answered in "Decisions taken", not ignored.
+
 ## Hard rules
 
-They are in [`AGENTS.md`](AGENTS.md#hard-rules). Most of them fail the build, and none is negotiable
-in a pull request. If a rule is wrong, change it deliberately, in its own pull request, with the
-reasoning.
+They are in [`AGENTS.md`](AGENTS.md#hard-rules), and none is negotiable in a pull request. The build
+enforces the ones a test can check — the evaluation platform's name, the module boundaries, the
+coverage and mutation thresholds; review checks the rest. If a rule is wrong, change it
+deliberately, in its own pull request, with the reasoning.
 
 ## Decisions
 
