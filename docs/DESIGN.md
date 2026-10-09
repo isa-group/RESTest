@@ -1,6 +1,6 @@
-# RESTest 2.0 — design
+# RESTest — design
 
-What RESTest 2.0 is, how it is put together, and which rules the build enforces. Written for
+What RESTest is, how it is put together, and which rules the build enforces. Written for
 somebody arriving at the repository for the first time, including readers who do not program in
 Java.
 
@@ -18,7 +18,7 @@ base URL; from those it generates test cases, executes them, and reports the fai
 The design target is deliberately narrow and deliberately hard: **an unknown API, no human
 configuration, a fixed time budget.** Everything below follows from those three constraints.
 
-What v2.0 does with them, as it ships: it reads the document into a model of its own, skipping and
+What RESTest does with them: it reads the document into a model of its own, skipping and
 naming what it cannot test; sends every operation once with the request it is most likely to accept;
 then, until the budget runs out, builds requests from a plan of weighted sources — the values the
 document states, what the API has already returned, values invented to fit what the document says,
@@ -29,9 +29,9 @@ the shape the document promised, and reported on the screen and in `report.json`
 command that repeats it. What a user sees of all this is in [`docs/`](README.md); how it is built is
 the rest of this page.
 
-v2.0 is a rewrite rather than a refactor of RESTest 1.x. The reasoning is recorded in
-[ADR-0002](adr/0002-rewrite-not-refactor.md); no source files carry over, though ideas, the IDL
-grammar and the test corpus do.
+From version 2.0 on, RESTest is a rewrite rather than a refactor of RESTest 1.x. The reasoning is
+recorded in [ADR-0002](adr/0002-rewrite-not-refactor.md); no source files carry over, though ideas,
+the IDL grammar and the test corpus do.
 
 ## Scope
 
@@ -103,7 +103,7 @@ explains why that is compiled rather than conventional.
 restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy
                   dependencies beyond a streaming JSON reader and writer and a YAML reader.
 restest-spec      the only module allowed to reference the third-party OAS parser.
-restest-idl       IDL language, constraints, solver interface. Empty in v2.0.
+restest-idl       IDL language, constraints, solver interface. Empty so far.
 restest-gen       generation phases, value providers, scheduler.
 restest-exec      HTTP engine.
 restest-store     interaction store.
@@ -140,9 +140,9 @@ database inside the request loop. The store is for looking back; the event strea
 
 These are architectural requirements rather than features, and they are the whole of what
 "extensible" means here. A seam is known to be real rather than assumed when something is built on
-it. In v2.0 two are: the non-blocking engine, with its idle-time accounting, and `Oracle`, with the
+it. So far two are: the non-blocking engine, with its idle-time accounting, and `Oracle`, with the
 two rules a run judges replies by. The other four are design constraints the rest of the code keeps
-room for, and v2.0 has no code for them; the items under [Out of
+room for, and RESTest has no code for them yet; the items under [Out of
 scope](#out-of-scope) name which of them each would use.
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
@@ -233,7 +233,7 @@ requests. The testing phase is then a sequential loop over six learned tables, o
 a request needs: which operation, which parameters, which values, which body properties, which
 dependency, which credentials. Its own ablation study removes one component at a time and reports
 that removing the learning costs it more than removing the language model.
-[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) records what RESTest 2.0 takes from it, what
+[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) records what RESTest takes from it, what
 it refuses, and what that ablation does and does not establish.
 
 ### EvoMaster
@@ -290,15 +290,15 @@ regression-testing documented behaviour but is not designed to discover undocume
 [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x), also from the ISA Research Group,
 implements constraint-based testing (CBT) driven by IDL, random testing, and ART in a single
 configurable pipeline. Limited stateful support is available via hand-written test flow
-configurations. RESTest 2.0 is a ground-up rewrite; the reasoning is in
+configurations. From version 2.0 on, RESTest is a ground-up rewrite; the reasoning is in
 [ADR-0002](adr/0002-rewrite-not-refactor.md).
 
 ### Comparison
 
 The columns *stateless techniques* and *stateful techniques* name the core algorithmic strategy, not
 every configuration option. **OAS** — specification versions the tool accepts. **BB/WB** — B =
-black-box only; B+W = black-box and white-box modes both available. The last row shows RESTest 2.0
-as it ships.
+black-box only; B+W = black-box and white-box modes both available. The last row shows RESTest
+as it is now.
 
 | Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
 |---|---|---|---|---|---|---|---|
@@ -310,7 +310,7 @@ as it ships.
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
-| **RESTest 2.0** (this tool, v2.0) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
+| **RESTest** (this tool, 2.0 on) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
 
 ## Out of scope
 
@@ -340,7 +340,7 @@ same kind: each would have a run learn from what it has already seen.
 - Whether the choice of which operation to call next may be steered by counters over what each
   operation has been answering. *Its narrowest version — withdrawing budget from operations whose
   recent answers all say the request can never work as asked, with no reward and no learning rate —
-  was approved for 2.0 and set aside before it was built, once its list was narrowed to the answers
+  was approved during the work on 2.0 and set aside before it was built, once its list was narrowed to the answers
   that do not depend on what the tool sends; the reward-shaped version stays here.*
 - Whether the choice among inferred dependency candidates may be scored by what the API answered.
 - Whether a warm-up may read the *text* of an error reply rather than only its status code.

@@ -64,8 +64,8 @@ restest run api.yaml --auth cookie:JSESSIONID=8F3A2C...              # a session
 
 A key the document declares goes with the operations that ask for it. One given with its place —
 `header:`, `query:` or `cookie:` — goes with every request, which is what a bearer token or a
-session cookie somebody already holds needs. RESTest 2.0 does not obtain a token itself: signing in,
-OAuth 2 and refreshing what expires come after it.
+session cookie somebody already holds needs. RESTest does not obtain a token itself yet: signing in,
+OAuth 2 and refreshing what expires are [known limitations](known-limitations.md#credentials).
 
 ## The environment
 
