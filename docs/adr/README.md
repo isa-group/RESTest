@@ -34,6 +34,14 @@ Write an ADR when a choice has more than one defensible answer and would be expe
 a dependency that will spread through the codebase, a boundary between modules, a file format, a
 licence. Do not write one for ordinary implementation choices — those belong in the pull request.
 
+## Records that cite a plan
+
+Records written while 2.0 was built cite its plan: milestone codes such as `M1.9` in their status
+lines and amendments, and rows of `ROADMAP.md`. That plan is kept, as it was, at the tag
+[`history/2.0-development`](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md).
+Plans are no longer kept in this repository ([ADR-0030](0030-the-process-lives-outside-the-repository.md)),
+so records written from now on cite none.
+
 ## Index
 
 | # | Decision | Status |
@@ -67,3 +75,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 and M8.5 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c |
+| [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |

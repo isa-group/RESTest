@@ -4,9 +4,9 @@ What RESTest 2.0 is, how it is put together, and which rules the build enforces.
 somebody arriving at the repository for the first time, including readers who do not program in
 Java.
 
-Individual decisions and the reasoning behind them live in [`docs/adr/`](adr/). The work breakdown
-lives in [`ROADMAP.md`](../ROADMAP.md). Continuous integration and the architecture rules are
-described in [`docs/ci.md`](ci.md).
+Individual decisions and the reasoning behind them live in [`docs/adr/`](adr/), and the rules every
+contributor follows in [`AGENTS.md`](../AGENTS.md). Continuous integration and the architecture rules
+are described in [`docs/ci.md`](ci.md).
 
 ---
 
@@ -77,7 +77,7 @@ Terms used throughout the repository, in commit messages and in pull requests.
 
 ## Design principles
 
-Ten, in priority order. They are quoted in `CLAUDE.md` and several are enforced mechanically; the
+Ten, in priority order. They are quoted in `AGENTS.md` and several are enforced mechanically; the
 enforcement is listed under [Quality gates](#quality-gates).
 
 | # | Principle | Recorded in |
@@ -346,8 +346,8 @@ same kind: each would have a run learn from what it has already seen.
 - Whether a warm-up may read the *text* of an error reply rather than only its status code.
 
 None is taken here, and none is started without explicit approval. What each would cost, and how
-narrow a version of it would still be worth having, is argued under "The three open questions" in
-[`ROADMAP.md`](../ROADMAP.md).
+narrow a version of it would still be worth having, is argued under
+[Open questions](adr/0017-what-we-take-from-autoresttest.md#open-questions) in ADR-0017.
 
 ## Stack
 
@@ -384,7 +384,6 @@ Standards:
 
 ## Contributing
 
-Read [`CONTRIBUTING.md`](../CONTRIBUTING.md) first. In short: work targets `master`, one
-increment from [`ROADMAP.md`](../ROADMAP.md) per branch per pull request, English throughout, and a
-design question with more than one defensible answer becomes an ADR rather than a silent choice in
-the code.
+Read [`CONTRIBUTING.md`](../CONTRIBUTING.md) first. In short: work targets `master`, one change per
+branch per pull request, English throughout, and a design question with more than one defensible
+answer becomes an ADR rather than a silent choice in the code.

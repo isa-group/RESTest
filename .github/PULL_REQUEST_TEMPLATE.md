@@ -6,7 +6,7 @@ Title: say what became possible, not what was edited.
 Fill in every section. Delete nothing.
 -->
 
-**Increment:** <!-- e.g. 2.4, from ROADMAP.md -->
+**Related:** <!-- the issue this change answers, if there is one; "None" otherwise -->
 
 ## What you can do now that you could not before
 
@@ -79,4 +79,4 @@ you decided not to act on, and why. If a decision is expensive to reverse, it ne
 - [ ] English throughout, including comments and test names
 - [ ] Nothing from the deferred backlog ("Out of scope for v2.0" in `docs/DESIGN.md`)
 - [ ] No AI abstraction; no evaluation-platform reference outside the documents the rule permits
-- [ ] Reviewed by the `reviewer` subagent
+- [ ] The hard rules in `AGENTS.md` hold
