@@ -48,7 +48,9 @@ built, and states its rules in `AGENTS.md`.**
    files it names and on nothing else. A change to them is a change to RESTest, made in a pull
    request.
 4. **Nothing here names anybody's private tooling**: no plugin, marketplace or private repository,
-   and no path on somebody's machine. Two files that any user of one coding agent reads stay, because
+   and no path on somebody's machine — in the files of the repository, in its settings, or in the
+   descriptions of its pull requests, which a merge can carry into `master`'s history. The decision
+   records are history and keep saying what was used when they were written, this one included. Two files that any user of one coding agent reads stay, because
    they hold nothing private: `CLAUDE.md`, which only imports `AGENTS.md`, and `.claude/settings.json`,
    which only denies a few dangerous commands in their usual spelling — pushing to `master`, a forced
    push, a Maven deploy, reading `.env` files and `secrets/` — as a guard rail rather than a
@@ -80,8 +82,8 @@ built, and states its rules in `AGENTS.md`.**
   until they choose to allow it in their own settings.
 - A tool that relies on something `AGENTS.md` does not list may break when RESTest changes. That is
   the tool's to fix; keeping the list short is what makes it a contract.
-- Pull requests may still say, in their description, which version of the maintainers' tooling
-  produced them. That is a note about the work, not a dependency of the product.
+- Which version of the maintainers' tooling produced a pull request is recorded by that tooling, on
+  its side, not in the pull request.
 
 ## Alternatives considered
 

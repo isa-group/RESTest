@@ -74,7 +74,9 @@ No exceptions.
   contributor shares: the conventions in `CONTRIBUTING.md`, the evidence about the product that ADRs
   and pull requests carry, and two files that any user of one coding agent reads — `CLAUDE.md`, which
   only imports this file, and `.claude/settings.json`, which only forbids a few dangerous commands.
-  See ADR-0030.
+  The decision records, and the links in them to where an old plan is kept, are history: they may
+  say what was used then. The rule covers pull-request descriptions too, since a merge can carry
+  them into `master`'s history. See ADR-0030.
 - **Nothing from the deferred backlog** ("Out of scope for v2.0" in `docs/DESIGN.md`) without
   explicit approval, even if it looks easy. That list includes dependency inference,
   semantic-oracle inference, metamorphic relations, response classifiers and search-based
