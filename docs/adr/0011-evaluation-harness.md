@@ -1,7 +1,7 @@
 # ADR-0011: The evaluation harness lives in `evaluation/`, outside the Maven build
 
-**Status:** Accepted, amended at M1.9
-**Date:** 2026-09-11 (amended 2026-09-16)
+**Status:** Accepted, amended at M1.9 and on 9 October 2026
+**Date:** 2026-09-11 (amended 2026-09-16 and 2026-10-09)
 
 > The title, the Decision and the Consequences below are as originally accepted, with every
 > superseded statement struck through and marked where it stands. The M1.9 amendment is the current
@@ -219,3 +219,16 @@ committed is how a rule teaches people to distrust it.
   alternatives the original decision rejected — a Maven module, working in the benchmark's own
   repository, using the benchmark for the per-pull-request smoke run — are all still rejected, and
   for the same reasons.
+
+## Amendment (9 October 2026)
+
+**The official package of RESTest for RESTgym is the public repository
+[`isa-group/restest4restgym`](https://github.com/isa-group/restest4restgym), "RESTest for RESTgym".**
+
+It holds what the platform asks of a tool it evaluates — a Dockerfile, the entry point that runs
+RESTest in a loop, the platform's configuration and the instructions — for one pinned version of
+RESTest, so that the platform can build an image of RESTest and evaluate it. It is generated from the
+evaluation harness, `isa-group/restgym-restest2`, and never edited by hand.
+
+Nothing else changes. This record stays the one document of the repository that names the platform
+or either repository; `AGENTS.md` points here for where they are.

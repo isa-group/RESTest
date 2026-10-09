@@ -15,11 +15,13 @@ what to look things up in afterwards.
 | [The dictionary format](dictionary-format.md) | Lists of values of your own, handed over with `--dictionary` |
 | [The settings](settings.md) | Every number that says how the tool behaves, with its default, and the four ways to change one |
 | [The switches](switches.md) | The settings that turn one thing a run does off, what leaving each on costs, and files that turn off a whole idea |
+| [Known limitations](known-limitations.md) | What RESTest does not do yet, or does in a way that may surprise you, and what to do about it |
 
 ## Building RESTest
 
 | Page | What it covers |
 |---|---|
+| [The rules](../AGENTS.md) | The design principles, the hard rules, the commands and where everything is; read by people and coding agents alike |
 | [Design](DESIGN.md) | What the tool is, how it is put together, the rules the build enforces, and a glossary |
 | [Continuous integration](ci.md) | What every pull request is checked for, and how to run the same checks locally |
 | [Decision records](adr/README.md) | Why the tool is shaped the way it is, one decision per file |

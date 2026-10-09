@@ -106,7 +106,8 @@ would.
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same fifth, and the seed |
 | Series | The tenth of the run given to the strategy that sends series, whose later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
 
-What each was measured to be worth while 2.0 was built is kept with the rest of that record, on the
+What each was measured to be worth while the rewrite was first built is kept with the rest of that
+record, on the
 tag [`history/2.0-development`](https://github.com/isa-group/RESTest/blob/history/2.0-development/docs/switches.md).
 
 ## Switching off one idea
@@ -378,7 +379,7 @@ strategies:
 
 Hand it over with `--campaign`. It takes identifiers by resource away too, since a gap filled from
 the things of its kind is filled from the same memory. What the memory is worth was measured when it
-was added; the record of 2.0 has the numbers.
+was added; the record of the rewrite's first version has the numbers.
 
 A plan written for an earlier version of RESTest leaves out whatever strategies came after it: one
 written before accepted requests were changed, for example, has no strategy that changes them and

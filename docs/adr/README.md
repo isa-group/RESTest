@@ -34,6 +34,21 @@ Write an ADR when a choice has more than one defensible answer and would be expe
 a dependency that will spread through the codebase, a boundary between modules, a file format, a
 licence. Do not write one for ordinary implementation choices — those belong in the pull request.
 
+## Records that cite a plan
+
+Records written while 2.0 was built cite its plan and the files that described its process: milestone
+codes such as `M1.9` in their status lines and amendments, rows of `ROADMAP.md`, and `CLAUDE.md` or
+the reviewer's checklist as they were then. Those files are kept, as they were:
+
+- for records written while 2.0 was built, at the tag
+  [`history/2.0-development`](https://github.com/isa-group/RESTest/blob/history/2.0-development/ROADMAP.md);
+- for records written after it, such as the later amendments of ADR-0025, at commit
+  [`0b17e7b7`](https://github.com/isa-group/RESTest/blob/0b17e7b7/ROADMAP.md), the last in which this
+  repository held them.
+
+Plans are no longer kept in this repository ([ADR-0030](0030-the-process-lives-outside-the-repository.md)),
+so records written from now on cite none.
+
 ## Index
 
 | # | Decision | Status |
@@ -48,7 +63,7 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted |
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted |
-| [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 |
+| [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 and on 9 October 2026 |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 |
@@ -67,3 +82,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 and M8.5 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c |
+| [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |

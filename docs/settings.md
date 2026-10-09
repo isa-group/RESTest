@@ -505,7 +505,8 @@ optional parameter is decided on a coin of its own, weighted by `optionalBodyCha
 number that decides whether a request sends a body it may leave out. Bodies and optional parameters
 cannot be given different chances, so an experiment that turns `optionalParametersBySize` off and
 changes `optionalBodyChance` changes how often optional parameters are sent as well as bodies. A
-setting of its own for the coin would correct it, and is left for RESTest 2.1.
+setting of its own for the coin would correct it, and is left for a later version
+([known limitations](known-limitations.md#what-a-run-sends)).
 
 ## What is not a setting
 
