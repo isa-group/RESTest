@@ -1,7 +1,7 @@
 # ADR-0016: A fault is identified by its catalogue number, described in our own words, and classified twice
 
 **Status:** Accepted, amended at M1.10 and on 10 October 2026
-**Date:** 2026-09-15 (last amended 2026-10-10)
+**Date:** 2026-09-15
 
 ## Context
 
@@ -202,17 +202,20 @@ questions and a report can carry both.
   holds; the second, that the catalogue had no code for the family, no longer does. The 39 kinds of
   0.8.0, `F100` and `F200` among them, keep their codes and names in 0.9.0, which adds an `id` field
   as the stable key.
-- **The tools RESTest is measured against no longer all use 0.8.0.** Schemathesis 4.30.1 writes
-  Faults 0.9.0 codes in its WFC report; EvoMaster 6.2.0 uses 0.8.0, and its development branch has
-  moved to release 0.10.0.
-- **The caveat about distinct error messages is still open, with more known.** What the organisers
-  compute has not been asked. The 2027 rules call a 5xx unique when its message is sufficiently
-  distinct, citing ARAT-RL. ARAT-RL's own report groups by operation, path and parameter names, as
-  the caveat says. Its evaluation script, `parse_log.py`, which ARAT-RL's, AutoRestTest's and
-  LlamaRestTest's papers say they counted with, calls two 5xx the same when their stack traces match,
-  or else their cleaned messages. But ARAT-RL's README warns that this count has a bug and recommends
-  counting the operations that answered 500 instead, which is the count this record keeps. Whether
-  RESTest's report should carry a message-based count beside it remains a decision of its own.
+- **The tools RESTest is measured against no longer all use Faults 0.8.0.** Schemathesis 4.30.1
+  writes Faults 0.9.0 codes in its WFC report; EvoMaster 6.2.0 uses Faults 0.8.0, and its development
+  branch has moved to release 0.10.0, which carries Faults 0.9.0.
+- **The caveat about distinct error messages, revisited.** Its "no reference implementation found
+  does that" no longer holds. The 2027 rules count a 5xx as unique when its message is sufficiently
+  distinct, citing ARAT-RL's paper, and that paper's own criterion (§IV-A) is a unique stack trace,
+  or, where there is none, a unique response text once timestamps are removed. ARAT-RL's evaluation
+  script, `parse_log.py`, implements it. What the tool writes in its own report groups by operation,
+  path and parameter names, which is what the caveat found. So "the criterion is the one the field
+  uses", above, holds for EvoMaster, not for the work the rules cite. ARAT-RL's README warns that the
+  script's count has a bug, and recommends counting the operations that answered 500 instead, one
+  of the two counts this record keeps. What the organisers compute has still not been asked;
+  whether RESTest's report should carry a message-based count, as the caveat foresaw, remains a
+  decision of its own.
 
 Moving to Faults 0.9.0 is a change of its own: the test that compares RESTest's copy of the
 catalogue with the published file will report the new `id` field until RESTest's copy carries it, and

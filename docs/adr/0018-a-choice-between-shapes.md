@@ -1,7 +1,7 @@
 # ADR-0018: A choice between shapes is one more shape
 
 **Status:** Accepted, amended on 10 October 2026
-**Date:** 2026-09-17 (last amended 2026-10-10)
+**Date:** 2026-09-17
 
 ## Context
 

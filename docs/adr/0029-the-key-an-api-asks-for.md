@@ -1,7 +1,7 @@
 # ADR-0029: A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes
 
 **Status:** Accepted, amended at M12.1c and on 10 October 2026
-**Date:** 2026-09-30 (last amended 2026-10-10)
+**Date:** 2026-09-30
 
 ## Context
 
@@ -534,7 +534,7 @@ memory, or of stack, names no key - but the run was handed one, and prints what 
 
 - **ARAT-RL** (commit `e5ccb13f`) sends no credentials at all: it takes three positional arguments
   and sets no header but the content type. So "every other tool sends the same credentials with
-  every request" holds for the others, not for it.
+  every request" is wrong for ARAT-RL; the other tools were not checked again.
 - **Schemathesis** 4.30.0 adds a step that signs itself in: when the document declares a registration
   and a login operation, it registers a user and logs in before testing, and uses the credentials it
   got.

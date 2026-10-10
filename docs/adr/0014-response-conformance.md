@@ -1,7 +1,7 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
 **Status:** Accepted, amended at M1.8 and on 10 October 2026
-**Date:** 2026-09-13 (last amended 2026-10-10)
+**Date:** 2026-09-13
 
 ## Context
 

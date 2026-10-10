@@ -219,10 +219,11 @@ have no switch yet. A test holds that page to the tool.
 This section maps the REST API testing landscape for readers new to the field: the tools most often
 compared with RESTest in academic evaluations and benchmarks, one paragraph each, followed by a
 [comparison table](#comparison) whose columns are explained above it. The terms it uses — stateless
-and stateful testing, black-box and white-box — are in the [glossary](#glossary). What it says of
-RESTler, EvoMaster, Schemathesis, RestTestGen and CATS was checked on 10 October 2026 against their
-code: RESTler at commit `6d984dee`, EvoMaster at release 6.2.0 and commit `b72feb25`, Schemathesis
-4.30.1, RestTestGen v25.12 and CATS 14.0.0. Tools change, and a later version may do more.
+and stateful testing, black-box and white-box — are in the [glossary](#glossary). The descriptions
+of RESTler, EvoMaster, Schemathesis, RestTestGen and CATS were corrected on 10 October 2026 where
+their code no longer agreed: RESTler at commit `6d984dee`, EvoMaster at release 6.2.0 and its
+development branch at commit `b72feb25`, Schemathesis 4.30.1, RestTestGen v25.12 (commit
+`63c19634`) and CATS 14.0.0. Tools change, and a later version may do more.
 
 ### AutoRestTest
 
@@ -255,14 +256,14 @@ EvoMaster reports by it, in 37 categories on its development branch.
 
 [RESTler](https://github.com/microsoft/restler-fuzzer), from Microsoft Research, introduced
 stateful REST fuzzing guided by the API's replies. A compiler written in F# turns the specification
-into a grammar — a description of every request it may send, with a slot for each value — inferring
-*producer-consumer* relationships — that `POST /orders` produces an order
-identifier that `DELETE /orders/{id}` later consumes — and an engine written in Python chains
-operations from it, extending the sequences that worked. Values come from a fixed dictionary of
-type-appropriate values, which a user can extend per parameter name; identifiers come from live
-replies. Every 5xx it meets is reported, and checkers replay sequences to surface resource-state
-problems, such as a resource still usable after it was deleted. Guidance by code coverage came later, in an extension
-named Pythia.
+into a *grammar*: a description of every request RESTler may send, with a slot for each value. While
+compiling, it infers *producer-consumer* relationships, for example that `POST /orders` produces an
+order identifier that `DELETE /orders/{id}` later consumes. An engine written in Python then chains
+operations from the grammar, extending the sequences that worked. Values come from a fixed
+dictionary of type-appropriate values, which a user can extend per parameter name; identifiers come
+from live replies. Every 5xx counts as a bug, and checkers replay sequences to surface
+resource-state problems, such as a resource still usable after it was deleted. Guidance by code
+coverage came later, in an extension named Pythia.
 
 ### Schemathesis
 
@@ -317,9 +318,9 @@ as it is now.
 | Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
 |---|---|---|---|---|---|---|---|
 | [AutoRestTest](https://github.com/selab-gatech/autoresttest) | Python | 3.0.x | B | Tabular reinforcement learning over operation, parameter and value choices; mutation | Property-level dependency graph from name similarity, scored at run time | Language-model value pools, response-derived, random | 5xx detection |
-| [EvoMaster](https://github.com/WebFuzzing/EvoMaster) | Kotlin/Java | 2.0, 3.0.x, 3.1.x | B+W | Evolutionary (MIO) in white box, random sampling in black box | Sequences from the path hierarchy with identifiers chained from replies; resource dependencies in white box | Evolutionary, random, examples, reply values | 5xx detection, HTTP semantics, schema validation, security (37 WFC categories) |
+| [EvoMaster](https://github.com/WebFuzzing/EvoMaster) | Kotlin/Java | 2.0, 3.0.x, 3.1.x | B+W | Evolutionary (MIO) in white box, random sampling in black box | Sequences from the path hierarchy with identifiers chained from replies; resource dependencies in white box | Evolutionary, random, examples, reply values | 5xx detection, HTTP semantics, schema validation, security (37 WFC categories on its development branch) |
 | [RESTler](https://github.com/microsoft/restler-fuzzer) | Python, F# | 2.0, 3.0 | B | Grammar-based fuzzing guided by replies | Producer-consumer chains (spec-inferred), extended breadth first | Fixed dictionary per type or parameter name; identifiers from replies | 5xx detection, resource-state checkers (use after delete, leakage, hierarchy) |
-| [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x, 3.2 | B | Property-based (Hypothesis), shrinking | OAS link following, links inferred from names and `Location` headers | Schema-driven, property-based | 5xx detection, schema validation, WFC codes |
+| [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x, 3.2 | B | Property-based (Hypothesis), shrinking | OAS link following, links inferred from names and `Location` headers | Examples, boundary values, random within the schema, values from replies | 5xx detection, schema validation, use after free, resource not available after creation, invalid data accepted or valid data refused, ignored authentication; WFC codes |
 | [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 3.0 | B | Random, IDL-constrained; mutation of requests that worked | Operation Dependency Graph ordering; create-then-read and update-then-read sequences in the mass-assignment strategy only | Random, example-based, IDL-constrained | Status code classification |
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x, 3.1.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | `DELETE` after `POST`; read after delete | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
