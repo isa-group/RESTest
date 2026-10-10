@@ -702,3 +702,12 @@ ordinary rounds' numbers on. Where a creation has nothing optional in it, the or
 ones the same seed draws without series; where it has, the turn that begins a series leaves the
 optional parts out rather than drawing which to send, and the ordinary requests after it draw
 different numbers.
+
+## Amendment (how RESTler tries a pool)
+
+Checked on 10 October 2026 against RESTler at commit `6d984dee`. The table above says every value in
+a RESTler pool is tried, not sampled. That holds only in its `bfs`, `bfs-fast` and
+`test-all-combinations` modes, and only up to `max_combinations`, 20 by default. Its `fuzz` command
+runs `bfs-cheap` by default, which, like `random-walk`, `bfs-minimal` and its test mode, stops at the
+first combination of values that is accepted. The point the table makes, that RESTler's priority is
+keyed by parameter name rather than by source, still holds.

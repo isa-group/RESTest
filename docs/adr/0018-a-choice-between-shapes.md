@@ -158,3 +158,15 @@ model does not have, and every consumer would be left asking what to send for *n
 - **Carrying the discriminator on the choice.** Rejected: no document in the corpus pairs them, so it
   would be a place built before anything exists to put in it. If one turns up, RESTest may generate a
   value whose discriminating property contradicts the branch it came from, and that is the amendment.
+
+## Amendment (what two of the surveyed tools do now)
+
+Checked on 10 October 2026.
+
+- **RESTler** (commit `6d984dee`) keeps only the first branch of an `anyOf`, and records supporting
+  the others as future work; no handling of `oneOf` was found in its compiler.
+- **Schemathesis** stopped depending on `hypothesis-jsonschema` in 4.25.0, on 21 August 2026, so the
+  rewriting of `oneOf` described above is no longer what it does; how its own code now handles
+  `oneOf` was not checked.
+
+The decision above does not depend on either.

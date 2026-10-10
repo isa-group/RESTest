@@ -297,3 +297,13 @@ for the credentials a run is handed ([ADR-0029](0029-the-key-an-api-asks-for.md)
   in a list of values, a credential an API hands out in a reply.
 - **`HttpRequestRecord.toString` still prints the address**, where a key may sit. An address with a
   key in it never leaves the door that hides it (ADR-0029 §6).
+
+## Amendment (what Web Fuzzing Commons reserves)
+
+Checked on 10 October 2026 against Web Fuzzing Commons release 0.11.0. The catalogue does not reserve
+codes 900-909 for malformed responses, or for anything else: it leaves the whole range 900-999 to
+each tool's own codes and names none of them. A response that is not valid HTTP has no code of its
+own in Faults 0.9.0 — `F101` covers only a status code outside 100-599 — so a fault RESTest reports
+for `MalformedResponse` would carry a code of its own in that range. The decision above, keeping a
+malformed response apart from no response at all, is unchanged; only the reason given for it named
+the wrong codes.
