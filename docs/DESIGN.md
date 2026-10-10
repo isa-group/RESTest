@@ -219,7 +219,11 @@ have no switch yet. A test holds that page to the tool.
 This section maps the REST API testing landscape for readers new to the field: the tools most often
 compared with RESTest in academic evaluations and benchmarks, one paragraph each, followed by a
 [comparison table](#comparison) whose columns are explained above it. The terms it uses — stateless
-and stateful testing, black-box and white-box — are in the [glossary](#glossary).
+and stateful testing, black-box and white-box — are in the [glossary](#glossary). The descriptions
+of RESTler, EvoMaster, Schemathesis, RestTestGen and CATS were corrected on 10 October 2026 where
+their code no longer agreed: RESTler at commit `6d984dee`, EvoMaster at release 6.2.0 and its
+development branch at commit `b72feb25`, Schemathesis 4.30.1, RestTestGen v25.12 (commit
+`63c19634`) and CATS 14.0.0. Tools change, and a later version may do more.
 
 ### AutoRestTest
 
@@ -238,45 +242,56 @@ it refuses, and what that ablation does and does not establish.
 
 ### EvoMaster
 
-[EvoMaster](https://github.com/EMResearch/EvoMaster) applies evolutionary search to REST API
-testing. Its MIO (Many-Independent-Objective) algorithm treats each coverage target as an
-independent optimisation objective, which avoids the stalling that affects single-objective search.
-A white-box mode instruments the application at the bytecode level and feeds coverage feedback
-directly into the search; a black-box mode operates on the specification alone. Stateful testing
-works by inferring which operations produce resources that others consume and constructing call
-sequences from that dependency graph. EvoMaster adopts the WFC fault catalogue.
+[EvoMaster](https://github.com/WebFuzzing/EvoMaster) applies search to REST API testing. Its
+white-box mode instruments a JVM application at the bytecode level and feeds coverage into MIO
+(Many-Independent-Objective), an evolutionary algorithm that treats each coverage target as an
+independent objective, which avoids the stalling that affects single-objective search. Its
+black-box mode, the default since 6.0.0, needs only the specification and the running API, and
+samples requests rather than evolving them. Call sequences come from the path hierarchy — a creation
+before a read of what it created — with identifiers chained from replies; the white-box mode also
+infers which resources depend on which. EvoMaster's authors maintain the WFC fault catalogue, and
+EvoMaster reports by it, in 37 categories on its development branch.
 
 ### RESTler
 
 [RESTler](https://github.com/microsoft/restler-fuzzer), from Microsoft Research, introduced
-coverage-guided stateful REST fuzzing. It infers *producer-consumer* relationships from the
-specification — observing that `POST /orders` produces an order identifier that `DELETE
-/orders/{id}` later consumes — and uses those relationships to chain operations automatically. The
-fuzzer maintains a dictionary of type-appropriate values, extends it with values extracted from live
-API responses, and replays sequences to surface 500 errors and resource-state inconsistencies.
+stateful REST fuzzing guided by the API's replies. A compiler written in F# turns the specification
+into a *grammar*: a description of every request RESTler may send, with a slot for each value. While
+compiling, it infers *producer-consumer* relationships, for example that `POST /orders` produces an
+order identifier that `DELETE /orders/{id}` later consumes. An engine written in Python then chains
+operations from the grammar, extending the sequences that worked. Values come from a fixed
+dictionary of type-appropriate values, which a user can extend per parameter name; identifiers come
+from live replies. Every 5xx counts as a bug, and checkers replay sequences to surface
+resource-state problems, such as a resource still usable after it was deleted. Guidance by code
+coverage came later, in an extension named Pythia.
 
 ### Schemathesis
 
 [Schemathesis](https://github.com/schemathesis/schemathesis) is a Python library and CLI built on
 [Hypothesis](https://hypothesis.readthedocs.io/), a property-based testing framework. It generates
 inputs from the OpenAPI schema and automatically shrinks failing cases to their minimal form. It
-supports OAS 2.0, 3.0.x and 3.1.x, integrates as a pytest plugin, classifies findings using WFC
-fault codes, and follows OAS 3.x `links` for stateful testing.
+supports OAS 2.0, 3.0.x, 3.1.x and 3.2, integrates as a pytest plugin, classifies findings using WFC
+fault codes, and for stateful testing follows OAS `links` and links it infers from the document's
+names and from `Location` headers.
 
 ### RestTestGen
 
 [RestTestGen](https://github.com/SeUniVr/RestTestGen), from the University of Verona, focuses on
-*nominal* and *error* flow testing. It constructs CRUD sequences (create a resource, retrieve it,
-update it, delete it) and systematically mutates valid inputs to trigger error responses. It
-supports IDL-based inter-parameter constraints and emits results as JUnit 5 tests.
+*nominal* and *error* testing. An Operation Dependency Graph, built from the names of parameters and
+response fields, orders the operations, and the requests that worked are then mutated to trigger
+error responses. Sequences over one resource — create then read, update then read — appear only in its
+mass-assignment strategy. It reads OpenAPI 3.0 with a parser of its own, supports IDL-based
+inter-parameter constraints, and emits results as JUnit 5 tests.
 
 ### CATS
 
-[CATS](https://github.com/Endava/cats) (Contract Assured Testing Suite, from Endava) offers a large
-catalogue of *fuzzers*, each targeting a specific class of input anomaly: boundary values, special
-characters, Unicode edge cases, oversized payloads, missing required fields, and extra unexpected
-fields. It is designed for repeatable contract testing in CI pipelines rather than for finding deep
-behavioural bugs.
+[CATS](https://github.com/Endava/cats) (Contract API Testing and Security, from Endava) offers a
+large catalogue of *fuzzers*, each targeting a specific class of input anomaly: boundary values,
+special characters, Unicode edge cases, oversized payloads, missing required fields, and extra
+unexpected fields. It is designed for repeatable contract testing in CI pipelines rather than for
+finding deep behavioural bugs. In release 14.0.0 its stateful checks are two: a `DELETE` takes its
+identifier from an earlier `POST`'s reply, and a deleted resource is read again to check it is gone;
+its development branch, which its documentation site follows, adds a pool of identifiers and more.
 
 ### Dredd
 
@@ -303,11 +318,11 @@ as it is now.
 | Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
 |---|---|---|---|---|---|---|---|
 | [AutoRestTest](https://github.com/selab-gatech/autoresttest) | Python | 3.0.x | B | Tabular reinforcement learning over operation, parameter and value choices; mutation | Property-level dependency graph from name similarity, scored at run time | Language-model value pools, response-derived, random | 5xx detection |
-| [EvoMaster](https://github.com/EMResearch/EvoMaster) | Kotlin/Java | 2.0, 3.0.x | B+W | Evolutionary (MIO), random | Resource-dependency sequence construction | Evolutionary, random, adaptive | 5xx detection, schema validation |
-| [RESTler](https://github.com/microsoft/restler-fuzzer) | Python | 2.0, 3.0 | B | Coverage-guided fuzzing, random | Producer-consumer chains (spec-inferred) | Random + response-extracted dictionary | 5xx detection, resource-state inconsistency |
-| [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x | B | Property-based (Hypothesis), shrinking | OAS link following | Schema-driven, property-based | 5xx detection, schema validation, WFC codes |
-| [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 2.0, 3.0 | B | Random, IDL-constrained | CRUD nominal flows, error flows | Random, example-based, IDL-constrained | Status code classification, schema validation |
-| [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
+| [EvoMaster](https://github.com/WebFuzzing/EvoMaster) | Kotlin/Java | 2.0, 3.0.x, 3.1.x | B+W | Evolutionary (MIO) in white box, random sampling in black box | Sequences from the path hierarchy with identifiers chained from replies; resource dependencies in white box | Evolutionary, random, examples, reply values | 5xx detection, HTTP semantics, schema validation, security (37 WFC categories on its development branch) |
+| [RESTler](https://github.com/microsoft/restler-fuzzer) | Python, F# | 2.0, 3.0 | B | Grammar-based fuzzing guided by replies | Producer-consumer chains (spec-inferred), extended breadth first | Fixed dictionary per type or parameter name; identifiers from replies | 5xx detection, resource-state checkers (use after delete, leakage, hierarchy) |
+| [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x, 3.2 | B | Property-based (Hypothesis), shrinking | OAS link following, links inferred from names and `Location` headers | Examples, boundary values, random within the schema, invalid values from a mutated schema (on by default), values from replies | 5xx detection; status code, content type, header and schema conformance; HTTP semantics (unsupported method, `Allow`, missing required header); use after free, resource not available after creation; invalid data accepted or valid data refused; ignored authentication; WFC codes |
+| [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 3.0 | B | Random, IDL-constrained; mutation of requests that worked | Operation Dependency Graph ordering; create-then-read and update-then-read sequences in the mass-assignment strategy only | Random, example-based, IDL-constrained | Status code classification |
+| [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x, 3.1.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | `DELETE` after `POST`; read after delete | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
 | **RESTest** (this tool, 2.0 on) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |

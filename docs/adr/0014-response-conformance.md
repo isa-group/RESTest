@@ -1,6 +1,6 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
-**Status:** Accepted, amended at M1.8
+**Status:** Accepted, amended at M1.8 and on 10 October 2026
 **Date:** 2026-09-13
 
 ## Context
@@ -166,3 +166,9 @@ summary and its report, in the way a rule's own failures now are. That is an inc
 and it is **M3.6** in the roadmap - placed after per-operation oracle configuration, which already
 has to answer the neighbouring question of which checks were deliberately switched off.
 
+## Amendment (10 October 2026)
+
+**The fault this record's oracle reports is `F200`.** Faults 0.8.0 of Web Fuzzing Commons renumbered
+the catalogue: a reply whose structure does not match its schema became `F200`, and `101` now means a
+non-standard status code. RESTest reports it as `F200`; the table in ADR-0016's M1.10 amendment shows
+the renumbering.

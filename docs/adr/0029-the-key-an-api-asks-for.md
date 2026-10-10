@@ -1,6 +1,6 @@
 # ADR-0029: A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes
 
-**Status:** Accepted, amended at M12.1c
+**Status:** Accepted, amended at M12.1c and on 10 October 2026
 **Date:** 2026-09-30
 
 ## Context
@@ -528,3 +528,16 @@ forgotten; this text never passes through it, since no exchange was ever made, s
 its hiding to the one place that writes it. Nothing is known to put a key there - running out of
 memory, or of stack, names no key - but the run was handed one, and prints what it did not make.
 
+## Amendment (10 October 2026)
+
+**Two of the surveyed tools, checked against their code.**
+
+- **ARAT-RL** (commit `e5ccb13f`) sends no credentials at all: it takes three positional arguments
+  and sets no header but the content type. So "every other tool sends the same credentials with
+  every request" is wrong for ARAT-RL; the other tools were not checked again.
+- **Schemathesis** 4.30.0 adds a step that signs itself in: when the document declares a registration
+  and a login operation, it registers a user and logs in before testing, and uses the credentials it
+  got.
+
+The decision above is unchanged: RESTest uses only the credentials the person running it hands over.
+Signing in by itself, as Schemathesis now does, would be a decision of its own.

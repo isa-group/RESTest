@@ -1,7 +1,7 @@
 # ADR-0006: One event stream, and every interaction persisted
 
-**Status:** Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334
-**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13, 2026-09-15, 2026-09-22, 2026-09-23, 2026-09-24, 2026-09-27, 2026-09-30)
+**Status:** Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10 October 2026
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13, 2026-09-15, 2026-09-22, 2026-09-23, 2026-09-24, 2026-09-27, 2026-09-30, 2026-10-10)
 
 ## Context
 
@@ -613,3 +613,9 @@ Three things follow:
 - **A body a key was hidden in may not be the length its `Content-Length` header says.** Nothing
   compares the two today.
 - **The layout of the store does not change.**
+
+## Amendment (10 October 2026)
+
+**The schema fault is `F200`.** Where this record speaks of F101 faults for replies off their schema,
+it uses the numbering of Faults 0.7.0; since Faults 0.8.0 that fault is `F200` (ADR-0014's and
+ADR-0016's amendments).

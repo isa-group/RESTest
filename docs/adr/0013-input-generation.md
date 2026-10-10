@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3 and M10.1
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10 October 2026
 **Date:** 2026-09-13
 
 ## Context
@@ -702,3 +702,20 @@ ordinary rounds' numbers on. Where a creation has nothing optional in it, the or
 ones the same seed draws without series; where it has, the turn that begins a series leaves the
 optional parts out rather than drawing which to send, and the ordinary requests after it draw
 different numbers.
+
+## Amendment (10 October 2026)
+
+**Two rows of the table above, checked against each tool's code.**
+
+- **RESTler** (commit `6d984dee`): every value in a pool is tried only in its `bfs`, `bfs-fast` and
+  `test-all-combinations` modes, and only up to `max_combinations`, 20 by default. Its `fuzz` command
+  runs `bfs-cheap` by default, which, like `random-walk`, `bfs-minimal` and its test mode, stops at the
+  first combination of values that is accepted.
+- **EvoMaster** (release 6.2.0, and its development branch at commit `b72feb25`): values are mutated
+  by an evolutionary algorithm with coverage as the fitness in its white-box mode. Its black-box mode,
+  the default since 6.0.0 and the mode it is measured in, uses `SMARTS`, a form of random sampling in
+  which nothing is mutated. The same holds for "the tool that does use weights, EvoMaster, learns them
+  from coverage", among the alternatives considered: true of its white-box mode only.
+
+The point the table makes, that where tools have a priority it is keyed by parameter name rather
+than by source, still holds.
