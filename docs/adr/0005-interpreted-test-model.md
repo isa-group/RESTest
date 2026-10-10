@@ -1,7 +1,7 @@
 # ADR-0005: Test cases are data, executed directly — not generated source code
 
-**Status:** Accepted, amended at M1.1b, M2.2, M10.3 and M11.3
-**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18, 2026-09-28, 2026-09-30)
+**Status:** Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 October 2026
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18, 2026-09-28, 2026-09-30, 2026-10-10)
 
 ## Context
 
@@ -298,12 +298,18 @@ for the credentials a run is handed ([ADR-0029](0029-the-key-an-api-asks-for.md)
 - **`HttpRequestRecord.toString` still prints the address**, where a key may sit. An address with a
   key in it never leaves the door that hides it (ADR-0029 §6).
 
-## Amendment (what Web Fuzzing Commons reserves)
+## Amendment (10 October 2026)
 
-Checked on 10 October 2026 against Web Fuzzing Commons release 0.11.0. The catalogue does not reserve
-codes 900-909 for malformed responses, or for anything else: it leaves the whole range 900-999 to
-each tool's own codes and names none of them. A response that is not valid HTTP has no code of its
-own in Faults 0.9.0 — `F101` covers only a status code outside 100-599 — so a fault RESTest reports
-for `MalformedResponse` would carry a code of its own in that range. The decision above, keeping a
-malformed response apart from no response at all, is unchanged; only the reason given for it named
-the wrong codes.
+**Two things Web Fuzzing Commons says now, checked against its release 0.11.0.**
+
+- It does not reserve codes 900-909 for malformed responses, or for anything else: it leaves the
+  whole range 900-999 to each tool's own codes and names none of them. A response that is not valid
+  HTTP has no code of its own in Faults 0.9.0; `F101` covers a status code outside 100-599, which is
+  one way a response can be malformed. RESTest reports no fault for `MalformedResponse` today. If it
+  does, the code could be `F101` where it fits, or one of RESTest's own in the 900-999 range.
+- Faults 0.9.0 adds `F312`, *Call Timeout*: no reply within a time limit, read as a possible denial
+  of service or a slow environment. So a request nobody answered is no longer outside the catalogue,
+  as the reasoning above took it to be.
+
+The decision itself, keeping an answer, a malformed response and no response at all as three cases,
+is unchanged; it does not depend on how any of them is numbered.

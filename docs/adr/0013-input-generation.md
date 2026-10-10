@@ -1,7 +1,7 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3 and M10.1
-**Date:** 2026-09-13
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3 and M10.1, and on 10 October 2026
+**Date:** 2026-09-13 (last amended 2026-10-10)
 
 ## Context
 
@@ -703,11 +703,17 @@ ones the same seed draws without series; where it has, the turn that begins a se
 optional parts out rather than drawing which to send, and the ordinary requests after it draw
 different numbers.
 
-## Amendment (how RESTler tries a pool)
+## Amendment (10 October 2026)
 
-Checked on 10 October 2026 against RESTler at commit `6d984dee`. The table above says every value in
-a RESTler pool is tried, not sampled. That holds only in its `bfs`, `bfs-fast` and
-`test-all-combinations` modes, and only up to `max_combinations`, 20 by default. Its `fuzz` command
-runs `bfs-cheap` by default, which, like `random-walk`, `bfs-minimal` and its test mode, stops at the
-first combination of values that is accepted. The point the table makes, that RESTler's priority is
-keyed by parameter name rather than by source, still holds.
+**Two rows of the table above, checked against each tool's code.**
+
+- **RESTler** (commit `6d984dee`): every value in a pool is tried only in its `bfs`, `bfs-fast` and
+  `test-all-combinations` modes, and only up to `max_combinations`, 20 by default. Its `fuzz` command
+  runs `bfs-cheap` by default, which, like `random-walk`, `bfs-minimal` and its test mode, stops at the
+  first combination of values that is accepted.
+- **EvoMaster** (release 6.2.0 and commit `b72feb25`): values are mutated by an evolutionary algorithm
+  with coverage as the fitness in its white-box mode. Its black-box mode, the default since 6.0.0 and
+  the mode it is measured in, uses `SMARTS`, a form of random sampling in which nothing is mutated.
+
+The point the table makes, that where tools have a priority it is keyed by parameter name rather
+than by source, still holds.

@@ -1,7 +1,7 @@
 # ADR-0016: A fault is identified by its catalogue number, described in our own words, and classified twice
 
-**Status:** Accepted, amended at M1.10
-**Date:** 2026-09-15
+**Status:** Accepted, amended at M1.10 and on 10 October 2026
+**Date:** 2026-09-15 (last amended 2026-10-10)
 
 ## Context
 
@@ -189,9 +189,10 @@ all. The organisers should be asked which they compute. If the answer turns out 
 this amendment needs a second criterion beside the first, not a replacement: the two answer different
 questions and a report can carry both.
 
-## Amendment (what changed in the catalogue and among the tools)
+## Amendment (10 October 2026)
 
-Checked on 10 October 2026 against Web Fuzzing Commons release 0.11.0 and the tools' own sources.
+**What changed in the catalogue and among the tools, checked against Web Fuzzing Commons release
+0.11.0 and each tool's own source.**
 
 - **Faults 0.9.0**, first published in release 0.10.0 on 5 October 2026, adds five kinds, among them
   `F121`, a 5xx other than 500 and 501, and `F312`, *Call Timeout*, no reply within a time limit. So
@@ -199,18 +200,20 @@ Checked on 10 October 2026 against Web Fuzzing Commons release 0.11.0 and the to
   counts server errors beside the fault list, as the M1.10 amendment decided: the first of the two
   reasons it gives, that a fault is a rule's judgement and a 5xx is something the API did, still
   holds; the second, that the catalogue had no code for the family, no longer does. The 39 kinds of
-  0.8.0, `F100` and `F200` among them, are unchanged in 0.9.0, which adds an `id` field as the
-  stable key.
+  0.8.0, `F100` and `F200` among them, keep their codes and names in 0.9.0, which adds an `id` field
+  as the stable key.
 - **The tools RESTest is measured against no longer all use 0.8.0.** Schemathesis 4.30.1 writes
   Faults 0.9.0 codes in its WFC report; EvoMaster 6.2.0 uses 0.8.0, and its development branch has
   moved to release 0.10.0.
-- **The caveat about distinct error messages has an answer.** The tool the 2027 rules' footnote
-  cites, ARAT-RL, groups by operation, path and parameter names in its own report, but its
-  evaluation script, `parse_log.py`, removes duplicate server errors by comparing their stack traces
-  or their messages once cleaned, and ARAT-RL's, AutoRestTest's and LlamaRestTest's papers all say
-  they counted with it. Counting is therefore message-based in the work the rules cite. Whether
-  RESTest's report should carry a second, message-based count beside the per-operation one, as the
-  caveat foresaw, is a decision of its own; nothing here changes the count.
+- **The caveat about distinct error messages is still open, with more known.** What the organisers
+  compute has not been asked. The 2027 rules call a 5xx unique when its message is sufficiently
+  distinct, citing ARAT-RL. ARAT-RL's own report groups by operation, path and parameter names, as
+  the caveat says. Its evaluation script, `parse_log.py`, which ARAT-RL's, AutoRestTest's and
+  LlamaRestTest's papers say they counted with, calls two 5xx the same when their stack traces match,
+  or else their cleaned messages. But ARAT-RL's README warns that this count has a bug and recommends
+  counting the operations that answered 500 instead, which is the count this record keeps. Whether
+  RESTest's report should carry a message-based count beside it remains a decision of its own.
 
 Moving to Faults 0.9.0 is a change of its own: the test that compares RESTest's copy of the
-catalogue with the published file will report the new `id` field until RESTest's copy carries it.
+catalogue with the published file will report the new `id` field until RESTest's copy carries it, and
+the ids 0.9.0 gives faults 301 and 306 differ from the names `WfcFault` uses for them.

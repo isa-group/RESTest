@@ -219,7 +219,10 @@ have no switch yet. A test holds that page to the tool.
 This section maps the REST API testing landscape for readers new to the field: the tools most often
 compared with RESTest in academic evaluations and benchmarks, one paragraph each, followed by a
 [comparison table](#comparison) whose columns are explained above it. The terms it uses — stateless
-and stateful testing, black-box and white-box — are in the [glossary](#glossary).
+and stateful testing, black-box and white-box — are in the [glossary](#glossary). What it says of
+RESTler, EvoMaster, Schemathesis, RestTestGen and CATS was checked on 10 October 2026 against their
+code: RESTler at commit `6d984dee`, EvoMaster at release 6.2.0 and commit `b72feb25`, Schemathesis
+4.30.1, RestTestGen v25.12 and CATS 14.0.0. Tools change, and a later version may do more.
 
 ### AutoRestTest
 
@@ -246,18 +249,19 @@ black-box mode, the default since 6.0.0, needs only the specification and the ru
 samples requests rather than evolving them. Call sequences come from the path hierarchy — a creation
 before a read of what it created — with identifiers chained from replies; the white-box mode also
 infers which resources depend on which. EvoMaster's authors maintain the WFC fault catalogue, and
-EvoMaster reports by it, in 37 categories.
+EvoMaster reports by it, in 37 categories on its development branch.
 
 ### RESTler
 
 [RESTler](https://github.com/microsoft/restler-fuzzer), from Microsoft Research, introduced
 stateful REST fuzzing guided by the API's replies. A compiler written in F# turns the specification
-into a grammar, inferring *producer-consumer* relationships — that `POST /orders` produces an order
+into a grammar — a description of every request it may send, with a slot for each value — inferring
+*producer-consumer* relationships — that `POST /orders` produces an order
 identifier that `DELETE /orders/{id}` later consumes — and an engine written in Python chains
 operations from it, extending the sequences that worked. Values come from a fixed dictionary of
 type-appropriate values, which a user can extend per parameter name; identifiers come from live
-replies. Checkers replay sequences to surface 500 errors and resource-state problems, such as a
-resource still usable after it was deleted. Guidance by code coverage came later, in an extension
+replies. Every 5xx it meets is reported, and checkers replay sequences to surface resource-state
+problems, such as a resource still usable after it was deleted. Guidance by code coverage came later, in an extension
 named Pythia.
 
 ### Schemathesis
@@ -274,7 +278,7 @@ names and from `Location` headers.
 [RestTestGen](https://github.com/SeUniVr/RestTestGen), from the University of Verona, focuses on
 *nominal* and *error* testing. An Operation Dependency Graph, built from the names of parameters and
 response fields, orders the operations, and the requests that worked are then mutated to trigger
-error responses. Sequences that create, read, update and delete one resource appear only in its
+error responses. Sequences over one resource — create then read, update then read — appear only in its
 mass-assignment strategy. It reads OpenAPI 3.0 with a parser of its own, supports IDL-based
 inter-parameter constraints, and emits results as JUnit 5 tests.
 
@@ -284,8 +288,9 @@ inter-parameter constraints, and emits results as JUnit 5 tests.
 large catalogue of *fuzzers*, each targeting a specific class of input anomaly: boundary values,
 special characters, Unicode edge cases, oversized payloads, missing required fields, and extra
 unexpected fields. It is designed for repeatable contract testing in CI pipelines rather than for
-finding deep behavioural bugs, and its stateful checks are few: a `DELETE` takes its identifier from
-an earlier `POST`'s reply, and a deleted resource is read again to check it is gone.
+finding deep behavioural bugs. In release 14.0.0 its stateful checks are two: a `DELETE` takes its
+identifier from an earlier `POST`'s reply, and a deleted resource is read again to check it is gone;
+its development branch, which its documentation site follows, adds a pool of identifiers and more.
 
 ### Dredd
 
@@ -315,7 +320,7 @@ as it is now.
 | [EvoMaster](https://github.com/WebFuzzing/EvoMaster) | Kotlin/Java | 2.0, 3.0.x, 3.1.x | B+W | Evolutionary (MIO) in white box, random sampling in black box | Sequences from the path hierarchy with identifiers chained from replies; resource dependencies in white box | Evolutionary, random, examples, reply values | 5xx detection, HTTP semantics, schema validation, security (37 WFC categories) |
 | [RESTler](https://github.com/microsoft/restler-fuzzer) | Python, F# | 2.0, 3.0 | B | Grammar-based fuzzing guided by replies | Producer-consumer chains (spec-inferred), extended breadth first | Fixed dictionary per type or parameter name; identifiers from replies | 5xx detection, resource-state checkers (use after delete, leakage, hierarchy) |
 | [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x, 3.2 | B | Property-based (Hypothesis), shrinking | OAS link following, links inferred from names and `Location` headers | Schema-driven, property-based | 5xx detection, schema validation, WFC codes |
-| [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 3.0 | B | Random, IDL-constrained; mutation of requests that worked | Operation Dependency Graph ordering; CRUD sequences in the mass-assignment strategy only | Random, example-based, IDL-constrained | Status code classification |
+| [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 3.0 | B | Random, IDL-constrained; mutation of requests that worked | Operation Dependency Graph ordering; create-then-read and update-then-read sequences in the mass-assignment strategy only | Random, example-based, IDL-constrained | Status code classification |
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x, 3.1.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | `DELETE` after `POST`; read after delete | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |

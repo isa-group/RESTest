@@ -57,20 +57,20 @@ so records written from now on cite none.
 | [0002](0002-rewrite-not-refactor.md) | Rewrite rather than refactor; Apache-2.0; no 1.x source | Accepted |
 | [0003](0003-java-baseline.md) | Every module targets Java 21; toolchain on 25 | Accepted, amended at M0.2 |
 | [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 |
-| [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b, M2.2, M10.3 and M11.3 |
-| [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334 |
+| [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 October 2026 |
+| [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10 October 2026 |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0, 3.0.x and 3.1.x | Accepted, amended at M0.2, in #303 and in #328, reversed at M1.2 |
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted |
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted |
 | [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 and on 9 October 2026 |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b |
-| [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3 |
-| [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 |
+| [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10 October 2026 |
+| [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 and on 10 October 2026 |
 | [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1 October 2026 |
-| [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 |
+| [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 and on 10 October 2026 |
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
-| [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted |
+| [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
 | [0019](0019-the-samples-a-document-writes-down.md) | A document's own sample values are read, sent as written, and named in the record | Accepted |
 | [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1 October 2026 |
 | [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted, amended at M2.5b and M9.2 |
@@ -81,5 +81,5 @@ so records written from now on cite none.
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 and M8.5 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 |
-| [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c |
+| [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |

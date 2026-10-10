@@ -1,7 +1,7 @@
 # ADR-0018: A choice between shapes is one more shape
 
-**Status:** Accepted
-**Date:** 2026-09-17
+**Status:** Accepted, amended on 10 October 2026
+**Date:** 2026-09-17 (last amended 2026-10-10)
 
 ## Context
 
@@ -159,14 +159,17 @@ model does not have, and every consumer would be left asking what to send for *n
   would be a place built before anything exists to put in it. If one turns up, RESTest may generate a
   value whose discriminating property contradicts the branch it came from, and that is the amendment.
 
-## Amendment (what two of the surveyed tools do now)
+## Amendment (10 October 2026)
 
-Checked on 10 October 2026.
+**What three of the surveyed tools do, checked against their code.**
 
 - **RESTler** (commit `6d984dee`) keeps only the first branch of an `anyOf`, and records supporting
-  the others as future work; no handling of `oneOf` was found in its compiler.
+  the others as future work, in `SwaggerVisitors.fs`, where its compiler reads schemas; no handling of
+  `oneOf` was found there. The libraries it parses documents with were not checked.
 - **Schemathesis** stopped depending on `hypothesis-jsonschema` in 4.25.0, on 21 August 2026, so the
-  rewriting of `oneOf` described above is no longer what it does; how its own code now handles
-  `oneOf` was not checked.
+  rewriting of `oneOf` described above no longer comes from that library. How its own code now
+  handles `oneOf` was not checked.
+- **EvoMaster** mutates the gene's active branch in its white-box search. Its black-box mode, the
+  default since 6.0.0, samples requests and mutates nothing (release 6.2.0).
 
-The decision above does not depend on either.
+The decision above does not depend on any of them.
