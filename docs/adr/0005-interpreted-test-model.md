@@ -310,8 +310,8 @@ for the credentials a run is handed ([ADR-0029](0029-the-key-an-api-asks-for.md)
 - Faults 0.9.0 adds `F312`, *Call Timeout*: no reply within a time limit, read as a possible denial
   of service or a slow environment. So a request that gets no reply in time now has a code, which
   treats it as possibly the API's fault, where the reasoning above calls a connection nobody answered
-  not the API's fault at all. A refused or reset connection, the other kind of `TransportFailure`, is
-  still outside the catalogue.
+  not the API's fault at all. Every other `TransportFailure` — a refused or reset connection, a
+  request never sent — is still outside the catalogue.
 
 The decision itself, keeping an answer, a malformed response and no response at all as three cases,
 is unchanged; it does not depend on how any of them is numbered.
