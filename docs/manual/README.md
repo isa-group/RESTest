@@ -28,5 +28,5 @@ here point to them rather than repeat them.
 11. [Glossary](11-glossary.md) — the words this manual uses.
 
 [Before you start](01-what-restest-is-for.md#before-you-start), at the end of the first chapter,
-says what you need and how the examples are written. `docs/manual/pdf.sh` builds the whole manual as
-one PDF; it needs Docker.
+says what you need and how the examples are written. The manual of a release is this folder at the
+release's tag: choose the tag on GitHub, or check it out, and read the same files.

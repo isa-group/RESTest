@@ -193,7 +193,8 @@ repository is made public as the replication package.
 - **Write the manual for one format and decide the format first.** Rejected: it makes the format
   decision expensive and puts it on the critical path. One Markdown source built to both HTML and
   PDF was approved instead, and only the choice of which to publish is left, at no cost. *Taken on
-  1 October: the Markdown as GitHub shows it, and a PDF on the release (ROADMAP 12.3).*
+  1 October: the Markdown as GitHub shows it, and a PDF on the release (ROADMAP 12.3). The PDF was
+  dropped on 11 October 2026, after 2.1.0: [ADR-0031](0031-the-manual-is-markdown-only.md).*
 
 ## Amendment (3 October 2026): 2.0.0 before the image
 

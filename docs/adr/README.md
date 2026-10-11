@@ -83,3 +83,4 @@ so records written from now on cite none.
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
+| [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
