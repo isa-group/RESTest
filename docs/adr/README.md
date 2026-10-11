@@ -67,7 +67,7 @@ so records written from now on cite none.
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10 October 2026 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 and on 10 October 2026 |
-| [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1 October 2026 |
+| [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1 and 11 October 2026 |
 | [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 and on 10 October 2026 |
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
@@ -76,7 +76,7 @@ so records written from now on cite none.
 | [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted, amended at M2.5b and M9.2 |
 | [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted |
 | [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1, M10.3 and on 1 October 2026 |
-| [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted |
+| [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted, amended on 3, 4, 5 and 11 October 2026 |
 | [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b and on 1 October 2026 |
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 and M8.5 |
@@ -84,3 +84,4 @@ so records written from now on cite none.
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
+| [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted |

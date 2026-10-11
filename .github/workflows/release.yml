@@ -1,0 +1,329 @@
+# Makes a release of RESTest from a version tag: the container image, the two archives and their
+# checksums, every one of them checked before anything is published. ADR-0032 says why it is shaped
+# this way; docs/ci.md says how to use it.
+#
+#   archive        compiles RESTest and assembles restest-<v>.zip and restest-<v>.tgz
+#   check-archive  unpacks them on Linux, macOS and Windows and checks their launchers
+#   image          builds the image on an amd64 and on an arm64 machine and checks each; on a tag,
+#                  pushes each one, as it was checked, as :<v>-amd64 and :<v>-arm64
+#   publish        on a tag only: joins the two into :<v>, checks it, moves :latest when this is the
+#                  highest version, and leaves a DRAFT release with the archives and the checksums.
+#                  A person writes its notes and publishes it.
+#
+# A pull request that touches how RESTest is packaged runs everything but publish, and pushes nothing,
+# so a broken release is found before a tag is.
+#
+# Every action is pinned to a commit SHA, with the version in a trailing comment, for the reasons
+# ci.yml gives.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  # To make the release of a tag again with this workflow as it is on master, when what failed was
+  # the workflow itself. Everything else - the Dockerfile, dist/, the check - is still the tag's, so a
+  # fault in those is put right in the next patch. The tag itself is never moved.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The version tag to release, such as v2.2.0
+        required: true
+  pull_request:
+    branches: [master]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - dist/**
+      - .github/scripts/**
+      - .github/workflows/release.yml
+      - .gitattributes
+      - pom.xml
+      - restest-cli/pom.xml
+
+# One run per tag at a time, so that a run started by hand and the tag's own can never both make a
+# draft. A pull request's newer push supersedes its older one.
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+# Windows runners default to PowerShell; ci.yml says why bash is the default everywhere.
+defaults:
+  run:
+    shell: bash
+
+env:
+  IMAGE: ghcr.io/isa-group/restest
+
+jobs:
+  archive:
+    name: Build the archives
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.what.outputs.tag }}
+      version: ${{ steps.what.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
+          # The whole history of commits, to tell whether the tag is on master; their files only as
+          # they are needed, since the history reaches back through RESTest 1.x.
+          fetch-depth: 0
+          filter: tree:0
+
+      # The tag reaches the script through the environment and is checked before it is used: never
+      # pasted into a script, where a name chosen to be a command would run.
+      - name: Work out what is being released
+        id: what
+        env:
+          TAG: ${{ inputs.tag || (github.ref_type == 'tag' && github.ref_name) || '' }}
+        run: |
+          version=$(dist/version.sh)
+          if [ -n "$TAG" ]; then
+            echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              || { echo "::error::$TAG is not a version tag such as v2.2.0"; exit 1; }
+            [ "$TAG" = "v$version" ] \
+              || { echo "::error::$TAG is on a commit whose pom.xml says $version"; exit 1; }
+            git merge-base --is-ancestor HEAD origin/master \
+              || { echo "::error::$TAG is not on master"; exit 1; }
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build RESTest
+        run: ./mvnw --batch-mode --no-transfer-progress -Dmaven.test.skip=true package -pl restest-cli -am
+
+      - name: Assemble the archives
+        run: dist/assemble.sh target/dist --archives
+
+      # The archives themselves, not the folder: an artifact keeps no file permissions, and the
+      # launcher has to stay executable. What is checked next is what a release carries.
+      - name: Keep the archives
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: archives
+          path: |
+            target/dist/*.zip
+            target/dist/*.tgz
+          if-no-files-found: error
+          # A run of the same tag again replaces the archives of the run before.
+          overwrite: true
+
+  check-archive:
+    name: Check the archive on ${{ matrix.os }}
+    needs: archive
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      # 21 last, so that it is the one on the PATH; 17 is there to be refused.
+      - name: Set up Java 17 and 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+
+      - name: Fetch the archives
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: archives
+          path: archives
+
+      # Into a folder with a space and parentheses in its name, which is where a launcher's quoting
+      # breaks. Linux
+      # takes the .tgz; macOS and Windows the .zip, which is what their users download.
+      - name: Unpack the archive
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p "$RUNNER_TEMP/with space (x86)"
+          if [ "$RUNNER_OS" = Linux ]; then
+            tar -xzf "archives/restest-$VERSION.tgz" -C "$RUNNER_TEMP/with space (x86)"
+          else
+            unzip -q "archives/restest-$VERSION.zip" -d "$RUNNER_TEMP/with space (x86)"
+          fi
+
+      # Also a JAVA_HOME with a space and parentheses in it, as under C:\Program Files (x86), reached
+      # through a junction, for the same reason.
+      - name: Unpack the archive
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Expand-Archive -LiteralPath "archives/restest-$env:VERSION.zip" -DestinationPath "$env:RUNNER_TEMP\with space (x86)"
+          New-Item -ItemType Junction -Path "$env:RUNNER_TEMP\java home (x86)" -Target "$env:JAVA_HOME" | Out-Null
+
+      - name: Check bin/restest
+        env:
+          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 || env.JAVA_HOME_17_ARM64 }}
+        run: .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space (x86)/restest-$VERSION/bin/restest"
+
+      - name: Check bin\restest.cmd
+        if: runner.os == 'Windows'
+        env:
+          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          export JAVA_HOME="$RUNNER_TEMP\\java home (x86)"
+          .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space (x86)/restest-$VERSION/bin/restest.cmd"
+
+  image:
+    name: Build and check the image for ${{ matrix.arch }}
+    needs: archive
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    # Written to only on a tag. A pull request from a fork gets a read-only token whatever this says,
+    # and one from a branch of this repository can only be opened by somebody who can already push.
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TAG: ${{ needs.archive.outputs.tag }}
+      VERSION: ${{ needs.archive.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      # Built on this machine's own processor, so the image checked is the image pushed.
+      - name: Build the image
+        run: |
+          docker build --provenance=false \
+            --build-arg VERSION="$VERSION" \
+            --build-arg REVISION="$(git rev-parse HEAD)" \
+            --build-arg CREATED="$(git log -1 --format=%cI)" \
+            --tag restest:check .
+
+      - name: Check the image
+        run: .github/scripts/check-restest.sh "$VERSION" --image restest:check
+
+      # Never over an image already pushed for this version: that one may be in a release already.
+      - name: Push the image as ${{ env.VERSION }}-${{ matrix.arch }}
+        if: env.TAG != ''
+        env:
+          ARCH: ${{ matrix.arch }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          if docker buildx imagetools inspect "$IMAGE:$VERSION-$ARCH" > /dev/null 2>&1; then
+            echo "$IMAGE:$VERSION-$ARCH exists already, and is left as it is"
+          else
+            docker tag restest:check "$IMAGE:$VERSION-$ARCH"
+            docker push --quiet "$IMAGE:$VERSION-$ARCH"
+          fi
+
+  publish:
+    name: Publish the image and draft the release
+    needs: [archive, check-archive, image]
+    if: needs.archive.outputs.tag != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    env:
+      TAG: ${{ needs.archive.outputs.tag }}
+      VERSION: ${{ needs.archive.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      - name: Fetch the archives
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: archives
+          path: archives
+
+      - name: Sign in to the registry
+        run: echo "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      # Within the registry, from the two images as they were pushed: nothing is built again. What
+      # joins them is a list of the two, which carries no labels of its own; each image keeps the
+      # Dockerfile's.
+      - name: Join the two images as ${{ env.VERSION }}
+        run: |
+          if docker buildx imagetools inspect "$IMAGE:$VERSION" > /dev/null 2>&1; then
+            echo "$IMAGE:$VERSION exists already, and is left as it is"
+          else
+            docker buildx imagetools create --tag "$IMAGE:$VERSION" \
+              "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
+          fi
+
+      - name: Check the image as published
+        run: .github/scripts/check-restest.sh "$VERSION" --image "$IMAGE:$VERSION"
+
+      # Only once the image is known to work, and only when no higher version is tagged already.
+      - name: Move latest, if this is the highest version
+        run: |
+          highest=$(git ls-remote --tags origin \
+            | sed -n 's,^.*refs/tags/\(v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+            | sort -V | tail -n 1)
+          if [ "$TAG" = "$highest" ]; then
+            docker buildx imagetools create --tag "$IMAGE:latest" "$IMAGE:$VERSION"
+          else
+            echo "$highest is higher than $TAG, so latest stays where it is"
+          fi
+
+      # The checksums describe the files the release will carry. A file a draft already holds, from an
+      # earlier run of this tag, is kept as it is and its checksum is taken from it; a release already
+      # published is never touched.
+      - name: Draft the release
+        run: |
+          zip="restest-$VERSION.zip"
+          tgz="restest-$VERSION.tgz"
+          mkdir -p release
+          if draft=$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null); then
+            if [ "$draft" != true ]; then
+              echo "::error::The release $TAG is published already; nothing in it is replaced"
+              exit 1
+            fi
+            if [ -n "$(gh release view "$TAG" --json assets --jq '.assets[].name')" ]; then
+              gh release download "$TAG" --dir release
+            fi
+          else
+            gh release create "$TAG" --draft --verify-tag --title "RESTest $VERSION" \
+              --notes "The notes are written here before the release is published."
+          fi
+          added=
+          for file in "$zip" "$tgz"; do
+            if [ ! -f "release/$file" ]; then
+              cp "archives/$file" release/
+              added="$added release/$file"
+            fi
+          done
+          if [ ! -f release/checksums_sha256.txt ]; then
+            (cd release && sha256sum "$zip" "$tgz" > checksums_sha256.txt)
+            added="$added release/checksums_sha256.txt"
+          fi
+          # shellcheck disable=SC2086
+          [ -z "$added" ] || gh release upload "$TAG" $added
+          echo "Drafted: $(gh release view "$TAG" --json url --jq .url)"

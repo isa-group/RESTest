@@ -40,7 +40,7 @@ the IDL grammar and the test corpus do.
 | Specification formats | OpenAPI 2.0 (by conversion), 3.0.x and 3.1.x, through a single parser backend. Not 3.2, which is too recent to justify a second backend, and not 4.x, which has no specification text |
 | Testing style | Black-box only: the specification and the API's responses, never its source |
 | Test kinds | Stateless single requests, and stateful sequences across several operations |
-| Distribution | A command-line tool, built from source |
+| Distribution | A command-line tool: a container image for `linux/amd64` and `linux/arm64`, an archive for any machine with Java 21 or later, or built from source. The image and the archives come from each version tag ([ADR-0032](adr/0032-how-a-release-is-published.md)) |
 
 Black-box is a property of the *tool*, not of the evaluation. Measuring how much of an API's code a
 run exercises requires instrumenting that API, which an evaluation harness does from outside; the tool
@@ -368,12 +368,14 @@ version of the first was set aside.
 
 ## Stack
 
-Versions are pinned here and in the root POM; the two are expected to agree.
+Versions are pinned here and in the root POM, and the container image's two base images in the
+`Dockerfile`, by digest; the table names those by their tag. They are expected to agree.
 
 | Component | Choice | Version |
 |---|---|---|
 | Library bytecode | Java 21 — every module, CLI included ([ADR-0003](adr/0003-java-baseline.md)) | — |
 | Build toolchain | JDK 25 (long-term support) | 25 |
+| Container image | Built on `eclipse-temurin:25-jdk`, runs on `eclipse-temurin:21-jre` ([ADR-0032](adr/0032-how-a-release-is-published.md)) | 25, 21 |
 | Build | Maven with wrapper | 3.9.16 |
 | OAS parser | `io.swagger.parser.v3:swagger-parser`, behind our own interface | 2.1.47 |
 | JSON Schema validation | `com.networknt:json-schema-validator`, confined to `restest-oracles` ([ADR-0014](adr/0014-response-conformance.md)) | 3.0.7 |
