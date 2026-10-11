@@ -2,7 +2,13 @@
 #
 #     docker build --tag restest .
 #     docker run --rm restest version
-#     docker run --rm -v "$PWD:/work" restest run openapi.yaml --url http://host.docker.internal:8080
+#     docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" \
+#         --add-host=host.docker.internal:host-gateway \
+#         restest run openapi.yaml --url http://host.docker.internal:8080
+#
+# The folder mounted at /work is where the document is read from and the results written to;
+# --user makes them belong to whoever ran it on Linux; host.docker.internal is the machine Docker runs
+# on, which Linux needs --add-host to know.
 #
 # Two stages. The first compiles RESTest from this checkout and assembles the folder a release
 # archive unpacks into (dist/assemble.sh); the second copies that folder onto a Java runtime and
@@ -14,7 +20,7 @@
 # processor needs no emulation.
 #
 # Java 21 at run time, because it is the oldest release RESTest supports. Both base images are pinned
-# by content, so that the same commit always builds the same image; moving them to a newer patch of
+# by content, so that the same commit always builds on the same Java; moving them to a newer patch of
 # Java is a step of every release (docs/ci.md).
 #
 # Nothing in it knows how the tool is measured.

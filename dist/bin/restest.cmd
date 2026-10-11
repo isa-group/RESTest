@@ -41,14 +41,12 @@ echo Install one - Eclipse Temurin, https://adoptium.net/, is a free choice - or
 exit /b 127
 
 :javaFound
-rem Which Java it is, from the line of java -version that says so. Through a file rather than a pipe
-rem inside "for /f": with a pipe, a Java under a folder with a space in its name breaks the command.
-set "RESTEST_SAID=%TEMP%\restest-java-%RANDOM%%RANDOM%.txt"
-"%RESTEST_JAVA%" -version > "%RESTEST_SAID%" 2>&1
-if errorlevel 1 goto javaDoesNotStart
+rem Which Java it is, from the line of java -version that says so rather than from its first line,
+rem which is a notice when JAVA_TOOL_OPTIONS is set. The call in front keeps cmd.exe from taking the
+rem quotes off a Java under a folder with a space in its name. A java that cannot even say its version
+rem gives no such line, and is no Java either.
 set "RESTEST_JAVA_VERSION="
-for /f "usebackq tokens=3" %%v in (`findstr /c:" version " "%RESTEST_SAID%"`) do set "RESTEST_JAVA_VERSION=%%~v"
-del "%RESTEST_SAID%" >nul 2>nul
+for /f "tokens=1-3" %%a in ('call "%RESTEST_JAVA%" -version 2^>^&1') do if "%%b"=="version" set "RESTEST_JAVA_VERSION=%%~c"
 if not defined RESTEST_JAVA_VERSION goto javaUnknown
 rem 21.0.12 and 26-ea give 21 and 26; the 1.8.0_402 of Java 8 gives 8.
 for /f "tokens=1 delims=.-_+" %%a in ("%RESTEST_JAVA_VERSION%") do set "RESTEST_JAVA_MAJOR=%%a"
@@ -61,14 +59,9 @@ rem user with four warnings before a single request has been sent.
 "%RESTEST_JAVA%" --enable-native-access=ALL-UNNAMED -cp "%RESTEST_HOME%\lib\*" io.restest.cli.Restest %*
 exit /b %ERRORLEVEL%
 
-:javaDoesNotStart
-echo restest: %RESTEST_JAVA% does not start, so RESTest cannot either. It said: 1>&2
-type "%RESTEST_SAID%" 1>&2
-del "%RESTEST_SAID%" >nul 2>nul
-exit /b 127
-
 :javaUnknown
-echo restest: cannot tell which Java %RESTEST_JAVA% is. 1>&2
+echo restest: %RESTEST_JAVA% does not say which Java it is, so RESTest cannot start on it. It said: 1>&2
+"%RESTEST_JAVA%" -version 1>&2 2>&1
 exit /b 127
 
 :javaTooOld

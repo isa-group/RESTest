@@ -17,6 +17,9 @@
 
 set -u
 
+# cd must go where it is told, not to a folder an exported CDPATH names.
+unset CDPATH
+
 # The folder this script is in, found through any symbolic link to it, since a package manager may put
 # a link on the PATH. readlink without -f, and pwd -P, because those are what every macOS and Linux has.
 script=$0

@@ -25,6 +25,9 @@
 
 set -eu
 
+# cd must go where it is told, not to a folder an exported CDPATH names.
+unset CDPATH
+
 usage="usage: check-restest.sh <version> --launcher|--image|--checkout <what>"
 expected=${1:?$usage}
 mode=${2:?$usage}

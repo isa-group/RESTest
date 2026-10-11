@@ -81,8 +81,10 @@ publication, which was considered and not built.
 A tag is never moved or deleted; a release whose draft cannot be published as it is is put right in
 the next patch. A run of the workflow for a tag that has run before replaces nothing: an image
 already pushed is left as it is, a draft keeps the files it has and takes its checksums from them,
-and a published release is not touched. When a tag's own copy of the workflow fails, the same
-release is made by starting the workflow on `master` by hand with the tag.
+and a published release is not touched. When what failed is the workflow itself, the same release
+is made by starting the workflow on `master` by hand with the tag; everything else it uses - the
+`Dockerfile`, `dist/`, the check - is still the tag's, and a fault in those is put right in the next
+patch.
 
 ### 4. The image
 
@@ -103,8 +105,8 @@ release is made by starting the workflow on `master` by hand with the tag.
   to, which on Linux is seldom the folder of the person running it. On Linux, where files written as
   root then belong to root, the documentation passes `--user "$(id -u):$(id -g)"`; Docker without
   root, and Podman, map root to the person already.
-- **Pinned by digest**, both base images, so that one commit builds one image. Moving them to a
-  newer patch of Java is a step of every release while Dependabot is switched off.
+- **Pinned by digest**, both base images, so that one commit always builds on the same Java. Moving
+  them to a newer patch of Java is a step of every release while Dependabot is switched off.
 - **Labelled with what it is**: its version, its commit and when that commit was made, set by the
   release workflow and empty in a build of any other checkout, rather than the base image's own,
   which name a version of Ubuntu. No provenance attestation, which registries show as an image for
@@ -125,8 +127,8 @@ same things again. `./restest` stays as the checkout's own, whose jars are elsew
   they say so and answer `127`, a number RESTest never answers with. An older Java would otherwise
   refuse to start RESTest and answer `1`. They read the line of `java -version` that gives the
   version, not its first line, which is a notice when `JAVA_TOOL_OPTIONS` is set.
-- `dist/assemble.sh` writes their line endings itself, LF and CRLF, whatever a checkout did with
-  them.
+- Their line endings are set by `.gitattributes` - LF for `bin/restest`, CRLF for `bin\restest.cmd`
+  - and `dist/assemble.sh` copies them as they are.
 
 ### 6. One check for every way of starting RESTest
 
@@ -136,8 +138,8 @@ checkout's `./restest` - and checks that it says which version it is, that a wro
 launcher and an image are also checked for answering `127` with no Java they can use, and an image
 for answering `143` when `docker stop` ends a run. Every pull request runs it on the image and on
 `./restest`; the release workflow on the archive's launchers on three operating systems, and on the
-image on both processors, before anything is pushed and again once it is. A later installer passes
-the same check.
+image on both processors before anything is pushed, and on the published image once more. A later
+installer passes the same check.
 
 ### 7. 2.0.0 and 2.1.0 get no image and no archive
 
@@ -151,8 +153,9 @@ workflow against a public release. 2.2.0 is the first release that carries them;
 - RESTest can be run with one command and nothing but Docker - `docker run
   ghcr.io/isa-group/restest:<v>`
   - or nothing but Java, from 2.2.0 on. Building from the source stays as it was.
-- A release is made with one tag and one publication, each by a person. The notes are still written
-  by hand; nothing else is done by hand, apart from moving the base images while Dependabot is off.
+- A release is made with one tag and one publication, each by a person, with the steps around them
+  that `docs/ci.md` lists: the base images moved while Dependabot is off, the version and the pages
+  that name it prepared beforehand, the notes written, and the installation tried from outside.
 - Sizes, measured at 2.1.1-SNAPSHOT: each archive is 34 MB; the image is 145 MB compressed on
   `amd64` and 143 MB on `arm64`, of which 32 MB is RESTest and the rest the Java runtime on Ubuntu.
 - The registry shows two more tags per version, `<v>-amd64` and `<v>-arm64`, which the version's own

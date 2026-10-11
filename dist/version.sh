@@ -7,5 +7,8 @@
 
 set -eu
 
+# cd must go where it is told, not to a folder an exported CDPATH names.
+unset CDPATH
+
 root=$(cd "$(dirname "$0")/.." && pwd)
 tr -d '\r' < "$root/pom.xml" | sed -n 's:^    <version>\(.*\)</version>$:\1:p' | head -n 1

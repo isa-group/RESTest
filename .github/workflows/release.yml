@@ -21,8 +21,9 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-  # To make the release of a tag again with this workflow as it is on master, when the tag's own copy
-  # of it failed. The tag itself is never moved.
+  # To make the release of a tag again with this workflow as it is on master, when what failed was
+  # the workflow itself. Everything else - the Dockerfile, dist/, the check - is still the tag's, so a
+  # fault in those is put right in the next patch. The tag itself is never moved.
   workflow_dispatch:
     inputs:
       tag:
@@ -36,7 +37,9 @@ on:
       - dist/**
       - .github/scripts/**
       - .github/workflows/release.yml
+      - .gitattributes
       - pom.xml
+      - restest-cli/pom.xml
 
 # One run per tag at a time, so that a run started by hand and the tag's own can never both make a
 # draft. A pull request's newer push supersedes its older one.
@@ -66,7 +69,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
           # The whole history of commits, to tell whether the tag is on master; their files only as
           # they are needed, since the history reaches back through RESTest 1.x.
           fetch-depth: 0
@@ -114,6 +117,8 @@ jobs:
             target/dist/*.zip
             target/dist/*.tgz
           if-no-files-found: error
+          # A run of the same tag again replaces the archives of the run before.
+          overwrite: true
 
   check-archive:
     name: Check the archive on ${{ matrix.os }}
@@ -129,7 +134,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
 
       # 21 last, so that it is the one on the PATH; 17 is there to be refused.
       - name: Set up Java 17 and 21
@@ -146,38 +151,40 @@ jobs:
           name: archives
           path: archives
 
-      # Into a folder with a space in its name, which is where a launcher's quoting breaks. Linux
+      # Into a folder with a space and parentheses in its name, which is where a launcher's quoting
+      # breaks. Linux
       # takes the .tgz; macOS and Windows the .zip, which is what their users download.
       - name: Unpack the archive
         if: runner.os != 'Windows'
         run: |
-          mkdir -p "$RUNNER_TEMP/with space"
+          mkdir -p "$RUNNER_TEMP/with space (x86)"
           if [ "$RUNNER_OS" = Linux ]; then
-            tar -xzf "archives/restest-$VERSION.tgz" -C "$RUNNER_TEMP/with space"
+            tar -xzf "archives/restest-$VERSION.tgz" -C "$RUNNER_TEMP/with space (x86)"
           else
-            unzip -q "archives/restest-$VERSION.zip" -d "$RUNNER_TEMP/with space"
+            unzip -q "archives/restest-$VERSION.zip" -d "$RUNNER_TEMP/with space (x86)"
           fi
 
-      # Also a JAVA_HOME with a space in it, reached through a junction, for the same reason.
+      # Also a JAVA_HOME with a space and parentheses in it, as under C:\Program Files (x86), reached
+      # through a junction, for the same reason.
       - name: Unpack the archive
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Expand-Archive -LiteralPath "archives/restest-$env:VERSION.zip" -DestinationPath "$env:RUNNER_TEMP\with space"
-          New-Item -ItemType Junction -Path "$env:RUNNER_TEMP\java home" -Target "$env:JAVA_HOME" | Out-Null
+          Expand-Archive -LiteralPath "archives/restest-$env:VERSION.zip" -DestinationPath "$env:RUNNER_TEMP\with space (x86)"
+          New-Item -ItemType Junction -Path "$env:RUNNER_TEMP\java home (x86)" -Target "$env:JAVA_HOME" | Out-Null
 
       - name: Check bin/restest
         env:
           OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 || env.JAVA_HOME_17_ARM64 }}
-        run: .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space/restest-$VERSION/bin/restest"
+        run: .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space (x86)/restest-$VERSION/bin/restest"
 
       - name: Check bin\restest.cmd
         if: runner.os == 'Windows'
         env:
           OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         run: |
-          export JAVA_HOME="$RUNNER_TEMP\\java home"
-          .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space/restest-$VERSION/bin/restest.cmd"
+          export JAVA_HOME="$RUNNER_TEMP\\java home (x86)"
+          .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space (x86)/restest-$VERSION/bin/restest.cmd"
 
   image:
     name: Build and check the image for ${{ matrix.arch }}
@@ -203,7 +210,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
 
       # Built on this machine's own processor, so the image checked is the image pushed.
       - name: Build the image
@@ -248,7 +255,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
 
       - name: Fetch the archives
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -259,23 +266,17 @@ jobs:
       - name: Sign in to the registry
         run: echo "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      # Within the registry, from the two images as they were pushed: nothing is built again. The
-      # registry describes an image for two processors by what its index says, so the index repeats
-      # three of the labels the Dockerfile gives each image.
+      # Within the registry, from the two images as they were pushed: nothing is built again. What
+      # joins them is a list of the two, which carries no labels of its own; each image keeps the
+      # Dockerfile's.
       - name: Join the two images as ${{ env.VERSION }}
         run: |
           if docker buildx imagetools inspect "$IMAGE:$VERSION" > /dev/null 2>&1; then
             echo "$IMAGE:$VERSION exists already, and is left as it is"
-            exit 0
+          else
+            docker buildx imagetools create --tag "$IMAGE:$VERSION" \
+              "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
           fi
-          set --
-          for key in description source licenses; do
-            value=$(docker buildx imagetools inspect "$IMAGE:$VERSION-amd64" \
-              --format "{{ index .Image.Config.Labels \"org.opencontainers.image.$key\" }}")
-            set -- "$@" --annotation "index:org.opencontainers.image.$key=$value"
-          done
-          docker buildx imagetools create --tag "$IMAGE:$VERSION" "$@" \
-            "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
 
       - name: Check the image as published
         run: .github/scripts/check-restest.sh "$VERSION" --image "$IMAGE:$VERSION"
@@ -305,7 +306,9 @@ jobs:
               echo "::error::The release $TAG is published already; nothing in it is replaced"
               exit 1
             fi
-            gh release download "$TAG" --dir release
+            if [ -n "$(gh release view "$TAG" --json assets --jq '.assets[].name')" ]; then
+              gh release download "$TAG" --dir release
+            fi
           else
             gh release create "$TAG" --draft --verify-tag --title "RESTest $VERSION" \
               --notes "The notes are written here before the release is published."

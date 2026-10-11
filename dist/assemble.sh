@@ -14,6 +14,9 @@
 
 set -eu
 
+# cd must go where it is told, not to a folder an exported CDPATH names.
+unset CDPATH
+
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/.." && pwd)
 out=${1:?usage: dist/assemble.sh <output-directory> [--archives]}

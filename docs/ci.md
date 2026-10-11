@@ -316,11 +316,13 @@ is left as it is, a draft keeps the files it has, and a published release is not
 request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow or
 the root `pom.xml` rehearses the first three jobs and pushes nothing.
 
-When a tag's own copy of the workflow fails, `workflow_dispatch` makes the same release with the
-workflow as it is on `master`: Actions → Release → Run workflow, with the tag. A tag is never moved
-or deleted; a release whose draft cannot be published as it is is put right in the next patch.
+When what failed is the workflow itself, `workflow_dispatch` makes the same release with the
+workflow as it is on `master`: Actions → Release → Run workflow, with the tag. Everything else it
+uses — the `Dockerfile`, `dist/`, `check-restest.sh` — is still the tag's. A tag is never moved or
+deleted; a fault in what the tag holds, or a draft that cannot be published as it is, is put right
+in the next patch.
 
-The steps of every release, in order, each confirmed by the maintainer as it is taken:
+The steps of every release, in order, each taken by a maintainer:
 
 1. **The base images.** While Dependabot is switched off, move the `Dockerfile`'s two digests to the
    newest patch of `eclipse-temurin:25-jdk` and `eclipse-temurin:21-jre`

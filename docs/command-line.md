@@ -162,11 +162,11 @@ answers `0` or `1`, so that one stopped half-way never passes for one that finis
 
 | Number | When |
 |---|---|
-| `127` | The `restest` script at the root of a checkout, when the checkout has not been built yet at the version it declares. And the launcher of a release, `bin/restest` or `bin\restest.cmd` - the one the container image starts too - when there is no Java it can use: none on the `PATH`, a `JAVA_HOME` with no Java in it, or a Java older than 21. It says which, and how to put it right |
+| `127` | The `restest` script at the root of a checkout, when the checkout has not been built yet at the version it declares. And the launcher of a release, `bin/restest` or `bin\restest.cmd` - the one the container image starts too - when there is no Java it can use: none on the `PATH`, a `JAVA_HOME` with no Java in it, a Java older than 21, or one that does not start, such as with an option in `JAVA_TOOL_OPTIONS` or `JDK_JAVA_OPTIONS` that it does not know. It says which, and how to put it right |
 | `125`, `126`, `127` | `docker run` itself could not start the container: Docker's own numbers, before RESTest is reached |
 | `129` | The terminal the run was started from was closed. The run stops as it does for Ctrl-C and writes what it found; what it prints has nowhere to go |
 | `137` | The run was killed outright — `kill -9`, a container's memory limit, or `docker stop` once its ten seconds are up — and nothing of RESTest ran after it |
-| `1` | Java itself could not start: no RESTest on its class path, or an option it does not know. Nothing of RESTest ran, so this `1` says nothing about the API |
+| `1` | Java itself could not start: no RESTest on its class path, or an option it does not know. Nothing of RESTest ran, so this `1` says nothing about the API. A release's launcher meets an option it does not know, given through `JAVA_TOOL_OPTIONS` or `JDK_JAVA_OPTIONS`, before RESTest is started, and answers `127` |
 | `3` | Java was started with `-XX:+ExitOnOutOfMemoryError`, as some container images do through `JAVA_TOOL_OPTIONS`, and ran out of memory |
 
 ## What frozen means
