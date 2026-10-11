@@ -48,3 +48,15 @@ updates:
     open-pull-requests-limit: 0
     commit-message:
       prefix: ci
+
+  # Keeps the two base images in the Dockerfile current: the JDK it compiles with and the Java 21
+  # runtime it runs on, each pinned by digest. While this is switched off, moving them to a newer
+  # patch is a step of every release (docs/ci.md).
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: build

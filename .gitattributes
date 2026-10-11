@@ -13,6 +13,8 @@ mvnw text eol=lf
 # /bin/sh for the same reasons mvnw is.
 restest text eol=lf
 
-# Batch files are executed by cmd.exe, which wants CRLF.
-mvnw.cmd text eol=crlf
+# Batch files are executed by cmd.exe, which wants CRLF: mvnw.cmd, and the release launcher
+# dist/bin/restest.cmd. The rule for restest above covers the other release launcher,
+# dist/bin/restest, and these are the line endings dist/assemble.sh copies into a release.
+*.cmd text eol=crlf
 *.bat text eol=crlf

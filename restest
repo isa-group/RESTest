@@ -2,9 +2,9 @@
 #
 # Runs RESTest from this checkout.
 #
-# This is the developer's and the reviewer's shortcut, not how RESTest is distributed: installing it
-# properly - a package, a container image, a standalone binary - is a job for later, and this script
-# goes away when that lands.
+# This is the developer's and the reviewer's shortcut, not how RESTest is distributed. A release is
+# used through its container image or through the launcher in its archive, dist/bin/restest, which
+# does the same job for the folder an archive unpacks into.
 #
 # The class path rather than the module path, deliberately: two versions of the OpenAPI parser's
 # module end up on the runtime path and a module path refuses to start with both. The built jars
@@ -19,8 +19,7 @@ target="$here/restest-cli/target"
 # The jar of the version this checkout declares, not whichever jar sorts first: a checkout that has
 # built an earlier version still holds that version's jar, and restest-cli-2.1.0-SNAPSHOT.jar sorts
 # before restest-cli-2.1.0.jar. A checkout moved to a version it has not built yet is not built.
-# The carriage returns go first: Git on Windows checks pom.xml out with CRLF line endings.
-version=$(tr -d '\r' < "$here/pom.xml" | sed -n 's:^    <version>\(.*\)</version>$:\1:p' | head -1)
+version=$("$here/dist/version.sh")
 jar="$target/restest-cli-$version.jar"
 if [ -z "$version" ] || [ ! -f "$jar" ] || [ ! -d "$target/lib" ]; then
   echo "RESTest has not been built in this checkout yet. Run:" >&2

@@ -105,7 +105,25 @@ jobs:
           test -f "$plain" || { echo "the plain-runtime gate produced no report: it did not run" >&2; exit 1; }
           grep -q 'tests="4"' "$plain" || { echo "the plain-runtime gate did not run in full" >&2; exit 1; }
 
-      # The one thing the smoke run above cannot check: that the command a person is told to type
-      # actually starts. It runs the built jars from the class path, and nothing else exercises that.
+      # What the smoke run above cannot check: that the command a person is told to type actually
+      # starts, and answers with RESTest's own exit codes. It runs the built jars from the class path,
+      # and nothing else exercises that. The same script checks the image below, and a release's
+      # archives in release.yml.
       - name: Check the launcher starts
-        run: ./restest --version
+        run: .github/scripts/check-restest.sh "$(dist/version.sh)" --checkout ./restest
+
+  # The container image, built from this checkout as a release builds it, and checked as a release
+  # checks it. A job of its own, beside the smoke job rather than after it: the image compiles RESTest
+  # itself, needing nothing the smoke run built, and whether the image works is a question of its own.
+  image:
+    name: Container image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build the image
+        run: docker build --provenance=false --tag restest:check .
+
+      - name: Check the image
+        run: .github/scripts/check-restest.sh "$(dist/version.sh)" --image restest:check

@@ -326,3 +326,14 @@ and of 59.85 against 60.06 with it.
 None of the differences across APIs is significant, and the three changes were not measured apart:
 a campaign with the two chances back at a half, which would have told them apart, was prepared and
 not run, by the maintainer's decision.
+
+## Amendment (11 October 2026): no image for 2.0.0 or 2.1.0
+
+The amendments of 3 and 5 October said that the release workflow would be run by hand against
+`v2.0.0` and `v2.1.0`, so that both got the image and the archives without a version of their
+own. The maintainer decided otherwise on 11 October 2026: neither does, and 2.2.0 is the first release
+that carries them. Neither tag holds a `Dockerfile` or a launcher, so the image would have been built
+from old code with files from a later commit, added to releases already published, by a workflow
+whose first run would have been against a public release. Users of 2.0.0 and 2.1.0 build them from
+the source, as before. [ADR-0032](0032-how-a-release-is-published.md) says how a release is
+published.

@@ -23,6 +23,6 @@ what to look things up in afterwards.
 |---|---|
 | [The rules](../AGENTS.md) | The design principles, the hard rules, the commands and where everything is; read by people and coding agents alike |
 | [Design](DESIGN.md) | What the tool is, how it is put together, the rules the build enforces, and a glossary |
-| [Continuous integration](ci.md) | What every pull request is checked for, and how to run the same checks locally |
+| [Continuous integration](ci.md) | What every pull request is checked for, how to run the same checks locally, and how a release is made |
 | [Decision records](adr/README.md) | Why the tool is shaped the way it is, one decision per file |
 | [Contributing](../CONTRIBUTING.md) | How a change is proposed, built and reviewed |

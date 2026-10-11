@@ -1201,3 +1201,24 @@ that. The refusal to name it beside `--campaign`, from the M2.10a amendment, goe
 The help of `--seed` is rewritten, as wording rather than contract: it now says first that, with the
 plan RESTest carries, the same number gives a similar run rather than the same one, and where to
 read how to make it repeat a run exactly.
+
+## Amendment (11 October 2026): a release's own launcher
+
+**Date:** 2026-10-11
+
+"The launcher is a shortcut, not distribution" said packaging would replace the `restest` script.
+It does not: [ADR-0032](0032-how-a-release-is-published.md) adds the ways a release is installed - a
+container image, and an archive with launchers of its own, `bin/restest` and `bin\restest.cmd` - and
+the script stays as the way to run a checkout, whose jars sit somewhere else. The two load-bearing
+details above hold for the archive's launchers too: the class path, and jars rather than directories.
+
+The M12.1b amendment asked that the image start Java as the container's own process. It does: its
+entry point is the archive's `bin/restest`, which ends with `exec java`, and the release workflow
+and continuous integration check that `docker stop` ends a run in the image with `143` and a report
+cut short.
+
+`127` gains a second meaning, still never RESTest's own: the launcher of a release found no Java it
+can use - none on the `PATH`, a `JAVA_HOME` with none in it, or one older than 21. Without the last
+check, a Java too old to load RESTest answers `1`, which reads as faults found. The launcher says
+which it was and how to put it right. `docs/command-line.md` lists both meanings under the numbers
+RESTest does not choose, beside Docker's own `125`, `126` and `127`.

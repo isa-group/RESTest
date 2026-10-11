@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+# Runs RESTest from a release: the folder a release archive unpacks into, and the one the container
+# image carries in /opt/restest.
+#
+# It is the one place that knows how RESTest starts - the main class, the class path and the option
+# Java needs - so that whatever installs RESTest calls it rather than saying the same thing again: the
+# container image does. ./restest, at the root of a checkout, does the same job for a checkout, whose
+# jars are somewhere else.
+#
+# The class path rather than the module path, and the jars rather than a directory of classes, for
+# the reasons ./restest gives.
+#
+# When there is no Java it can use, it answers 127, a number RESTest itself never answers with: no
+# Java at all, a JAVA_HOME with no Java in it, and a Java older than 21. The last would otherwise
+# refuse to start RESTest and answer 1, which is the number for "the run found faults".
+
+set -u
+
+# The folder this script is in, found through any symbolic link to it, since a package manager may put
+# a link on the PATH. readlink without -f, and pwd -P, because those are what every macOS and Linux has.
+script=$0
+while [ -L "$script" ]; do
+  target=$(readlink "$script")
+  case $target in
+    /*) script=$target ;;
+    *) script=$(dirname "$script")/$target ;;
+  esac
+done
+home=$(cd "$(dirname "$script")/.." && pwd -P)
+
+# JAVA_HOME when it is set to something, the java on the PATH otherwise. An empty JAVA_HOME counts as
+# not set: a container can only empty a variable, not remove it.
+if [ -n "${JAVA_HOME:-}" ]; then
+  java=$JAVA_HOME/bin/java
+  if [ ! -x "$java" ]; then
+    echo "restest: JAVA_HOME is $JAVA_HOME, and there is no Java in it ($java)." >&2
+    echo "Point JAVA_HOME at a Java 21 or later, or unset it to use the java on the PATH." >&2
+    exit 127
+  fi
+else
+  java=java
+  if ! command -v java >/dev/null 2>&1; then
+    echo "restest: RESTest needs Java 21 or later, and there is no java on the PATH." >&2
+    echo "Install one - Eclipse Temurin (https://adoptium.net/) is a free choice - or set JAVA_HOME to it." >&2
+    exit 127
+  fi
+fi
+
+# Which Java it is, from the line of `java -version` that says so rather than from its first line:
+# with JAVA_TOOL_OPTIONS or JDK_JAVA_OPTIONS set, Java first says that it picked them up. A java that
+# cannot even say its version - the stand-in macOS keeps in /usr/bin when no Java is installed - is no
+# Java either. Asking costs about a tenth of a second.
+if ! said=$("$java" -version 2>&1); then
+  echo "restest: $java does not start, so RESTest cannot either. It said:" >&2
+  echo "$said" >&2
+  exit 127
+fi
+version=$(printf '%s\n' "$said" | sed -n 's/.* version "\([^"]*\)".*/\1/p' | head -n 1)
+# 21.0.12 and 26-ea give 21 and 26; the 1.8.0_402 of Java 8 gives 8.
+major=$(printf '%s\n' "$version" | sed -e 's/^1\.//' -e 's/[^0-9].*//')
+if [ -z "$major" ]; then
+  echo "restest: cannot tell which Java $java is. It said:" >&2
+  echo "$said" >&2
+  exit 127
+fi
+if [ "$major" -lt 21 ]; then
+  echo "restest: RESTest needs Java 21 or later, and $java is Java $version." >&2
+  echo "Set JAVA_HOME to a Java 21 or later." >&2
+  exit 127
+fi
+
+# The database driver loads a native library. Without this, Java 24 and later greet a first-time user
+# with four warnings before a single request has been sent.
+exec "$java" --enable-native-access=ALL-UNNAMED -cp "$home/lib/*" io.restest.cli.Restest "$@"

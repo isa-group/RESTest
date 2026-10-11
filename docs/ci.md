@@ -1,15 +1,18 @@
 # Continuous integration
 
-What runs, how to reproduce it locally, and how to add a rule. The decisions behind it are in
-ADR-0003 (Java versions) and ADR-0004 (module boundaries).
+What runs, how to reproduce it locally, how to add a rule, and how a release is made. The decisions
+behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries) and ADR-0032 (releases).
 
-Triggers are pull requests against `master` or `v2`, pushes to those two branches, and manual
-dispatch. A push to a `feat/*` branch with no open pull request runs nothing, which is deliberate: a
-branch under active development would otherwise spend nine runners per commit.
+Two workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
+tag, and rehearses it on a pull request that touches how RESTest is packaged
+([Releases](#releases)). `ci.yml`'s triggers are pull requests against `master` or `v2`, pushes to
+those two branches, and manual dispatch. A push to a `feat/*` branch with no open pull request runs
+nothing, which is deliberate: a branch under active development would otherwise spend nine runners
+per commit.
 
 ## The matrix
 
-`.github/workflows/ci.yml` has two jobs. The first builds nine rows: `ubuntu-latest`,
+`.github/workflows/ci.yml` has three jobs. The first builds nine rows: `ubuntu-latest`,
 `macos-latest` and `windows-latest` × Java 21, 25 and 26. Every row runs the same command over the
 whole reactor:
 
@@ -38,12 +41,17 @@ amendment explains why that beats the alternatives.
 
 The second job runs the tool itself — `restest run` — against two open-source APIs
 in containers, runs it inside a plain Java 21 runtime — once as it is, and once with an API
-key in its environment — and then checks that the launcher starts:
+key in its environment — and then checks that the launcher of the checkout starts and answers with
+RESTest's own exit codes:
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress verify -Psmoke
-./restest --version
+.github/scripts/check-restest.sh "$(dist/version.sh)" --checkout ./restest
 ```
+
+`check-restest.sh` is the one check every way of starting RESTest passes: the checkout's launcher
+here, the image in the job below, a release's archives and image in [`release.yml`](#releases). Its
+header lists what it checks.
 
 It is its own job rather than a tenth row of the matrix, for two reasons. It needs a Linux container
 runtime, which only the `ubuntu-latest` runners have — the macOS images ship no container runtime at
@@ -67,6 +75,19 @@ Neither API is asked about a description kept in this repository. Each is asked 
 HTTP, as it runs — so the description and the software can never drift apart, and the run exercises
 reading a document from a web address, which nothing else does.
 
+### The image job
+
+The third job builds the container image from the checkout, as a release builds it, and checks it as
+a release checks it:
+
+```bash
+docker build --provenance=false --tag restest:check .
+.github/scripts/check-restest.sh "$(dist/version.sh)" --image restest:check
+```
+
+A job of its own beside the smoke job, rather than a step after it: the image compiles RESTest
+itself, in its first stage, and needs nothing the smoke run built, so the two run at the same time.
+
 ## Gates
 
 | Gate | Where it lives | What it fails on |
@@ -80,6 +101,7 @@ reading a document from a web address, which nothing else does.
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
+| How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs and in `release.yml` | the image or a launcher failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` when there is no Java it can use, `143` when `docker stop` ends a run in the image |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
 ### Coverage
@@ -213,6 +235,18 @@ That runs **only** the container-backed tests. `-Pit` runs everything, those inc
 `./mvnw verify` runs neither: the tests carrying the `smoke` tag are excluded by default, so nobody
 pays a container pull for a build they did not ask one for.
 
+The image and the launchers, as the smoke job and `release.yml` check them:
+
+```bash
+version=$(dist/version.sh)
+docker build --tag restest .
+.github/scripts/check-restest.sh "$version" --image restest
+./mvnw -q package -DskipTests
+dist/assemble.sh target/dist --archives
+.github/scripts/check-restest.sh "$version" --launcher "target/dist/restest-$version/bin/restest"
+.github/scripts/check-restest.sh "$version" --checkout ./restest
+```
+
 There is no shortcut worth having here: `restest-arch-tests` depends on all nine modules, so `-am`
 builds the whole reactor anyway. On this project the full build takes a few seconds; just run
 `./mvnw verify`.
@@ -261,15 +295,56 @@ exemption list names. Adding a workflow, a script or a note that names the platf
 to that list, in the same commit, with a reason. Both of its gates have a test of their own in the
 same class, which is where to add one if you widen it again.
 
+## Releases
+
+A release is made from a version tag, `vX.Y.Z`, on a commit of `master` whose `pom.xml` says `X.Y.Z`.
+Pushing the tag starts `.github/workflows/release.yml`, which leaves everything the release carries
+in a **draft**; the notes are written there, and a person publishes it. What a release carries, and
+why it is made this way, is [ADR-0032](adr/0032-how-a-release-is-published.md).
+
+| Job | Where | What it does |
+|---|---|---|
+| `archive` | Linux | Checks the tag against `pom.xml` and `master`, compiles RESTest, and assembles `restest-<v>.zip` and `restest-<v>.tgz` with `dist/assemble.sh` |
+| `check-archive` | Linux, macOS, Windows | Unpacks the archive into a folder with a space in its name and runs `check-restest.sh` on `bin/restest` — also through a symbolic link, also with Java 17 to be refused — and on Windows on `bin\restest.cmd`, with a `JAVA_HOME` that has a space in it |
+| `image` | an `amd64` and an `arm64` machine | Builds the image on each machine's own processor, runs `check-restest.sh` on it, and on a tag pushes that very image as `ghcr.io/isa-group/restest:<v>-amd64` or `-arm64` |
+| `publish` | Linux, on a tag only | Joins the two into `:<v>` in the registry, checks it as published, moves `:latest` when no higher version is tagged, and drafts the release with the archives and `checksums_sha256.txt` |
+
+The order is what keeps a broken release from being seen: nothing is pushed before it has been
+checked, the image a release names is made of the images that were checked, and the files appear only
+when the draft is published. A rerun of the same tag never replaces anything: an image already pushed
+is left as it is, a draft keeps the files it has, and a published release is not touched. A pull
+request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow or
+the root `pom.xml` rehearses the first three jobs and pushes nothing.
+
+When a tag's own copy of the workflow fails, `workflow_dispatch` makes the same release with the
+workflow as it is on `master`: Actions → Release → Run workflow, with the tag. A tag is never moved
+or deleted; a release whose draft cannot be published as it is is put right in the next patch.
+
+The steps of every release, in order, each confirmed by the maintainer as it is taken:
+
+1. **The base images.** While Dependabot is switched off, move the `Dockerfile`'s two digests to the
+   newest patch of `eclipse-temurin:25-jdk` and `eclipse-temurin:21-jre`
+   (`docker buildx imagetools inspect eclipse-temurin:21-jre` prints the digest).
+2. **The pull request that prepares the release**: the version in every `pom.xml`, and the pages that
+   name the version to install — the README's installation section and chapters 2 and 9 of the
+   manual — with output from the image and the archive built from that commit.
+3. **The tag**, pushed once that pull request is merged.
+4. **The draft**: its notes written, read, and the release published.
+5. **The first time only**: the package `ghcr.io/isa-group/restest` is created private; an
+   organisation owner makes it public in its settings.
+6. **From outside**: the README's installation commands, run against the published release with no
+   one signed in to GitHub or to the registry.
+
 ## Dependency updates
 
-`.github/dependabot.yml` describes weekly pull requests for Maven dependencies and for the workflow
-actions, but **they are switched off for now**: each entry's `open-pull-requests-limit` is `0`, which
-is how GitHub stops version updates while keeping the configuration. Giving each entry its limit
-again switches them back on. GitHub reads that file from the repository's default branch, `master`.
-The pairs that must move together have groups of their own — `jackson-core` with
-`jackson-annotations`, and `swagger-parser` with `swagger-core` — beside the test libraries and the
-build plugins. Until the updates are back, check what is out of date by hand:
+`.github/dependabot.yml` describes weekly pull requests for Maven dependencies, for the workflow
+actions and for the `Dockerfile`'s two base images, but **they are switched off for now**: each
+entry's `open-pull-requests-limit` is `0`, which is how GitHub stops version updates while keeping
+the configuration. Giving each entry its limit again switches them back on. GitHub reads that file
+from the repository's default branch, `master`. The pairs that must move together have groups of
+their own — `jackson-core` with `jackson-annotations`, and `swagger-parser` with `swagger-core` —
+beside the test libraries and the build plugins. Until the updates are back, check what is out of
+date by hand:
 
 ```bash
 ./mvnw -q versions:display-dependency-updates versions:display-plugin-updates
@@ -296,3 +371,7 @@ more for the Java 21 runtime the plain-runtime gate uses. Afterwards the job is 
 ten-second runs rather than by the download; the plain-runtime gate adds about seventeen seconds,
 most of it spent copying the compiled class path into the container and on the three-second run
 handed a key.
+
+The image job downloads the JDK the image is compiled with and everything Maven needs on every run,
+inside the build: the runner's own Maven cache is not shared with Docker. A build on a laptop keeps
+its own cache between builds.

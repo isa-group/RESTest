@@ -1,0 +1,17 @@
+# What a build of the image does not need from the checkout: what an earlier build or run left behind,
+# the history, the tests, which the image does not compile, the documentation, and editors' and tools'
+# own folders. A smaller context is sent faster, and a change to a test or to the documentation does
+# not make Docker compile RESTest again. README.md stays: a release carries it.
+**/target
+**/restest-out
+**/*.sqlite
+**/src/test
+*.md
+!README.md
+*.png
+.git
+.github
+.claude
+.idea
+.vscode
+docs
