@@ -164,6 +164,11 @@ workflow against a public release. 2.2.0 is the first release that carries them;
   private; an owner of the organisation makes it public, once.
 - Between the tag and the publication, `:<v>` and `:latest` are public while the release is a draft.
 - Users of 2.0.0 and 2.1.0 build them from the source, as before.
+- The archive and the image hand on the libraries RESTest runs with, where until now Maven fetched
+  them from their own sources. Half of the jars carry no licence text of their own, and some
+  licences, such as MIT, ask that their notice travel with every copy. A file listing every library
+  with its version and its licence, with the texts those licences ask for, goes into the archive and
+  the image before the first release that carries them, 2.2.0.
 
 ## Alternatives considered
 
