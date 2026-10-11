@@ -179,7 +179,7 @@ case $mode in
       # uses instead.
       path=$work/tools
       mkdir "$path"
-      for tool in dirname readlink sed head; do ln -s "$(command -v "$tool")" "$path/$tool"; done
+      for tool in dirname readlink sed head uname; do ln -s "$(command -v "$tool")" "$path/$tool"; done
     fi
     restest JAVA_HOME= PATH="$path" -- version
     ;;

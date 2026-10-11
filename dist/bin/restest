@@ -32,6 +32,12 @@ while [ -L "$script" ]; do
 done
 home=$(cd "$(dirname "$script")/.." && pwd -P)
 
+# Git Bash on Windows starts a Windows Java, which reads D:/a/b where Git Bash writes /d/a/b, and does
+# not translate a class path ending in /*.
+case $(uname -s) in
+  MINGW* | MSYS* | CYGWIN*) home=$(cygpath -m "$home") ;;
+esac
+
 # JAVA_HOME when it is set to something, the java on the PATH otherwise. An empty JAVA_HOME counts as
 # not set: a container can only empty a variable, not remove it.
 if [ -n "${JAVA_HOME:-}" ]; then
