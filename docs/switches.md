@@ -102,9 +102,9 @@ would.
 | HAL's own properties | One walk over every body before it is sent |
 | Made afresh | Three in ten of the `POST` bodies invention builds — the share `generation.freshWhereMadeChance` sets — carry invented values where they would have carried ones the API returned. Now and then a value the API returned is the one it would take, such as the name of a category a new product has to be filed under |
 | Optional parameters by number | Nothing |
-| One value changed | Its part of the fifth of the run given to the strategy that changes accepted requests; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) |
-| Words that only look like their format, and bodies of the wrong shape | Their part of the same fifth, and the seed |
-| Series | The tenth of the run given to the strategy that sends series, whose later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
+| One value changed | Its part of the share given to the strategy that changes accepted requests, nearly a third of the run, which builds an ordinary request whenever nothing accepted can be changed; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) |
+| Words that only look like their format, and bodies of the wrong shape | Their part of the same share, and the seed |
+| Series | The share given to the strategy that sends series, fifteen in a hundred of the run, which builds an ordinary request whenever what it drew is not a creation; a series' later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
 
 What each was measured to be worth while the rewrite was first built is kept with the rest of that
 record, on the
@@ -259,8 +259,8 @@ memory:
 ```
 
 **Break** — every change to an accepted request, and every series. The two strategies that change
-accepted requests and send series then build their share the way `nominal` does, so the run is three
-quarters ordinary requests and a quarter pushing at the API.
+accepted requests and send series then build their share the way `nominal` does, so the run is nine
+tenths ordinary requests and a tenth pushing at the API.
 
 ```yaml
 mutation:
@@ -341,7 +341,7 @@ strategies:
             weight: 6
 
   - name: sequences
-    share: 10
+    share: 15
     sends: sequences
     sources:
       - source: enum
@@ -356,7 +356,7 @@ strategies:
             weight: 6
 
   - name: mutation
-    share: 20
+    share: 30
     mutates: accepted
     sources:
       - source: enum
@@ -371,7 +371,7 @@ strategies:
             weight: 6
 
   - name: fuzzing
-    share: 25
+    share: 10
     sources:
       - dictionary: fuzzing
       - source: random
@@ -394,9 +394,9 @@ in `--dictionary <file>`, and the plan does not change.
 
 ### Values nobody sensible would send
 
-The strategy that pushes at the API has a quarter of the run. To give it more or less, change its
+The strategy that pushes at the API has a tenth of the run. To give it more or less, change its
 share in the plan, and the shares of the others so that they still add up to a hundred; to push at
-the API not at all, leave the pushing strategy out and share its quarter among the others. The
+the API not at all, leave the pushing strategy out and share its tenth among the others. The
 changes to accepted requests also send values the document forbids, and are switched off with
 `mutation.violations` rather than in the plan. They draw on the list of awkward values too, with or
 without the pushing strategy: a value of the wrong kind in a request the API accepted is taken from
@@ -415,7 +415,7 @@ That is the plan's `share:`, out of a hundred. A strategy switched off by its sw
 share and builds it the ordinary way. Taking the strategy out of the plan instead means giving its
 share to the others by hand, since the shares have to add up to a hundred, and the run that gives
 is not always the one its switches give. For the series it is: given to `nominal`, whose sources it
-has, their tenth builds the same requests, one for one.
+has, their fifteen in a hundred build the same requests, one for one.
 
 ### A key the API asks for
 

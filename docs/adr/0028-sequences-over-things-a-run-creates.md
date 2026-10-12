@@ -447,3 +447,13 @@ longer than nothing still include true, false and anything empty. None of the fi
 run without the memory. That is the plan's to say, by leaving out the source that draws on it, for
 the reason [ADR-0025](0025-settings.md)'s M11.2 amendment gives. What the sentence was there to say
 still holds: however the memory is limited, a series reads its creation's reply, and still sends.
+
+## Amendment (12 October 2026): the shipped shares
+
+**Date:** 2026-10-12
+
+§1 states the plan RESTest ships as nominal 45, sequences 10, mutation 20, fuzzing 25, and that the
+ten points for the series left the draw ranges of mutation and fuzzing where they were. Neither holds
+of the shipped plan any more: it gives the four 45, 15, 30 and 10, so every strategy after nominal
+draws from a different range. The order of the strategies, and everything else §1 decides, is
+unchanged. [ADR-0023](0023-the-campaign-file.md)'s amendment of the same date is the record.

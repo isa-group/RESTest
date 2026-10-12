@@ -104,10 +104,17 @@ class RequestsWithoutAKeyTest {
     }
 
     /**
+     * The shares the plan RESTest carries gave its four strategies when the file was written, which
+     * decide which of them builds each request.
+     */
+    private static final Map<String, Integer> SHARES_THEN =
+            Map.of("nominal", 45, "sequences", 10, "mutation", 20, "fuzzing", 25);
+
+    /**
      * The generator a run builds when it is handed nothing but the document: the lists of values
      * RESTest carries, the plan it carries, and the settings it has when nobody has changed one -
-     * but for the kinds a name implies, and for what goes in a body, which are set back for the
-     * reason given where it is built.
+     * but for the kinds a name implies, for what goes in a body and for the plan's shares, which are
+     * set back for the reason given where it is built.
      */
     private static RandomTestCaseGenerator asARunBuildsIt(ApiModel model) {
         Dictionaries.Found found = Dictionaries.gather(List.of(), model);
@@ -119,8 +126,13 @@ class RequestsWithoutAKeyTest {
         // the file holds what the tool sent before it read anything about keys, and this test is
         // about keys alone. What the later changes send is held by tests of their own. That the
         // file still matches, number for number, is also what shows that a run with them set back
-        // draws exactly what it drew before they existed.
-        return new RandomTestCaseGenerator(model, SEED, found.dictionaries(), plan.campaign(),
+        // draws exactly what it drew before they existed. The plan's shares are set back for the
+        // same reason: they decide which strategy builds each request, and they changed later too.
+        Campaign sharesThen = new Campaign(plan.campaign().strategies().stream()
+                .map(way -> new Campaign.PlannedStrategy(way.name(), SHARES_THEN.get(way.name()),
+                        way.sources(), way.mutatesAccepted(), way.sendsSequences()))
+                .toList(), plan.campaign().operations());
+        return new RandomTestCaseGenerator(model, SEED, found.dictionaries(), sharesThen,
                 Settings.from(Map.of(
                         "generation.impliedFormats", "false",
                         "generation.freshWhereMade", "false",

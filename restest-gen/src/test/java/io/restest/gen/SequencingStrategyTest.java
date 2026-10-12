@@ -104,7 +104,7 @@ class SequencingStrategyTest {
         assertThat(drawn(sent)).isEqualTo(drawn(new RandomTestCaseGenerator(API, SEED, fuzzing,
                 before(shipped), Settings.defaults())));
         assertThat(sent).filteredOn(request -> request.sequence().isPresent())
-                .describedAs("a tenth of the turns, and only creations among them, start a series")
+                .describedAs("some of the turns, and only creations among them, start a series")
                 .isNotEmpty()
                 .allSatisfy(request -> {
                     assertThat(request.operation()).isEqualTo(ADD_THING.id());

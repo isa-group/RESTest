@@ -280,7 +280,7 @@ public final class RandomTestCaseGenerator {
         // Whether an operation can be tested at all is asked of an ordinary way of building a
         // request, never of one built to push at the API: a list of awkward values answers for
         // almost anything, so asking it would count an operation testable and then leave it with
-        // nothing for the three quarters of requests built the ordinary way. The plan may list its
+        // nothing for the nine requests in ten built the ordinary way. The plan may list its
         // pushing strategy first, so this is chosen by what a strategy is rather than by position.
         // An ordinary one by preference - one that neither pushes nor changes accepted requests -
         // though a strategy that changes them builds its fallback requests the ordinary way too.
@@ -1013,9 +1013,9 @@ public final class RandomTestCaseGenerator {
     /**
      * Whether a strategy is one that pushes at the API with no list to push with.
      *
-     * <p>The plan RESTest carries spends a quarter of the run sending values nobody sensible would
+     * <p>The plan RESTest carries spends a tenth of the run sending values nobody sensible would
      * send. A run given no such list has nothing of the kind to send, so that strategy would spend
-     * the quarter on ordinary invented values under another name - and, having no step for the
+     * the tenth on ordinary invented values under another name - and, having no step for the
      * closed list of values a document states, would send values the document says are not
      * allowed. Left out instead, and the remaining shares keep the proportions the plan wrote.
      *

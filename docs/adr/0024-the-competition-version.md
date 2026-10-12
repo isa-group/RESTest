@@ -337,3 +337,11 @@ from old code with files from a later commit, added to releases already publishe
 whose first run would have been against a public release. Users of 2.0.0 and 2.1.0 build them from
 the source, as before. [ADR-0032](0032-how-a-release-is-published.md) says how a release is
 published.
+
+## Amendment (12 October 2026): RESTest's own plan takes these shares
+
+The amendment of 4 October kept RESTest's own plan at 45, 10, 20 and 25 while the competition's runs
+were handed 45, 15, 30 and 10. From 2.2.0 RESTest's own plan has 45, 15, 30 and 10 too, by the
+maintainer's decision of 12 October 2026 on the same evidence, with no new measurement.
+[ADR-0023](0023-the-campaign-file.md)'s amendment of that date is the record, and says what the
+evidence does and does not show for a run of the default length handed no dictionary.

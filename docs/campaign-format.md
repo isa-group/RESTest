@@ -417,9 +417,9 @@ the kind would answer "only read from this API" by writing to it.
 
 ## How much of a run pushes at the API
 
-The plan RESTest carries gives a quarter of the run to the strategy that pushes. To change that,
+The plan RESTest carries gives a tenth of the run to the strategy that pushes. To change that,
 change its `share` in a copy of the plan, and the shares of the others so that they still add up to
-a hundred. To push at the API not at all, leave the strategy out and share its quarter among the
+a hundred. To push at the API not at all, leave the strategy out and share its tenth among the
 others. There is no option for it on the command line: the plan is the one place a share is said.
 
 ## What this version refuses

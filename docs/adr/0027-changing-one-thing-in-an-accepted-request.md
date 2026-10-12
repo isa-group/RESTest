@@ -497,3 +497,26 @@ Schemathesis, RESTler, EvoMaster, RestTestGen and AutoRestTest showed RESTest's 
   coverage did not move beyond one run's chance. A third campaign without the pushing strategy lost
   23 of the 204 and coverage with them, so the strategy that pushes keeps its quarter.
 
+
+## Amendment (12 October 2026): a tenth that pushes, nearly a third that changes
+
+**Date:** 2026-10-12
+
+**The plan RESTest ships gives the strategy that pushes a tenth of the run, and the one that changes
+accepted requests 30 in a hundred**, where the amendment above kept a quarter and §1 set a fifth.
+The new shares, and the evidence they rest on, are recorded in
+[ADR-0023](0023-the-campaign-file.md)'s amendment of the same date; this says what they mean here.
+
+- **A tenth is not none.** The campaign that kept the quarter compared pushing against no pushing at
+  all: without it, 23 of 204 distinct server failures and 10.7 points of features-service's branch
+  coverage were lost. That says nothing about a tenth. The comparison behind the new shares moved
+  three shares at once, so it shows that the four together lost nothing at twenty minutes, not that
+  a tenth of pushing is enough on its own. On features-service, the API where pushing mattered most,
+  branch coverage at twenty minutes rose by 9.5 points under the new shares.
+- **Awkward values still arrive by two roads.** A change to an accepted request that puts a value of
+  the wrong kind in it draws that value from the list the pushing strategy sends, so more changes
+  means more of that list sent one value at a time. Under the new shares, requests that push went
+  from 21.6% of what was sent to 8.5%, and changed requests from 7.7% to 13.0%.
+- **What is drawn is not what is sent.** Until the API has accepted something that can be changed,
+  a draw for this strategy builds an ordinary request, as §1 says, so the strategy sends well under
+  its share: 13.0% of requests for a share of 30, and 8.5% on the APIs no dictionary was written for.
