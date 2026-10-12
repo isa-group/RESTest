@@ -132,10 +132,13 @@ final class BaseAddress {
      * names no machine that could be compared, so it never matches, and what the document says
      * about it is used only if nothing else answers.
      *
-     * <p>Otherwise the directory comes from the address the run would have used had nobody said
-     * anything: the first one requests could actually have been sent to. If that names no directory
-     * then there is none, whatever a later address says - an API that moves to another machine must
-     * not also appear to move into a directory it was never in.
+     * <p>Otherwise the directory comes from the first address requests could actually be sent to,
+     * now that somebody has said which machine the API is on. That is the address the run would
+     * have used had nobody said anything, with one difference: an address that is only a path, such
+     * as {@code /v3}, means that path on whichever machine serves the API, and the machine has just
+     * been given. If that first address names no directory then there is none, whatever a later
+     * address says - an API that moves to another machine must not also appear to move into a
+     * directory it was never in.
      *
      * <p>Only a document with no usable address at all is read further, and then the first
      * directory that can be read from any of its addresses is taken. Such a document cannot start a
@@ -159,13 +162,14 @@ final class BaseAddress {
             return directoryWithin(theSameMachine.get());
         }
 
-        // Exactly what the fallback above picks when nobody says anything, written the same way so
-        // that the two cannot drift apart: an address with a blank left in it is never usable, but
-        // saying so twice is cheaper than depending on it.
+        // What the fallback above picks when nobody says anything, written the same way so that
+        // the two cannot drift apart, except that an address that is only a path counts too: it
+        // could not be used then, for want of a machine, and it can now. An address with a blank
+        // left in it is never usable, but saying so twice is cheaper than depending on it.
         Optional<String> wouldHaveBeenUsed = model.servers().stream()
                 .filter(Server::isResolved)
                 .map(Server::resolvedUrl)
-                .filter(BaseAddress::isUsable)
+                .filter(address -> isUsable(address) || isOnlyAPath(address))
                 .findFirst();
         if (wouldHaveBeenUsed.isPresent()) {
             return directoryWithin(wouldHaveBeenUsed.get());
@@ -178,6 +182,27 @@ final class BaseAddress {
             }
         }
         return "";
+    }
+
+    /**
+     * Whether a declared address is nothing but a path, such as {@code /v3}, which means that path
+     * on whichever machine serves the API.
+     *
+     * <p>An address that starts with two slashes is not one: {@code //api.example.com/v2} names a
+     * machine of its own, which is not the machine somebody pointed the run at. Nor is a path that
+     * could not be sent as it is written, since it would answer the question with a directory
+     * nobody could use.
+     */
+    private static boolean isOnlyAPath(String declared) {
+        if (!declared.startsWith("/") || declared.startsWith("//") || !readable(declared)) {
+            return false;
+        }
+        try {
+            new URI(declared);
+            return true;
+        } catch (URISyntaxException notAPath) {
+            return false;
+        }
     }
 
     /** Whether two addresses name the same machine: same protocol, same host, same port. */
