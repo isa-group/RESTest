@@ -133,7 +133,7 @@ class DictionariesTest {
                 .containsExactlyElementsOf(java.util.stream.Stream.concat(
                         found.shipped().stream(), found.fromTheUser().stream()).toList());
         assertThat(found.shipped()).isPresent();
-        assertThat(found.namesFromTheUser()).containsExactly("mine");
+        assertThat(found.fromTheUser()).extracting(Dictionary::name).containsExactly("mine");
     }
 
     @Test
@@ -343,8 +343,7 @@ class DictionariesTest {
                         + "to check whether it declares an identifier, so both are accepted")
                 .isEmpty();
         assertThat(found.fromTheUser()).singleElement()
-                .extracting(dictionary -> ((ValueDictionary) dictionary).entriesByOperation()
-                        .keySet())
+                .extracting(dictionary -> dictionary.entriesByOperation().keySet())
                 .describedAs("under the name the run prints, so nothing downstream has two names "
                         + "to think about")
                 .isEqualTo(java.util.Set.of("addOwner"));
@@ -599,7 +598,7 @@ class DictionariesTest {
                 .describedAs("a file can say the same thing twice without the duplicate-key check "
                         + "seeing it, because the two keys are different strings")
                 .anyMatch(problem -> problem.contains("both of the names it answers to"));
-        assertThat(((ValueDictionary) found.fromTheUser().get(0)).entriesByOperation())
+        assertThat(found.fromTheUser().get(0).entriesByOperation())
                 .containsOnlyKeys("addOwner")
                 .extractingByKey("addOwner")
                 .extracting(entries -> entries.get("body.city"))

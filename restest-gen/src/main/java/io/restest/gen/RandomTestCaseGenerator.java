@@ -48,7 +48,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
-import java.util.stream.Stream;
 
 /**
  * Decides what to try against an API: which operation, and what to put in every parameter of it.
@@ -1152,14 +1151,9 @@ public final class RandomTestCaseGenerator {
             // over. That one was gathered for a different job, and sending its values as though
             // somebody believed in them is not what anybody asked for - which is why a strategy
             // that wants it names it.
-            case Campaign.Source.EveryListGiven ignored ->
-                    asOne(handedOver(dictionaries).toList(), random);
+            case Campaign.Source.EveryListGiven ignored -> asOne(dictionaries.stream()
+                    .filter(held -> !held.name().equals(PUSHES_AT_THE_API)).toList(), random);
         };
-    }
-
-    /** The lists this run was handed, which is every one that is not for pushing with. */
-    private static Stream<Dictionary> handedOver(List<Dictionary> dictionaries) {
-        return dictionaries.stream().filter(held -> !held.name().equals(PUSHES_AT_THE_API));
     }
 
     /** Several lists as one answerer, asked in the order given, or nothing when there are none. */

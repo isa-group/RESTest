@@ -77,15 +77,14 @@ public final class Dictionaries {
      * What was found when the dictionaries were gathered.
      *
      * @param shipped the list RESTest carries, absent only when this build cannot read its own
-     * @param fromTheUser the ones somebody handed over, which is a different question from which
-     *     ones there are: a message about a file nobody wrote is a message nobody can act on
+     * @param fromTheUser the ones somebody handed over, each written for the places of the API
      * @param problems what went wrong, in the words a person should read, empty when nothing did
      * @param refused the places named that gave the run no list at all, each also among the
      *     problems: the ones that cost a whole file rather than some entries in one
      * @param read where each list the run holds came from, in the same order as
      *     {@link #dictionaries()}
      */
-    public record Found(Optional<Dictionary> shipped, List<Dictionary> fromTheUser,
+    public record Found(Optional<Dictionary> shipped, List<ValueDictionary> fromTheUser,
             List<String> problems, List<Refused> refused, List<Read> read) {
 
         public Found {
@@ -117,12 +116,6 @@ public final class Dictionaries {
             List<Dictionary> all = new ArrayList<>(shipped.map(List::of).orElse(List.of()));
             all.addAll(fromTheUser);
             return List.copyOf(all);
-        }
-
-        /** The names of the lists somebody handed over, as against the one RESTest carries. */
-        public java.util.Set<String> namesFromTheUser() {
-            return fromTheUser.stream().map(Dictionary::name)
-                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
         }
     }
 
@@ -247,7 +240,7 @@ public final class Dictionaries {
                 reportEntriesNothingWouldUse(held.dictionary(), model, held.file(), givenAWholeBody,
                         problems));
         reportNamesUsedTwice(fromTheUser, problems);
-        return new Found(carried, List.copyOf(fromTheUser), problems, refused, readFrom);
+        return new Found(carried, fromTheUser, problems, refused, readFrom);
     }
 
     /** Notes a place that gave nothing, both as a problem to print and as a refusal to report. */
@@ -267,8 +260,7 @@ public final class Dictionaries {
      * <p>Only the lists somebody handed over are counted: none of them can be called what the list
      * RESTest carries is called, since that name is refused as a file is read.
      */
-    private static void reportNamesUsedTwice(List<? extends Dictionary> found,
-            List<String> problems) {
+    private static void reportNamesUsedTwice(List<ValueDictionary> found, List<String> problems) {
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
         for (Dictionary dictionary : found) {
             if (!seen.add(dictionary.name())) {

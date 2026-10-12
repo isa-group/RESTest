@@ -86,8 +86,6 @@ final class DictionaryDocument {
      * @throws JsonException if the text is not a dictionary this version can read
      */
     static ValueDictionary read(String text, String describedAs) {
-        Objects.requireNonNull(text, "text");
-        Objects.requireNonNull(describedAs, "describedAs");
         JsonValue.JsonObject document = document(text, describedAs);
         String name = text(document, "name", describedAs);
         if (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(name)) {
@@ -115,8 +113,7 @@ final class DictionaryDocument {
                             "'" + place + "' in '" + operation + "'", describedAs)));
             perOperation.put(operation, named);
         });
-        return new ValueDictionary(name, ValueDictionary.Keying.OPERATION_AND_PARAMETER, Map.of(),
-                perOperation);
+        return new ValueDictionary(name, perOperation);
     }
 
     /**
@@ -129,9 +126,7 @@ final class DictionaryDocument {
      * @return the dictionary
      * @throws JsonException if the text is not such a list
      */
-    static ValueDictionary readOwn(String text, String describedAs) {
-        Objects.requireNonNull(text, "text");
-        Objects.requireNonNull(describedAs, "describedAs");
+    static ValuesByKind readOwn(String text, String describedAs) {
         JsonValue.JsonObject document = document(text, describedAs);
         String name = text(document, "name", describedAs);
         String keyedBy = text(document, "keyedBy", describedAs);
@@ -142,11 +137,13 @@ final class DictionaryDocument {
         Map<String, List<JsonValue>> values = new LinkedHashMap<>();
         values(document, describedAs).members().forEach((key, held) ->
                 values.put(key, listOf(held, "'" + key + "'", describedAs)));
-        return new ValueDictionary(name, ValueDictionary.Keying.TYPE, values, Map.of());
+        return new ValuesByKind(name, values);
     }
 
     /** The file as a set of members, its version and its members checked. */
     private static JsonValue.JsonObject document(String text, String describedAs) {
+        Objects.requireNonNull(text, "text");
+        Objects.requireNonNull(describedAs, "describedAs");
         JsonValue.JsonObject document = asObject(YamlText.read(text, describedAs), "a dictionary",
                 describedAs);
         // The version is read before anything else is judged. A file written in a later version of

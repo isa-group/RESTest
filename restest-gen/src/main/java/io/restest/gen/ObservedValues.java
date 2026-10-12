@@ -883,13 +883,13 @@ public final class ObservedValues implements RunListener {
             SHAPE
         }
 
-        private final Under keying;
+        private final Under under;
         private final MemorySettings settings;
         private final ConcurrentMap<String, List<Observation>> byKey = new ConcurrentHashMap<>();
         private final LastHeard lastHeard = new LastHeard();
 
-        Remembered(Under keying, MemorySettings settings) {
-            this.keying = keying;
+        Remembered(Under under, MemorySettings settings) {
+            this.under = under;
             this.settings = settings;
         }
 
@@ -924,7 +924,7 @@ public final class ObservedValues implements RunListener {
         }
 
         private Optional<String> keyFor(ValueRequest request) {
-            return switch (keying) {
+            return switch (under) {
                 case NAME -> Optional.of(request.name());
                 case SHAPE -> request.shape();
             };
@@ -948,7 +948,7 @@ public final class ObservedValues implements RunListener {
         @Override
         public String toString() {
             return "what this run has seen, by "
-                    + keying.name().toLowerCase(Locale.ROOT) + " (" + byKey.size() + " so far)";
+                    + under.name().toLowerCase(Locale.ROOT) + " (" + byKey.size() + " so far)";
         }
     }
 

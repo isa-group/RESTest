@@ -129,7 +129,7 @@ class DictionaryDocumentTest {
     @Test
     @DisplayName("RESTest's own list is read by kind of value, with a bucket for every kind")
     void restests_own_list_is_keyed_by_type() {
-        ValueDictionary dictionary = readOwn("""
+        ValuesByKind dictionary = readOwn("""
                 {"version": 1, "name": "fuzzing", "keyedBy": "type", "values": {
                    "any": [null],
                    "string": ["a", "b"],
@@ -402,7 +402,7 @@ class DictionaryDocumentTest {
         return DictionaryDocument.read(text, "a dictionary somebody wrote");
     }
 
-    private static ValueDictionary readOwn(String text) {
+    private static ValuesByKind readOwn(String text) {
         return DictionaryDocument.readOwn(text, "RESTest's own list");
     }
 }

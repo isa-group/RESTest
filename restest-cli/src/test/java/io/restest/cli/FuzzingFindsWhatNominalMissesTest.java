@@ -179,13 +179,7 @@ class FuzzingFindsWhatNominalMissesTest {
         run(directory.resolve("out"), document, "--dictionary", mine.toString());
 
         // Being read, validated and listed is not the same as being used, and only this says which.
-        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
-        com.github.tomakehurst.wiremock.client.WireMock.verify(
-                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
-                com.github.tomakehurst.wiremock.client.WireMock
-                        .getRequestedFor(urlPathEqualTo("/search"))
-                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
-                                .equalTo("ZZMINEZZ")));
+        searchedAtLeastOnceFor("ZZMINEZZ");
     }
 
     @Test
@@ -241,13 +235,7 @@ class FuzzingFindsWhatNominalMissesTest {
                 "--dictionary", mine.toString());
 
         assertThat(screen).doesNotContain("could not be read");
-        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
-        com.github.tomakehurst.wiremock.client.WireMock.verify(
-                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
-                com.github.tomakehurst.wiremock.client.WireMock
-                        .getRequestedFor(urlPathEqualTo("/search"))
-                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
-                                .equalTo("ZZEMPTYBLOCKZZ")));
+        searchedAtLeastOnceFor("ZZEMPTYBLOCKZZ");
     }
 
     @Test
@@ -278,7 +266,7 @@ class FuzzingFindsWhatNominalMissesTest {
                   search:
                     q: [ZZPUSHZZ]
                 """);
-        Path plan = Files.writeString(directory.resolve("my-plan.yaml"), """
+        Path plan = plan(directory, """
                 version: 1
                 strategies:
                   - name: fuzzing
@@ -292,13 +280,7 @@ class FuzzingFindsWhatNominalMissesTest {
         run(directory.resolve("a"), document, "--campaign", plan.toString(),
                 "--dictionary", pushes.toString());
 
-        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
-        com.github.tomakehurst.wiremock.client.WireMock.verify(
-                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
-                com.github.tomakehurst.wiremock.client.WireMock
-                        .getRequestedFor(urlPathEqualTo("/search"))
-                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
-                                .equalTo("ZZPUSHZZ")));
+        searchedAtLeastOnceFor("ZZPUSHZZ");
 
         Path calledLikeOurs = Files.writeString(directory.resolve("fuzzing.yaml"), """
                 version: 1
@@ -354,6 +336,15 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     /** A plan written to a file of its own in the directory, for {@code --campaign}. */
+    /** Whether the API was searched at least once for this exact word. */
+    private static void searchedAtLeastOnceFor(String word) {
+        api.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+                com.github.tomakehurst.wiremock.client.WireMock
+                        .getRequestedFor(urlPathEqualTo("/search"))
+                        .withQueryParam("q",
+                                com.github.tomakehurst.wiremock.client.WireMock.equalTo(word)));
+    }
+
     private static Path plan(Path directory, String text) throws IOException {
         return Files.writeString(Files.createTempFile(directory, "plan", ".yaml"), text);
     }
