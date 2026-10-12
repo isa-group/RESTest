@@ -212,6 +212,80 @@ class BaseAddressTest {
     }
 
     @Test
+    @DisplayName("an address that is only a directory, listed first, is on the machine given")
+    void a_relative_address_listed_first_gives_the_directory() {
+        // The servers block of the Kafka REST Proxy's document, in its own order: the proxy on its
+        // own, the same API inside Confluent Server, and the hosted service.
+        Server proxy = Server.at("/v3");
+        Server insideConfluentServer = new Server("{protocol}://{address}:{port}/kafka/v3",
+                Map.of("protocol", new ServerVariable("http", List.of("http", "https"),
+                                Optional.empty()),
+                        "address", new ServerVariable("localhost", List.of(), Optional.empty()),
+                        "port", new ServerVariable("8090", List.of(), Optional.empty())),
+                Optional.empty());
+        Server hosted = Server.at("https://pkc-00000.region.provider.confluent.cloud/kafka/v3");
+        ApiModel model = declaring(proxy, insideConfluentServer, hosted);
+
+        assertThat(BaseAddress.resolve("http://127.0.0.1:8082", model))
+                .describedAs("an address that is only a path is on whichever machine serves the "
+                        + "document, and --url has just said which one that is")
+                .isEqualTo("http://127.0.0.1:8082/v3");
+        assertThat(BaseAddress.resolve(null, model))
+                .describedAs("with no machine given, a path alone is nowhere to send anything")
+                .isEqualTo("http://localhost:8090/kafka/v3");
+    }
+
+    @Test
+    @DisplayName("a whole address listed before one that is only a directory still comes first")
+    void a_relative_address_listed_later_does_not_win() {
+        ApiModel model = declaring(Server.at("http://localhost:9966/petclinic/api"),
+                Server.at("/v3"));
+
+        assertThat(BaseAddress.resolve("http://localhost:15012", model))
+                .isEqualTo("http://localhost:15012/petclinic/api");
+    }
+
+    @Test
+    @DisplayName("an address that is only the root, listed first, says there is no directory")
+    void a_relative_root_listed_first_says_no_directory() {
+        ApiModel model = declaring(Server.at("/"), Server.at("https://api.example.com/v2"));
+
+        assertThat(BaseAddress.resolve("http://localhost:8080", model))
+                .describedAs("the document says the API is at the root of the machine serving it, "
+                        + "and borrowing the next address's directory would contradict that")
+                .isEqualTo("http://localhost:8080");
+    }
+
+    @Test
+    @DisplayName("an address naming the machine given still answers before a path listed first")
+    void the_machine_described_answers_before_a_relative_address() {
+        ApiModel model = declaring(Server.at("/v3"), Server.at("http://localhost:8090/kafka/v3"));
+
+        assertThat(BaseAddress.resolve("http://localhost:8090", model))
+                .describedAs("the document says what this very machine serves, and that comes "
+                        + "before an address that could be on any machine")
+                .isEqualTo("http://localhost:8090/kafka/v3");
+    }
+
+    @Test
+    @DisplayName("a path carrying a query string does not answer for the directory")
+    void a_relative_address_with_a_query_is_passed_over() {
+        ApiModel model = declaring(Server.at("/v3?debug=1"), Server.at("http://api.example/v2"));
+
+        assertThat(BaseAddress.resolve("http://localhost:8080", model))
+                .isEqualTo("http://localhost:8080/v2");
+    }
+
+    @Test
+    @DisplayName("a path that could not be sent as written does not answer for the directory")
+    void a_relative_address_that_is_not_a_path_is_passed_over() {
+        ApiModel model = declaring(Server.at("/v 3"), Server.at("http://api.example/v2"));
+
+        assertThat(BaseAddress.resolve("http://localhost:8080", model))
+                .isEqualTo("http://localhost:8080/v2");
+    }
+
+    @Test
     @DisplayName("a blank the document fills in itself still says which directory")
     void a_blank_with_a_default_still_says_which_directory() {
         Server template = new Server("https://{region}.example.com/v2",
@@ -357,7 +431,8 @@ class BaseAddressTest {
     @Test
     @DisplayName("among addresses none of which could be used, the first that names a directory wins")
     void the_first_readable_directory_wins_when_nothing_is_usable() {
-        ApiModel model = declaring(Server.at("/"), Server.at("//api.example.com/second"));
+        ApiModel model = declaring(Server.at("//api.example.com/"),
+                Server.at("//api.example.com/second"));
 
         assertThat(BaseAddress.resolve("http://localhost:8080", model))
                 .isEqualTo("http://localhost:8080/second");

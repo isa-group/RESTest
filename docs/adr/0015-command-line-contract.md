@@ -1,7 +1,7 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1 October 2026
-**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30)
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11 and 12 October 2026
+**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12)
 
 ## Context
 
@@ -1222,3 +1222,67 @@ can use - none on the `PATH`, a `JAVA_HOME` with none in it, or one older than 2
 check, a Java too old to load RESTest answers `1`, which reads as faults found. The launcher says
 which it was and how to put it right. `docs/command-line.md` lists both meanings under the numbers
 RESTest does not choose, beside Docker's own `125`, `126` and `127`.
+
+## Amendment (12 October 2026): an address that is only a path, listed first
+
+**Date:** 2026-10-12
+
+**A declared address that is only a path, such as `/v3`, is on the machine `--url` names. When it is
+the first address the document declares, its path is the directory kept.**
+
+### Why
+
+The amendment that fixed what `--url` throws away took the directory, when the document does not
+describe the machine given, from "the first one the document declares that requests could actually
+be sent to". An address that is only a path could never be sent to, so it was passed over, and it
+counted only in a document that declared nothing else. A document that lists a path first and a whole
+address after it was not considered.
+
+One does, in the Web Fuzzing Dataset: the Kafka REST Proxy's document declares `/v3`, then
+`{protocol}://{address}:{port}/kafka/v3` with defaults for each blank, then a hosted address under
+`/kafka/v3`. `--url http://127.0.0.1:<port>` became `http://127.0.0.1:<port>/kafka/v3`, the
+directory of the second address, while the proxy serves `/v3`, as the first says. A 15-second run
+received 195,512 replies of 4xx and not one 2xx; with `--url http://127.0.0.1:<port>/v3` the same
+run received 100 replies of 2xx.
+
+The rule passed it over for a reason that does not hold once `--url` is given. It was written to
+agree with the address a run uses when nobody gives one, so that an API moved to another machine
+does not seem to move into another directory as well. That address cannot be only a path, because a
+path names no machine. But OpenAPI says such an address is relative to wherever the document is
+served, which is the machine the API runs on - and `--url` has just named it. The first address is
+the one the document puts first, and nothing in it asked to be skipped on that machine.
+
+### How
+
+The second of the three readings changes, and only for addresses with no machine and no protocol in
+them. It now takes the first declared address that is either usable as it stands or is only a path,
+and an address that is only a path gives its path, the root included: a document listing `/` first
+is tested at the root, whatever directory a later address names.
+
+What counts as only a path is narrow. It begins with exactly one slash, so `//api.example.com/v2`,
+which names a machine of its own, is not one. It carries no blank left unfilled, no query string and
+no fragment, and it is a legal path as written; one that is not, such as `/v 3`, is passed over, as
+it was before.
+
+Nothing changes when `--url` is not given: a path names no machine, so the run starts from the first
+whole address, and a document declaring only a path still asks for `--url`. Nothing changes for an
+address given with a path of its own, which still replaces the declared one, or for a document that
+describes the machine given, which still answers first.
+
+### Consequences
+
+- The Kafka REST Proxy is tested under `/v3`, the directory it serves.
+- A document that lists a path first is now read in its own order. One that lists `/` and then
+  `//api.example.com/second`, neither of which a run could start from, used to give `/second` by the
+  third reading; `/` now says the root.
+- An address that names a machine of its own without a protocol no longer comes before a path
+  listed after it. `//api.example.com/v1` then `/v3` used to give `/v1`, by the third reading, and
+  now gives `/v3`: the first address is on another machine than the one given, and the second is on
+  that one. Such a pair is rare, since converting an older document produces a single address.
+- The first reading still comes before all of this. The Kafka REST Proxy's document run with
+  `--url http://localhost:8090` gives `/kafka/v3`, because its second address, with its defaults
+  filled in, describes that very machine.
+- Without `--url`, such a document starts from a later address, and with it the run uses a different
+  directory than that address names. That is not the disagreement the earlier amendment ruled out:
+  the run was never going to use the first address without `--url`, and it uses it as soon as it
+  can.
