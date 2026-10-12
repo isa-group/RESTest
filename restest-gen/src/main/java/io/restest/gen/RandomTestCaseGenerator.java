@@ -140,10 +140,10 @@ public final class RandomTestCaseGenerator {
      * The name of the list of values to push at an API with.
      *
      * <p>A plan names the lists each way of building a request draws on, so a run can push with
-     * two lists, or push with one and fill ordinary requests from another. This is the name of the
-     * one RESTest carries, and no list somebody hands over may take it: one of theirs to push with is
-     * named in the plan under a name of its own. It is also what makes a strategy one that pushes:
-     * a strategy is pushing because of the values it draws on, not because anything says so.
+     * one list and fill ordinary requests from another. This is the name of the one RESTest
+     * carries, and no list somebody hands over may take it. It is also what makes a strategy one
+     * that pushes: a strategy is pushing because of the values it draws on, not because anything
+     * says so.
      */
     static final String PUSHES_AT_THE_API = "fuzzing";
 
