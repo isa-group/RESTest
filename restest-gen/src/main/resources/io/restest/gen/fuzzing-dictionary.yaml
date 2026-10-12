@@ -6,7 +6,7 @@
 # that they are the values careless code falls over on, and an API falling over is a fault
 # whatever was sent.
 #
-# Written for RESTest 2.0. Extend it with a file of your own rather than editing this one.
+# Written for RESTest 2.0, and RESTest's own: no list handed over can take its name.
 
 version: 1
 name: fuzzing

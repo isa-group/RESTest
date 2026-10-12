@@ -414,27 +414,43 @@ class MutationsTest {
         }
 
         @Test
-        @DisplayName("a list of awkward values handed over under the name the pushing strategy "
-                + "uses lends its values too; any other list does not")
-        void a_list_handed_over_lends_its_values() throws Exception {
-            Dictionary ours = DictionaryDocument.read("""
+        @DisplayName("only the list called what the pushing strategy names lends its values, which "
+                + "in a run is RESTest's own; a list somebody handed over lends nothing")
+        void only_the_list_to_push_with_lends_its_values() throws Exception {
+            Dictionary toPushWith = DictionaryDocument.readOwn("""
                     version: 1
                     name: fuzzing
                     keyedBy: type
                     values:
-                      string: ["only-in-our-list"]
-                    """, "ours.yaml");
-            Dictionary unrelated = DictionaryDocument.read("""
+                      string: ["only-in-the-list-to-push-with"]
+                    """, "a list to push with");
+            Dictionary ofAnotherName = DictionaryDocument.readOwn("""
                     version: 1
                     name: good-values
                     keyedBy: type
                     values:
                       string: ["never-a-wrong-kind"]
-                    """, "good.yaml");
+                    """, "a list of another name");
+            // Written where the question about every kind is asked - an operation called 'any',
+            // a place called 'value' - so that only its name keeps it out.
+            Dictionary handedOver = DictionaryDocument.read("""
+                    version: 1
+                    name: mine
+                    keyedBy: operationAndParameter
+                    values:
+                      any:
+                        value: ["from-a-file-of-somebodys"]
+                    """, "mine.yaml");
 
-            assertThat(Mutations.awkwardValuesIn(List.of(ours, unrelated)))
-                    .contains(JsonValue.of("only-in-our-list"))
-                    .doesNotContain(JsonValue.of("never-a-wrong-kind"));
+            assertThat(handedOver.valuesFor(io.restest.core.gen.ValueRequest.of(
+                    OperationId.of("any"), "value", ParameterLocation.BODY, StringSchema.of())))
+                    .describedAs("the file's list does answer the question the changes ask, so "
+                            + "what keeps it out below is its name alone")
+                    .containsExactly(JsonValue.of("from-a-file-of-somebodys"));
+            assertThat(Mutations.awkwardValuesIn(List.of(toPushWith, ofAnotherName, handedOver)))
+                    .contains(JsonValue.of("only-in-the-list-to-push-with"))
+                    .doesNotContain(JsonValue.of("never-a-wrong-kind"),
+                            JsonValue.of("from-a-file-of-somebodys"));
             assertThat(Mutations.awkwardValuesIn(List.of(Dictionaries.shipped())))
                     .describedAs("the list RESTest carries, every kind of value in it")
                     .contains(JsonValue.of("🙂🙂🙂"), JsonValue.of(new BigDecimal("1.5")),

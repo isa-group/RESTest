@@ -494,15 +494,6 @@ final class RunCommand implements Callable<Integer> {
                 err.println("restest: " + cannotBeFollowed.getMessage());
                 return ExitCode.BAD_COMMAND_LINE;
             }
-            // Only about lists somebody handed over. RESTest's own going unused is not news to
-            // whoever asked for exactly that, and a message naming a file they never wrote is one
-            // they could not act on.
-            java.util.Set<String> theirs = found.namesFromTheUser();
-            generator.listsGivenButNotUsed().stream().filter(theirs::contains)
-                    .forEach(unused -> err.println("restest: the list of values called '" + unused
-                            + "' is one this run pushes at the API with, and "
-                            + (campaignFile == null ? "the plan" : campaignFile)
-                            + " gives no strategy that pushes, so nothing in it will be sent"));
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {
                 return nothingToTest(err, model, generator);

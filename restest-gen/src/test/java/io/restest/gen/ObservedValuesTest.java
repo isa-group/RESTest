@@ -852,7 +852,7 @@ class ObservedValuesTest {
         @DisplayName("whole things under the name of their shape make room the same way")
         void shapes_make_room_too() {
             ObservedValues.Remembered shapes =
-                    new ObservedValues.Remembered(ValueDictionary.Keying.SCHEMA, oneName);
+                    new ObservedValues.Remembered(ObservedValues.Remembered.Under.SHAPE, oneName);
             InteractionId from = InteractionId.generate();
 
             shapes.remember("Pet", JsonValue.object(Map.of("id", JsonValue.of(1))), from);

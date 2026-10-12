@@ -186,11 +186,10 @@ off. [The switches](switches.md#getting-the-seed-back) shows the plan RESTest ca
 ### Every list you handed over
 
 `dictionaries: given` is one source, not one per file, so it carries one weight however many lists
-there are. Within it, lists written for one particular place — a named parameter, or one operation's
-one parameter — are asked before lists written for a whole kind of value. That ranking is RESTest's
-and you do not have to state it.
+there are. Within it, the lists are asked in the order they were handed over.
 
-To place a list somewhere else in the order, name it: `dictionary: my-good-values`.
+To place a list somewhere else in the order, name it: `dictionary: my-good-values`. `fuzzing` is
+RESTest's own list to push with, and no list of yours can take its name.
 
 ## Choosing instead of ordering
 
@@ -258,7 +257,7 @@ description states:
 |---|---|
 | `dropRequired` | a required parameter or body property left out |
 | `wrongLocation` | a required query parameter, header or cookie sent as one of the other two |
-| `wrongType` | a value of another kind, drawn from a long list: a word where a number is declared, `1.5` where a whole number is, `"1"` or `[[]]` or `{}`, any value of another kind in the lists of awkward values the run holds. In a parameter declared a number or a yes-or-no, a word that does not read as one - `abc`, `1.5`, `0x1A`, `NaN`, `yes` - and arrives as written: none a header would lose a space of, none too long for an address |
+| `wrongType` | a value of another kind, drawn from a long list: a word where a number is declared, `1.5` where a whole number is, `"1"` or `[[]]` or `{}`, any value of another kind in the list of awkward values RESTest keeps. In a parameter declared a number or a yes-or-no, a word that does not read as one - `abc`, `1.5`, `0x1A`, `NaN`, `yes` - and arrives as written: none a header would lose a space of, none too long for an address |
 | `outsideABound` | one step past a stated limit: one below the smallest number, one character more than the longest word, one item more than a list may hold |
 | `breakAnEnumeration` | a value that is not on the closed list: `AVAILABLE` where `available` is |
 | `breakAPattern` | a word close to the accepted one that its stated pattern refuses |

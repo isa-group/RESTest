@@ -907,7 +907,7 @@ class RandomTestCaseGeneratorTest {
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
                 ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
-                List.of(ofOurOwn("Leo")), chaining());
+                List.of(ours("GET /pets", "name", "Leo")), chaining());
 
         assertThat(generator.generate(search).orElseThrow()
                 .parameterValue("name", ParameterLocation.QUERY).orElseThrow().value())
@@ -918,9 +918,27 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("a list written for one named parameter is asked before the document's own sample, "
-            + "and a list written for a whole kind of value is asked after it")
-    void how_much_a_list_knows_decides_when_it_is_asked() {
+    @DisplayName("every list handed over is asked in the order it was handed over, whichever that is")
+    void the_lists_given_are_asked_in_the_order_given() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        Dictionary first = ours("GET /pets", "name", "from the first");
+        Dictionary second = ours("GET /pets", "name", "from the second");
+
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L, List.of(first, second),
+                chaining()), search))
+                .isEqualTo("from the first");
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L, List.of(second, first),
+                chaining()), search))
+                .describedAs("nothing about the lists themselves ranks one above the other")
+                .isEqualTo("from the second");
+    }
+
+    @Test
+    @DisplayName("where a list is asked against the document's own sample is the plan's to say, and "
+            + "both sides of it are sayable")
+    void where_a_list_is_asked_is_the_plans_to_say() {
         io.restest.core.schema.CanonicalSchema sampled = new StringSchema(
                 SchemaMetadata.none().withExamples(
                         List.of(io.restest.core.json.JsonValue.of("from the document"))),
@@ -928,29 +946,15 @@ class RandomTestCaseGeneratorTest {
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
                 Parameter.of("name", ParameterLocation.QUERY, true, sampled)));
         ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        Dictionary forThisParameter = ours("GET /pets", "name", "for this parameter");
 
-        // Within one step of a plan, this ranking is the tool's own and no plan has to state it:
-        // a list somebody wrote for this parameter knows more about this value than a list of
-        // every piece of text in the world, so it is asked first.
-        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("type", "for any text at all"),
-                        keyed("name", "for this parameter")), chaining()), search))
-                .describedAs("somebody wrote it for this parameter, so it is asked before a list "
-                        + "written for a whole kind of value, whatever order the files arrived in")
-                .isEqualTo("for this parameter");
-
-        // Where a list sits against the document's own sample is the plan's business now, and
-        // both sides of it are sayable. This is the arrangement the tool used to hard-wire.
-        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("type", "for any text at all")),
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L, List.of(forThisParameter),
                 planOf(theList("ours"), step(Campaign.Builtin.EXAMPLE))), search))
                 .describedAs("named before the document, a list is asked before it")
-                .isEqualTo("for any text at all");
-        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("type", "for any text at all")),
+                .isEqualTo("for this parameter");
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L, List.of(forThisParameter),
                 planOf(step(Campaign.Builtin.EXAMPLE), theList("ours"))), search))
-                .describedAs("named after it, a list for every piece of text knows less than the "
-                        + "document's own sample of this one, and the sample wins")
+                .describedAs("named after it, the document's own sample is asked first, and wins")
                 .isEqualTo("from the document");
     }
 
@@ -997,12 +1001,23 @@ class RandomTestCaseGeneratorTest {
         // Written for this very parameter, so by every other rule here it would win. A closed list
         // is not advice, though: it is the whole set of values the API takes, and sending anything
         // else is sending a value the document says is not allowed.
+        Dictionary written = ours("GET /pets", "status", "not on the list");
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(pets, 4242L,
-                List.of(keyed("name", "not on the list")), Plans.neverPushing());
+                List.of(written), Plans.neverPushing());
 
         for (int draw = 0; draw < 50; draw++) {
             assertThat(sent(generator, search, "status")).isIn("available", "sold");
         }
+
+        // The same list, where the document closes nothing, is sent: so the list does name this
+        // place, and what keeps it out above is the closed list alone.
+        Operation open = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("status", ParameterLocation.QUERY, true, StringSchema.of())));
+        RandomTestCaseGenerator withoutAClosedList = new RandomTestCaseGenerator(
+                ApiModel.of("Pets", "1.0", List.of(open)), 4242L, List.of(written),
+                Plans.neverPushing());
+        assertThat(IntStream.range(0, 50).mapToObj(draw -> sent(withoutAClosedList, open, "status")))
+                .contains("not on the list");
     }
 
     @Test
@@ -1027,23 +1042,6 @@ class RandomTestCaseGeneratorTest {
                             + "the piece it fills")
                     .contains(JsonValue.of("Seville"));
         }
-    }
-
-    @Test
-    @DisplayName("a list written for a name alone fills that name wherever it turns up, a piece of "
-            + "a body included")
-    void a_list_written_for_a_name_reaches_inside_a_body_too() {
-        Operation addOwner = Operation.of(HttpMethod.POST, "/owners")
-                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
-                        "city", StringSchema.of()), Set.of("city")), true));
-        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(addOwner), 4242L,
-                List.of(DictionaryDocument.read("""
-                        {"version": 1, "name": "ours", "keyedBy": "name",
-                         "values": {"city": ["Seville"]}}""", "ours")), Plans.neverPushing());
-
-        JsonValue body = generator.generate(addOwner).orElseThrow().body().orElseThrow().value();
-
-        assertThat(((JsonValue.JsonObject) body).member("city")).contains(JsonValue.of("Seville"));
     }
 
     @Test
@@ -1377,66 +1375,11 @@ class RandomTestCaseGeneratorTest {
                 .value()).value();
     }
 
-    /** A list of values somebody put together believing the API takes them. */
-    private static Dictionary ofOurOwn(String value) {
-        return keyed("type", value);
-    }
-
-    private static Dictionary keyed(String keyedBy, String value) {
-        String key = switch (keyedBy) {
-            case "name" -> "name";
-            case "schema" -> "Status";
-            default -> "string";
-        };
+    /** A list of values somebody put together for one place of one operation, called "ours". */
+    private static Dictionary ours(String operation, String place, String value) {
         return DictionaryDocument.read("""
-                {"version": 1, "name": "ours", "keyedBy": "%s", "values": {"%s": ["%s"]}}""".formatted(keyedBy, key, value), "ours");
-    }
-
-    @Test
-    @DisplayName("a list to push with, in a run told to do no pushing, is named as one nothing "
-            + "will be sent from")
-    void a_list_that_cancels_itself_out_is_named() {
-        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
-                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
-        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
-
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)),
-                Plans.neverPushing())
-                .listsGivenButNotUsed())
-                .describedAs("two things were asked for that cancel, and one of them is probably a "
-                        + "mistake")
-                .containsExactly("fuzzing");
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)))
-                .listsGivenButNotUsed()).isEmpty();
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(), Plans.neverPushing())
-                .listsGivenButNotUsed()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("a list to push with, in a run that does no pushing but changes accepted requests, "
-            + "is not named: a value of the wrong kind is drawn from it - unless that change is "
-            + "switched off")
-    void a_list_to_push_with_still_feeds_the_changes() throws Exception {
-        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
-                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
-        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
-        Campaign shipped = Campaigns.shipped();
-        Campaign.PlannedStrategy ordinary = shipped.strategies().stream()
-                .filter(way -> !way.pushesAtTheApi() && !way.mutatesAccepted()
-                        && !way.sendsSequences())
-                .findFirst().orElseThrow();
-        Campaign.PlannedStrategy changes = shipped.strategies().stream()
-                .filter(Campaign.PlannedStrategy::mutatesAccepted).findFirst().orElseThrow();
-        Campaign noPushing = new Campaign(List.of(
-                new Campaign.PlannedStrategy(ordinary.name(), 80, ordinary.sources()),
-                new Campaign.PlannedStrategy(changes.name(), 20, changes.sources(), true, false)),
-                shipped.operations());
-
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), noPushing)
-                .listsGivenButNotUsed()).isEmpty();
-        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), noPushing,
-                Settings.from(Map.of("mutation.wrongType", "false"))).listsGivenButNotUsed())
-                .containsExactly("fuzzing");
+                {"version": 1, "name": "ours", "keyedBy": "operationAndParameter",
+                 "values": {"%s": {"%s": ["%s"]}}}""".formatted(operation, place, value), "ours");
     }
 
     @Test
@@ -1475,41 +1418,7 @@ class RandomTestCaseGeneratorTest {
             public String name() {
                 return called;
             }
-
-            @Override
-            public boolean isAboutOneValueInParticular() {
-                return false;
-            }
         };
-    }
-
-    @Test
-    @DisplayName("a list of values written for a named shape is sent as a whole body")
-    void a_dictionary_keyed_by_shape_answers_for_a_body() {
-        Operation createOwner = Operation.of(HttpMethod.POST, "/owners")
-                .withRequestBody(RequestBodyModel.json(SchemaReference.to("Owner"), true));
-        ApiModel model = ApiModel.of("Test API", "1.0", List.of(createOwner))
-                .withSchemas(Map.of("Owner", ObjectSchema.of(
-                        Map.of("firstName", StringSchema.of()), Set.of("firstName"))));
-        ValueDictionary written = DictionaryDocument.read("""
-                {"version": 1, "name": "owners", "keyedBy": "schema", "values": {
-                   "Owner": [{"firstName": "George", "lastName": "Franklin"}]
-                }}""", "a dictionary somebody wrote");
-        RandomTestCaseGenerator generator =
-                new RandomTestCaseGenerator(model, 20260918L, List.of(written));
-
-        List<JsonValue> bodies = IntStream.range(0, 20)
-                .mapToObj(draw -> generator.generate(createOwner).orElseThrow().body().orElseThrow()
-                        .value())
-                .distinct()
-                .toList();
-
-        assertThat(bodies)
-                .describedAs("the format already said a value may be a whole object; this is the "
-                        + "first thing that wanted one")
-                .contains(JsonValue.object(new java.util.LinkedHashMap<>(Map.of(
-                        "firstName", JsonValue.of("George"),
-                        "lastName", JsonValue.of("Franklin")))));
     }
 
     @Test

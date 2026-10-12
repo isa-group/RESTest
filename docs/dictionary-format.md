@@ -42,55 +42,44 @@ values:
 | `version` | required | The version of **this format**, not of your file. Today it is `1`. A file written in a version RESTest does not know is refused by name rather than half-read |
 | `name` | required | What this dictionary is called. A plan names the dictionaries each kind of request draws on, so the name is how a list gets used, and it is what a report prints beside a value that came from it |
 | `description` | optional | For whoever reads the file next |
-| `keyedBy` | required | What decides which of the values apply. One of the five below |
+| `keyedBy` | required | Always `operationAndParameter`: each list sits under its operation, and under the place in that operation's request it goes |
 | `values` | required | The values themselves, under their keys |
 
-Anything else in the file is refused by name. A misspelled `keyedBy` would otherwise leave a
-dictionary that loads without complaint and then never contributes a value. The same goes for a key
-written twice, which YAML allows and which would otherwise leave the first list quietly replaced.
+Anything else in the file is refused by name, because a member nobody recognises is usually a
+misspelling. The same goes for a key written twice, which YAML allows and which would otherwise
+leave the first list quietly replaced.
 
-**One dictionary per file.** A file states once what decides which of its values apply, and letting
-several share a file would make that statement meaningless. Keep several by keeping several files.
+**One dictionary per file**, under the one name a plan points at it by. Keep several by keeping
+several files.
+
+**`fuzzing` is not a name you can give a list.** It is the name of the list of values RESTest
+carries to push at an API with, and a file of yours called that is refused. The values a run pushes
+at an API with are RESTest's own.
 
 **A dictionary does not say what the API will make of its values, and could not.** A value can be
 perfectly good and the request still refused for a rule about some other parameter; and a value that
 looks outrageous — an empty word, a zero, a list with nothing in it — is one a great many APIs accept
 quite happily. What a list is *for* is decided by the plan that names it, not by the file.
 
-## The five keyings
+## Where a value goes
 
-| `keyedBy` | The key is | Use it for |
-|---|---|---|
-| `type` | the kind of value wanted: `string`, `integer`, `number`, `boolean`, `array`, `object`, `null` | values that suit anything of a kind — the list RESTest ships is keyed this way |
-| `format` | the `format` the document declares — `date`, `uuid`, `email` | values that satisfy a stated format. RESTest builds its own for the kinds it knows, so reach for this where it does not: an account number, a book's identifier, a code your API invented |
-| `schema` | the name the document gave the shape — `Pet`, `Owner` | whole objects, which is what a request body is |
-| `name` | the name alone, wherever it appears — a parameter or a property inside a body | every `petId` in the API at once |
-| `operationAndParameter` | the operation, then the place in its request | one place in one operation, which is as specific as it gets |
+Every list in a file sits under an operation, and under the place in that operation's request its
+values go. Writing one means going through the API's document operation by operation, which is
+what makes the file exact: it says where everything it holds is sent, and nowhere else.
 
-Values under the key **`any`** apply whatever the key is. It is where `null` belongs, and anything
-else that makes sense everywhere.
-
-It is blunter than it looks. In a file keyed by operation and place, `any` applies to *every* place
-of *every* operation — every parameter, every body, and every piece of every body. Its values are
-drawn against whatever is written for the place itself, so one value under `any` beside a list of
-three is sent about a quarter of the time there; where nothing else is written for a place, which is
-most of them, it is the only answer and is sent every time. `any: [null]` sends null everywhere.
-Reach for it when you mean exactly that.
+A value meant for several places is written under each of them. A surname good for the search's
+`lastName` and for the body that creates an owner goes under both:
 
 ```yaml
-version: 1
-name: formats
-keyedBy: format
-
 values:
-  any:  [null]
-  iban: ["GB33BUKB20201555555555", "DE75512108001245126199"]
-  isbn: ["978-3-16-148410-0"]
+  listOwners:
+    lastName: [Franklin, Davis]
+  addOwner:
+    body.lastName: [Franklin, Davis]
 ```
 
-Kinds RESTest builds for itself — `date`, `date-time`, `email`, `uuid`, `uri`, `ipv4` and the rest of
-the ones the specification format defines — are worth writing down only when you want *your* values
-sent instead of built ones. Everything else is where a file like this earns its keep.
+YAML's own anchors save writing a list twice: `lastName: &surnames [Franklin, Davis]` names it, and
+`body.lastName: *surnames` repeats it.
 
 Nothing here needs quoting to be safe. YAML's own older rules turn a startling number of ordinary
 words into something else — `no`, `off` and `n` into false, `yes`, `on` and `y` into true, an
@@ -156,10 +145,6 @@ entry in both, and there is no way to say which you meant: the key is the name, 
 have it. Where they mean different things, write values that suit either, or leave the entry out and
 let the document answer.
 
-Under `keyedBy: name` the key is the **last step alone**: `email` matches a parameter called `email`
-and an `email` three levels inside a body, anywhere in the API. That is the difference between the
-two keyings — one means this value and no other, the other means this name anywhere.
-
 ## The values
 
 A value is anything JSON can carry: a word, a number, `true`, `null`, a list, or a whole object. That
@@ -169,13 +154,14 @@ object rather than any field of it.
 ```yaml
 version: 1
 name: bodies
-keyedBy: schema
+keyedBy: operationAndParameter
 
 values:
-  Owner:
-    - firstName: George
-      lastName: Franklin
-      city: Madison
+  addOwner:
+    body:
+      - firstName: George
+        lastName: Franklin
+        city: Madison
 ```
 
 RESTest picks among the values that apply at random rather than always the first, so a run works
@@ -224,35 +210,18 @@ thing it does not like, so one odd value among good ones teaches nothing that a 
 values does not.
 
 **Which lists feed which kind of request is decided by the plan, by name**, and the plan is
-[a file you can write](campaign-format.md). The one RESTest carries names one list, `fuzzing` — the
-one RESTest ships, and any of yours called the same — for the requests that push at the API, and
-asks for every other list you handed over when building requests meant to work. In a plan of your
-own, one list can feed two kinds of request, or two lists one kind.
+[a file you can write](campaign-format.md). The one RESTest carries names one list, `fuzzing` —
+RESTest's own, written for kinds of value rather than for any API's places — for the requests that
+push at the API, and asks for every list you handed over, in the order you handed them over, when
+building requests meant to work. In a plan of your own, one list can feed two kinds of request, or
+two lists one kind.
 
-One more thing reads the lists called `fuzzing`, and no plan names it. When a request the API
+One more thing reads RESTest's `fuzzing` list, and no plan names it. When a request the API
 accepted is sent again with one value of the wrong kind in it — see [the campaign
 file](campaign-format.md#changing-one-thing-in-a-request-that-worked) — that value is drawn from
-those lists as well as from a few RESTest keeps for it - from a list keyed by `type`, which is how
-the one RESTest carries is keyed, and not from one written for named places, whose values belong to
-those places alone. There one odd value goes among good ones on purpose, since what is asked is what
-the API does with that one value. Only the values the document refuses for the place they go to are
-sent there, so a list of yours called `fuzzing`, keyed by `type`, adds to both. It does so even in a
-plan with no pushing strategy, unless `mutation.wrongType` is off.
-
-Among the lists feeding ordinary requests, the order is how much each one knows about the value:
-
-```
-the closed list of values the document says it accepts     nothing overrides this
-a list keyed by operationAndParameter or by name           knows about one value
-the document's own examples and defaults
-a list keyed by schema, format or type                     knows about a kind of value
-whatever RESTest can invent
-```
-
-So a file of real identifiers for `getOwner`'s `ownerId` beats the document's sample of that
-parameter, and a file of plausible surnames for every piece of text does not. A list keyed by
-`schema` is on the second side because a document declares a shape once and every parameter
-referring to it gets the same one.
+that list as well as from a few more RESTest keeps for it, and never from a list of yours, whose
+values belong to the places it names. Only the values the document refuses for the place they go
+to are sent there.
 
 Where a parameter declares an `enum`, nothing in your file is used for it. That list is not advice:
 it is the whole set of values the API says it takes, and sending anything else would be sending a
@@ -265,21 +234,19 @@ enumeration at all, because the alternative is an operation that can never be te
 > fit, what the API has returned, and your lists. Every source in the group that has an answer for a
 > place is asked, and one answer is drawn by weight. Your lists weigh 40 of 100, so where all five
 > answer, about two requests in five carry one of your values, and more where fewer of the others
-> have anything to say. How widely a list is keyed decides where it is a voice: two surnames under
-> `string` are offered for every piece of text in the API, every text parameter and every text
-> property of every body, while a list keyed by `operationAndParameter` is offered only at the places
-> you name. To make your lists the only answer wherever they have one, write a plan that asks
-> `dictionaries: given` before the group: sources outside a group are asked in order, and the first
-> answer is taken ([the campaign file](campaign-format.md#sources)).
+> have anything to say. Your lists only ever answer at the places they name. To make them the only
+> answer wherever they have one, write a plan that asks `dictionaries: given` before the group:
+> sources outside a group are asked in order, and the first answer is taken ([the campaign
+> file](campaign-format.md#sources)).
 
 ### `observed` is not one of these
 
-A run can also draw on **what the API itself has sent back**, which is filed under the same two
-keyings as a list of yours: a value under its own name, and a whole thing under the name of its
-shape. It is not a file, though, and there is nothing here to write for it. A plan asks for it with
-`source: observed`, the way it asks for the document's own samples, and
-[the campaign format](campaign-format.md) says what it does and what it costs. A file of yours
-called `observed` is an ordinary list with an ordinary name, and a plan names it the ordinary way.
+A run can also draw on **what the API itself has sent back**: a value kept under the name it came
+back under, and a whole thing under the name of its shape. It is not a file, though, and there is
+nothing here to write for it. A plan asks for it with `source: observed`, the way it asks for the
+document's own samples, and [the campaign format](campaign-format.md) says what it does and what it
+costs. A file of yours called `observed` is an ordinary list with an ordinary name, and a plan names
+it the ordinary way.
 
 ## What a run says about your file
 
@@ -343,7 +310,7 @@ nothing under it that the API does not have.
 ## Writing one of these from a specification
 
 A file is often produced from the OpenAPI document by a person or a program working through it
-operation by operation. Four rules make that reliable:
+operation by operation. Five rules make that reliable:
 
 1. **Name every operation by its method and path** unless you are certain of its `operationId`. Both
    are accepted, and this one needs no checking.
@@ -353,6 +320,9 @@ operation by operation. Four rules make that reliable:
    values are, and nothing in your file will be sent instead.
 4. **Prefer a list per place over a whole body**, and keep the whole body for objects whose fields
    depend on each other.
+5. **Repeat a list under every operation that takes it.** A value good for `ownerId` in `getOwner`
+   is written again under `updateOwner` and `deleteOwner`: a list only ever answers at the places
+   it names.
 
 Then look at what the run says about the file. The check happens as the file is read, before the
 first request, so the first few lines of any run tell you what is wrong with it. There is no command

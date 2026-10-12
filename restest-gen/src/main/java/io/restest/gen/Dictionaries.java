@@ -42,8 +42,8 @@ import java.util.stream.Stream;
  * to the specification they belong to so that the good values somebody worked out for an API are
  * committed alongside it rather than living in one person's head.
  *
- * <p>One dictionary per file. A file says once what decides which of its values apply, and letting
- * several share a file would make that statement meaningless. Pointing at a directory reads every
+ * <p>One dictionary per file, under the one name a plan points at it by. Pointing at a directory
+ * reads every
  * {@code .yaml}, {@code .yml} and {@code .json} file in it, which is the comfortable way to keep
  * several.
  *
@@ -77,15 +77,14 @@ public final class Dictionaries {
      * What was found when the dictionaries were gathered.
      *
      * @param shipped the list RESTest carries, absent only when this build cannot read its own
-     * @param fromTheUser the ones somebody handed over, which is a different question from which
-     *     ones there are: a message about a file nobody wrote is a message nobody can act on
+     * @param fromTheUser the ones somebody handed over, each written for the places of the API
      * @param problems what went wrong, in the words a person should read, empty when nothing did
      * @param refused the places named that gave the run no list at all, each also among the
      *     problems: the ones that cost a whole file rather than some entries in one
      * @param read where each list the run holds came from, in the same order as
      *     {@link #dictionaries()}
      */
-    public record Found(Optional<Dictionary> shipped, List<Dictionary> fromTheUser,
+    public record Found(Optional<Dictionary> shipped, List<ValueDictionary> fromTheUser,
             List<String> problems, List<Refused> refused, List<Read> read) {
 
         public Found {
@@ -117,12 +116,6 @@ public final class Dictionaries {
             List<Dictionary> all = new ArrayList<>(shipped.map(List::of).orElse(List.of()));
             all.addAll(fromTheUser);
             return List.copyOf(all);
-        }
-
-        /** The names of the lists somebody handed over, as against the one RESTest carries. */
-        public java.util.Set<String> namesFromTheUser() {
-            return fromTheUser.stream().map(Dictionary::name)
-                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
         }
     }
 
@@ -187,7 +180,7 @@ public final class Dictionaries {
             if (stream == null) {
                 throw new IOException("this build of RESTest does not carry " + SHIPPED_FUZZING);
             }
-            return DictionaryDocument.read(
+            return DictionaryDocument.readOwn(
                     new String(stream.readAllBytes(), StandardCharsets.UTF_8), SHIPPED_DESCRIPTION);
         }
     }
@@ -218,7 +211,7 @@ public final class Dictionaries {
                     + beyondHelp.getMessage()), problems, refused);
         }
 
-        List<Dictionary> fromTheUser = new ArrayList<>();
+        List<ValueDictionary> fromTheUser = new ArrayList<>();
         // A list of pairs rather than a map from the dictionary, because a dictionary is an
         // interface: one implemented as a record would answer equal to another holding the same
         // values, and two files would quietly become one.
@@ -226,13 +219,14 @@ public final class Dictionaries {
         for (Path location : locations) {
             for (Path file : filesUnder(location, problems, refused)) {
                 read(file, problems, refused).ifPresent(dictionary -> {
-                    if (dictionary instanceof ValueDictionary values && values.holdsNoValues()) {
+                    if (dictionary.holdsNoValues()) {
                         // Read, and held, but it will never answer anything: said, because it
                         // otherwise looks exactly like a file that was used.
                         problems.add(file + " holds no values at all, so it adds nothing to the "
                                 + "run");
                     }
-                    Dictionary named = underTheNamesTheRunPrints(dictionary, model, file, problems);
+                    ValueDictionary named =
+                            underTheNamesTheRunPrints(dictionary, model, file, problems);
                     fromTheUser.add(named);
                     read.add(new ReadFromAFile(named, file));
                     readFrom.add(new Read(named.name(), file.toString()));
@@ -263,13 +257,10 @@ public final class Dictionaries {
      * answering to one name leave a plan with nothing to point at and a report unable to tell them
      * apart.
      *
-     * <p>Only the lists somebody handed over are counted. Giving one of your own the same name as
-     * the list RESTest carries is the documented way to have it pushed at an API, so that collision
-     * is somebody following instructions rather than making a mistake. It costs what every shared
-     * name costs - a value from either reads as having come from the same place - and the plan that
-     * names each list separately is what ends it.
+     * <p>Only the lists somebody handed over are counted: none of them can be called what the list
+     * RESTest carries is called, since that name is refused as a file is read.
      */
-    private static void reportNamesUsedTwice(List<Dictionary> found, List<String> problems) {
+    private static void reportNamesUsedTwice(List<ValueDictionary> found, List<String> problems) {
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
         for (Dictionary dictionary : found) {
             if (!seen.add(dictionary.name())) {
@@ -280,7 +271,7 @@ public final class Dictionaries {
         }
     }
 
-    private static Optional<Dictionary> read(Path file, List<String> problems,
+    private static Optional<ValueDictionary> read(Path file, List<String> problems,
             List<Refused> refused) {
         try {
             return Optional.of(DictionaryDocument.read(Files.readString(file), file.toString()));
@@ -341,12 +332,8 @@ public final class Dictionaries {
      * an identifier is there at all. The second is turned into the first here, once, so that
      * everything after this point has one name per operation to think about.
      */
-    private static Dictionary underTheNamesTheRunPrints(Dictionary dictionary, ApiModel model,
-            Path file, List<String> problems) {
-        if (!(dictionary instanceof ValueDictionary values)
-                || values.keyedBy() != ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
-            return dictionary;
-        }
+    private static ValueDictionary underTheNamesTheRunPrints(ValueDictionary values,
+            ApiModel model, Path file, List<String> problems) {
         Set<String> declared = model.operations().stream()
                 .map(operation -> operation.id().value())
                 .collect(java.util.stream.Collectors.toSet());
@@ -392,28 +379,18 @@ public final class Dictionaries {
     }
 
     /** One list, and the file it was read from. */
-    private record ReadFromAFile(Dictionary dictionary, Path file) {
+    private record ReadFromAFile(ValueDictionary dictionary, Path file) {
     }
 
-    /**
-     * The operations some list this run holds gives a whole body for.
-     *
-     * <p>Not the lists that push at the API: those feed requests of their own rather than ordinary
-     * ones, so a body in one of them is not what an ordinary request would be sent, and blaming an
-     * entry on it would be pointing at the wrong thing.
-     */
-    private static Set<String> operationsGivenAWholeBody(List<Dictionary> dictionaries) {
+    /** The operations some list somebody handed over gives a whole body for. */
+    private static Set<String> operationsGivenAWholeBody(List<ValueDictionary> dictionaries) {
         Set<String> given = new java.util.LinkedHashSet<>();
-        for (Dictionary dictionary : dictionaries) {
-            if (dictionary instanceof ValueDictionary values
-                    && !dictionary.name().equals(RandomTestCaseGenerator.PUSHES_AT_THE_API)
-                    && values.keyedBy() == ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
-                values.entriesByOperation().forEach((operation, entries) -> {
-                    if (entries.containsKey(ValueRequest.THE_BODY)) {
-                        given.add(operation);
-                    }
-                });
-            }
+        for (ValueDictionary values : dictionaries) {
+            values.entriesByOperation().forEach((operation, entries) -> {
+                if (entries.containsKey(ValueRequest.THE_BODY)) {
+                    given.add(operation);
+                }
+            });
         }
         return given;
     }
@@ -437,12 +414,8 @@ public final class Dictionaries {
      * <p>What cannot be judged is left alone, and {@link WhereAValueCanGo} says what that is: being
      * unable to name something is not the same as knowing it is wrong.
      */
-    private static void reportEntriesNothingWouldUse(Dictionary dictionary, ApiModel model,
+    private static void reportEntriesNothingWouldUse(ValueDictionary values, ApiModel model,
             Path file, Set<String> givenAWholeBody, List<String> problems) {
-        if (!(dictionary instanceof ValueDictionary values)
-                || values.keyedBy() != ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
-            return;
-        }
         Map<String, Operation> operations = new java.util.LinkedHashMap<>();
         model.operations().forEach(operation -> operations.put(operation.id().value(), operation));
         Set<String> unreadable = new java.util.HashSet<>();

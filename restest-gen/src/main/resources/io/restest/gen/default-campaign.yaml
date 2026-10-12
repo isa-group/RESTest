@@ -82,10 +82,9 @@ strategies:
           - source: observed
             weight: 20
 
-          # Every list of values passed with --dictionary, the ones written for a particular
-          # place asked before the ones written for a whole kind of value. Nothing by default;
-          # when there is one it is the most specific thing anybody knows about this API, which
-          # is why it is weighted highest of the five.
+          # Every list of values passed with --dictionary, in the order they were passed.
+          # Nothing by default; when there is one it is the most specific thing anybody knows
+          # about this API, which is why it is weighted highest of the five.
           - dictionaries: given
             weight: 40
 
@@ -160,8 +159,8 @@ strategies:
     share: 10
     sources:
 
-      # The list of awkward values that travels with RESTest. Add to it by handing over a list
-      # of your own under the same name.
+      # The list of awkward values that travels with RESTest, and RESTest's own: no list handed
+      # over can take its name.
       - dictionary: fuzzing
 
       # For the values that list has nothing sendable for - a parameter whose shape has no kind

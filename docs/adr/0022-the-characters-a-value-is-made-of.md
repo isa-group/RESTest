@@ -482,3 +482,12 @@ name it is: most of its fifty-three are the names of things.
 - Lengths a place states below a kind's own - a password allowed ten characters at most, a user
   name allowed eight - are not built to: the value is refused by the length, as every implied value
   too long for its place is, and what would have been sent anyway is sent.
+
+## Amendment (12 October 2026): no format keying for a file
+
+**Date:** 2026-10-12
+
+The `format` keying this record keeps for a user's own file is gone: since
+[ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) a dictionary file is keyed
+by operation and place, and a value for a format the document declares is written under each place
+that declares it.

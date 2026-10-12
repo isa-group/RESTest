@@ -727,3 +727,18 @@ no figure here belongs to any one of the changes alone.
 The amendment of 1 October says that §6's quarter "stands, as a line of the plan RESTest carries".
 It no longer does: the plan RESTest carries gives the strategy that pushes a tenth of the run.
 [ADR-0023](0023-the-campaign-file.md)'s amendment of the same date is the record.
+
+## Amendment (12 October 2026): one keying for a file
+
+**Date:** 2026-10-12
+
+[ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) narrows §1 to one keying for
+a file somebody hands over: `operationAndParameter`.
+- `type`, `format`, `schema` and `name` are refused, and so is a file called `fuzzing`.
+- The `any` bucket is no longer special in a file.
+- §4's ranking of a list for one value before a list for a kind goes with them.
+- §7's list stays keyed by type, as RESTest's own.
+- The consequence that each dictionary says for itself whether it is about one value is withdrawn.
+
+The Context's "a published format cannot be quietly replaced" is overridden, loudly: a refused file
+is said where every refusal is. The record says why on the evidence of the files that exist.

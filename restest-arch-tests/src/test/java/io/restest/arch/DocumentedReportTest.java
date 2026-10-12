@@ -245,7 +245,7 @@ class DocumentedReportTest {
     private static final String A_LIST_NOBODY_CAN_READ = """
             version: 99
             name: unreadable
-            keyedBy: name
+            keyedBy: operationAndParameter
             values: {}
             """;
 

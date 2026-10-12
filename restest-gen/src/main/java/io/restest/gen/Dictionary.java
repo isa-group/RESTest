@@ -29,15 +29,16 @@ import java.util.List;
  * how an API gets asked what it does with input nobody sensible would send; and the identifiers an
  * API handed back earlier in the same run are better than any of them.
  *
- * <p>All three are the same thing with a different way of deciding which values apply - the kind of
- * value wanted, the format the document declares for it, the name of the shape, the name of the
- * parameter, or the operation and parameter together. That decision is called the <em>keying</em>,
- * and it is the only thing that differs between them.
+ * <p>All three are the same thing with a different way of deciding which values apply. A list
+ * somebody hands over is written for the places of one API: a value under its operation and under
+ * the place in that operation's request it goes. The list of awkward values RESTest carries is
+ * written for kinds of value, since it knows no API. The API's own replies are kept under the name
+ * each value came back under, and whole things under the name of their shape.
  *
  * <p>Where the values come from is not fixed either. Most are read from a file, which is why the
- * file format is written down and anybody can add one. One of them will instead be filled in as the
- * run goes along, out of the API's own replies, and nothing that asks a dictionary a question needs
- * to know which kind it is holding.
+ * file format is written down and anybody can add one. One of them is instead filled in as the run
+ * goes along, out of the API's own replies, and nothing that asks a dictionary a question needs to
+ * know which kind it is holding.
  *
  * <p>What a dictionary does <em>not</em> say is what the API will make of its values. It cannot: a
  * value can be perfectly good and the request still be refused for a rule about some other
@@ -62,20 +63,4 @@ public interface Dictionary {
      * @return the name
      */
     String name();
-
-    /**
-     * Whether this dictionary is about one value in particular rather than a whole kind of them.
-     *
-     * <p>It decides when the dictionary gets asked. One written for a named parameter or a named
-     * operation knows more about that value than the document's own sample of it, so it is asked
-     * first; one written for every date or every piece of text knows less, so it is asked after the
-     * document has had its say.
-     *
-     * <p>Every dictionary answers this for itself rather than having it worked out from the outside,
-     * because the ones that are not files - a list filled in from the API's own replies as a run
-     * goes along - have no keying to read it from.
-     *
-     * @return whether it is about one value in particular
-     */
-    boolean isAboutOneValueInParticular();
 }

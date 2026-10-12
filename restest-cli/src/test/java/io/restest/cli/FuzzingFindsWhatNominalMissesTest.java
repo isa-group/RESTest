@@ -170,21 +170,16 @@ class FuzzingFindsWhatNominalMissesTest {
         Path mine = Files.writeString(directory.resolve("mine.yaml"), """
                 version: 1
                 name: mine
-                keyedBy: name
+                keyedBy: operationAndParameter
                 values:
-                  q: [ZZMINEZZ]
+                  search:
+                    q: [ZZMINEZZ]
                 """);
 
         run(directory.resolve("out"), document, "--dictionary", mine.toString());
 
         // Being read, validated and listed is not the same as being used, and only this says which.
-        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
-        com.github.tomakehurst.wiremock.client.WireMock.verify(
-                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
-                com.github.tomakehurst.wiremock.client.WireMock
-                        .getRequestedFor(urlPathEqualTo("/search"))
-                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
-                                .equalTo("ZZMINEZZ")));
+        searchedAtLeastOnceFor("ZZMINEZZ");
     }
 
     @Test
@@ -240,13 +235,7 @@ class FuzzingFindsWhatNominalMissesTest {
                 "--dictionary", mine.toString());
 
         assertThat(screen).doesNotContain("could not be read");
-        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
-        com.github.tomakehurst.wiremock.client.WireMock.verify(
-                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
-                com.github.tomakehurst.wiremock.client.WireMock
-                        .getRequestedFor(urlPathEqualTo("/search"))
-                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
-                                .equalTo("ZZEMPTYBLOCKZZ")));
+        searchedAtLeastOnceFor("ZZEMPTYBLOCKZZ");
     }
 
     @Test
@@ -264,43 +253,28 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     @Test
-    @DisplayName("a plan with no pushing names the list of yours that then goes unused, and stays "
-            + "quiet about lists that had nothing to do with pushing")
-    void what_goes_unused_is_named_and_nothing_else_is(@TempDir Path directory) throws IOException {
+    @DisplayName("a list of your own called what RESTest's own list to push with is called is "
+            + "refused, said out loud, and its values never sent")
+    void a_list_called_like_restests_own_is_refused(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
-        Path pushes = Files.writeString(directory.resolve("pushes.yaml"), """
+        Path calledLikeOurs = Files.writeString(directory.resolve("fuzzing.yaml"), """
                 version: 1
                 name: fuzzing
-                keyedBy: type
+                keyedBy: operationAndParameter
                 values:
-                  string: [ZZPUSHZZ]
-                """);
-        Path ordinary = Files.writeString(directory.resolve("ordinary.yaml"), """
-                version: 1
-                name: my-terms
-                keyedBy: name
-                values:
-                  q: [kitten]
+                  search:
+                    q: [ZZNEVERZZ]
                 """);
 
-        String noPushing = plan(directory, NEVER_PUSHES).toString();
-
-        assertThat(run(directory.resolve("a"), document, "--campaign", noPushing,
-                "--dictionary", pushes.toString()))
-                .describedAs("two things were asked for that cancel, and one is probably a mistake")
-                .contains("the list of values called 'fuzzing'")
-                .containsOnlyOnce("gives no strategy that pushes");
-
-        assertThat(run(directory.resolve("b"), document, "--campaign", noPushing,
-                "--dictionary", ordinary.toString()))
-                .describedAs("my own good values and nothing strange at somebody else's API is the "
-                        + "most sensible way to use these two together, and warning about a file "
-                        + "they never wrote is a message they could not act on")
-                .doesNotContain("gives no strategy that pushes");
-
-        assertThat(run(directory.resolve("c"), document, "--campaign", noPushing))
-                .describedAs("asking for no pushing, on its own, is a plain request")
-                .doesNotContain("gives no strategy that pushes");
+        assertThat(run(directory.resolve("out"), document,
+                "--dictionary", calledLikeOurs.toString()))
+                .contains("is called 'fuzzing', which is the name of RESTest's own list")
+                .contains("give yours another name")
+                .contains("1 list of values could not be read");
+        api.verify(0, com.github.tomakehurst.wiremock.client.WireMock
+                .getRequestedFor(urlPathEqualTo("/search"))
+                .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
+                        .equalTo("ZZNEVERZZ")));
     }
 
     @Test
@@ -339,6 +313,15 @@ class FuzzingFindsWhatNominalMissesTest {
                         + "to give, and none should have been attempted")
                 .doesNotContain("no reply");
         assertThat(screen).contains("were pushing at the API");
+    }
+
+    /** Checks that the API was searched at least once for this exact word. */
+    private static void searchedAtLeastOnceFor(String word) {
+        api.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+                com.github.tomakehurst.wiremock.client.WireMock
+                        .getRequestedFor(urlPathEqualTo("/search"))
+                        .withQueryParam("q",
+                                com.github.tomakehurst.wiremock.client.WireMock.equalTo(word)));
     }
 
     /** A plan written to a file of its own in the directory, for {@code --campaign}. */

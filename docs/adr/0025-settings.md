@@ -646,3 +646,13 @@ value and where it came from, which is how a report says which checks its run ma
 chose on 12 October 2026 not to add a line on the screen of its own. A switch is for the whole run,
 never for one operation, and [the known limitations](../known-limitations.md#what-a-run-says) say so.
 Eighty-three settings in nine groups.
+
+## Amendment (12 October 2026): two older behaviours with no switch, not three
+
+**Date:** 2026-10-12
+
+The M11.2 amendment lists three older behaviours with no switch. The third, lists written for one
+place asked before lists written for a whole kind of value, is gone: since
+[ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) every list handed over is
+written for places of one API, and the lists are asked in the order they were handed over. Two are
+left, and the page of switches says so.
