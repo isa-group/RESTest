@@ -164,6 +164,13 @@ public final class JsonReport implements RunListener {
     /** How many faults of each kind happened on a reply of each class of status code. */
     private final Map<ByStatus, Integer> faultsByStatus = new LinkedHashMap<>();
 
+    /**
+     * What describes each catalogue number, taken from the first fault that carried it: the one
+     * place the key and the words that go beside a number come from, wherever faults are counted by
+     * number.
+     */
+    private final Map<Integer, FaultCategory> kinds = new LinkedHashMap<>();
+
     /** How every attempt ended, whether or not anything turned out to be wrong with it. */
     private final Map<String, Integer> repliesByClass = new LinkedHashMap<>();
 
@@ -357,6 +364,7 @@ public final class JsonReport implements RunListener {
                 new Kind(finding.operation(), finding.category().code()),
                 ignored -> new Tally(finding.category()));
         tally.saw(finding.interaction().sentAt());
+        kinds.putIfAbsent(finding.category().code(), finding.category());
         faultsByStatus.merge(
                 new ByStatus(finding.category().code(), classOf(finding.interaction())),
                 1, Integer::sum);
@@ -465,12 +473,12 @@ public final class JsonReport implements RunListener {
 
     /** One row a build server can read, in the order the kinds were first seen. */
     private JsonValue faultsByCategory() {
-        Map<FaultCategory, Integer> byCategory = new LinkedHashMap<>();
-        tallies.forEach((kind, tally) -> byCategory.merge(tally.category, tally.count, Integer::sum));
-        return JsonValue.array(byCategory.entrySet().stream()
+        Map<Integer, Integer> byNumber = new LinkedHashMap<>();
+        tallies.forEach((kind, tally) -> byNumber.merge(kind.code(), tally.count, Integer::sum));
+        return JsonValue.array(byNumber.entrySet().stream()
                 .map(entry -> {
-                    Map<String, JsonValue> counted = new LinkedHashMap<>(
-                            ((JsonValue.JsonObject) categoryOf(entry.getKey())).members());
+                    Map<String, JsonValue> counted = new LinkedHashMap<>(((JsonValue.JsonObject)
+                            categoryOf(kinds.get(entry.getKey()))).members());
                     counted.put("count", JsonValue.of(entry.getValue()));
                     return (JsonValue) JsonValue.object(counted);
                 })
@@ -492,8 +500,7 @@ public final class JsonReport implements RunListener {
                     Tally tally = entry.getValue();
                     Map<String, JsonValue> row = new LinkedHashMap<>();
                     row.put("operation", JsonValue.of(kind.operation().value()));
-                    row.put("code", JsonValue.of(kind.code()));
-                    row.put("label", JsonValue.of(tally.category.label()));
+                    named(row, tally.category);
                     row.put("count", JsonValue.of(tally.count));
                     row.put("writtenInFull", JsonValue.of(tally.writtenInFull));
                     row.put("countedOnly", JsonValue.of(tally.count - tally.writtenInFull));
@@ -646,8 +653,7 @@ public final class JsonReport implements RunListener {
         return JsonValue.array(faultsByStatus.entrySet().stream()
                 .map(entry -> {
                     Map<String, JsonValue> row = new LinkedHashMap<>();
-                    row.put("code", JsonValue.of(entry.getKey().code()));
-                    row.put("label", JsonValue.of(labelOf(entry.getKey().code())));
+                    named(row, kinds.get(entry.getKey().code()));
                     row.put("statusClass", JsonValue.of(entry.getKey().statusClass()));
                     row.put("count", JsonValue.of(entry.getValue()));
                     return (JsonValue) JsonValue.object(row);
@@ -655,13 +661,11 @@ public final class JsonReport implements RunListener {
                 .toList());
     }
 
-    /** The words that go with a catalogue number, taken from the first fault that carried it. */
-    private String labelOf(int code) {
-        return tallies.values().stream()
-                .filter(tally -> tally.category.code() == code)
-                .map(tally -> tally.category.label())
-                .findFirst()
-                .orElse("F" + code);
+    /** A kind of fault as a row of a count writes it: its number, the catalogue's key, its label. */
+    private static void named(Map<String, JsonValue> row, FaultCategory category) {
+        row.put("code", JsonValue.of(category.code()));
+        row.put("id", JsonValue.of(category.id()));
+        row.put("label", JsonValue.of(category.label()));
     }
 
     private JsonValue totals() {
@@ -748,6 +752,7 @@ public final class JsonReport implements RunListener {
     private static JsonValue categoryOf(FaultCategory category) {
         Map<String, JsonValue> written = new LinkedHashMap<>();
         written.put("code", JsonValue.of(category.code()));
+        written.put("id", JsonValue.of(category.id()));
         written.put("descriptiveName", JsonValue.of(category.descriptiveName()));
         written.put("testCaseLabel", JsonValue.of(category.testCaseLabel()));
         written.put("label", JsonValue.of(category.label()));

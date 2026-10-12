@@ -68,7 +68,7 @@ so records written from now on cite none.
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10 October 2026 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 and on 10 October 2026 |
 | [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11 and 12 October 2026 |
-| [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 and on 10 October 2026 |
+| [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 and on 10 and 12 October 2026 |
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
 | [0019](0019-the-samples-a-document-writes-down.md) | A document's own sample values are read, sent as written, and named in the record | Accepted |

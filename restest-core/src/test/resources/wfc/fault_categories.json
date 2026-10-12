@@ -1,274 +1,353 @@
 [ {
   "code" : 100,
-  "testCaseLabel" : "causes500_internalServerError",
-  "fullDescription" : "The HTTP status code 500 represents a 'Server Error'. Typically, when there is crash in the business logic of the tested backend, like for example due to a null-pointer exception, the server would not crash, but rather return a response with status code 500. Therefore, the presence of such a response 'might' indicate the presence of a fault in the backend. However, such code might also be used for other cases that have nothing to do with software faults. For example, if a request cannot be handled due to issue with the environment, e.g., databases and  communications with other APIs, a status code 500 could be sent. As such, although there is high chances that a 500 status code might point to the presence of a software fault in the tested application, they still need to be manually checked due to possible 'false-positive'.",
   "descriptiveName" : "HTTP Status 500",
+  "fullDescription" : "The HTTP status code 500 represents a 'Server Error'. Typically, when there is crash in the business logic of the tested backend, like for example due to a null-pointer exception, the server would not crash, but rather return a response with status code 500. Therefore, the presence of such a response 'might' indicate the presence of a fault in the backend. However, such code might also be used for other cases that have nothing to do with software faults. For example, if a request cannot be handled due to issue with the environment, e.g., databases and  communications with other APIs, a status code 500 could be sent. As such, although there is high chances that a 500 status code might point to the presence of a software fault in the tested application, they still need to be manually checked due to possible 'false-positive'.",
   "group" : "G_1XX",
-  "label" : "F100:HTTP Status 500"
+  "id" : "HTTP_STATUS_500",
+  "label" : "F100:HTTP Status 500",
+  "testCaseLabel" : "causes500_internalServerError"
 }, {
   "code" : 101,
-  "testCaseLabel" : "invalidStatusCode",
-  "fullDescription" : "HTTP status codes outside the range 100-599 are not valid.",
   "descriptiveName" : "HTTP Violation: no-non-standard-codes",
+  "fullDescription" : "HTTP status codes outside the range 100-599 are not valid.",
   "group" : "G_1XX",
-  "label" : "F101:HTTP Violation: no-non-standard-codes"
+  "id" : "HTTP_STATUS_NO_NON_STANDARD_CODES",
+  "label" : "F101:HTTP Violation: no-non-standard-codes",
+  "testCaseLabel" : "invalidStatusCode"
 }, {
   "code" : 102,
-  "testCaseLabel" : "201OnDelete",
-  "fullDescription" : "A DELETE operation is meant to remove a resource, and so it should not states to 201 create one.",
   "descriptiveName" : "HTTP Violation: no-201-if-delete",
+  "fullDescription" : "A DELETE operation is meant to remove a resource, and so it should not states to 201 create one.",
   "group" : "G_1XX",
-  "label" : "F102:HTTP Violation: no-201-if-delete"
+  "id" : "HTTP_STATUS_NO_201_IF_DELETE",
+  "label" : "F102:HTTP Violation: no-201-if-delete",
+  "testCaseLabel" : "201OnDelete"
 }, {
   "code" : 103,
-  "testCaseLabel" : "201OnGet",
-  "fullDescription" : "A GET operation is meant to retrieve a resource, and so it should not states to 201 create one.",
   "descriptiveName" : "HTTP Violation: no-201-if-get",
+  "fullDescription" : "A GET operation is meant to retrieve a resource, and so it should not states to 201 create one.",
   "group" : "G_1XX",
-  "label" : "F103:HTTP Violation: no-201-if-get"
+  "id" : "HTTP_STATUS_NO_201_IF_GET",
+  "label" : "F103:HTTP Violation: no-201-if-get",
+  "testCaseLabel" : "201OnGet"
 }, {
   "code" : 104,
-  "testCaseLabel" : "201OnPatch",
-  "fullDescription" : "A PATCH operation is meant to modify a resource, and so it should not states to 201 create one.",
   "descriptiveName" : "HTTP Violation: no-201-if-patch",
+  "fullDescription" : "A PATCH operation is meant to modify a resource, and so it should not states to 201 create one.",
   "group" : "G_1XX",
-  "label" : "F104:HTTP Violation: no-201-if-patch"
+  "id" : "HTTP_STATUS_NO_201_IF_PATCH",
+  "label" : "F104:HTTP Violation: no-201-if-patch",
+  "testCaseLabel" : "201OnPatch"
 }, {
   "code" : 105,
-  "testCaseLabel" : "204WhenContent",
-  "fullDescription" : "If a response contains a payload, it should not state it 204 contains none.",
   "descriptiveName" : "HTTP Violation: no-204-if-content",
+  "fullDescription" : "If a response contains a payload, it should not state it 204 contains none.",
   "group" : "G_1XX",
-  "label" : "F105:HTTP Violation: no-204-if-content"
+  "id" : "HTTP_STATUS_NO_204_IF_CONTENT",
+  "label" : "F105:HTTP Violation: no-204-if-content",
+  "testCaseLabel" : "204WhenContent"
 }, {
   "code" : 106,
-  "testCaseLabel" : "413WhenNoPayload",
-  "fullDescription" : "Cannot state a payload is too large if there is no payload.",
   "descriptiveName" : "HTTP Violation: no-413-if-no-payload",
+  "fullDescription" : "Cannot state a payload is too large if there is no payload.",
   "group" : "G_1XX",
-  "label" : "F106:HTTP Violation: no-413-if-no-payload"
+  "id" : "HTTP_STATUS_NO_413_IF_NO_PAYLOAD",
+  "label" : "F106:HTTP Violation: no-413-if-no-payload",
+  "testCaseLabel" : "413WhenNoPayload"
 }, {
   "code" : 107,
-  "testCaseLabel" : "415WhenNoPayload",
-  "fullDescription" : "Cannot state a payload is of the wrong type if there is no payload.",
   "descriptiveName" : "HTTP Violation: no-415-if-no-payload",
+  "fullDescription" : "Cannot state a payload is of the wrong type if there is no payload.",
   "group" : "G_1XX",
-  "label" : "F107:HTTP Violation: no-415-if-no-payload"
+  "id" : "HTTP_STATUS_NO_415_IF_NO_PAYLOAD",
+  "label" : "F107:HTTP Violation: no-415-if-no-payload",
+  "testCaseLabel" : "415WhenNoPayload"
 }, {
   "code" : 108,
-  "testCaseLabel" : "304OnWrongVerb",
-  "fullDescription" : "A 304 response is not valid if the request was not either a GET or a HEAD.",
   "descriptiveName" : "HTTP Violation: no-304-if-no-get-or-head",
+  "fullDescription" : "A 304 response is not valid if the request was not either a GET or a HEAD.",
   "group" : "G_1XX",
-  "label" : "F108:HTTP Violation: no-304-if-no-get-or-head"
+  "id" : "HTTP_STATUS_NO_304_IF_NO_GET_OR_HEAD",
+  "label" : "F108:HTTP Violation: no-304-if-no-get-or-head",
+  "testCaseLabel" : "304OnWrongVerb"
 }, {
   "code" : 109,
-  "testCaseLabel" : "401MissingWwwAuthenticate",
-  "fullDescription" : "If an API responds with a 401 non-authenticated error, such response MUST contain a www-authenticate header, with the needed information. In HTTP, this is not optional.",
   "descriptiveName" : "HTTP Violation: no-401-if-no-authenticate",
+  "fullDescription" : "If an API responds with a 401 non-authenticated error, such response MUST contain a www-authenticate header, with the needed information. In HTTP, this is not optional.",
   "group" : "G_1XX",
-  "label" : "F109:HTTP Violation: no-401-if-no-authenticate"
+  "id" : "HTTP_STATUS_NO_401_IF_NO_WWW_AUTHENTICATE",
+  "label" : "F109:HTTP Violation: no-401-if-no-authenticate",
+  "testCaseLabel" : "401MissingWwwAuthenticate"
 }, {
   "code" : 110,
-  "testCaseLabel" : "405MissingAllow",
-  "fullDescription" : "A 405 Not Allowed response must contain an Allow header specifying what is allowed.",
   "descriptiveName" : "HTTP Violation: no-405-if-no-allow",
+  "fullDescription" : "A 405 Not Allowed response must contain an Allow header specifying what is allowed.",
   "group" : "G_1XX",
-  "label" : "F110:HTTP Violation: no-405-if-no-allow"
+  "id" : "HTTP_STATUS_NO_405_IF_NO_ALLOW",
+  "label" : "F110:HTTP Violation: no-405-if-no-allow",
+  "testCaseLabel" : "405MissingAllow"
 }, {
   "code" : 111,
-  "testCaseLabel" : "205WhenContent",
-  "fullDescription" : "If a response contains a payload, it should not return a 205, as that requires no payload.",
   "descriptiveName" : "HTTP Violation: no-205-if-content",
+  "fullDescription" : "If a response contains a payload, it should not return a 205, as that requires no payload.",
   "group" : "G_1XX",
-  "label" : "F111:HTTP Violation: no-205-if-content"
+  "id" : "HTTP_STATUS_NO_205_IF_CONTENT",
+  "label" : "F111:HTTP Violation: no-205-if-content",
+  "testCaseLabel" : "205WhenContent"
 }, {
   "code" : 112,
-  "testCaseLabel" : "426MissingUpgrade",
-  "fullDescription" : "A 426 response must contain an Upgrade header with the needed information.",
   "descriptiveName" : "HTTP Violation: no-426-if-no-upgrade",
+  "fullDescription" : "A 426 response must contain an Upgrade header with the needed information.",
   "group" : "G_1XX",
-  "label" : "F112:HTTP Violation: no-426-if-no-upgrade"
+  "id" : "HTTP_STATUS_NO_426_IF_NO_UPGRADE",
+  "label" : "F112:HTTP Violation: no-426-if-no-upgrade",
+  "testCaseLabel" : "426MissingUpgrade"
 }, {
   "code" : 113,
-  "testCaseLabel" : "deleteDoesNotWork",
-  "fullDescription" : "If a resource is deleted, and the API responds that such request was successful, then such resource should no longer being available. New requests to access it should fail. Otherwise, if it is still possible to access the resource, then it was not really deleted. Then, as such, it means that the delete operation is faulty.",
   "descriptiveName" : "HTTP Violation: Resource Still Accessible After Successful DELETE",
+  "fullDescription" : "If a resource is deleted, and the API responds that such request was successful, then such resource should no longer being available. New requests to access it should fail. Otherwise, if it is still possible to access the resource, then it was not really deleted. Then, as such, it means that the delete operation is faulty.",
   "group" : "G_1XX",
-  "label" : "F113:HTTP Violation: Resource Still Accessible After Successful DELETE"
+  "id" : "HTTP_NONWORKING_DELETE",
+  "label" : "F113:HTTP Violation: Resource Still Accessible After Successful DELETE",
+  "testCaseLabel" : "deleteDoesNotWork"
 }, {
   "code" : 114,
-  "testCaseLabel" : "sideEffectsFailedModification",
-  "fullDescription" : "Write operations that fail due to user errors should not leave side effects on the system. There should not be partial updates: either all are applied, or none.",
   "descriptiveName" : "HTTP Violation: A Failed PUT or PATCH Must Not Change The Resource",
+  "fullDescription" : "Write operations that fail due to user errors should not leave side effects on the system. There should not be partial updates: either all are applied, or none.",
   "group" : "G_1XX",
-  "label" : "F114:HTTP Violation: A Failed PUT or PATCH Must Not Change The Resource"
+  "id" : "HTTP_SIDE_EFFECTS_FAILED_MODIFICATION",
+  "label" : "F114:HTTP Violation: A Failed PUT or PATCH Must Not Change The Resource",
+  "testCaseLabel" : "sideEffectsFailedModification"
 }, {
   "code" : 115,
-  "testCaseLabel" : "repeatedCreatePut",
-  "fullDescription" : "A PUT operation can either update (e.g., 200 or 204) or create (201) a resource. If a resource is 201 created with a PUT, a second PUT should update the resource, and not be marked as recreated.",
   "descriptiveName" : "HTTP Violation: Repeated PUT Creates Resource With 201 Instead of Updating",
+  "fullDescription" : "A PUT operation can either update (e.g., 200 or 204) or create (201) a resource. If a resource is 201 created with a PUT, a second PUT should update the resource, and not be marked as recreated.",
   "group" : "G_1XX",
-  "label" : "F115:HTTP Violation: Repeated PUT Creates Resource With 201 Instead of Updating"
+  "id" : "HTTP_REPEATED_CREATE_PUT",
+  "label" : "F115:HTTP Violation: Repeated PUT Creates Resource With 201 Instead of Updating",
+  "testCaseLabel" : "repeatedCreatePut"
 }, {
   "code" : 116,
-  "testCaseLabel" : "misleadingCreatePut",
-  "fullDescription" : "A PUT operation can either update (e.g., 200 or 204) or create (201) a resource. If a resource already exists, than a PUT operation on it would update it, and not create it.",
   "descriptiveName" : "HTTP Violation: Misleading PUT 201 Creates When Resource Already Exists",
+  "fullDescription" : "A PUT operation can either update (e.g., 200 or 204) or create (201) a resource. If a resource already exists, than a PUT operation on it would update it, and not create it.",
   "group" : "G_1XX",
-  "label" : "F116:HTTP Violation: Misleading PUT 201 Creates When Resource Already Exists"
+  "id" : "HTTP_MISLEADING_CREATE_PUT",
+  "label" : "F116:HTTP Violation: Misleading PUT 201 Creates When Resource Already Exists",
+  "testCaseLabel" : "misleadingCreatePut"
 }, {
   "code" : 117,
-  "testCaseLabel" : "partialUpdatePut",
-  "fullDescription" : "A PUT operation is used to make a full replacement of a resource",
   "descriptiveName" : "HTTP Violation: The Verb PUT Must Make a Full Replacement",
+  "fullDescription" : "A PUT operation is used to make a full replacement of a resource",
   "group" : "G_1XX",
-  "label" : "F117:HTTP Violation: The Verb PUT Must Make a Full Replacement"
+  "id" : "HTTP_PARTIAL_UPDATE_PUT",
+  "label" : "F117:HTTP Violation: The Verb PUT Must Make a Full Replacement",
+  "testCaseLabel" : "partialUpdatePut"
 }, {
   "code" : 118,
-  "testCaseLabel" : "nonIdempotentPut",
-  "fullDescription" : "A PUT operation is treated as idempotent. A write operation with a PUT that is not implemented as idempotent might have severe repercussions, as such operation could be automatically repeated any entity involved in the HTTP connection without any warning to the user.",
   "descriptiveName" : "HTTP Violation: PUT Implementation Must be Idempotent",
+  "fullDescription" : "A PUT operation is treated as idempotent. A write operation with a PUT that is not implemented as idempotent might have severe repercussions, as such operation could be automatically repeated any entity involved in the HTTP connection without any warning to the user.",
   "group" : "G_1XX",
-  "label" : "F118:HTTP Violation: PUT Implementation Must be Idempotent"
+  "id" : "HTTP_NON_IDEMPOTENT_PUT",
+  "label" : "F118:HTTP Violation: PUT Implementation Must be Idempotent",
+  "testCaseLabel" : "nonIdempotentPut"
 }, {
   "code" : 119,
-  "testCaseLabel" : "invalidMergePatch",
-  "fullDescription" : "A JSON Merge Path has a specific semantics, defining how values are modified based on the input payloads. Modifying entries not specified in the payload would be a clear implementation fault.",
   "descriptiveName" : "HTTP Violation: Invalid JSON Merge Patch",
+  "fullDescription" : "A JSON Merge Path has a specific semantics, defining how values are modified based on the input payloads. Modifying entries not specified in the payload would be a clear implementation fault.",
   "group" : "G_1XX",
-  "label" : "F119:HTTP Violation: Invalid JSON Merge Patch"
+  "id" : "HTTP_INVALID_MERGE_PATCH",
+  "label" : "F119:HTTP Violation: Invalid JSON Merge Patch",
+  "testCaseLabel" : "invalidMergePatch"
 }, {
   "code" : 120,
-  "testCaseLabel" : "returnsInvalidLocationHeader",
-  "fullDescription" : "Even outside of 3xx redirections, the Location header can be used to specify for example where newly created resources can be accessed. However, if a Location value point to a path for which there is no valid operation (not necessarily a GET) in the API, then such value might be likely wrong.",
   "descriptiveName" : "HTTP Violation: Invalid Location HTTP Header",
+  "fullDescription" : "Even outside of 3xx redirections, the Location header can be used to specify for example where newly created resources can be accessed. However, if a Location value point to a path for which there is no valid operation (not necessarily a GET) in the API, then such value might be likely wrong.",
   "group" : "G_1XX",
-  "label" : "F120:HTTP Violation: Invalid Location HTTP Header"
+  "id" : "HTTP_INVALID_LOCATION",
+  "label" : "F120:HTTP Violation: Invalid Location HTTP Header",
+  "testCaseLabel" : "returnsInvalidLocationHeader"
+}, {
+  "code" : 121,
+  "descriptiveName" : "HTTP Status 5xx Other Than 500 And 501",
+  "fullDescription" : "Status codes in the 5xx range represent server-side errors. Apart from 500 and 501, any other 5xx code (e.g., 502, 503 and 504) might indicate faults in the tested application, or in how it deals with the services it depends on. Like 500, these codes need a manual check: the environment can cause them (e.g., a temporarily unavailable database).",
+  "group" : "G_1XX",
+  "id" : "HTTP_OTHER_STATUS_5XX",
+  "label" : "F121:HTTP Status 5xx Other Than 500 And 501",
+  "testCaseLabel" : "causes5xx_serverError"
+}, {
+  "code" : 122,
+  "descriptiveName" : "HTTP Violation: Resource Not Found Right After Successful Creation",
+  "fullDescription" : "If a resource is successfully created (e.g., with a POST), then it should be possible to access it right after. If a request on the new resource (e.g., using the identifier returned in the creation response) gives a 404, and nobody deleted it, then either the resource was not created, or the API returns wrong information about how to access it.",
+  "group" : "G_1XX",
+  "id" : "HTTP_CREATED_RESOURCE_NOT_FOUND",
+  "label" : "F122:HTTP Violation: Resource Not Found Right After Successful Creation",
+  "testCaseLabel" : "createdResourceNotFound"
 }, {
   "code" : 200,
-  "testCaseLabel" : "returnsMismatchResponseWithSchema",
-  "fullDescription" : "A schema, like for example OpenAPI for REST, defines the structures not only of the inputs but also the outputs of the API. If what returned by an API is not conforming to its schema, then it is a clear fault. However, whether the fault is in the API (i.e., it does not conform to the schema) or in the schema itself (i.e., it is underspecified, or having mistakes) is something that cannot be known for sure without debugging the issue.",
   "descriptiveName" : "Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema",
+  "fullDescription" : "A schema, like for example OpenAPI for REST, defines the structures not only of the inputs but also the outputs of the API. If what returned by an API is not conforming to its schema, then it is a clear fault. However, whether the fault is in the API (i.e., it does not conform to the schema) or in the schema itself (i.e., it is underspecified, or having mistakes) is something that cannot be known for sure without debugging the issue.",
   "group" : "G_2XX",
-  "label" : "F200:Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema"
+  "id" : "SCHEMA_INVALID_RESPONSE",
+  "label" : "F200:Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema",
+  "testCaseLabel" : "returnsMismatchResponseWithSchema"
 }, {
   "code" : 201,
-  "testCaseLabel" : "invalidAllow",
-  "fullDescription" : "A returned Allow header specifies what operations (e.g., GET and PATCH) are available on a resource. For consistency, this needs to match what actually defined in the schema of the API, apart from special cases such as HEAD and OPTIONS.",
   "descriptiveName" : "Schema Violation: Invalid Allow HTTP Header",
+  "fullDescription" : "A returned Allow header specifies what operations (e.g., GET and PATCH) are available on a resource. For consistency, this needs to match what actually defined in the schema of the API, apart from special cases such as HEAD and OPTIONS.",
   "group" : "G_2XX",
-  "label" : "F201:Schema Violation: Invalid Allow HTTP Header"
+  "id" : "SCHEMA_INVALID_ALLOW",
+  "label" : "F201:Schema Violation: Invalid Allow HTTP Header",
+  "testCaseLabel" : "invalidAllow"
 }, {
   "code" : 202,
-  "testCaseLabel" : "401WhenNoAuth",
-  "fullDescription" : "Should not return a 401 non-authenticated if there is no authentication in the definition of the API (or conversely, authentication definition is wrongly missing).",
   "descriptiveName" : "Schema Violation: no-401-if-no-auth",
+  "fullDescription" : "Should not return a 401 non-authenticated if there is no authentication in the definition of the API (or conversely, authentication definition is wrongly missing).",
   "group" : "G_2XX",
-  "label" : "F202:Schema Violation: no-401-if-no-auth"
+  "id" : "SCHEMA_STATUS_NO_401_IF_NO_AUTH",
+  "label" : "F202:Schema Violation: no-401-if-no-auth",
+  "testCaseLabel" : "401WhenNoAuth"
 }, {
   "code" : 203,
-  "testCaseLabel" : "403WhenNo401",
-  "fullDescription" : "Should not return a 403 non-authorized if there is no 401 non-authenticated in the definition of the API (or conversely, such definition is wrongly missing).",
   "descriptiveName" : "Schema Violation: no-403-if-no-401",
+  "fullDescription" : "Should not return a 403 non-authorized if there is no 401 non-authenticated in the definition of the API (or conversely, such definition is wrongly missing).",
   "group" : "G_2XX",
-  "label" : "F203:Schema Violation: no-403-if-no-401"
+  "id" : "SCHEMA_STATUS_NO_403_IF_NO_401",
+  "label" : "F203:Schema Violation: no-403-if-no-401",
+  "testCaseLabel" : "403WhenNo401"
 }, {
   "code" : 204,
-  "testCaseLabel" : "406WhenValid",
-  "fullDescription" : "If a valid payload is sent based on what declared in the schema, it should not happen that the API responds with a 406 non-valid payload type.",
   "descriptiveName" : "Schema Violation: has-406-if-accept",
+  "fullDescription" : "If a valid payload is sent based on what declared in the schema, it should not happen that the API responds with a 406 non-valid payload type.",
   "group" : "G_2XX",
-  "label" : "F204:Schema Violation: has-406-if-accept"
+  "id" : "SCHEMA_STATUS_HAS_406_IF_ACCEPT",
+  "label" : "F204:Schema Violation: has-406-if-accept",
+  "testCaseLabel" : "406WhenValid"
 }, {
   "code" : 205,
-  "testCaseLabel" : "501OnDeclaredEndpoint",
-  "fullDescription" : "If a schema defines an endpoint, then a call on it should not return a 501 Non-Implemented.",
   "descriptiveName" : "Schema Violation: no-501-if-implemented",
+  "fullDescription" : "If a schema defines an endpoint, then a call on it should not return a 501 Non-Implemented.",
   "group" : "G_2XX",
-  "label" : "F205:Schema Violation: no-501-if-implemented"
+  "id" : "SCHEMA_STATUS_NO_501_IF_IMPLEMENTED",
+  "label" : "F205:Schema Violation: no-501-if-implemented",
+  "testCaseLabel" : "501OnDeclaredEndpoint"
 }, {
   "code" : 206,
-  "testCaseLabel" : "successOnInvalidInputs",
-  "fullDescription" : "API inputs might have constraints (e.g., integers in a specific range, and strings matching a given regular expression). Also, they need be to of specific types (e.g., integers, booleans, strings, dates, arrays and objects). If some input data does not satisfy the type on constraints defined in the schema, then the API should mark the request as 'user error'. However, if for any reason the request is processed successfully, then it is a fault. Either the schema is incorrect, or the API is not properly discarding invalid data.",
   "descriptiveName" : "Received Success Response When Sending Wrong Data",
+  "fullDescription" : "API inputs might have constraints (e.g., integers in a specific range, and strings matching a given regular expression). Also, they need be to of specific types (e.g., integers, booleans, strings, dates, arrays and objects). If some input data does not satisfy the type on constraints defined in the schema, then the API should mark the request as 'user error'. However, if for any reason the request is processed successfully, then it is a fault. Either the schema is incorrect, or the API is not properly discarding invalid data.",
   "group" : "G_2XX",
-  "label" : "F206:Received Success Response When Sending Wrong Data"
+  "id" : "SCHEMA_VALIDATION_BYPASS",
+  "label" : "F206:Received Success Response When Sending Wrong Data",
+  "testCaseLabel" : "successOnInvalidInputs"
+}, {
+  "code" : 207,
+  "descriptiveName" : "Received User Error Response When Sending Valid Data",
+  "fullDescription" : "The converse of 'Received Success Response When Sending Wrong Data'. If all input data satisfies the types and constraints defined in the schema, then the API should not mark the request as 'user error' (e.g., with a 400 or 422 in REST). Status codes that do not depend on data validity, like 401, 403, 404, 409 and 429, are not considered here. Either the schema is incorrect (e.g., it is missing some constraints), or the API rejects valid data. As OpenAPI is not able to express all possible types of input constraints (e.g., inter-parameter dependencies), depending on the API this oracle might lead to some false positives.",
+  "group" : "G_2XX",
+  "id" : "SCHEMA_VALID_INPUT_REJECTED",
+  "label" : "F207:Received User Error Response When Sending Valid Data",
+  "testCaseLabel" : "rejectedValidInputs"
 }, {
   "code" : 300,
-  "testCaseLabel" : "vulnerableToSQLInjection",
-  "fullDescription" : "Input data was not properly sanitized. Its use in SQL commands led to execute arbitrary commands on the database. See OWASP Top 10 for more information.",
   "descriptiveName" : "SQL Injection (SQLi)",
+  "fullDescription" : "Input data was not properly sanitized. Its use in SQL commands led to execute arbitrary commands on the database. See OWASP Top 10 for more information.",
   "group" : "G_3XX",
-  "label" : "F300:SQL Injection (SQLi)"
+  "id" : "SECURITY_SQL_INJECTION",
+  "label" : "F300:SQL Injection (SQLi)",
+  "testCaseLabel" : "vulnerableToSQLInjection"
 }, {
   "code" : 301,
-  "testCaseLabel" : "vulnerableToXSS",
-  "fullDescription" : "XSS is an attack in which it is possible to inject malicious scripts into web pages viewed users. This works as well in APIs, if the malicious payload is stored as it is, and then read afterwards by a frontend web application. See OWASP Top 10 for more information.",
   "descriptiveName" : "Cross-Site Scripting (XSS)",
+  "fullDescription" : "XSS is an attack in which it is possible to inject malicious scripts into web pages viewed users. This works as well in APIs, if the malicious payload is stored as it is, and then read afterwards by a frontend web application. See OWASP Top 10 for more information.",
   "group" : "G_3XX",
-  "label" : "F301:Cross-Site Scripting (XSS)"
+  "id" : "SECURITY_XSS_INJECTION",
+  "label" : "F301:Cross-Site Scripting (XSS)",
+  "testCaseLabel" : "vulnerableToXSS"
 }, {
   "code" : 302,
-  "testCaseLabel" : "vulnerableToSSRF",
-  "fullDescription" : "Some inputs might be URLs, which are then used by the API to retrieve data from external services. However, if the hostnames of these URLs are not verified, the API could be tricked into making requests towards servers it should not to, like for example the 'localhost'. See OWASP Top 10 for more information.",
   "descriptiveName" : "Server-Side Request Forgery (SSRF)",
+  "fullDescription" : "Some inputs might be URLs, which are then used by the API to retrieve data from external services. However, if the hostnames of these URLs are not verified, the API could be tricked into making requests towards servers it should not to, like for example the 'localhost'. See OWASP Top 10 for more information.",
   "group" : "G_3XX",
-  "label" : "F302:Server-Side Request Forgery (SSRF)"
+  "id" : "SECURITY_SSRF",
+  "label" : "F302:Server-Side Request Forgery (SSRF)",
+  "testCaseLabel" : "vulnerableToSSRF"
 }, {
   "code" : 303,
-  "testCaseLabel" : "vulnerableToMassAssignment",
-  "fullDescription" : "This vulnerability exploits possible active record pattern misconfigurations to modify fields of  a record that should not be accessible via the API. See OWASP Top 10 for more information.",
   "descriptiveName" : "Mass Assignment",
+  "fullDescription" : "This vulnerability exploits possible active record pattern misconfigurations to modify fields of  a record that should not be accessible via the API. See OWASP Top 10 for more information.",
   "group" : "G_3XX",
-  "label" : "F303:Mass Assignment"
+  "id" : "SECURITY_MASS_ASSIGNMENT",
+  "label" : "F303:Mass Assignment",
+  "testCaseLabel" : "vulnerableToMassAssignment"
 }, {
   "code" : 304,
-  "testCaseLabel" : "allowsUnauthorizedAccessToProtectedResource",
-  "fullDescription" : "When accessing a protected resource, could get as a response a 403 not-authorized status code. If the resource does not exist, then returning a 404 would be a security leak, as now the client would know if resources, they have no access to, do exist or not. In these cases, to avoid unauthorized information leakage, a server should consistently either always return 403 or 404 for protected resources, regardless of whether they exist or not.",
   "descriptiveName" : "Leakage Information Existence of Protected Resource",
+  "fullDescription" : "When accessing a protected resource, could get as a response a 403 not-authorized status code. If the resource does not exist, then returning a 404 would be a security leak, as now the client would know if resources, they have no access to, do exist or not. In these cases, to avoid unauthorized information leakage, a server should consistently either always return 403 or 404 for protected resources, regardless of whether they exist or not.",
   "group" : "G_3XX",
-  "label" : "F304:Leakage Information Existence of Protected Resource"
+  "id" : "SECURITY_EXISTENCE_LEAKAGE",
+  "label" : "F304:Leakage Information Existence of Protected Resource",
+  "testCaseLabel" : "allowsUnauthorizedAccessToProtectedResource"
 }, {
   "code" : 305,
-  "testCaseLabel" : "authenticatedButWronglyToldNot",
-  "fullDescription" : "If the user is providing valid credentials, and if they try to access a protected resource, they should get a status code 403 (not authorized), and not 401 (not authenticated). With a 401, the user might wrongly think there is a problem with their credentials, and not that they have no right to access to that resource. However, to avoid false positives related to misconfigured credentials, these credentials should be first successfully validated on some other resources before flagging a returned 401 as a server fault.",
   "descriptiveName" : "Wrongly Not Recognized as Authenticated",
+  "fullDescription" : "If the user is providing valid credentials, and if they try to access a protected resource, they should get a status code 403 (not authorized), and not 401 (not authenticated). With a 401, the user might wrongly think there is a problem with their credentials, and not that they have no right to access to that resource. However, to avoid false positives related to misconfigured credentials, these credentials should be first successfully validated on some other resources before flagging a returned 401 as a server fault.",
   "group" : "G_3XX",
-  "label" : "F305:Wrongly Not Recognized as Authenticated"
+  "id" : "SECURITY_NOT_RECOGNIZED_AUTHENTICATED",
+  "label" : "F305:Wrongly Not Recognized as Authenticated",
+  "testCaseLabel" : "authenticatedButWronglyToldNot"
 }, {
   "code" : 306,
-  "testCaseLabel" : "missedAuthorizationCheck",
-  "fullDescription" : "BOLA and BFLA are major security vulnerabilities. To avoid users accessing protected resources, authorization mechanisms are usually put in place. However, it can happen that, on some endpoints, these authorization mechanisms are missing or misconfigured by mistake. This can have disastrous consequences, e.g., a regular user deleting all data from all other users. However, access policies could be arbitrarily complex, where some users might validly interact with some resources of other users. A common example is 'administrator' users. Without a formal specification describing in details the access policies in place, it is hard to say automatically if we are in the case of a BOLA/BFLA vulnerability. Still, some heuristics could be used to flag highly suspicious cases. For example, if a user is blocked with a 403 to do a PUT and a PATCH on a resource, it would be quite suspicious if a DELETE would work just fine on that resource.",
   "descriptiveName" : "Allowed To Modify Resource That Likely Should Had Been Protected",
+  "fullDescription" : "BOLA and BFLA are major security vulnerabilities. To avoid users accessing protected resources, authorization mechanisms are usually put in place. However, it can happen that, on some endpoints, these authorization mechanisms are missing or misconfigured by mistake. This can have disastrous consequences, e.g., a regular user deleting all data from all other users. However, access policies could be arbitrarily complex, where some users might validly interact with some resources of other users. A common example is 'administrator' users. Without a formal specification describing in details the access policies in place, it is hard to say automatically if we are in the case of a BOLA/BFLA vulnerability. Still, some heuristics could be used to flag highly suspicious cases. For example, if a user is blocked with a 403 to do a PUT and a PATCH on a resource, it would be quite suspicious if a DELETE would work just fine on that resource.",
   "group" : "G_3XX",
-  "label" : "F306:Allowed To Modify Resource That Likely Should Had Been Protected"
+  "id" : "SECURITY_INCONSISTENT_WRITE_AUTHORIZATION",
+  "label" : "F306:Allowed To Modify Resource That Likely Should Had Been Protected",
+  "testCaseLabel" : "missedAuthorizationCheck"
 }, {
   "code" : 307,
-  "testCaseLabel" : "ignoreAnonymous",
-  "fullDescription" : "Protected resources would return a 403 status code when a user that has no rights to them tries to access them. Without providing a formal specification, it might not be possible to know which users have rights or not on a resource. However, being able to access it with no authentication, while some authenticated users are blocked, would be a major security vulnerability. Blocked users could simply drop their authentication credentials to access those protected resources.",
   "descriptiveName" : "A Protected Resource Is Accessible Without Providing Any Authentication",
+  "fullDescription" : "Protected resources would return a 403 status code when a user that has no rights to them tries to access them. Without providing a formal specification, it might not be possible to know which users have rights or not on a resource. However, being able to access it with no authentication, while some authenticated users are blocked, would be a major security vulnerability. Blocked users could simply drop their authentication credentials to access those protected resources.",
   "group" : "G_3XX",
-  "label" : "F307:A Protected Resource Is Accessible Without Providing Any Authentication"
+  "id" : "SECURITY_IGNORE_ANONYMOUS",
+  "label" : "F307:A Protected Resource Is Accessible Without Providing Any Authentication",
+  "testCaseLabel" : "ignoreAnonymous"
 }, {
   "code" : 308,
-  "testCaseLabel" : "anonymousModifications",
-  "fullDescription" : "Not all systems require authentication when reading data, or creating new ones. Without a formal specification, a fuzzer cannot know if a resource is expected to be public or not. However, 'modifying' data (e.g., with DELETE, PUT and PATCH) with no credentials is problematic.  A user could delete all existing data, or change any new data as soon as it is created by others.",
   "descriptiveName" : "Anonymous Modifications",
+  "fullDescription" : "Not all systems require authentication when reading data, or creating new ones. Without a formal specification, a fuzzer cannot know if a resource is expected to be public or not. However, 'modifying' data (e.g., with DELETE, PUT and PATCH) with no credentials is problematic.  A user could delete all existing data, or change any new data as soon as it is created by others.",
   "group" : "G_3XX",
-  "label" : "F308:Anonymous Modifications"
+  "id" : "SECURITY_ANONYMOUS_MODIFICATIONS",
+  "label" : "F308:Anonymous Modifications",
+  "testCaseLabel" : "anonymousModifications"
 }, {
   "code" : 309,
-  "testCaseLabel" : "leakedStackTrace",
-  "fullDescription" : "In case of bugs, the internal business logic of the tested application could throw exceptions. For debugging reasons, the responses from the HTTP server could contain the stack-trace of those thrown exceptions. Albeit useful for debugging, those stack-traces could reveal internal details of the system. This would be a security leak if those debugging settings are left in production.",
   "descriptiveName" : "Leaked Stack Trace",
+  "fullDescription" : "In case of bugs, the internal business logic of the tested application could throw exceptions. For debugging reasons, the responses from the HTTP server could contain the stack-trace of those thrown exceptions. Albeit useful for debugging, those stack-traces could reveal internal details of the system. This would be a security leak if those debugging settings are left in production.",
   "group" : "G_3XX",
-  "label" : "F309:Leaked Stack Trace"
+  "id" : "SECURITY_LEAKED_STACK_TRACES",
+  "label" : "F309:Leaked Stack Trace",
+  "testCaseLabel" : "leakedStackTrace"
 }, {
   "code" : 310,
-  "testCaseLabel" : "hiddenAccessible",
-  "fullDescription" : "To test an API, there is the need of a schema that specifies what endpoints can be called. Being able to call endpoints that are not declared in the schema is a potential risk, as those might be either forgotten endpoints, work-in-progress, admin-only endpoints, etc., whose security protections might not be fully tested or in place. Either the call should fail for auth reasons (e.g., 401 and 403 in REST APIs), or the system should respond that the endpoint does not exist (e.g., 405 and 501).",
   "descriptiveName" : "Hidden Accessible Endpoint",
+  "fullDescription" : "To test an API, there is the need of a schema that specifies what endpoints can be called. Being able to call endpoints that are not declared in the schema is a potential risk, as those might be either forgotten endpoints, work-in-progress, admin-only endpoints, etc., whose security protections might not be fully tested or in place. Either the call should fail for auth reasons (e.g., 401 and 403 in REST APIs), or the system should respond that the endpoint does not exist (e.g., 405 and 501).",
   "group" : "G_3XX",
-  "label" : "F310:Hidden Accessible Endpoint"
+  "id" : "SECURITY_HIDDEN_ACCESSIBLE_ENDPOINT",
+  "label" : "F310:Hidden Accessible Endpoint",
+  "testCaseLabel" : "hiddenAccessible"
+}, {
+  "code" : 311,
+  "descriptiveName" : "Declared Authentication Is Not Enforced",
+  "fullDescription" : "A schema can declare that an operation requires authentication (e.g., with security requirements in OpenAPI). If a request with valid credentials succeeds, then the same request with no credentials, or with invalid ones, should be rejected (e.g., with a 401 or 403 in REST). Otherwise, either the schema declares authentication by mistake, or the API does not enforce it. Modifications (e.g., DELETE, PUT and PATCH) accepted with no credentials are handled in 'Anonymous Modifications'; this code covers all other cases, including reads and invalid credentials.",
+  "group" : "G_3XX",
+  "id" : "SECURITY_DECLARED_AUTH_NOT_ENFORCED",
+  "label" : "F311:Declared Authentication Is Not Enforced",
+  "testCaseLabel" : "declaredAuthNotEnforced"
+}, {
+  "code" : 312,
+  "descriptiveName" : "Call Timeout",
+  "fullDescription" : "A call that does not get a response within a given time limit, or never gets one, might point to a denial-of-service vulnerability: specific inputs make the API spend excessive time (or resources) handling the request. An attacker could send such requests repeatedly to make the API unavailable to other users. The environment can also cause slow responses (e.g., an overloaded server or a slow database), so these calls need a manual check. The time limit should match the expected performance of the API.",
+  "group" : "G_3XX",
+  "id" : "SECURITY_CALL_TIMEOUT",
+  "label" : "F312:Call Timeout",
+  "testCaseLabel" : "callTimeout"
 } ]
