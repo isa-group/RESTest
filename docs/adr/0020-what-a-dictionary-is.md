@@ -719,3 +719,11 @@ runs. flight-search's logins, a `POST` that makes nothing, were accepted about a
 have told the switch from the defaults, was prepared and not run, by the maintainer's decision, so
 no figure here belongs to any one of the changes alone.
 [ADR-0024](0024-the-competition-version.md)'s amendment of 5 October gives the whole result.
+
+## Amendment (12 October 2026): a tenth, not a quarter
+
+**Date:** 2026-10-12
+
+The amendment of 1 October says that §6's quarter "stands, as a line of the plan RESTest carries".
+It no longer does: the plan RESTest carries gives the strategy that pushes a tenth of the run.
+[ADR-0023](0023-the-campaign-file.md)'s amendment of the same date is the record.

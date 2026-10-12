@@ -66,6 +66,13 @@ class RequestsWithoutAKeyTest {
     private static final String PINNED = "requests-without-a-key.txt";
 
     /**
+     * The shares the plan RESTest carries gave its four strategies when the file was written, which
+     * decide which of them builds each request.
+     */
+    private static final Map<String, Integer> SHARES_THEN =
+            Map.of("nominal", 45, "sequences", 10, "mutation", 20, "fuzzing", 25);
+
+    /**
      * The eight documents of the corpus that declare a key - two of which, BigOven's and Tumblr's,
      * never ask for it on any operation - and the one that asks for its key as an ordinary
      * parameter and declares none.
@@ -102,13 +109,6 @@ class RequestsWithoutAKeyTest {
 
         assertThat(String.join("\n", lines) + "\n").isEqualTo(pinned(lines));
     }
-
-    /**
-     * The shares the plan RESTest carries gave its four strategies when the file was written, which
-     * decide which of them builds each request.
-     */
-    private static final Map<String, Integer> SHARES_THEN =
-            Map.of("nominal", 45, "sequences", 10, "mutation", 20, "fuzzing", 25);
 
     /**
      * The generator a run builds when it is handed nothing but the document: the lists of values

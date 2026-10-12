@@ -344,4 +344,4 @@ The amendment of 4 October kept RESTest's own plan at 45, 10, 20 and 25 while th
 were handed 45, 15, 30 and 10. From 2.2.0 RESTest's own plan has 45, 15, 30 and 10 too, by the
 maintainer's decision of 12 October 2026 on the same evidence, with no new measurement.
 [ADR-0023](0023-the-campaign-file.md)'s amendment of that date is the record, and says what the
-evidence does and does not show for a run of the default length handed no dictionary.
+evidence does and does not show for short runs, and for runs handed no dictionary.

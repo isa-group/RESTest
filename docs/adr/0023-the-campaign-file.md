@@ -331,17 +331,21 @@ evidence, without a new measurement. What the evidence is, and is not:
   dictionary, faults went from 591 to 706, and person-controller alone accounts for 116.5 of the
   115 more; the other nine together moved by −1.5. Operations went from 156 to 160.5 and branch
   coverage from 30.6% to 31.1%.
-- **At the default budget it is level.** `--budget` defaults to sixty seconds. Over the sixteen APIs,
-  operations reached at 10 seconds went from 208 to 193, at 30 from 251 to 249, at 60 from 258 to
-  263; branch coverage at 10 seconds from 24.8% to 22.4%, at 60 from 30.1% to 29.8%. The fall at
-  10 seconds is mostly three APIs: features-service, which reached no operation at all in its first
-  10 seconds under the new shares and was level again by 30, erc20 and restcountries. Without them,
-  operations at 10 seconds are 169 in both.
+- **At the default budget it is level.** `--budget` defaults to sixty seconds. Over all sixteen
+  APIs, erc20 included, operations reached at 10 seconds went from 208 to 193, at 30 from 251 to
+  249, at 60 from 258 to 263; branch coverage at 10 seconds from 24.8% to 22.4%, at 60 from 30.1% to
+  29.8%. Most of the fall at 10 seconds is features-service, which reached no operation at all in its
+  first 10 seconds under the new shares and was level again by 30: a late start, as ADR-0024 says,
+  which the shares cannot cause, since the first round of a run sends every operation once whatever
+  they are. Operations at 10 seconds otherwise fell on flight-search (4), restcountries (3) and
+  pet-clinic (1); without features-service and restcountries they are 178 in both. Branch coverage
+  at 10 seconds fell mostly on erc20, features-service and restcountries.
 - **The shares are what is drawn, not what is sent.** A draw for the strategy that changes accepted
   requests builds an ordinary request while nothing accepted can be changed, and one for the series
-  does the same when it did not draw a creation. Under the new shares, changed requests were 13.0% of
-  what was sent and the steps of series 3.4% (8.5% and 1.3% on the APIs with no dictionary), against
-  7.7% and 2.0% under the old; requests that push were 8.5% against 21.6%.
+  does the same when it did not draw a creation. On the fifteen APIs other than erc20, changed
+  requests went from 8.4% of what was sent to 13.0%, the steps of series from 2.2% to 3.4%, and
+  requests that push from 21.3% to 8.5%; on the ten with no dictionary, from 5.5% to 8.5%, from 0.9%
+  to 1.3% and from 19.8% to 7.9%.
 
 [ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s amendment of the same date says what
 this does to the share that pushes. To run with the old shares, print the plan with

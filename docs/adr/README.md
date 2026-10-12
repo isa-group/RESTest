@@ -72,7 +72,7 @@ so records written from now on cite none.
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
 | [0019](0019-the-samples-a-document-writes-down.md) | A document's own sample values are read, sent as written, and named in the record | Accepted |
-| [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1 October 2026 |
+| [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1, 4 and 12 October 2026 |
 | [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted, amended at M2.5b and M9.2 |
 | [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted |
 | [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1, M10.3 and on 1 and 12 October 2026 |

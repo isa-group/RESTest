@@ -824,7 +824,8 @@ class RandomTestCaseGeneratorTest {
                 ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
                 List.of(awkward("", -1)));
 
-        int draws = 200;
+        // Enough draws that a tenth, the share RESTest carries, is told from half of it.
+        int draws = 500;
         int pushing = 0;
         for (int draw = 0; draw < draws; draw++) {
             TestCase testCase = generator.generate(search).orElseThrow();
