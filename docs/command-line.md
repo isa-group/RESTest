@@ -154,9 +154,10 @@ The number the command ends with, which is what a build server or a script acts 
 
 A fault found is `1` rather than `0` because the usual use is a gate that should go red when the API
 is broken. A check switched off reports no fault, so a run's `0` says that nothing was found among
-the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)). An operation RESTest had to skip is not an error: a run says what it skipped and carries
-on, and only a run in which nothing at all was tested answers `3`. A run stopped from outside never
-answers `0` or `1`, so that one stopped half-way never passes for one that finished.
+the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)). An operation
+RESTest had to skip is not an error: a run says what it skipped and carries on, and only a run in
+which nothing at all was tested answers `3`. A run stopped from outside never answers `0` or `1`, so
+that one stopped half-way never passes for one that finished.
 [ADR-0015](adr/0015-command-line-contract.md) has the reasoning.
 
 ### Numbers RESTest does not choose

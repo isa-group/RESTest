@@ -607,7 +607,7 @@ so code that builds one by hand has to add them. What RESTest keeps from one min
 next is its command line and its files ([ADR-0015](0015-command-line-contract.md)), not the shape
 of this record.
 
-## Amendment (3.4a)
+## Amendment (12 October 2026): a switch for each check on a reply
 
 **Date:** 2026-10-12
 
@@ -621,9 +621,9 @@ replies badly saw the same faults on every run and could stop them only by not r
 
 Three things were decided with them.
 - **The group is named for what a developer calls these, not for the catalogue's numbers or the
-  word testers use.** "Checks" is the word Schemathesis uses for the same thing; "oracles" would have
-  needed explaining, and a switch per catalogue number, as EvoMaster has, says nothing to somebody
-  who does not know the catalogue. The number of each kind stands beside its switch on the page of
+  word testers use.** A developer reads "checks" without explanation; "oracles" would have needed
+  one, and a switch per catalogue number says nothing to somebody who does not know the
+  catalogue. The number of each kind stands beside its switch on the page of
   switches and in the description `--print-settings` writes.
 - **Each switch is named for what is wrong with a reply it reports**, which is also the rule for any
   check added after them. `internalServerError` rather than `serverError`, because the catalogue has
@@ -632,9 +632,12 @@ Three things were decided with them.
 - **A check switched off is not made at all**, rather than made and its faults dropped, so that
   turning off the one that takes time saves the time it takes.
 
-What a switch changes is which replies are called faults, never which requests are built; but the
-checks are made on the thread that delivers what a run announces, and a run waits when that falls
-behind, so a run with the check of a reply's shape off may send more requests in the same budget.
+No check decides what a run sends: switching one off changes which replies are called faults. It
+can still change what is sent, indirectly. The checks are made on the one thread that delivers what
+a run announces, the same thread that hands each reply to the memory of what the API returned, and
+a run waits when that thread falls behind. So with the check of a reply's shape off, a run may send
+more requests in the same budget, and learn from a reply sooner. Only a run that has [its seed
+back](../switches.md#getting-the-seed-back) builds the same requests whichever checks are made.
 `serverErrors` in `report.json` counts what the API answered whichever checks are made, as
 [ADR-0016](0016-how-a-fault-is-presented.md) already says. And since a check switched off reports no
 fault, it can turn a run's `1` into a `0`: the exit code says what was found among the kinds of fault

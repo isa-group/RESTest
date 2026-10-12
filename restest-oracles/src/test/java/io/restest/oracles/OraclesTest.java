@@ -63,6 +63,19 @@ class OraclesTest {
     }
 
     @Test
+    @DisplayName("a run's listener judges with the checks its settings leave on")
+    void the_listener_judges_with_the_checks_left_on() {
+        try (EventStream events = new EventStream()) {
+            assertThat(OracleListener.standard(Specifications.pets(), new CheckSettings(false, true),
+                    events).oracles())
+                    .describedAs("with the check for a 500 off, a reply off its schema is still "
+                            + "reported")
+                    .extracting(Oracle::name)
+                    .containsExactly("response-schema");
+        }
+    }
+
+    @Test
     @DisplayName("every rule says what it is called and what it checks")
     void every_rule_describes_itself() {
         assertThat(Oracles.standard(CheckSettings.defaults())).allSatisfy(oracle -> {

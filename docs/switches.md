@@ -93,9 +93,9 @@ catalogue [the faults](faults.md) describes.
 | `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`) |
 | `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
 
-They change which replies are called faults, and so the exit code, never which requests are built.
-[The faults](faults.md#switching-a-check-off) says what else switching one off changes, and what it
-does not.
+No check decides what a run sends: switching one off changes which replies are called faults, and
+so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
+it does not.
 
 ### And one that is not a lever
 
@@ -266,8 +266,8 @@ checks:
 ## Switching off a whole family
 
 The ideas fall into two families: reaching every operation the API will answer, and early, and
-breaking things in more ways. The checks on what came back are in neither, since they change nothing
-about which requests are built. These three files, beside the tool as shipped, are the four ways of
+breaking things in more ways. The checks on what came back are in neither, since no check decides
+what a run sends. These three files, beside the tool as shipped, are the four ways of
 running it that an ablation by family compares.
 
 **Reach** — every idea of the first table but the order identifiers are looked for in

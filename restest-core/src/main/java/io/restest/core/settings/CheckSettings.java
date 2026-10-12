@@ -26,9 +26,11 @@ package io.restest.core.settings;
  * switch here, named for what is wrong with a reply it reports, and on unless somebody says
  * otherwise.
  *
- * <p>A check switched off is not made at all. That changes nothing about which requests a run
- * builds; it changes which replies are called faults, and so whether the run ends saying it found
- * any.
+ * <p>A check switched off is not made at all. No check decides what a run sends: switching one off
+ * changes which replies are called faults, and so whether the run ends saying it found any.
+ *
+ * <p>This is one group of the settings a run is handed, {@link Settings}, read when the rules the
+ * run judges replies by are chosen.
  *
  * @param internalServerError report a reply of 500, which says the API fell over while handling the
  *     request
