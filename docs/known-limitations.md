@@ -54,6 +54,10 @@ of its own. Whether you may test an API at all is not something any tool can che
   document declares for a reply is one the checker cannot use — a pattern its regular-expression
   engine rejects, a shape that names something absent — those replies are skipped, and the run can
   end with exit code `0` while the check never ran on that operation ([ADR-0014](adr/0014-response-conformance.md)).
+- **A check is switched off for the whole run, never for one operation.** Turning
+  `checks.replyOffSchema` off because one operation's error replies are not the shape its document
+  gives hides every other reply off its schema too, on every operation
+  ([the faults](faults.md#switching-a-check-off)).
 - **Not every failure of RESTest's own ends in `4`.** Exit code `4` means RESTest itself broke
   ([the exit codes](command-line.md#exit-codes)), but three such failures still read as something the
   API did ([ADR-0015](adr/0015-command-line-contract.md)):

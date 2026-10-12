@@ -83,6 +83,20 @@ would.
 | `sequences.safeGet` | `true` | Series | never reads a thing again after other reads, to ask whether reading changed it |
 | `sequences.createTwice` | `true` | Series | never sends the same creation twice |
 
+### Judging what came back
+
+Each check a run makes on the replies reports one kind of fault, named by its number in the
+catalogue [the faults](faults.md) describes.
+
+| Switch | By default | Part of | Off, a run… |
+|---|---|---|---|
+| `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`) |
+| `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
+
+No check decides what a run sends: switching one off changes which replies are called faults, and
+so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
+it does not.
+
 ### And one that is not a lever
 
 | Switch | By default | Part of | Off, a run… |
@@ -105,6 +119,8 @@ would.
 | One value changed | Its part of the share given to the strategy that changes accepted requests, nearly a third of the run, which builds an ordinary request whenever nothing accepted can be changed; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) |
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same share, and the seed |
 | Series | The share given to the strategy that sends series, fifteen in a hundred of the run, which builds an ordinary request whenever what it drew is not a creation; a series' later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
+| A reply of 500 | One look at the status code of each reply |
+| A reply off its schema | Checking the body of every JSON reply against the shape the document gives it, which can leave fewer requests sent within the budget ([the faults](faults.md#switching-a-check-off) says why) |
 
 What each was measured to be worth while the rewrite was first built is kept with the rest of that
 record, on the
@@ -233,10 +249,25 @@ sequences:
   createTwice: false
 ```
 
+**A reply of 500** — `F100`
+
+```yaml
+checks:
+  internalServerError: false
+```
+
+**A reply off its schema** — `F200`
+
+```yaml
+checks:
+  replyOffSchema: false
+```
+
 ## Switching off a whole family
 
 The ideas fall into two families: reaching every operation the API will answer, and early, and
-breaking things in more ways. These three files, beside the tool as shipped, are the four ways of
+breaking things in more ways. The checks on what came back are in neither, since no check decides
+what a run sends. These three files, beside the tool as shipped, are the four ways of
 running it that an ablation by family compares.
 
 **Reach** — every idea of the first table but the order identifiers are looked for in

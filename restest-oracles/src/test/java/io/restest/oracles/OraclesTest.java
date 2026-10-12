@@ -24,6 +24,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.settings.CheckSettings;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -37,8 +38,21 @@ class OraclesTest {
     @Test
     @DisplayName("the rules RESTest ships with are the two this release reports on")
     void the_standard_rules_are_the_two_this_release_has() {
-        assertThat(Oracles.standard()).extracting(Oracle::name)
+        assertThat(Oracles.standard(CheckSettings.defaults())).extracting(Oracle::name)
                 .containsExactly("server-error", "response-schema");
+    }
+
+    @Test
+    @DisplayName("a check switched off is left out, and the other stays where it was")
+    void a_check_switched_off_is_left_out() {
+        assertThat(Oracles.standard(new CheckSettings(false, true))).extracting(Oracle::name)
+                .containsExactly("response-schema");
+        assertThat(Oracles.standard(new CheckSettings(true, false))).extracting(Oracle::name)
+                .containsExactly("server-error");
+        assertThat(Oracles.standard(new CheckSettings(false, false)))
+                .describedAs("every check off is a run that judges nothing, which an experiment "
+                        + "measuring what judging costs may want")
+                .isEmpty();
     }
 
     @Test
@@ -49,9 +63,22 @@ class OraclesTest {
     }
 
     @Test
+    @DisplayName("a run's listener judges with the checks its settings leave on")
+    void the_listener_judges_with_the_checks_left_on() {
+        try (EventStream events = new EventStream()) {
+            assertThat(OracleListener.standard(Specifications.pets(), new CheckSettings(false, true),
+                    events).oracles())
+                    .describedAs("with the check for a 500 off, a reply off its schema is still "
+                            + "reported")
+                    .extracting(Oracle::name)
+                    .containsExactly("response-schema");
+        }
+    }
+
+    @Test
     @DisplayName("every rule says what it is called and what it checks")
     void every_rule_describes_itself() {
-        assertThat(Oracles.standard()).allSatisfy(oracle -> {
+        assertThat(Oracles.standard(CheckSettings.defaults())).allSatisfy(oracle -> {
             assertThat(oracle.name()).isNotBlank();
             assertThat(oracle.description()).isNotBlank();
         });
@@ -69,7 +96,7 @@ class OraclesTest {
                     announced.add(found.finding());
                 }
             });
-            events.subscribe(OracleListener.standard(api, events));
+            events.subscribe(OracleListener.standard(api, CheckSettings.defaults(), events));
 
             events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
                     Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 500,
@@ -92,7 +119,7 @@ class OraclesTest {
                     announced.add(event);
                 }
             });
-            events.subscribe(OracleListener.standard(api, events));
+            events.subscribe(OracleListener.standard(api, CheckSettings.defaults(), events));
 
             events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
                     Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 200,
@@ -114,7 +141,8 @@ class OraclesTest {
                     announced.add(event);
                 }
             });
-            OracleListener listener = new OracleListener(api, Oracles.standard(), events,
+            OracleListener listener = new OracleListener(api,
+                    Oracles.standard(CheckSettings.defaults()), events,
                     Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
             events.subscribe(listener);
 

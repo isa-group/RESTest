@@ -6,8 +6,8 @@ catalogue several testing tools share, described in a sentence of RESTest's own,
 `curl` command that sends the same request again.
 
 This page lists the kinds of fault this version reports, says what each one means and when it is
-reported, and shows how a fault looks on the screen and in `report.json`. What the rest of a run's
-output says is in [What a run leaves behind](report.md).
+reported, how to switch off the check that reports it, and shows how a fault looks on the screen and
+in `report.json`. What the rest of a run's output says is in [What a run leaves behind](report.md).
 
 ## The catalogue
 
@@ -38,7 +38,7 @@ under version 0.8.0, has no key: there `F100` and `F200` have the same numbers a
 
 The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
 after it was deleted, security problems — and this version reports none of them. A run that finds
-nothing wrong has found neither of the two kinds above, and says nothing about the others.
+nothing wrong has found none of the kinds above whose check was on, and says nothing about the rest.
 
 ### `F100`, a reply of 500
 
@@ -81,6 +81,53 @@ One thing a document can say is never checked: `format`. Saying a piece of text 
 `email` is, in the standard, a note to the reader rather than a rule, and tools disagree about which
 ones to enforce.
 
+## Switching a check off
+
+Each kind of fault is reported by one check, and each check can be switched off for a whole run, in
+one line, when it is wrong about an API. A document that describes its error replies badly, say,
+makes every one of them a reply of the wrong shape:
+
+```bash
+restest run api.yaml --url http://localhost:9966 --set checks.replyOffSchema=false
+```
+
+The run says, under the line that gives its seed, that a setting is not what RESTest does by
+default, and its summary counts no reply of the wrong shape. From a 20-second run of pet-clinic with
+that check off:
+
+```
+  1 setting(s) are not what RESTest does by default; --print-settings lists them with where each came from
+...
+15835 faults:
+  15835 x F100  HTTP Status 500
+```
+
+Each switch is named for what is wrong with a reply its check reports, and [the
+switches](switches.md#judging-what-came-back) lists them all, with the kind of fault each turns off
+and a file for each, ready to hand over. Both are on unless somebody says otherwise; like every
+setting, they can also be given in a file of settings or in the environment ([the
+settings](settings.md#checks)).
+
+A check switched off is not made at all. What that changes, and what it does not:
+
+- **No check decides what is sent.** A check only reads replies. But the checks are made while the
+  run goes on sending, on the same thread that hands each reply to the memory of what the API
+  returned, and when they fall behind the run waits for them. So with the check of a reply's shape
+  off, the one that takes time, a run may send more requests in the same budget, and learn from a
+  reply sooner. Two runs of the tool as shipped differ anyway; one that has [its seed
+  back](switches.md#getting-the-seed-back) builds the same requests whichever checks are made, and
+  only how many fit in the budget can change.
+- **What the API did is still counted.** `serverErrors` in `report.json`, and the summary's line
+  about 500 and 5xx, count every operation that answered so, whichever checks were made.
+- **The exit code follows the faults reported.** A run whose only faults would have been replies of
+  500 ends with `0` when `checks.internalServerError` is off, since it reported none.
+- **The run records it.** `report.json` lists every setting under `settings`, with its value and
+  where it came from, so a report says which checks its run made. The screen says that some
+  settings are not what RESTest does by default, and `--print-settings` lists which.
+
+A switch is for the whole run, never for one operation ([known
+limitations](known-limitations.md#what-a-run-says)).
+
 ## How a fault looks on the screen
 
 Faults are printed as they are found, while the run is still going:
@@ -121,12 +168,12 @@ At the end of the run, the summary counts them by kind:
 
 ## How faults are counted
 
-**Every reply is judged by every rule, and each rule that objects is one fault.** A reply of 500
-whose body is also not the shape the document gives for a 500 is two faults, one of each kind. A
-broken operation asked six hundred times is six hundred faults. So the total says how much went
-wrong across the run, not how many problems the API has; [What a run leaves
-behind](report.md#faults) has the numbers that come closer to that — how many operations went
-wrong, and in how many kinds of way.
+**Every reply is judged by every check switched on, and each check that objects is one fault.** A
+reply of 500 whose body is also not the shape the document gives for a 500 is two faults, one of
+each kind. A broken operation asked six hundred times is six hundred faults. So the total says how
+much went wrong across the run, not how many problems the API has; [What a run leaves
+behind](report.md#faults) has the numbers that come closer to that — how many operations went wrong,
+and in how many kinds of way.
 
 **Faults are classified twice.** By catalogue number, which is what makes a run comparable with
 another tool's, and by the class of status code that carried them — `5xx`, `4xx`, `2xx` and so on

@@ -24,10 +24,12 @@
  * <p>Two rules live here so far. One reports an API that fell over. The other checks a reply's body
  * against the shape its own specification promised - using the specification document itself, and
  * an off-the-shelf checker confined to this module, so that nothing is judged by RESTest's reading
- * of a document rather than by the document.
+ * of a document rather than by the document. Either can be switched off for a run, for an API it is
+ * wrong about, without switching off the other.
  *
- * <p>A rule is one class and nothing else: this module offers them as a service, and the tool finds
- * them by looking rather than by a list somebody has to remember to update.
+ * <p>Anybody's rule is one class and nothing else: this module offers them as a service, and they
+ * are found by looking rather than by a list somebody has to remember to update. The rules RESTest
+ * ships are also listed in one place, each beside the switch a run turns it off with.
  */
 module io.restest.oracles {
     requires io.restest.core;

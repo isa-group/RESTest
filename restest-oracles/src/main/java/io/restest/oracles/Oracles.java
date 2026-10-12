@@ -16,6 +16,7 @@
 package io.restest.oracles;
 
 import io.restest.core.oracle.Oracle;
+import io.restest.core.settings.CheckSettings;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -24,23 +25,43 @@ import java.util.ServiceLoader;
 /**
  * The rules RESTest applies to what an API sends back.
  *
- * <p>Two ways of getting hold of them. {@link #standard()} is the list RESTest ships with, in a
- * fixed order, which is what a run uses unless told otherwise. {@link #discovered()} goes looking,
- * and finds anything anybody has added - including rules from somebody else's code sitting beside
- * RESTest's own, with nothing here naming them and nothing needing to be rebuilt.
+ * <p>Two ways of getting hold of them. {@link #standard(CheckSettings)} is the list RESTest ships
+ * with, in a fixed order, less any rule a run was told not to apply: that is what a run uses.
+ * {@link #discovered()} goes looking, and finds anything anybody has added - including rules from
+ * somebody else's code sitting beside RESTest's own, with nothing here naming them and nothing
+ * needing to be rebuilt.
  *
- * <p>That second one is the point of the arrangement. Adding a new kind of check to this tool is
- * meant to be one class and no changes anywhere else, and the only honest way to claim that is to
- * have the tool actually find its own rules that way.
+ * <p>That second one is the point of the arrangement. Writing a new kind of check is meant to be
+ * one class, and the only honest way to claim that is to have the tool actually find its own rules
+ * that way. A rule RESTest itself ships takes one more step: a switch of its own among the
+ * settings, so that a run can do without it, joined to the rule here.
  */
 public final class Oracles {
 
     private Oracles() {
     }
 
-    /** The rules RESTest ships with, in a fixed order so that two runs report in the same order. */
-    public static List<Oracle> standard() {
-        return List.of(new ServerErrorOracle(), new ResponseSchemaOracle());
+    /**
+     * The rules RESTest ships with that these settings leave switched on, in a fixed order so that
+     * two runs report in the same order.
+     *
+     * <p>Each switch belongs to one rule, and that rule reports only the kind of fault the switch
+     * is named for, so that turning one off never silences another kind with it. A rule switched
+     * off is left out rather than applied and then ignored, so that turning off the costly one -
+     * checking every reply against the document - saves what it costs.
+     *
+     * @param switches which checks are switched on
+     * @return the rules to apply
+     */
+    public static List<Oracle> standard(CheckSettings switches) {
+        List<Oracle> on = new ArrayList<>();
+        if (switches.internalServerError()) {
+            on.add(new ServerErrorOracle());
+        }
+        if (switches.replyOffSchema()) {
+            on.add(new ResponseSchemaOracle());
+        }
+        return List.copyOf(on);
     }
 
     /**

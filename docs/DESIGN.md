@@ -26,8 +26,8 @@ lists of values a person hands over — while part of the run pushes at the API 
 sensible would send, changes accepted requests one thing at a time, and sends short series around the
 things it creates. Every reply is judged by two rules, a reply of 500 and a reply whose body is not
 the shape the document promised, and reported on the screen and in `report.json` with a `curl`
-command that repeats it. What a user sees of all this is in [`docs/`](README.md); how it is built is
-the rest of this page.
+command that repeats it; either rule can be switched off. What a user sees of all this is in
+[`docs/`](README.md); how it is built is the rest of this page.
 
 From version 2.0 on, RESTest is a rewrite rather than a refactor of RESTest 1.x. The reasoning is
 recorded in [ADR-0002](adr/0002-rewrite-not-refactor.md); no source files carry over, though ideas,

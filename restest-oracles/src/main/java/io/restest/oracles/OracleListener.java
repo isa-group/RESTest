@@ -21,6 +21,7 @@ import io.restest.core.event.RunListener;
 import io.restest.core.model.ApiModel;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
+import io.restest.core.settings.CheckSettings;
 import java.time.Clock;
 import java.util.List;
 import java.util.Objects;
@@ -50,9 +51,10 @@ public final class OracleListener implements RunListener {
     private final AtomicLong failures = new AtomicLong();
     private final Set<String> broken = ConcurrentHashMap.newKeySet();
 
-    /** Judges with the rules RESTest ships with. */
-    public static OracleListener standard(ApiModel api, EventStream events) {
-        return new OracleListener(api, Oracles.standard(), events, Clock.systemUTC());
+    /** Judges with the rules RESTest ships with, less those these settings switch off. */
+    public static OracleListener standard(ApiModel api, CheckSettings switches,
+            EventStream events) {
+        return new OracleListener(api, Oracles.standard(switches), events, Clock.systemUTC());
     }
 
     public OracleListener(ApiModel api, List<Oracle> oracles, EventStream events, Clock clock) {

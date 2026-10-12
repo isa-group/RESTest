@@ -249,6 +249,12 @@ document:
   # the largest description that is read at all
   mostBytesRead: 67108864     # default
 
+checks:
+  # report a reply of 500, which says the API fell over while handling the request (F100)
+  internalServerError: true   # default
+  # report a reply whose body is not the shape the document gives for its status code and media type (F200)
+  replyOffSchema: true        # default
+
 report:
   # how many faults of one kind, on one operation, are written out whole
   writeUpsPerOperationAndKind: 5 # default
@@ -463,6 +469,16 @@ switches](switches.md#switching-off-one-idea) has that file.
 |---|---|---|
 | `fetchTimeout` | `10s` | how long to wait for a description fetched over the network |
 | `mostBytesRead` | `67108864` | the largest description that is read at all |
+
+### `checks.*`
+
+The checks a run makes on every reply, each of which reports a kind of fault. [The
+faults](faults.md#switching-a-check-off) says what switching one off changes, and what it does not.
+
+| Setting | Default | What it does |
+|---|---|---|
+| `internalServerError` | `true` | report a reply of 500, which says the API fell over while handling the request (F100) |
+| `replyOffSchema` | `true` | report a reply whose body is not the shape the document gives for its status code and media type (F200) |
 
 ### `report.*`
 

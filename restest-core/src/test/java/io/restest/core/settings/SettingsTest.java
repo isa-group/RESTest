@@ -60,7 +60,14 @@ class SettingsTest {
             assertThat(settings.generation()).isNotNull();
             assertThat(settings.memory()).isNotNull();
             assertThat(settings.document()).isNotNull();
+            assertThat(settings.checks()).isNotNull();
             assertThat(settings.report()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("every check is made unless somebody switches it off")
+        void every_check_is_on_by_default() {
+            assertThat(Settings.defaults().checks()).isEqualTo(new CheckSettings(true, true));
         }
 
         @Test
@@ -320,6 +327,21 @@ class SettingsTest {
                     .orElseThrow())).isEqualTo("false");
             assertThat(changed.written(SettingKey.named("generation.freshWhereMadeChance")
                     .orElseThrow())).isEqualTo("0.75");
+        }
+    }
+
+    @Nested
+    @DisplayName("a check switched off")
+    class ChecksGiven {
+
+        @Test
+        @DisplayName("is switched off in one line, and the other check stays on")
+        void one_check_is_switched_off_alone() {
+            Settings changed = Settings.from(Map.of("checks.replyOffSchema", "false"));
+
+            assertThat(changed.checks()).isEqualTo(new CheckSettings(true, false));
+            assertThat(changed.written(SettingKey.named("checks.replyOffSchema").orElseThrow()))
+                    .isEqualTo("false");
         }
     }
 
