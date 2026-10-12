@@ -86,8 +86,9 @@ class WfcFaultTest {
             + "nothing")
     void a_fault_is_found_by_its_number() {
         for (JsonValue.JsonObject entry : published()) {
-            assertThat(WfcFault.byCode(number(entry, "code")).map(FaultCategory::id))
-                    .describedAs("the kind numbered %d", number(entry, "code"))
+            int code = number(entry, "code");
+            assertThat(WfcFault.byCode(code).map(FaultCategory::id))
+                    .describedAs("the kind numbered %d", code)
                     .contains(text(entry, "id"));
         }
         assertThat(WfcFault.byCode(999)).isEmpty();
