@@ -99,7 +99,7 @@ to judge it by. `engine.maxRetainedResponseBytes` changes that.
 ## Switches
 
 Some settings are `true` or `false`, and each turns off one thing the tool does: the opening lap,
-one kind of change to an accepted request, one kind of series. They are there so that something an
+one kind of change to an accepted request, one kind of series, one check on what the API sent back. They are there so that something an
 API dislikes can be turned off in a line, and so that what each idea is worth can be measured by
 running the same tool with it and without it. A run without the opening lap:
 

@@ -89,7 +89,7 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
     /** The groups there are, in printing order. */
     public static List<String> groups() {
         return List.of("engine", "schedule", "generation", "mutation", "sequences", "memory",
-                "document", "report");
+                "document", "checks", "report");
     }
 
     /**
@@ -345,6 +345,13 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how long to wait for a description fetched over the network"),
             key("document", "mostBytesRead", SettingKind.WHOLE_NUMBER,
                     "the largest description that is read at all"),
+
+            key("checks", "internalServerError", SettingKind.YES_OR_NO,
+                    "report a reply of 500, which says the API fell over while handling the "
+                            + "request (F100)"),
+            key("checks", "replyOffSchema", SettingKind.YES_OR_NO,
+                    "report a reply whose body is not the shape the document gives for its status "
+                            + "code and media type (F200)"),
 
             key("report", "writeUpsPerOperationAndKind", SettingKind.WHOLE_NUMBER,
                     "how many faults of one kind, on one operation, are written out whole"),

@@ -54,6 +54,7 @@ import java.util.Set;
  * @param sequences which series of requests may be sent around a thing the run created itself
  * @param memory how much of what the API said is remembered
  * @param document what is accepted when a description is fetched
+ * @param checks which checks are made on what the API sends back
  * @param report how much of what was found is written out
  */
 public record Settings(
@@ -64,6 +65,7 @@ public record Settings(
         SequenceSettings sequences,
         MemorySettings memory,
         DocumentSettings document,
+        CheckSettings checks,
         ReportSettings report) {
 
     private static final Settings DEFAULTS = new Settings(
@@ -74,6 +76,7 @@ public record Settings(
             SequenceSettings.defaults(),
             MemorySettings.defaults(),
             DocumentSettings.defaults(),
+            CheckSettings.defaults(),
             ReportSettings.defaults());
 
     public Settings {
@@ -84,6 +87,7 @@ public record Settings(
         Objects.requireNonNull(sequences, "sequences");
         Objects.requireNonNull(memory, "memory");
         Objects.requireNonNull(document, "document");
+        Objects.requireNonNull(checks, "checks");
         Objects.requireNonNull(report, "report");
     }
 
@@ -243,6 +247,9 @@ public record Settings(
         DocumentSettings document = group("document", () -> new DocumentSettings(
                 typed.lengthOfTime("document.fetchTimeout", DEFAULTS.document.fetchTimeout()),
                 typed.wholeNumber("document.mostBytesRead", DEFAULTS.document.mostBytesRead())));
+        CheckSettings checks = group("checks", () -> new CheckSettings(
+                typed.yesOrNo("checks.internalServerError", DEFAULTS.checks.internalServerError()),
+                typed.yesOrNo("checks.replyOffSchema", DEFAULTS.checks.replyOffSchema())));
         ReportSettings report = group("report", () -> new ReportSettings(
                 typed.wholeNumber("report.writeUpsPerOperationAndKind",
                         DEFAULTS.report.writeUpsPerOperationAndKind()),
@@ -253,7 +260,7 @@ public record Settings(
                 typed.wholeNumber("report.skippedOperationsShownOnTheConsole",
                         DEFAULTS.report.skippedOperationsShownOnTheConsole())));
         return new Settings(engine, schedule, generation, mutation, sequences, memory, document,
-                report);
+                checks, report);
     }
 
     /**
@@ -427,6 +434,9 @@ public record Settings(
             case "document.fetchTimeout" -> LengthOfTime.written(document.fetchTimeout());
             case "document.mostBytesRead" -> String.valueOf(document.mostBytesRead());
 
+            case "checks.internalServerError" -> String.valueOf(checks.internalServerError());
+            case "checks.replyOffSchema" -> String.valueOf(checks.replyOffSchema());
+
             case "report.writeUpsPerOperationAndKind" ->
                     String.valueOf(report.writeUpsPerOperationAndKind());
             case "report.writeUpsInTotal" -> String.valueOf(report.writeUpsInTotal());
@@ -447,49 +457,49 @@ public record Settings(
     /** These settings with the engine's changed. */
     public Settings withEngine(EngineSettings value) {
         return new Settings(value, schedule, generation, mutation, sequences, memory, document,
-                report);
+                checks, report);
     }
 
     /** These settings with the schedule's changed. */
     public Settings withSchedule(ScheduleSettings value) {
         return new Settings(engine, value, generation, mutation, sequences, memory, document,
-                report);
+                checks, report);
     }
 
     /** These settings with generation's changed. */
     public Settings withGeneration(GenerationSettings value) {
         return new Settings(engine, schedule, value, mutation, sequences, memory, document,
-                report);
+                checks, report);
     }
 
     /** These settings with what may be changed in accepted requests changed. */
     public Settings withMutation(MutationSettings value) {
         return new Settings(engine, schedule, generation, value, sequences, memory, document,
-                report);
+                checks, report);
     }
 
     /** These settings with which series of requests may be sent changed. */
     public Settings withSequences(SequenceSettings value) {
         return new Settings(engine, schedule, generation, mutation, value, memory, document,
-                report);
+                checks, report);
     }
 
     /** These settings with the memory's changed. */
     public Settings withMemory(MemorySettings value) {
         return new Settings(engine, schedule, generation, mutation, sequences, value, document,
-                report);
+                checks, report);
     }
 
     /** These settings with the document's changed. */
     public Settings withDocument(DocumentSettings value) {
         return new Settings(engine, schedule, generation, mutation, sequences, memory, value,
-                report);
+                checks, report);
     }
 
     /** These settings with the report's changed. */
     public Settings withReport(ReportSettings value) {
         return new Settings(engine, schedule, generation, mutation, sequences, memory, document,
-                value);
+                checks, value);
     }
 
     /** A number, without the exponent Java would otherwise print for a small or large one. */

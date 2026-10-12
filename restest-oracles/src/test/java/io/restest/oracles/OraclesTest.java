@@ -21,9 +21,11 @@ import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.OperationId;
+import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.settings.CheckSettings;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -37,8 +39,21 @@ class OraclesTest {
     @Test
     @DisplayName("the rules RESTest ships with are the two this release reports on")
     void the_standard_rules_are_the_two_this_release_has() {
-        assertThat(Oracles.standard()).extracting(Oracle::name)
+        assertThat(Oracles.standard(CheckSettings.defaults())).extracting(Oracle::name)
                 .containsExactly("server-error", "response-schema");
+    }
+
+    @Test
+    @DisplayName("a check switched off is left out, and the other stays where it was")
+    void a_check_switched_off_is_left_out() {
+        assertThat(Oracles.standard(new CheckSettings(false, true))).extracting(Oracle::name)
+                .containsExactly("response-schema");
+        assertThat(Oracles.standard(new CheckSettings(true, false))).extracting(Oracle::name)
+                .containsExactly("server-error");
+        assertThat(Oracles.standard(new CheckSettings(false, false)))
+                .describedAs("every check off is a run that judges nothing, which an experiment "
+                        + "measuring what judging costs may want")
+                .isEmpty();
     }
 
     @Test
@@ -51,7 +66,7 @@ class OraclesTest {
     @Test
     @DisplayName("every rule says what it is called and what it checks")
     void every_rule_describes_itself() {
-        assertThat(Oracles.standard()).allSatisfy(oracle -> {
+        assertThat(Oracles.standard(CheckSettings.defaults())).allSatisfy(oracle -> {
             assertThat(oracle.name()).isNotBlank();
             assertThat(oracle.description()).isNotBlank();
         });
@@ -69,7 +84,7 @@ class OraclesTest {
                     announced.add(found.finding());
                 }
             });
-            events.subscribe(OracleListener.standard(api, events));
+            events.subscribe(OracleListener.standard(api, CheckSettings.defaults(), events));
 
             events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
                     Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 500,
@@ -78,6 +93,36 @@ class OraclesTest {
 
         assertThat(announced).extracting(Finding::category)
                 .containsExactly(WfcFault.HTTP_STATUS_500, WfcFault.SCHEMA_INVALID_RESPONSE);
+    }
+
+    @Test
+    @DisplayName("with one check switched off, the same reply is reported by the other alone")
+    void a_check_switched_off_reports_nothing() {
+        assertThat(judged(new CheckSettings(true, false)))
+                .describedAs("a reply of 500 whose body is off its schema, with that check off")
+                .containsExactly(WfcFault.HTTP_STATUS_500);
+        assertThat(judged(new CheckSettings(false, true)))
+                .describedAs("the same reply, with the check for a 500 off")
+                .containsExactly(WfcFault.SCHEMA_INVALID_RESPONSE);
+        assertThat(judged(new CheckSettings(false, false))).isEmpty();
+    }
+
+    /** What the listener announces about a reply of 500 whose body is off its schema. */
+    private static List<FaultCategory> judged(CheckSettings switches) {
+        List<Finding> announced = new CopyOnWriteArrayList<>();
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.FaultFound found) {
+                    announced.add(found.finding());
+                }
+            });
+            events.subscribe(OracleListener.standard(Specifications.pets(), switches, events));
+
+            events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                    Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 500,
+                            "application/json", "{\"id\": \"seven\"}")));
+        }
+        return announced.stream().map(Finding::category).toList();
     }
 
     @Test
@@ -92,7 +137,7 @@ class OraclesTest {
                     announced.add(event);
                 }
             });
-            events.subscribe(OracleListener.standard(api, events));
+            events.subscribe(OracleListener.standard(api, CheckSettings.defaults(), events));
 
             events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
                     Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 200,
@@ -114,7 +159,8 @@ class OraclesTest {
                     announced.add(event);
                 }
             });
-            OracleListener listener = new OracleListener(api, Oracles.standard(), events,
+            OracleListener listener = new OracleListener(api,
+                    Oracles.standard(CheckSettings.defaults()), events,
                     Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
             events.subscribe(listener);
 

@@ -606,3 +606,40 @@ and a coin of its own for optional parameters, which the roadmap lists among the
 so code that builds one by hand has to add them. What RESTest keeps from one minor version to the
 next is its command line and its files ([ADR-0015](0015-command-line-contract.md)), not the shape
 of this record.
+
+## Amendment (3.4a)
+
+**Date:** 2026-10-12
+
+**A ninth group, `checks.*`, holds a switch for each check a run makes on what the API sends back.**
+§4 asks every behaviour a run can do without to ship with a switch, and the two checks that judge
+replies were older than that rule and had none: a person whose API's document describes its error
+replies badly saw the same faults on every run and could stop them only by not running RESTest.
+`checks.internalServerError` turns off the check that reports a reply of 500 (`F100`), and
+`checks.replyOffSchema` the check that reports a reply whose body is not the shape the document gives
+(`F200`). Both are on by default.
+
+Three things were decided with them.
+- **The group is named for what a developer calls these, not for the catalogue's numbers or the
+  word testers use.** "Checks" is the word Schemathesis uses for the same thing; "oracles" would have
+  needed explaining, and a switch per catalogue number, as EvoMaster has, says nothing to somebody
+  who does not know the catalogue. The number of each kind stands beside its switch on the page of
+  switches and in the description `--print-settings` writes.
+- **Each switch is named for what is wrong with a reply it reports**, which is also the rule for any
+  check added after them. `internalServerError` rather than `serverError`, because the catalogue has
+  a kind of its own for a 5xx other than 500, and a switch called `serverError` would read as
+  covering it.
+- **A check switched off is not made at all**, rather than made and its faults dropped, so that
+  turning off the one that takes time saves the time it takes.
+
+What a switch changes is which replies are called faults, never which requests are built; but the
+checks are made on the thread that delivers what a run announces, and a run waits when that falls
+behind, so a run with the check of a reply's shape off may send more requests in the same budget.
+`serverErrors` in `report.json` counts what the API answered whichever checks are made, as
+[ADR-0016](0016-how-a-fault-is-presented.md) already says. And since a check switched off reports no
+fault, it can turn a run's `1` into a `0`: the exit code says what was found among the kinds of fault
+whose check was on. Like every setting, a switch is recorded in `report.json`'s `settings`, with its
+value and where it came from, which is how a report says which checks its run made; the maintainer
+chose on 12 October 2026 not to add a line on the screen of its own. A switch is for the whole run,
+never for one operation, and [the known limitations](../known-limitations.md#what-a-run-says) say so.
+Eighty-three settings in nine groups.

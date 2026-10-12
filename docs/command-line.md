@@ -153,7 +153,8 @@ The number the command ends with, which is what a build server or a script acts 
 | `143` | The run was stopped with kill or docker stop. What it found until then was printed and written, and report.json says it was cut short - or the run says what it did not leave behind, the same as for `130`. Java gives this number itself |
 
 A fault found is `1` rather than `0` because the usual use is a gate that should go red when the API
-is broken. An operation RESTest had to skip is not an error: a run says what it skipped and carries
+is broken. A check switched off reports no fault, so a run's `0` says that nothing was found among
+the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)). An operation RESTest had to skip is not an error: a run says what it skipped and carries
 on, and only a run in which nothing at all was tested answers `3`. A run stopped from outside never
 answers `0` or `1`, so that one stopped half-way never passes for one that finished.
 [ADR-0015](adr/0015-command-line-contract.md) has the reasoning.

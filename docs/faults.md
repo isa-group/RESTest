@@ -6,7 +6,8 @@ catalogue several testing tools share, described in a sentence of RESTest's own,
 `curl` command that sends the same request again.
 
 This page lists the kinds of fault this version reports, says what each one means and when it is
-reported, and shows how a fault looks on the screen and in `report.json`. What the rest of a run's
+reported, how to switch off the check that reports it, and shows how a fault looks on the screen and
+in `report.json`. What the rest of a run's
 output says is in [What a run leaves behind](report.md).
 
 ## The catalogue
@@ -31,14 +32,15 @@ under version 0.8.0, has no key: there `F100` and `F200` have the same numbers a
 
 ## The kinds this version reports
 
-| Code | The catalogue's name | What it means |
-|---|---|---|
-| `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code |
-| `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
+| Code | The catalogue's name | What it means | Switched off with |
+|---|---|---|---|
+| `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code | `checks.internalServerError` |
+| `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives | `checks.replyOffSchema` |
 
 The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
 after it was deleted, security problems — and this version reports none of them. A run that finds
-nothing wrong has found neither of the two kinds above, and says nothing about the others.
+nothing wrong has found neither of the two kinds above whose check was switched on, and says nothing
+about the others.
 
 ### `F100`, a reply of 500
 
@@ -81,6 +83,42 @@ One thing a document can say is never checked: `format`. Saying a piece of text 
 `email` is, in the standard, a note to the reader rather than a rule, and tools disagree about which
 ones to enforce.
 
+## Switching a check off
+
+Each kind of fault is reported by one check, and each check can be switched off for a whole run, in
+one line, when it is wrong about an API. A document that describes its error replies badly, say,
+makes every one of them a reply of the wrong shape:
+
+```bash
+restest run api.yaml --url http://localhost:9966 --set checks.replyOffSchema=false
+```
+
+| Switch | Off, the run never reports |
+|---|---|
+| `checks.internalServerError` | `F100`, a reply of 500 |
+| `checks.replyOffSchema` | `F200`, a reply of the wrong shape |
+
+Both are on unless somebody says otherwise. Like every setting, they can also be given in a file of
+settings or in the environment ([the settings](settings.md#checks)), and [the
+switches](switches.md#switching-off-one-idea) has a file for each, ready to hand over.
+
+A check switched off is not made at all. What that changes, and what it does not:
+
+- **Which requests are built does not change.** The same plan, settings and seed build the same
+  requests whichever checks are made. How many of them are sent within the budget can change: the
+  checks are made on the replies while the run goes on sending, and when they fall behind it waits
+  for them. So with the check of a reply's shape off, the one that takes time, a run may send more.
+- **What the API did is still counted.** `serverErrors` in `report.json`, and the summary's line
+  about 500 and 5xx, count every operation that answered so, whichever checks were made.
+- **The exit code follows the faults reported.** A run whose only faults would have been replies of
+  500 ends with `0` when `checks.internalServerError` is off, since it reported none.
+- **The run records it.** `report.json` lists every setting under `settings`, with its value and
+  where it came from, so a report says which checks its run made. The screen says that some
+  settings are not what RESTest does by default, and `--print-settings` lists which.
+
+A switch is for the whole run: turning `checks.replyOffSchema` off because of one operation's error
+replies hides every other reply off its schema too ([known limitations](known-limitations.md#what-a-run-says)).
+
 ## How a fault looks on the screen
 
 Faults are printed as they are found, while the run is still going:
@@ -121,7 +159,7 @@ At the end of the run, the summary counts them by kind:
 
 ## How faults are counted
 
-**Every reply is judged by every rule, and each rule that objects is one fault.** A reply of 500
+**Every reply is judged by every check switched on, and each check that objects is one fault.** A reply of 500
 whose body is also not the shape the document gives for a 500 is two faults, one of each kind. A
 broken operation asked six hundred times is six hundred faults. So the total says how much went
 wrong across the run, not how many problems the API has; [What a run leaves
@@ -145,6 +183,7 @@ the same operation are counted as two, however alike they look.
 ## What a fault does to the exit code
 
 A run that ran to the end and found at least one fault ends with `1`, and one that found none ends
-with `0`, so that a build server can go red when the API is broken. A run stopped from outside ends
+with `0`, so that a build server can go red when the API is broken. A check switched off reports no
+fault, so it cannot make a run end with `1`. A run stopped from outside ends
 with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found.
 [The exit codes](command-line.md#exit-codes) has every number a run can end with.

@@ -646,7 +646,7 @@ final class RunCommand implements Callable<Integer> {
                 // is subscribed at all unless the plan asked for something that learns from the
                 // replies.
                 generator.whatListensToTheRun().forEach(drained::subscribe);
-                rules = OracleListener.standard(model, drained);
+                rules = OracleListener.standard(model, settings.checks(), drained);
                 drained.subscribe(rules);
                 drained.subscribe(console);
                 drained.subscribe(JsonReport.to(reportFile, configuration));
