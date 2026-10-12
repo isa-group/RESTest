@@ -37,7 +37,9 @@ import java.util.Optional;
  *
  * <p>These numbers move between published versions of the catalogue, and have. A reader comparing
  * two fault counts has to read the version beside them before the numbers mean anything, which is
- * why every report carries it.
+ * why every report carries it. Each entry here is named by the catalogue's own key for it, which
+ * the catalogue promises never to change: a count made under one version can be matched with a
+ * count made under another by that key, whatever happened to the numbers in between.
  */
 public enum WfcFault implements FaultCategory {
 
@@ -72,6 +74,10 @@ public enum WfcFault implements FaultCategory {
     HTTP_NON_IDEMPOTENT_PUT(118, "HTTP Violation: PUT Implementation Must be Idempotent", "nonIdempotentPut"),
     HTTP_INVALID_MERGE_PATCH(119, "HTTP Violation: Invalid JSON Merge Patch", "invalidMergePatch"),
     HTTP_INVALID_LOCATION(120, "HTTP Violation: Invalid Location HTTP Header", "returnsInvalidLocationHeader"),
+    HTTP_OTHER_STATUS_5XX(121, "HTTP Status 5xx Other Than 500 And 501", "causes5xx_serverError"),
+    HTTP_CREATED_RESOURCE_NOT_FOUND(122,
+            "HTTP Violation: Resource Not Found Right After Successful Creation",
+            "createdResourceNotFound"),
     SCHEMA_INVALID_RESPONSE(200,
             "Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema",
             "returnsMismatchResponseWithSchema"),
@@ -81,8 +87,11 @@ public enum WfcFault implements FaultCategory {
     SCHEMA_STATUS_HAS_406_IF_ACCEPT(204, "Schema Violation: has-406-if-accept", "406WhenValid"),
     SCHEMA_STATUS_NO_501_IF_IMPLEMENTED(205, "Schema Violation: no-501-if-implemented", "501OnDeclaredEndpoint"),
     SCHEMA_VALIDATION_BYPASS(206, "Received Success Response When Sending Wrong Data", "successOnInvalidInputs"),
+    SCHEMA_VALID_INPUT_REJECTED(207,
+            "Received User Error Response When Sending Valid Data",
+            "rejectedValidInputs"),
     SECURITY_SQL_INJECTION(300, "SQL Injection (SQLi)", "vulnerableToSQLInjection"),
-    SECURITY_XSS(301, "Cross-Site Scripting (XSS)", "vulnerableToXSS"),
+    SECURITY_XSS_INJECTION(301, "Cross-Site Scripting (XSS)", "vulnerableToXSS"),
     SECURITY_SSRF(302, "Server-Side Request Forgery (SSRF)", "vulnerableToSSRF"),
     SECURITY_MASS_ASSIGNMENT(303, "Mass Assignment", "vulnerableToMassAssignment"),
     SECURITY_EXISTENCE_LEAKAGE(304,
@@ -91,7 +100,7 @@ public enum WfcFault implements FaultCategory {
     SECURITY_NOT_RECOGNIZED_AUTHENTICATED(305,
             "Wrongly Not Recognized as Authenticated",
             "authenticatedButWronglyToldNot"),
-    SECURITY_WRONG_AUTHORIZATION(306,
+    SECURITY_INCONSISTENT_WRITE_AUTHORIZATION(306,
             "Allowed To Modify Resource That Likely Should Had Been Protected",
             "missedAuthorizationCheck"),
     SECURITY_IGNORE_ANONYMOUS(307,
@@ -99,7 +108,11 @@ public enum WfcFault implements FaultCategory {
             "ignoreAnonymous"),
     SECURITY_ANONYMOUS_MODIFICATIONS(308, "Anonymous Modifications", "anonymousModifications"),
     SECURITY_LEAKED_STACK_TRACES(309, "Leaked Stack Trace", "leakedStackTrace"),
-    SECURITY_HIDDEN_ACCESSIBLE_ENDPOINT(310, "Hidden Accessible Endpoint", "hiddenAccessible");
+    SECURITY_HIDDEN_ACCESSIBLE_ENDPOINT(310, "Hidden Accessible Endpoint", "hiddenAccessible"),
+    SECURITY_DECLARED_AUTH_NOT_ENFORCED(311,
+            "Declared Authentication Is Not Enforced",
+            "declaredAuthNotEnforced"),
+    SECURITY_CALL_TIMEOUT(312, "Call Timeout", "callTimeout");
 
     /**
      * Which published version of the catalogue this list was copied from. Reports say so, because a
@@ -107,12 +120,12 @@ public enum WfcFault implements FaultCategory {
      *
      * <p>This is the version of the fault catalogue itself, which is not the version of the
      * collection it is published in. Web Fuzzing Commons ships four things together and they started
-     * on one version number and have since drifted apart: the release tagged 0.9.0 carries faults
-     * 0.8.0. Taking the tag would state a version the catalogue never had, and anybody comparing our
+     * on one version number and have since drifted apart: the release tagged 0.11.0 carries faults
+     * 0.9.0. Taking the tag would state a version the catalogue never had, and anybody comparing our
      * count with somebody else's would conclude the two counted under different lists when they did
      * not.
      */
-    public static final String CATALOGUE_VERSION = "0.8.0";
+    public static final String CATALOGUE_VERSION = "0.9.0";
 
     /** What the catalogue is called, as its own authors write it. */
     public static final String CATALOGUE_NAME = "Web Fuzzing Commons";
@@ -130,6 +143,12 @@ public enum WfcFault implements FaultCategory {
     @Override
     public int code() {
         return code;
+    }
+
+    /** The catalogue's key for this kind, which is the name of the entry: they are written once. */
+    @Override
+    public String id() {
+        return name();
     }
 
     @Override

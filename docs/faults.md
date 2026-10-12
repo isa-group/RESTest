@@ -12,7 +12,7 @@ output says is in [What a run leaves behind](report.md).
 ## The catalogue
 
 Fault kinds are numbered by the [Web Fuzzing Commons](https://github.com/WebFuzzing/Commons) fault
-catalogue, **version 0.8.0**, which other API testing tools use as well. A number from it — `F100` —
+catalogue, **version 0.9.0**, which other API testing tools use as well. A number from it — `F100` —
 is what a fault *is*: it is what `report.json` counts by, and what makes a count from RESTest
 comparable with a count from another tool that uses the same catalogue. The catalogue's own name
 for the kind, `HTTP Status 500`, is written beside the number. The sentence under it, `the API
@@ -20,7 +20,13 @@ answered 500, so it fell over while handling this request`, is RESTest's, writte
 than filed.
 
 `report.json` says which catalogue it counted by, and which version of it, in `faultCatalogue`, since
-a number only means something next to the list it was taken from.
+a number only means something next to the list it was taken from: the catalogue has renumbered its
+kinds once, and under its version 0.7.0 `F101` meant what `F200` means now. So `report.json` also
+writes, beside every number, the catalogue's own key for the kind — `HTTP_STATUS_500` for `F100` —
+which the catalogue promises never to change. Within one version, the number is what tells two kinds
+apart; to match a count with one made under another version of the catalogue, match on the key.
+`F100` and `F200` have the same numbers, names and keys under version 0.8.0, which RESTest 2.0 to 2.2
+used, and under 0.9.0, so their counts compare across those versions as they are.
 
 ## The kinds this version reports
 
@@ -39,9 +45,12 @@ Reported for every reply whose status code is exactly 500, whatever was sent to 
 request, a value nobody sensible would send, a request with one thing changed.
 
 - **Only 500.** 502, 503 and 504 are what a gateway or a load balancer says when something in front
-  of the API is unwell, and nobody can fix those in the API's code. 501, *not implemented*, is
-  about what the document promises rather than a crash. The other 5xx codes are still counted, under
-  `serverErrors` in `report.json` and in the summary's line about 5xx, but they are not faults.
+  of the API is unwell, and are often nothing anybody can fix in the API's code. 501, *not
+  implemented*, is about what the document promises rather than a crash. The catalogue has a kind of
+  its own for a 5xx other than 500 and 501, `F121`, and one for a request that got no reply in time,
+  `F312`; this version reports neither. The other 5xx codes are counted under `serverErrors` in
+  `report.json` and in the summary's line about 5xx, and requests that got no reply under `noReply` in
+  `replies.byClass`.
 - **It is a reason to look, not a verdict.** An API can answer 500 because its database is down or
   because another service it calls is not answering, neither of which is a bug in the API itself.
 

@@ -39,16 +39,23 @@ import org.junit.jupiter.api.Test;
  * what RESTest ships, entry by entry.
  *
  * <p>The copy comes from {@code WebFuzzing/Commons}, file
- * {@code src/main/resources/wfc/faults/fault_categories.json}, at tag {@code v0.9.0}, commit
- * {@code 2e44a5a34dc2f3c2e1feadc4dc631c1d4c3e7c56}, faults version {@code 0.8.0}, fetched on
- * 2026-09-16. The file the four version numbers are declared in is pinned beside it, because the
- * release tag and the fault catalogue's own version are two different numbers. Refreshing it is a deliberate act: this test failing means the catalogue has
- * moved on, which is news rather than a nuisance.
+ * {@code src/main/resources/wfc/faults/fault_categories.json}, at tag {@code v0.11.0}, commit
+ * {@code 962e1f75bbfc64bc51de2a34498dc6565dfeaf44}, faults version {@code 0.9.0}, fetched on
+ * 2026-10-12. The file the four version numbers are declared in,
+ * {@code src/main/java/com/webfuzzing/commons/VersionNumbers.java}, is pinned beside it from the same
+ * commit, because the release tag and the fault catalogue's own version are two different numbers.
+ * Both are kept byte for byte as published: {@code git hash-object} gives
+ * {@code a883045a40971671365a4865053c1d779e1f637c} for the catalogue and
+ * {@code d32103bb847104f5973a945418891a548ce5a2a4} for the version file, the hashes the catalogue's
+ * own repository gives them. Refreshing them is a deliberate act: this test failing means the
+ * catalogue has moved on, which is news rather than a nuisance.
  *
- * <p>It moved once already. Between the two versions the numbers were rearranged, not merely added
- * to: a schema mismatch went from 101 to 200 and every security weakness from the 200s to the 300s.
- * A count of "F101" published before the move and one published after name different faults, which
- * is exactly why a report states the version it counted under.
+ * <p>It moved once already. Between faults 0.7.0 and 0.8.0 the numbers were rearranged, not merely
+ * added to: a schema mismatch went from 101 to 200 and every security weakness from the 200s to the
+ * 300s. A count of "F101" published before the move and one published after name different faults,
+ * which is exactly why a report states the version it counted under. Faults 0.9.0 moved no number:
+ * it added five kinds, and gave every kind a key in words that the catalogue promises never to
+ * change.
  */
 class WfcFaultTest {
 
@@ -67,6 +74,7 @@ class WfcFaultTest {
         for (WfcFault fault : WfcFault.values()) {
             JsonValue.JsonObject entry = byCode.get(fault.code());
             assertThat(entry).describedAs("code %d is in the catalogue", fault.code()).isNotNull();
+            assertThat(fault.id()).isEqualTo(text(entry, "id"));
             assertThat(fault.descriptiveName()).isEqualTo(text(entry, "descriptiveName"));
             assertThat(fault.testCaseLabel()).isEqualTo(text(entry, "testCaseLabel"));
             assertThat(fault.label()).isEqualTo(text(entry, "label"));
@@ -74,10 +82,14 @@ class WfcFaultTest {
     }
 
     @Test
-    @DisplayName("a fault can be found by its number, and an unknown number finds nothing")
+    @DisplayName("every number in the catalogue finds the kind it names, and an unknown number finds "
+            + "nothing")
     void a_fault_is_found_by_its_number() {
-        assertThat(WfcFault.byCode(100)).contains(WfcFault.HTTP_STATUS_500);
-        assertThat(WfcFault.byCode(200)).contains(WfcFault.SCHEMA_INVALID_RESPONSE);
+        for (JsonValue.JsonObject entry : published()) {
+            assertThat(WfcFault.byCode(number(entry, "code")).map(FaultCategory::id))
+                    .describedAs("the kind numbered %d", number(entry, "code"))
+                    .contains(text(entry, "id"));
+        }
         assertThat(WfcFault.byCode(999)).isEmpty();
     }
 
@@ -103,15 +115,15 @@ class WfcFaultTest {
     @Test
     @DisplayName("the catalogue publishes exactly the fields RESTest expects it to")
     void the_catalogue_has_the_shape_this_test_assumes() {
-        // Two of these are deliberately not copied into the enum. 'fullDescription' is a paragraph
+        // Two of these are deliberately not copied into the enum, and 'id' is the name of each entry. 'fullDescription' is a paragraph
         // for a person to read and belongs in the catalogue rather than in our source; 'group' is
         // the catalogue's own filing, which our code ranges already carry. A field appearing or
         // disappearing changes what "copied faithfully" means, so it is checked rather than
         // assumed.
         assertThat(published()).allSatisfy(entry ->
                 assertThat(entry.members().keySet()).containsExactlyInAnyOrder(
-                        "code", "descriptiveName", "testCaseLabel", "label", "fullDescription",
-                        "group"));
+                        "code", "id", "descriptiveName", "testCaseLabel", "label",
+                        "fullDescription", "group"));
     }
 
     /**
@@ -120,7 +132,7 @@ class WfcFaultTest {
      *
      * <p>Not the version of the release it ships in, which is a different number. Web Fuzzing
      * Commons publishes four things together, they began on one version and have drifted apart, and
-     * the release tagged 0.9.0 carries faults 0.8.0. That is exactly the sort of thing a person
+     * the release tagged 0.11.0 carries faults 0.9.0. That is exactly the sort of thing a person
      * copies wrongly once and nobody notices for a year, so it is read from the pinned file rather
      * than typed here.
      */

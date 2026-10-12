@@ -166,7 +166,7 @@ throughout:
 | Key | Value | What it says |
 |---|---|---|
 | `name` | text | `Web Fuzzing Commons` |
-| `version` | text | The version of its fault catalogue the codes were taken from: `0.8.0` |
+| `version` | text | The version of its fault catalogue the codes were taken from: `0.9.0` |
 
 ### `api`
 
@@ -313,6 +313,7 @@ In the order the kinds were first found.
 | Key | Value | What it says |
 |---|---|---|
 | `code` | number | The catalogue number: `100` for `F100` |
+| `id` | text | The catalogue's key for the kind, `HTTP_STATUS_500` for `F100`, which it promises never to change; the key to match on when comparing with a report made under another version of the catalogue |
 | `descriptiveName` | text | The catalogue's name for the kind |
 | `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it |
 | `label` | text | Number and name in one: `F100:HTTP Status 500` |
@@ -326,6 +327,7 @@ many faults came back with an ordinary `2xx`.
 | Key | Value | What it says |
 |---|---|---|
 | `code` | number | The catalogue number |
+| `id` | text | The catalogue's key for the kind |
 | `label` | text | Number and name in one |
 | `statusClass` | text | `2xx`, `5xx` and so on, or `noReply` |
 | `count` | number | How many faults |
@@ -338,6 +340,7 @@ One row for each operation and kind of fault. Complete: every pair that went wro
 |---|---|---|
 | `operation` | text | The operation |
 | `code` | number | The catalogue number |
+| `id` | text | The catalogue's key for the kind |
 | `label` | text | Number and name in one |
 | `count` | number | How many faults of this kind on this operation |
 | `writtenInFull` | number | How many of them are written out under `findings` |
@@ -355,7 +358,7 @@ in a run from having nothing written about it.
 
 | Key | Value | What it says |
 |---|---|---|
-| `category` | object | The kind of fault: `code`, `descriptiveName`, `testCaseLabel` and `label`, as in `faultsByCategory` |
+| `category` | object | The kind of fault: `code`, `id`, `descriptiveName`, `testCaseLabel` and `label`, as in `faultsByCategory` |
 | `operation` | text | The operation |
 | `summary` | text | What is wrong, in a sentence |
 | `details` | list of text | The particulars, when there are any: for `F200`, each place in the body that disagreed with the document |
@@ -369,6 +372,7 @@ in a run from having nothing written about it.
 | Key | Value | What it says |
 |---|---|---|
 | `code` | number | The catalogue number |
+| `id` | text | The catalogue's key for the kind |
 | `descriptiveName` | text | The catalogue's name for the kind |
 | `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it |
 | `label` | text | Number and name in one |

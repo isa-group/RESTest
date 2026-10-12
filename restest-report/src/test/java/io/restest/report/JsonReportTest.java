@@ -50,7 +50,7 @@ class JsonReportTest {
         assertThat(text(object(report, "tool"), "name")).isEqualTo("RESTest");
         assertThat(text(object(report, "faultCatalogue"), "name"))
                 .isEqualTo("Web Fuzzing Commons");
-        assertThat(text(object(report, "faultCatalogue"), "version")).isEqualTo("0.8.0");
+        assertThat(text(object(report, "faultCatalogue"), "version")).isEqualTo("0.9.0");
         assertThat(text(report, "createdAt")).isEqualTo("2026-09-13T10:30:00Z");
         assertThat(text(object(report, "api"), "title")).isEqualTo("Pets");
         assertThat(text(object(report, "api"), "baseUrl")).isEqualTo(Runs.BASE);
@@ -246,11 +246,17 @@ class JsonReportTest {
 
         JsonValue.JsonObject first = (JsonValue.JsonObject) findings.elements().get(0);
         assertThat(number(object(first, "category"), "code")).isEqualTo(100);
+        assertThat(text(object(first, "category"), "id")).isEqualTo("HTTP_STATUS_500");
         assertThat(text(object(first, "category"), "label")).isEqualTo("F100:HTTP Status 500");
         assertThat(text(object(first, "category"), "testCaseLabel"))
                 .isEqualTo("causes500_internalServerError");
         assertThat(text(first, "operation")).isEqualTo("GET /pets");
         assertThat(text(first, "curl")).startsWith("curl -i -X GET 'https://api.example/pets'");
+        assertThat(findings.elements().stream()
+                .map(finding -> object((JsonValue.JsonObject) finding, "category"))
+                .map(category -> number(category, "code") + " " + text(category, "id"))
+                .distinct())
+                .containsExactlyInAnyOrder("100 HTTP_STATUS_500", "200 SCHEMA_INVALID_RESPONSE");
     }
 
     @Test
@@ -278,6 +284,11 @@ class JsonReportTest {
         JsonValue.JsonObject first = (JsonValue.JsonObject) byCategory.elements().get(0);
         assertThat(number(first, "code")).isEqualTo(100);
         assertThat(number(first, "count")).isEqualTo(1);
+        assertThat(byCategory.elements().stream()
+                .map(row -> (JsonValue.JsonObject) row)
+                .map(row -> number(row, "code") + " " + text(row, "id")))
+                .describedAs("each kind carries the catalogue's key beside its number")
+                .containsExactly("100 HTTP_STATUS_500", "200 SCHEMA_INVALID_RESPONSE");
     }
 
     @Test
@@ -514,10 +525,12 @@ class JsonReportTest {
         assertThat(rows).hasSize(2);
         assertThat(rows.stream()
                 .map(row -> text((JsonValue.JsonObject) row, "operation") + " "
+                        + text((JsonValue.JsonObject) row, "id") + " "
                         + number((JsonValue.JsonObject) row, "count")))
                 .describedAs("the counting is exact and complete even where the writing is not: "
                         + "this list is as long as the API, not as long as the run")
-                .containsExactlyInAnyOrder("GET /pets 300", "GET /shelters 7");
+                .containsExactlyInAnyOrder("GET /pets HTTP_STATUS_500 300",
+                        "GET /shelters SCHEMA_INVALID_RESPONSE 7");
         JsonValue.JsonObject busiest = (JsonValue.JsonObject) rows.get(0);
         assertThat(number(busiest, "writtenInFull") + number(busiest, "countedOnly"))
                 .describedAs("and each row's own numbers account for all of its faults")
@@ -625,13 +638,14 @@ class JsonReportTest {
 
         assertThat(array(written, "faultsByStatus").elements().stream()
                 .map(row -> (JsonValue.JsonObject) row)
-                .map(row -> "F" + number(row, "code") + " " + text(row, "statusClass") + " = "
-                        + number(row, "count")))
+                .map(row -> "F" + number(row, "code") + " " + text(row, "id") + " "
+                        + text(row, "statusClass") + " = " + number(row, "count")))
                 .describedAs("a developer who only watches their logs for 500s is not seeing the "
                         + "fault that came back as a perfectly ordinary 200, and this is the table "
                         + "that shows it. An attempt that got no reply has no code, so it has a "
                         + "name of its own rather than being lost")
-                .containsExactlyInAnyOrder("F100 5xx = 3", "F200 2xx = 1", "F100 noReply = 1");
+                .containsExactlyInAnyOrder("F100 HTTP_STATUS_500 5xx = 3",
+                        "F200 SCHEMA_INVALID_RESPONSE 2xx = 1", "F100 HTTP_STATUS_500 noReply = 1");
     }
 
     @Test
