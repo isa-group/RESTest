@@ -32,15 +32,24 @@ import java.util.Objects;
  *
  * <pre>{@code
  * version: 1
- * name: fuzzing
- * keyedBy: type
+ * name: petshop-ids
+ * keyedBy: operationAndParameter
  * values:
- *   any:
- *     - null
- *   string:
- *     - ""
- *     - "   "
+ *   getOwner:
+ *     ownerId: [1, 2, 3]
+ *   "GET /pets/{petId}":
+ *     petId: [7]
  * }</pre>
+ *
+ * <p>A dictionary somebody hands over has one shape: every list of values under the operation it is
+ * for, and under the place in that operation's request it goes. Whoever writes one has the API's
+ * document in front of them, so a value meant for several places is written under each of them,
+ * and the file says exactly where everything it holds is sent.
+ *
+ * <p>The list RESTest carries to push at an API with is the one exception, and is read through
+ * {@link #readOwn} instead. It cannot know the operations of an API it has never seen, so it is
+ * written for kinds of value - every piece of text, every whole number - with a bucket of values for
+ * every kind at once.
  *
  * <p>A file this version cannot read is refused by name rather than half-read: a dictionary that
  * silently lost half its values would be worse than one that was never loaded, because nobody would
@@ -59,11 +68,17 @@ final class DictionaryDocument {
     private static final List<String> MEMBERS =
             List.of("version", "name", "description", "keyedBy", "values");
 
+    /** How a dictionary somebody hands over says what its keys are, the one way it can. */
+    private static final String BY_OPERATION_AND_PLACE = "operationAndParameter";
+
+    /** How the list RESTest carries says what its keys are. */
+    private static final String BY_KIND_OF_VALUE = "type";
+
     private DictionaryDocument() {
     }
 
     /**
-     * The dictionary a file's text describes.
+     * The dictionary a file somebody handed over describes.
      *
      * @param text the file's contents
      * @param describedAs where it came from, for saying so when it cannot be read
@@ -73,6 +88,65 @@ final class DictionaryDocument {
     static ValueDictionary read(String text, String describedAs) {
         Objects.requireNonNull(text, "text");
         Objects.requireNonNull(describedAs, "describedAs");
+        JsonValue.JsonObject document = document(text, describedAs);
+        String name = text(document, "name", describedAs);
+        if (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(name)) {
+            // The plan names lists by the name inside them, so a list of somebody's own under this
+            // name would be asked alongside RESTest's - and after it, where RESTest's has something
+            // for almost every value there is. Refused rather than kept and never used: naming a
+            // list of one's own in the plan is how it gets pushed with, and that works.
+            throw new JsonException(describedAs + " is called '" + name + "', which is the name of "
+                    + "RESTest's own list of values to push with. Call yours something else, and "
+                    + "name it in the plan's pushing strategy to have it pushed with");
+        }
+        String keyedBy = text(document, "keyedBy", describedAs);
+        if (!BY_OPERATION_AND_PLACE.equals(keyedBy)) {
+            throw new JsonException(describedAs + " says its values are keyed by '" + keyedBy
+                    + "'; a dictionary puts each list under its operation and the place in its "
+                    + "request (keyedBy: " + BY_OPERATION_AND_PLACE + ")");
+        }
+        Map<String, Map<String, List<JsonValue>>> perOperation = new LinkedHashMap<>();
+        values(document, describedAs).members().forEach((operation, places) -> {
+            Map<String, List<JsonValue>> named = new LinkedHashMap<>();
+            asObject(orNothingWritten(places),
+                    "what is written under '" + operation + "'", describedAs)
+                    .members()
+                    .forEach((place, held) -> named.put(place, listOf(held,
+                            "'" + place + "' in '" + operation + "'", describedAs)));
+            perOperation.put(operation, named);
+        });
+        return new ValueDictionary(name, ValueDictionary.Keying.OPERATION_AND_PARAMETER, Map.of(),
+                perOperation);
+    }
+
+    /**
+     * The list of values to push with that RESTest carries, which is written for kinds of value
+     * rather than for the places of an API.
+     *
+     * @param text the file's contents
+     * @param describedAs what it is, for saying so when it cannot be read - which would be a fault
+     *     in this build of the tool
+     * @return the dictionary
+     * @throws JsonException if the text is not such a list
+     */
+    static ValueDictionary readOwn(String text, String describedAs) {
+        Objects.requireNonNull(text, "text");
+        Objects.requireNonNull(describedAs, "describedAs");
+        JsonValue.JsonObject document = document(text, describedAs);
+        String name = text(document, "name", describedAs);
+        String keyedBy = text(document, "keyedBy", describedAs);
+        if (!BY_KIND_OF_VALUE.equals(keyedBy)) {
+            throw new JsonException(describedAs + " says its values are keyed by '" + keyedBy
+                    + "', and RESTest's own list is keyed by " + BY_KIND_OF_VALUE);
+        }
+        Map<String, List<JsonValue>> values = new LinkedHashMap<>();
+        values(document, describedAs).members().forEach((key, held) ->
+                values.put(key, listOf(held, "'" + key + "'", describedAs)));
+        return new ValueDictionary(name, ValueDictionary.Keying.TYPE, values, Map.of());
+    }
+
+    /** The file as a set of members, its version and its members checked. */
+    private static JsonValue.JsonObject document(String text, String describedAs) {
         JsonValue.JsonObject document = asObject(YamlText.read(text, describedAs), "a dictionary",
                 describedAs);
         // The version is read before anything else is judged. A file written in a later version of
@@ -85,46 +159,25 @@ final class DictionaryDocument {
                     + " of the format, and this version of RESTest reads version " + VERSION);
         }
         rejectAnythingUnrecognised(document, describedAs);
+        return document;
+    }
 
-        String name = text(document, "name", describedAs);
-        ValueDictionary.Keying keying = keying(text(document, "keyedBy", describedAs), describedAs);
-
-        JsonValue.JsonObject stated = asObject(
+    /** What is written under {@code values}, which may be nothing at all. */
+    private static JsonValue.JsonObject values(JsonValue.JsonObject document, String describedAs) {
+        return asObject(
                 orNothingWritten(document.member("values").orElseThrow(() -> new JsonException(
                         describedAs + " is a dictionary with no 'values' in it"))),
                 "the values of a dictionary", describedAs);
-
-        Map<String, List<JsonValue>> values = new LinkedHashMap<>();
-        Map<String, Map<String, List<JsonValue>>> perOperation = new LinkedHashMap<>();
-        if (keying == ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
-            stated.members().forEach((operation, parameters) -> {
-                if (ValueDictionary.ANY.equals(operation)) {
-                    values.put(operation, listOf(parameters, "'" + operation + "'", describedAs));
-                    return;
-                }
-                Map<String, List<JsonValue>> named = new LinkedHashMap<>();
-                asObject(orNothingWritten(parameters),
-                        "what is written under '" + operation + "'", describedAs)
-                        .members()
-                        .forEach((parameter, held) -> named.put(parameter, listOf(held,
-                                "'" + parameter + "' in '" + operation + "'", describedAs)));
-                perOperation.put(operation, named);
-            });
-        } else {
-            stated.members().forEach((key, held) ->
-                    values.put(key, listOf(held, "'" + key + "'", describedAs)));
-        }
-        return new ValueDictionary(name, keying, values, perOperation);
     }
 
     /**
      * Refuses a file with a member nobody here recognises.
      *
-     * <p>Strict on purpose, and easier to be strict now than later. A misspelled {@code keyedBy}
-     * would otherwise leave a file that loads without complaint and then quietly does nothing at
-     * all - which is the outcome this format goes out of its way to prevent
-     * everywhere else. Accepting unknown members can be allowed later without breaking anybody's
-     * file; refusing them later cannot.
+     * <p>Strict on purpose, and easier to be strict now than later. A member nobody recognises is
+     * usually a misspelling, and a file read past one without a word is a file that does less than
+     * its author thinks - which is the outcome this format goes out of its way to prevent everywhere
+     * else. Accepting unknown members can be allowed later without breaking anybody's file;
+     * refusing them later cannot.
      */
     private static void rejectAnythingUnrecognised(JsonValue.JsonObject document,
             String describedAs) {
@@ -134,9 +187,8 @@ final class DictionaryDocument {
         if (!unrecognised.isEmpty()) {
             throw new JsonException(describedAs + " has " + unrecognised.size()
                     + " thing(s) in it this version does not recognise ("
-                    + String.join(", ", unrecognised) + "), which is usually a misspelling - and a "
-                    + "misspelled 'keyedBy' would leave a dictionary that loads and then does "
-                    + "nothing");
+                    + String.join(", ", unrecognised) + "), which is usually a misspelling. What "
+                    + "belongs there is " + String.join(", ", MEMBERS));
         }
     }
 
@@ -171,19 +223,6 @@ final class DictionaryDocument {
         }
         throw new JsonException(describedAs + " holds something other than a list of values under "
                 + where);
-    }
-
-    private static ValueDictionary.Keying keying(String stated, String describedAs) {
-        return switch (stated) {
-            case "type" -> ValueDictionary.Keying.TYPE;
-            case "format" -> ValueDictionary.Keying.FORMAT;
-            case "schema" -> ValueDictionary.Keying.SCHEMA;
-            case "name" -> ValueDictionary.Keying.NAME;
-            case "operationAndParameter" -> ValueDictionary.Keying.OPERATION_AND_PARAMETER;
-            default -> throw new JsonException(describedAs + " says its values are keyed by '"
-                    + stated + "', which is not one of type, format, schema, name or "
-                    + "operationAndParameter");
-        };
     }
 
     private static JsonValue.JsonObject asObject(JsonValue value, String what, String describedAs) {

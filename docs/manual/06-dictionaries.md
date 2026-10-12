@@ -18,16 +18,22 @@ are for.
 
 The clinic searches its owners by surname, and when RESTest creates an owner it has to invent a
 telephone number made only of digits. A dictionary with surnames the clinic holds and a few
-telephone numbers:
+telephone numbers, for the search and for the two requests that create and change an owner:
 
 ```yaml
 version: 1
 name: clinic
 description: Owners the clinic knows, and telephone numbers it accepts.
-keyedBy: name
+keyedBy: operationAndParameter
 values:
-  lastName: [Franklin, Davis, Rodriquez, McTavish, Coleman]
-  telephone: ["6085551023", "6085551749", "6085553198"]
+  listOwners:
+    lastName: [Franklin, Davis, Rodriquez, McTavish, Coleman]
+  addOwner:
+    body.lastName: [Franklin, Davis, Rodriquez, McTavish, Coleman]
+    body.telephone: ["6085551023", "6085551749", "6085553198"]
+  updateOwner:
+    body.lastName: [Franklin, Davis, Rodriquez, McTavish, Coleman]
+    body.telephone: ["6085551023", "6085551749", "6085553198"]
 ```
 
 Save it as `clinic.yaml` and hand it over with `--dictionary`:
@@ -43,18 +49,18 @@ Save it as `clinic.yaml` and hand it over with `--dictionary`:
 - `version` is the version of the format, `1`.
 - `name` is what the list is called. A plan can name a list to say which requests draw on it; the
   plan RESTest carries asks every list you hand over when it builds requests meant to be accepted.
-- `keyedBy` says what the keys under `values` are. `name`, used here, means a name wherever it
-  appears: `lastName` is the query parameter of the search and the property inside the body that
-  creates an owner, and the list fills both. The other keyings are narrower — one place in one
-  operation — or wider — every value of a kind, such as every date — and [the
-  format](../dictionary-format.md#the-five-keyings) has them all.
-- `values` holds the lists.
+- `keyedBy` is always `operationAndParameter`: the keys under `values` are operations, and under
+  each one, the places in its request.
+- `values` holds the lists, each under its operation and its place. `lastName` is the query
+  parameter of the search; `body.lastName` is the property inside the body that creates or changes
+  an owner. A list fills only the places it is written under, so the surnames are written three
+  times. [The format](../dictionary-format.md#where-a-value-goes) says how to name every place.
 
 **A list is one voice among several.** For a request meant to be accepted, the plan RESTest
 carries asks every source that has an answer — the document's sample, an invented value, what the
 API has returned, your lists — and draws one of the answers, giving your lists 40 parts in 100. With
-the file above, then, about half the surnames the run sends are yours; requests that push
-at the API or change one thing in an accepted request send others again. To have your values sent
+the file above, about half the surnames the search sends are yours — 45 of 98 in one 30-second
+run; requests that push at the API or change one thing in an accepted request send others again. To have your values sent
 whenever a list has one, change the plan so that it asks your lists before the others: [The
 dictionary format](../dictionary-format.md#which-lists-get-used-for-what) says how.
 

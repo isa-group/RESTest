@@ -521,3 +521,15 @@ The new shares, and the evidence they rest on, are recorded in
   a draw for this strategy builds an ordinary request, as §1 says, so the strategy sends well under
   its share: 13.0% of requests for a share of 30, and 8.5% on the ten APIs no dictionary was written
   for.
+
+## Amendment (12 October 2026): the list a value of the wrong kind comes from
+
+**Date:** 2026-10-12
+
+Since [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md), a value of the wrong
+kind is drawn from RESTest's own list to push with and the few values the change keeps for itself,
+never from a list somebody handed over: no such list can be called `fuzzing`, or written for a kind
+of value.
+
+The M10.4 warning, about a list of the user's called `fuzzing` going unused in a plan with no
+pushing strategy, goes with it, since such a list can no longer exist.

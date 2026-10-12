@@ -170,9 +170,10 @@ class FuzzingFindsWhatNominalMissesTest {
         Path mine = Files.writeString(directory.resolve("mine.yaml"), """
                 version: 1
                 name: mine
-                keyedBy: name
+                keyedBy: operationAndParameter
                 values:
-                  q: [ZZMINEZZ]
+                  search:
+                    q: [ZZMINEZZ]
                 """);
 
         run(directory.resolve("out"), document, "--dictionary", mine.toString());
@@ -264,43 +265,54 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     @Test
-    @DisplayName("a plan with no pushing names the list of yours that then goes unused, and stays "
-            + "quiet about lists that had nothing to do with pushing")
-    void what_goes_unused_is_named_and_nothing_else_is(@TempDir Path directory) throws IOException {
+    @DisplayName("a list of your own named in the pushing strategy is pushed with; one called what "
+            + "RESTest's own is called is refused, and the refusal says how to do the first")
+    void a_list_of_your_own_is_pushed_with_by_naming_it(@TempDir Path directory)
+            throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
         Path pushes = Files.writeString(directory.resolve("pushes.yaml"), """
                 version: 1
-                name: fuzzing
-                keyedBy: type
+                name: my-pushes
+                keyedBy: operationAndParameter
                 values:
-                  string: [ZZPUSHZZ]
+                  search:
+                    q: [ZZPUSHZZ]
                 """);
-        Path ordinary = Files.writeString(directory.resolve("ordinary.yaml"), """
+        Path plan = Files.writeString(directory.resolve("my-plan.yaml"), """
                 version: 1
-                name: my-terms
-                keyedBy: name
-                values:
-                  q: [kitten]
+                strategies:
+                  - name: fuzzing
+                    share: 100
+                    sources:
+                      - dictionary: my-pushes
+                      - dictionary: fuzzing
+                      - source: random
                 """);
 
-        String noPushing = plan(directory, NEVER_PUSHES).toString();
+        run(directory.resolve("a"), document, "--campaign", plan.toString(),
+                "--dictionary", pushes.toString());
 
-        assertThat(run(directory.resolve("a"), document, "--campaign", noPushing,
-                "--dictionary", pushes.toString()))
-                .describedAs("two things were asked for that cancel, and one is probably a mistake")
-                .contains("the list of values called 'fuzzing'")
-                .containsOnlyOnce("gives no strategy that pushes");
+        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
+        com.github.tomakehurst.wiremock.client.WireMock.verify(
+                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+                com.github.tomakehurst.wiremock.client.WireMock
+                        .getRequestedFor(urlPathEqualTo("/search"))
+                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
+                                .equalTo("ZZPUSHZZ")));
 
-        assertThat(run(directory.resolve("b"), document, "--campaign", noPushing,
-                "--dictionary", ordinary.toString()))
-                .describedAs("my own good values and nothing strange at somebody else's API is the "
-                        + "most sensible way to use these two together, and warning about a file "
-                        + "they never wrote is a message they could not act on")
-                .doesNotContain("gives no strategy that pushes");
-
-        assertThat(run(directory.resolve("c"), document, "--campaign", noPushing))
-                .describedAs("asking for no pushing, on its own, is a plain request")
-                .doesNotContain("gives no strategy that pushes");
+        Path calledLikeOurs = Files.writeString(directory.resolve("fuzzing.yaml"), """
+                version: 1
+                name: fuzzing
+                keyedBy: operationAndParameter
+                values:
+                  search:
+                    q: [ZZNEVERZZ]
+                """);
+        assertThat(run(directory.resolve("b"), document,
+                "--dictionary", calledLikeOurs.toString()))
+                .contains("is called 'fuzzing', which is the name of RESTest's own list")
+                .contains("name it in the plan's pushing strategy")
+                .contains("1 list of values could not be read");
     }
 
     @Test

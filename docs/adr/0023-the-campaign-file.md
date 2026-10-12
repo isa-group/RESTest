@@ -351,3 +351,14 @@ evidence, without a new measurement. What the evidence is, and is not:
 this does to the share that pushes. To run with the old shares, print the plan with
 `--print-campaign`, set sequences, mutation and fuzzing to 10, 20 and 25, and hand it back with
 `--campaign`.
+
+## Amendment (12 October 2026): the order of the lists handed over
+
+**Date:** 2026-10-12
+
+Since [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md), every list handed
+over is written for places of one API, so the ranking that survived inside `dictionaries: given` has
+nothing left to rank. The lists are asked in the order they were handed over.
+
+A list of the user's can no longer be called `fuzzing`. To push with values of one's own, the plan
+names the list in its pushing strategy, above `dictionary: fuzzing`.

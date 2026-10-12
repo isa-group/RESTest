@@ -78,9 +78,10 @@ import java.util.function.Function;
  *       can be sent one the API itself produced rather than one assembled from nothing.</li>
  * </ul>
  *
- * <p>Both of those are ordinary {@link Dictionary lists of values}, of the same kind somebody can
- * write in a file - the only difference is who fills them in. Nothing that asks them a question has
- * to know that these two were filled in by watching the API rather than by being read off a disk.
+ * <p>Both of those are ordinary {@link Dictionary lists of values}, kept under a name or a shape
+ * rather than under an operation's place as a file of somebody's is. Nothing that asks them a
+ * question has to know that these two were filled in by watching the API rather than by being read
+ * off a disk.
  *
  * <p>The third is for the gaps in a web address, such as {@code {petTypeId}} in
  * {@code /pettypes/{petTypeId}}, because the name is often no help there: the API calls a pet
@@ -162,8 +163,8 @@ public final class ObservedValues implements RunListener {
         this.model = Objects.requireNonNull(model, "model");
         this.settings = Objects.requireNonNull(settings, "settings");
         this.answeredBy = Objects.requireNonNull(answeredBy, "answeredBy");
-        this.underTheirOwnNames = new Remembered(ValueDictionary.Keying.NAME, settings);
-        this.underTheNameOfTheirShape = new Remembered(ValueDictionary.Keying.SCHEMA, settings);
+        this.underTheirOwnNames = new Remembered(Remembered.Under.NAME, settings);
+        this.underTheNameOfTheirShape = new Remembered(Remembered.Under.SHAPE, settings);
         this.underTheKindOfThingTheyAre = new Resources(settings);
     }
 
@@ -868,12 +869,26 @@ public final class ObservedValues implements RunListener {
      */
     static final class Remembered implements Dictionary {
 
-        private final ValueDictionary.Keying keying;
+        /** What a value is kept under, and so what it is found by later. */
+        enum Under {
+            /**
+             * The last step of the way down to the value, wherever it turns up: a petId is a petId
+             * whether it is a parameter or a property deep inside a body.
+             */
+            NAME,
+            /**
+             * The name the document gave the shape of a whole thing, which is the only thing a
+             * whole value can be recognised by later.
+             */
+            SHAPE
+        }
+
+        private final Under keying;
         private final MemorySettings settings;
         private final ConcurrentMap<String, List<Observation>> byKey = new ConcurrentHashMap<>();
         private final LastHeard lastHeard = new LastHeard();
 
-        Remembered(ValueDictionary.Keying keying, MemorySettings settings) {
+        Remembered(Under keying, MemorySettings settings) {
             this.keying = keying;
             this.settings = settings;
         }
@@ -909,18 +924,9 @@ public final class ObservedValues implements RunListener {
         }
 
         private Optional<String> keyFor(ValueRequest request) {
-            // Every keying named rather than a catch-all, so that adding one to the format is a
-            // compiler error here - in the one class whose whole subject is which keying it uses.
             return switch (keying) {
-                // The last step of the way down to the value, wherever it turns up: a petId is a
-                // petId whether it is a parameter or a property deep inside a body.
                 case NAME -> Optional.of(request.name());
-                // Only a shape the document named, which is the only thing a whole value can be
-                // recognised by later.
-                case SCHEMA -> request.shape();
-                // Nothing watching an API's replies can fill these: they are about what a document
-                // says a value is, not about what came back under a name.
-                case TYPE, FORMAT, OPERATION_AND_PARAMETER -> Optional.empty();
+                case SHAPE -> request.shape();
             };
         }
 
@@ -932,11 +938,6 @@ public final class ObservedValues implements RunListener {
         @Override
         public String name() {
             return NAME;
-        }
-
-        @Override
-        public boolean isAboutOneValueInParticular() {
-            return keying.isAboutOneValueInParticular();
         }
 
         /** How many different names or shapes this holds anything for. */

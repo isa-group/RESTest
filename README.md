@@ -162,19 +162,21 @@ back](docs/switches.md#getting-the-seed-back) has the files that make a run repe
 Every one of these is optional.
 
 **Values you know are good** — identifiers that exist, the names the API actually holds — go in a
-YAML file and are handed over with `--dictionary`, which takes a file or a directory and may be
-repeated:
+YAML file, each under its operation and the place in its request, and are handed over with
+`--dictionary`, which takes a file or a directory and may be repeated:
 
 ```yaml
 version: 1
 name: pet-ids
-keyedBy: name
+keyedBy: operationAndParameter
 values:
-  petId: [1, 2, 3]
+  getPetById:
+    petId: [1, 2, 3]
 ```
 
 ```bash
-./restest run openapi.yaml --url http://localhost:8080 --dictionary pet-ids.yaml
+./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+    --url https://petstore3.swagger.io/api/v3 --budget 10s --dictionary pet-ids.yaml
 ```
 
 [The dictionary format](docs/dictionary-format.md).

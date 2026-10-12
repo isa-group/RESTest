@@ -1073,3 +1073,12 @@ exception from 2.1 on, recorded where the sources are: in the body of a `POST`, 
 a value the API returned is passed over for a property that is not an identifier, and the property
 is invented ([ADR-0020](0020-what-a-dictionary-is.md), 2.1 amendment).
 
+## Amendment (12 October 2026): the memory keeps its own keyings
+
+**Date:** 2026-10-12
+
+§6 says the API's memory keeps what it heard under "the two keyings the format already has",
+`Keying.NAME` and `Keying.SCHEMA`. Since
+[ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) the format has one keying,
+operation and place. The memory keeps its two, by name and by shape, as its own, and nothing it does
+changes.

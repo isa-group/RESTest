@@ -124,7 +124,7 @@ class DictionariesTest {
     @Test
     @DisplayName("what there is and whose it is are two answers that cannot come to disagree")
     void the_two_answers_are_one_answer(@TempDir Path directory) throws IOException {
-        write(directory.resolve("mine.yaml"), "mine", "type");
+        write(directory.resolve("mine.yaml"), "mine");
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
 
@@ -147,8 +147,8 @@ class DictionariesTest {
     @Test
     @DisplayName("a directory of files is read, every .yaml, .yml and .json in it, in a settled order")
     void a_directory_is_read(@TempDir Path directory) throws IOException {
-        write(directory.resolve("b-second.yaml"), "second", "type");
-        write(directory.resolve("a-first.yml"), "first", "type");
+        write(directory.resolve("b-second.yaml"), "second");
+        write(directory.resolve("a-first.yml"), "first");
         Files.writeString(directory.resolve("notes.txt"), "not a dictionary");
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
@@ -163,7 +163,7 @@ class DictionariesTest {
     @Test
     @DisplayName("a file that cannot be read costs its values and is said out loud, not the run")
     void an_unreadable_file_is_reported_and_survived(@TempDir Path directory) throws IOException {
-        write(directory.resolve("good.yaml"), "good", "type");
+        write(directory.resolve("good.yaml"), "good");
         Files.writeString(directory.resolve("broken.yaml"), "key: [unclosed");
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
@@ -178,7 +178,7 @@ class DictionariesTest {
     @DisplayName("a file that cannot be read is also named as refused, apart from the entries that "
             + "merely go unused, so a report can say which lists a run went without")
     void an_unreadable_file_is_named_as_refused(@TempDir Path directory) throws IOException {
-        write(directory.resolve("good.yaml"), "good", "type");
+        write(directory.resolve("good.yaml"), "good");
         Path broken = directory.resolve("broken.yaml");
         Files.writeString(broken, "key: [unclosed");
         Files.writeString(directory.resolve("stale.yaml"), """
@@ -269,9 +269,10 @@ class DictionariesTest {
         Files.writeString(directory.resolve("empty.yaml"), """
                 version: 1
                 name: empty
-                keyedBy: type
+                keyedBy: operationAndParameter
                 values:
-                  # string: [to be written]
+                  # GET /owners/{ownerId}:
+                  #   ownerId: [to be written]
                 """);
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
@@ -849,8 +850,8 @@ class DictionariesTest {
     @DisplayName("two lists answering to one name is said out loud, because a name is how a plan "
             + "picks one and how a report names one")
     void two_lists_with_one_name_are_reported(@TempDir Path directory) throws IOException {
-        write(directory.resolve("a.yaml"), "same", "type");
-        write(directory.resolve("b.yaml"), "same", "name");
+        write(directory.resolve("a.yaml"), "same");
+        write(directory.resolve("b.yaml"), "same");
 
         assertThat(Dictionaries.gather(List.of(directory), PET_SHOP).problems())
                 .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
@@ -858,20 +859,22 @@ class DictionariesTest {
     }
 
     @Test
-    @DisplayName("a list of your own called what the built-in plan names is not a mistake, and is "
-            + "not reported as one")
-    void the_one_collision_the_format_blesses_is_silent(@TempDir Path directory) throws IOException {
-        write(directory.resolve("mine.yaml"), "fuzzing", "type");
+    @DisplayName("a list of your own called what RESTest's own list to push with is called is "
+            + "refused, and told how to have its values pushed with")
+    void a_list_called_like_restests_own_is_refused(@TempDir Path directory) throws IOException {
+        Path mine = directory.resolve("mine.yaml");
+        write(mine, "fuzzing");
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
 
         assertThat(found.dictionaries()).extracting(Dictionary::name)
-                .containsExactly("fuzzing", "fuzzing");
-        assertThat(found.problems())
-                .describedAs("the documented way to have a list of your own pushed at an API is to "
-                        + "call it this, so saying it is wrong would make the instructions "
-                        + "impossible to follow")
-                .isEmpty();
+                .describedAs("RESTest's own, and nothing else answering to its name")
+                .containsExactly("fuzzing");
+        assertThat(found.refused()).singleElement().satisfies(refused -> {
+            assertThat(refused.from()).isEqualTo(mine.toString());
+            assertThat(refused.reason()).contains("is called 'fuzzing'")
+                    .contains("name it in the plan's pushing strategy");
+        });
     }
 
     @Test
@@ -880,15 +883,16 @@ class DictionariesTest {
         Files.writeString(directory.resolve("codes.yaml"), """
                 version: 1
                 name: codes
-                keyedBy: name
+                keyedBy: operationAndParameter
                 values:
-                  country: [NO, SE, "ON"]
+                  GET /owners/{ownerId}:
+                    ownerId: [NO, SE, "ON"]
                 """);
 
         Dictionary codes = Dictionaries.gather(List.of(directory), PET_SHOP).fromTheUser().get(0);
 
-        assertThat(codes.valuesFor(ValueRequest.of(OperationId.of("GET /x"), "country",
-                ParameterLocation.QUERY, StringSchema.of())))
+        assertThat(codes.valuesFor(ValueRequest.of(OperationId.of("GET /owners/{ownerId}"),
+                "ownerId", ParameterLocation.PATH, StringSchema.of())))
                 .describedAs("Norway is a country, not the word false")
                 .containsExactly(JsonValue.of("NO"), JsonValue.of("SE"), JsonValue.of("ON"));
     }
@@ -898,14 +902,16 @@ class DictionariesTest {
         return spelling.equals("addOwner") ? "fromTheIdentifier" : "fromMethodAndPath";
     }
 
-    private static void write(Path file, String name, String keyedBy) throws IOException {
+    /** A list that names a real place of the pet shop, so that nothing in it goes unused. */
+    private static void write(Path file, String name) throws IOException {
         Files.writeString(file, """
                 version: 1
                 name: %s
-                keyedBy: %s
+                keyedBy: operationAndParameter
                 values:
-                  string: [x]
-                """.formatted(name, keyedBy));
+                  GET /owners/{ownerId}:
+                    ownerId: [x]
+                """.formatted(name));
     }
 
     private static ValueRequest asking(CanonicalSchema schema) {

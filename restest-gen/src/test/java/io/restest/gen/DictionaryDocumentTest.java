@@ -27,98 +27,14 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
-import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.StringSchema;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /** Reading a list of values somebody wrote down, and finding the ones that apply to an input. */
 class DictionaryDocumentTest {
-
-    @org.junit.jupiter.api.Test
-    @org.junit.jupiter.api.DisplayName("which keyings speak about one value in particular, which "
-            + "is what decides whether a list is asked before the document or after it")
-    void which_keyings_are_about_one_value() {
-        assertThat(ValueDictionary.Keying.NAME.isAboutOneValueInParticular())
-                .describedAs("a name is somebody meaning that value wherever it turns up")
-                .isTrue();
-        assertThat(ValueDictionary.Keying.OPERATION_AND_PARAMETER.isAboutOneValueInParticular())
-                .describedAs("and an operation and a place in it is as particular as it gets")
-                .isTrue();
-        assertThat(ValueDictionary.Keying.SCHEMA.isAboutOneValueInParticular())
-                .describedAs("a document declares a shape once and however many parameters refer "
-                        + "to it get the same one, so a list written for a shape is about a kind "
-                        + "of value - reclassifying it would reorder every plan that says "
-                        + "'dictionaries: given'")
-                .isFalse();
-        assertThat(ValueDictionary.Keying.TYPE.isAboutOneValueInParticular()).isFalse();
-        assertThat(ValueDictionary.Keying.FORMAT.isAboutOneValueInParticular()).isFalse();
-    }
-
-
-    @Test
-    @DisplayName("values are found under the kind of value wanted, and under the bucket for all kinds")
-    void keyed_by_type() {
-        ValueDictionary dictionary = read("""
-                {"version": 1, "name": "d", "keyedBy": "type", "values": {
-                   "any": [null],
-                   "string": ["a", "b"],
-                   "integer": [7]
-                }}""");
-
-        assertThat(dictionary.valuesFor(asking("q", StringSchema.of())))
-                .containsExactly(JsonValue.of("a"), JsonValue.of("b"), JsonValue.NULL);
-        assertThat(dictionary.valuesFor(asking("q", NumberSchema.of(NumberKind.INTEGER))))
-                .containsExactly(JsonValue.of(7L), JsonValue.NULL);
-        assertThat(dictionary.valuesFor(asking("q", NumberSchema.of(NumberKind.NUMBER))))
-                .describedAs("a whole number and a number are different kinds, as JSON has them")
-                .containsExactly(JsonValue.NULL);
-    }
-
-    @Test
-    @DisplayName("a whole object is as ordinary a value as a word, which is what bodies will need")
-    void values_may_be_objects_and_lists() {
-        ValueDictionary dictionary = read("""
-                {"version": 1, "name": "d", "keyedBy": "schema", "values": {
-                   "Owner": [{"firstName": "George", "pets": [{"name": "Leo"}]}]
-                }}""");
-
-        ValueRequest anOwner = new ValueRequest(OperationId.of("GET /owners"), "owner", "owner",
-                ParameterLocation.QUERY, ObjectSchema.of(Map.of()), List.of(),
-                Optional.of("Owner"));
-
-        assertThat(dictionary.valuesFor(anOwner)).singleElement()
-                .isInstanceOf(JsonValue.JsonObject.class);
-    }
-
-    @Test
-    @DisplayName("values are found under the format the document declares for a value")
-    void keyed_by_format() {
-        ValueDictionary dictionary = read("""
-                {"version": 1, "name": "d", "keyedBy": "format", "values": {
-                   "date": ["2026-09-18"]
-                }}""");
-        CanonicalSchema aDate = new StringSchema(SchemaMetadata.none(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of("date"));
-
-        assertThat(dictionary.valuesFor(asking("when", aDate)))
-                .containsExactly(JsonValue.of("2026-09-18"));
-        assertThat(dictionary.valuesFor(asking("when", StringSchema.of()))).isEmpty();
-    }
-
-    @Test
-    @DisplayName("values are found under the parameter's name, wherever it appears")
-    void keyed_by_name() {
-        ValueDictionary dictionary = read("""
-                {"version": 1, "name": "d", "keyedBy": "name", "values": {"petId": [7]}}""");
-
-        assertThat(dictionary.valuesFor(asking("petId", StringSchema.of())))
-                .containsExactly(JsonValue.of(7L));
-        assertThat(dictionary.valuesFor(asking("ownerId", StringSchema.of()))).isEmpty();
-    }
 
     @Test
     @DisplayName("values are found under one parameter of one operation, named as the report names it")
@@ -136,7 +52,117 @@ class DictionaryDocumentTest {
                 .describedAs("an operation the document gave no identifier is named after its "
                         + "method and path, which is what the tool itself prints")
                 .containsExactly(JsonValue.of(9L));
-        assertThat(dictionary.keys()).containsExactly("getOwner", "GET /pets/{petId}");
+        assertThat(dictionary.entriesByOperation().keySet())
+                .containsExactly("getOwner", "GET /pets/{petId}");
+    }
+
+    @Test
+    @DisplayName("a file keyed any other way is refused, and told how to key it")
+    void every_other_keying_is_refused() {
+        // Written in the shape a file keyed by operation has, so that the keying is the only thing
+        // wrong with it and the refusal cannot be for anything else.
+        for (String keyedBy : List.of("type", "format", "schema", "name")) {
+            assertThatExceptionOfType(JsonException.class)
+                    .isThrownBy(() -> read("""
+                            version: 1
+                            name: d
+                            keyedBy: %s
+                            values:
+                              getOwner:
+                                ownerId: [1]
+                            """.formatted(keyedBy)))
+                    .describedAs(keyedBy)
+                    .withMessageContaining("keyed by '" + keyedBy + "'")
+                    .withMessageContaining("each list under its operation and the place in its "
+                            + "request (keyedBy: operationAndParameter)");
+        }
+    }
+
+    @Test
+    @DisplayName("'any' is an operation's name like any other, so a list under it is refused and "
+            + "places under it apply to that operation alone")
+    void any_is_an_operation_like_any_other() {
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        keyedBy: operationAndParameter
+                        values:
+                          any: [null]
+                        """))
+                .withMessageContaining("what is written under 'any' is not an object");
+
+        ValueDictionary dictionary = read("""
+                version: 1
+                name: d
+                keyedBy: operationAndParameter
+                values:
+                  any:
+                    ownerId: [1]
+                  getOwner:
+                    ownerId: [2]
+                """);
+        assertThat(values(dictionary, "getOwner", "ownerId"))
+                .describedAs("nothing written under 'any' reaches another operation")
+                .containsExactly(JsonValue.of(2L));
+        assertThat(values(dictionary, "any", "ownerId")).containsExactly(JsonValue.of(1L));
+    }
+
+    @Test
+    @DisplayName("a file called what RESTest's own list to push with is called is refused, and told "
+            + "how to have its values pushed with")
+    void the_name_of_restests_own_list_is_refused() {
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: fuzzing
+                        keyedBy: operationAndParameter
+                        values:
+                          getOwner:
+                            ownerId: [-1]
+                        """))
+                .withMessageContaining("is called 'fuzzing'")
+                .withMessageContaining("Call yours something else, and name it in the plan's "
+                        + "pushing strategy");
+    }
+
+    @Test
+    @DisplayName("RESTest's own list is read by kind of value, with a bucket for every kind")
+    void restests_own_list_is_keyed_by_type() {
+        ValueDictionary dictionary = readOwn("""
+                {"version": 1, "name": "fuzzing", "keyedBy": "type", "values": {
+                   "any": [null],
+                   "string": ["a", "b"],
+                   "integer": [7]
+                }}""");
+
+        assertThat(dictionary.valuesFor(asking("q", StringSchema.of())))
+                .containsExactly(JsonValue.of("a"), JsonValue.of("b"), JsonValue.NULL);
+        assertThat(dictionary.valuesFor(asking("q", NumberSchema.of(NumberKind.INTEGER))))
+                .containsExactly(JsonValue.of(7L), JsonValue.NULL);
+        assertThat(dictionary.valuesFor(asking("q", NumberSchema.of(NumberKind.NUMBER))))
+                .describedAs("a whole number and a number are different kinds, as JSON has them")
+                .containsExactly(JsonValue.NULL);
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> readOwn("""
+                        {"version": 1, "name": "fuzzing", "keyedBy": "operationAndParameter",
+                         "values": {}}"""))
+                .withMessageContaining("RESTest's own list is keyed by type");
+    }
+
+    @Test
+    @DisplayName("a whole object is as ordinary a value as a word, which is what bodies will need")
+    void values_may_be_objects_and_lists() {
+        ValueDictionary dictionary = read("""
+                {"version": 1, "name": "d", "keyedBy": "operationAndParameter", "values": {
+                   "addOwner": {"body": [{"firstName": "George", "pets": [{"name": "Leo"}]}]}
+                }}""");
+
+        ValueRequest anOwner = ValueRequest.of(OperationId.of("addOwner"), ValueRequest.THE_BODY,
+                ParameterLocation.BODY, ObjectSchema.of(Map.of()));
+
+        assertThat(dictionary.valuesFor(anOwner)).singleElement()
+                .isInstanceOf(JsonValue.JsonObject.class);
     }
 
     @Test
@@ -164,17 +190,16 @@ class DictionaryDocumentTest {
     @Test
     @DisplayName("values with nothing under them are a dictionary with no values, like values: {}")
     void values_with_nothing_under_them_is_read_as_empty() {
-        for (String keyedBy : List.of("type", "operationAndParameter")) {
-            ValueDictionary dictionary = read("""
-                    version: 1
-                    name: d
-                    keyedBy: %s
-                    values:
-                      # to be filled in
-                    """.formatted(keyedBy));
+        ValueDictionary dictionary = read("""
+                version: 1
+                name: d
+                keyedBy: operationAndParameter
+                values:
+                  # to be filled in
+                """);
 
-            assertThat(dictionary.keys()).describedAs(keyedBy).isEmpty();
-        }
+        assertThat(dictionary.entriesByOperation()).isEmpty();
+        assertThat(dictionary.holdsNoValues()).isTrue();
     }
 
     @Test
@@ -195,9 +220,9 @@ class DictionaryDocumentTest {
                 .withMessageContaining("nothing under 'lastName' in 'GET /owners'")
                 .withMessageContaining("write [] for no values, or [null] to send null");
         assertThatExceptionOfType(JsonException.class)
-                .isThrownBy(() -> read("""
+                .isThrownBy(() -> readOwn("""
                         version: 1
-                        name: d
+                        name: fuzzing
                         keyedBy: type
                         values:
                           string:
@@ -225,16 +250,18 @@ class DictionaryDocumentTest {
         ValueDictionary asYaml = read("""
                 version: 1
                 name: d
-                keyedBy: type
+                keyedBy: operationAndParameter
                 values:
-                  string: [a, b]
+                  GET /owners:
+                    lastName: [a, b]
                 """);
         ValueDictionary asJson = read("""
-                {"version": 1, "name": "d", "keyedBy": "type", "values": {"string": ["a", "b"]}}""");
+                {"version": 1, "name": "d", "keyedBy": "operationAndParameter",
+                 "values": {"GET /owners": {"lastName": ["a", "b"]}}}""");
 
-        assertThat(asYaml.valuesFor(asking("q", StringSchema.of())))
+        assertThat(values(asYaml, "GET /owners", "lastName"))
                 .describedAs("JSON is a subset of YAML, so nobody has to be told which to write")
-                .isEqualTo(asJson.valuesFor(asking("q", StringSchema.of())))
+                .isEqualTo(values(asJson, "GET /owners", "lastName"))
                 .containsExactly(JsonValue.of("a"), JsonValue.of("b"));
     }
 
@@ -245,10 +272,11 @@ class DictionaryDocumentTest {
                 .isThrownBy(() -> read("""
                         version: 1
                         name: d
-                        keyedBy: type
+                        keyedBy: operationAndParameter
                         values:
-                          string: [a]
-                          string: [b]
+                          GET /owners:
+                            lastName: [a]
+                            lastName: [b]
                         """))
                 .withMessageContaining("duplicate");
     }
@@ -259,15 +287,16 @@ class DictionaryDocumentTest {
         ValueDictionary dictionary = read("""
                 version: 1
                 name: d
-                keyedBy: type
+                keyedBy: operationAndParameter
                 values:
-                  string: [no, "NO", on, off, yes, y, n, 2026-09-18, .inf, .nan]
+                  GET /owners:
+                    country: [no, "NO", on, off, yes, y, n, 2026-09-18, .inf, .nan]
                 """);
 
         // YAML's older rules turn seven of these into true or false, silently. A list of country
         // codes holding NO would send false, and nothing would say so. Only what JSON itself has is
         // recognised here, so a word stays a word.
-        assertThat(dictionary.valuesFor(asking("q", StringSchema.of())))
+        assertThat(values(dictionary, "GET /owners", "country"))
                 .containsExactly(JsonValue.of("no"), JsonValue.of("NO"), JsonValue.of("on"),
                         JsonValue.of("off"), JsonValue.of("yes"), JsonValue.of("y"),
                         JsonValue.of("n"), JsonValue.of("2026-09-18"), JsonValue.of(".inf"),
@@ -280,16 +309,16 @@ class DictionaryDocumentTest {
         ValueDictionary dictionary = read("""
                 version: 1
                 name: d
-                keyedBy: type
+                keyedBy: operationAndParameter
                 values:
-                  any: [null]
-                  boolean: [true, false]
-                  number: [99999999999999999999999999999999.999999, 1e308]
+                  GET /widgets:
+                    flag: [true, false, null]
+                    amount: [99999999999999999999999999999999.999999, 1e308]
                 """);
 
-        assertThat(dictionary.valuesFor(asking("q", io.restest.core.schema.BooleanSchema.of())))
+        assertThat(values(dictionary, "GET /widgets", "flag"))
                 .containsExactly(JsonValue.TRUE, JsonValue.FALSE, JsonValue.NULL);
-        assertThat(dictionary.valuesFor(asking("q", NumberSchema.of(NumberKind.NUMBER))))
+        assertThat(values(dictionary, "GET /widgets", "amount"))
                 .describedAs("read as the nearest value sixty-four bits can hold, the first of "
                         + "these would come out a different number entirely")
                 .contains(JsonValue.of(new java.math.BigDecimal(
@@ -303,9 +332,10 @@ class DictionaryDocumentTest {
                 .isThrownBy(() -> read("""
                         version: 1
                         name: d
-                        keyedBy: type
+                        keyedBy: operationAndParameter
                         values:
-                          number: [!!float .inf]
+                          GET /widgets:
+                            amount: [!!float .inf]
                         """))
                 .withMessageContaining("is not a number a request could carry");
     }
@@ -315,7 +345,8 @@ class DictionaryDocumentTest {
     void an_unknown_version_is_refused() {
         assertThatExceptionOfType(JsonException.class)
                 .isThrownBy(() -> read("""
-                        {"version": 99, "name": "d", "keyedBy": "type", "values": {}}"""))
+                        {"version": 99, "name": "d", "keyedBy": "operationAndParameter",
+                         "values": {}}"""))
                 .withMessageContaining("version 99")
                 .withMessageContaining("reads version 1");
     }
@@ -339,13 +370,21 @@ class DictionaryDocumentTest {
                 .withMessageContaining("horoscope");
         assertThatExceptionOfType(JsonException.class)
                 .isThrownBy(() -> read("""
-                        {"version": 1, "name": "d", "keyedBy": "type"}"""))
+                        {"version": 1, "name": "d", "keyedBy": "operationAndParameter"}"""))
                 .withMessageContaining("no 'values'");
         assertThatExceptionOfType(JsonException.class)
                 .isThrownBy(() -> read("""
-                        {"version": 1, "name": "d", "keyedBy": "type",
-                         "values": {"string": "not a list"}}"""))
-                .withMessageContaining("other than a list");
+                        {"version": 1, "name": "d", "keyedBy": "operationAndParameter",
+                         "values": {"getOwner": {"ownerId": "not a list"}}}"""))
+                .withMessageContaining("other than a list")
+                .withMessageContaining("'ownerId' in 'getOwner'");
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        {"version": 1, "name": "d", "keyBy": "operationAndParameter",
+                         "values": {}}"""))
+                .withMessageContaining("keyBy")
+                .withMessageContaining("What belongs there is version, name, description, "
+                        + "keyedBy, values");
     }
 
     private static List<JsonValue> values(ValueDictionary dictionary, String operation,
@@ -361,5 +400,9 @@ class DictionaryDocumentTest {
 
     private static ValueDictionary read(String text) {
         return DictionaryDocument.read(text, "a dictionary somebody wrote");
+    }
+
+    private static ValueDictionary readOwn(String text) {
+        return DictionaryDocument.readOwn(text, "RESTest's own list");
     }
 }

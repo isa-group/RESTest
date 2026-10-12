@@ -719,3 +719,12 @@ different numbers.
 
 The point the table makes, that where tools have a priority it is keyed by parameter name rather
 than by source, still holds.
+
+## Amendment (12 October 2026): one keying for a file
+
+**Date:** 2026-10-12
+
+Since [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md), a dictionary file is
+keyed by operation and place and by nothing else. The `format` keying the M2.4 amendment calls "a
+file a user writes" can no longer be written, and neither can `type`, `schema` or `name`. The list
+of awkward values RESTest carries keeps its keying by kind of value, as its own.

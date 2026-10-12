@@ -77,9 +77,9 @@ import java.util.random.RandomGenerator;
  * says so. Each kind can be switched off, and so can all of them at once.
  *
  * <p>A value of the wrong kind is drawn from a long list rather than a short one, because what an
- * API does with one depends on which it gets: the awkward values the run holds to push at the API
- * with - the list RESTest carries, and any a person handed over under the same name - and a few
- * more of its own, a number with a fraction where a whole one is declared among them. Only the
+ * API does with one depends on which it gets: the awkward values RESTest carries to push at the API
+ * with, and a few more of its own, a number with a fraction where a whole one is declared among
+ * them. Only the
  * ones the documentation refuses for that place are ever sent there.
  *
  * <p>The changes to a body as a whole are aimed at what an API does before any of its own code runs:
@@ -275,22 +275,10 @@ final class Mutations {
     }
 
     /**
-     * Whether the changes made here draw on the lists of awkward values, which they do whenever a
-     * value of the wrong kind is among the changes switched on.
-     *
-     * @return whether they do
-     */
-    boolean drawsOnTheAwkwardValues() {
-        return Operator.WRONG_TYPE.isOn(settings);
-    }
-
-    /**
-     * Every value the lists of awkward values hold for a word, a whole number, a number, a
-     * yes-or-no, a list and an object - the lists a run pushes at the API with, which are the ones
-     * named for that: the one RESTest carries, and any a person handed over under the same name.
-     * Only a list written for a whole kind of value is asked; one written for a named parameter or
-     * for one operation's is about that place alone, and its values do not belong everywhere.
-     * Other lists are values meant to work, and are not asked.
+     * Every value the list of awkward values holds for a word, a whole number, a number, a
+     * yes-or-no, a list and an object - the list a run pushes at the API with, which is the one
+     * named for that and RESTest carries. Lists somebody handed over are written for places of one
+     * API, and their values belong at those places alone, so they are not asked.
      *
      * @param dictionaries the lists the run holds
      * @return the awkward values, each once, in the order the lists hold them
@@ -298,8 +286,7 @@ final class Mutations {
     static List<JsonValue> awkwardValuesIn(List<Dictionary> dictionaries) {
         Set<JsonValue> found = new LinkedHashSet<>();
         for (Dictionary dictionary : dictionaries) {
-            if (!RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(dictionary.name())
-                    || dictionary.isAboutOneValueInParticular()) {
+            if (!RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(dictionary.name())) {
                 continue;
             }
             for (CanonicalSchema kind : EVERY_KIND) {

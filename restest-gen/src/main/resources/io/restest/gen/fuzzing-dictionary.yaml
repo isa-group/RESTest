@@ -6,7 +6,9 @@
 # that they are the values careless code falls over on, and an API falling over is a fault
 # whatever was sent.
 #
-# Written for RESTest 2.0. Extend it with a file of your own rather than editing this one.
+# Written for RESTest 2.0, and RESTest's own: the name fuzzing is this list's alone. To push with
+# values of your own as well, write them in a dictionary under its own name and name it in the
+# plan's pushing strategy, before this one.
 
 version: 1
 name: fuzzing

@@ -34,63 +34,37 @@ import java.util.Optional;
 /**
  * A dictionary whose values were written down in advance, indexed one particular way.
  *
- * <p>This is the shape almost every dictionary takes: somebody wrote a list of values, said what
- * decides which of them apply, and the tool looks them up. The values live in a file so that adding
- * good values for an API is something anybody can do without touching the tool, and so that a list
- * worth having can be kept next to the specification it belongs to.
+ * <p>The values live in a file so that adding good values for an API is something anybody can do
+ * without touching the tool, and so that a list worth having can be kept next to the specification
+ * it belongs to.
  *
- * <p>Two lists are consulted for any one input: the one under whatever key applies - the kind of
- * value, the format the document declares, the name of the shape, the name of the parameter, or the
- * operation and the place in its request together - and the one under {@code any}, which applies
- * whatever the key and is where values that make sense everywhere live, {@code null} being the
- * obvious one.
- *
- * <p>The two keyings that speak about a particular value differ in how particular they are, and the
- * difference shows inside a request body. One written for a name matches that name wherever it
- * turns up, a parameter or a property four levels down. One written for an operation matches one
- * place and no other, named by the way down to it: {@code body.owner.email}.
+ * <p>Two shapes, for two kinds of list. One somebody hands over puts each list under one place in
+ * one operation's request: a parameter by name, the whole body under {@code body}, or one piece of
+ * the body by the way down to it, {@code body.owner.email}. The list RESTest carries to push at an
+ * API with cannot know any API's places, so it puts each list under a kind of value - every piece of
+ * text, every whole number - and keeps one more under {@code any}, which applies to every kind and
+ * is where {@code null} lives.
  *
  * <p>Nothing here decides whether a value is a good idea. That is the job of whatever asks.
  */
 public final class ValueDictionary implements Dictionary {
 
-    /** The bucket whose values apply whatever the key. */
+    /** The bucket whose values apply whatever the kind of value, in the list RESTest carries. */
     public static final String ANY = "any";
 
     /** What decides which of a dictionary's values apply to a given input. */
     public enum Keying {
-        /** The kind of value wanted: text, a whole number, a number, true or false, a list, an object. */
+        /**
+         * The kind of value wanted: text, a whole number, a number, true or false, a list, an
+         * object. How the list RESTest carries to push with is written, and no other.
+         */
         TYPE,
-        /** The format the document declares for the value: a date, an e-mail address, an identifier. */
-        FORMAT,
-        /** The name the document gave the shape - the values that worked for an {@code Owner}. */
-        SCHEMA,
         /**
-         * The name alone, wherever it appears - every {@code petId} in the API, whether it is a
-         * parameter or a property somewhere inside a body.
+         * One place in one operation's request: a parameter by name, the whole body under
+         * {@code body}, or one piece of the body by the way down to it, {@code body.owner.email}.
+         * How every list somebody hands over is written.
          */
-        NAME,
-        /**
-         * One place in one operation's request, which is as specific as it gets: a parameter by
-         * name, the whole body under {@code body}, or one piece of the body by the way down to it,
-         * {@code body.owner.email}.
-         */
-        OPERATION_AND_PARAMETER;
-
-        /**
-         * Whether this picks out one value in particular rather than a whole kind of them.
-         *
-         * <p>A parameter's name and the pair of operation and parameter both name a value somebody
-         * meant. A shape does not: a document declares a shape once and however many parameters
-         * refer to it get the same one, so a list written for a shape is a list about a kind of
-         * value, and belongs beside the ones written for a format or a type. The document's own
-         * sample of one parameter is the more particular statement, and goes first.
-         *
-         * @return whether it is about one value in particular
-         */
-        public boolean isAboutOneValueInParticular() {
-            return this == NAME || this == OPERATION_AND_PARAMETER;
-        }
+        OPERATION_AND_PARAMETER
     }
 
     private final String name;
@@ -122,29 +96,15 @@ public final class ValueDictionary implements Dictionary {
     }
 
     private List<JsonValue> under(ValueRequest request) {
-        if (keying == Keying.OPERATION_AND_PARAMETER) {
-            // The way down to the value rather than the name of its last step, because this keying
-            // is the one that means one value and no other: 'body.owner.email' is a different
-            // entry from 'email', and a document may well have both.
-            return perOperation
+        return switch (keying) {
+            case TYPE -> typeOf(request.schema())
+                    .map(key -> values.getOrDefault(key, List.of()))
+                    .orElse(List.of());
+            // The way down to the value rather than the name of its last step: 'body.owner.email'
+            // is a different entry from 'email', and a document may well have both.
+            case OPERATION_AND_PARAMETER -> perOperation
                     .getOrDefault(request.operation().value(), Map.of())
                     .getOrDefault(request.path(), List.of());
-        }
-        return keyOf(request).map(key -> values.getOrDefault(key, List.of())).orElse(List.of());
-    }
-
-    /** The one key this dictionary looks an input up under, when the input has one at all. */
-    private Optional<String> keyOf(ValueRequest request) {
-        return switch (keying) {
-            case TYPE -> typeOf(request.schema());
-            case FORMAT -> formatOf(request.schema());
-            case SCHEMA -> request.shape();
-            // The name of the last step alone, which is what makes this the loose keying: a list
-            // of good e-mail addresses written for 'email' answers for a parameter called email and
-            // for an email three levels inside a body.
-            case NAME -> Optional.of(request.name());
-            // Handled before this is reached, because its key has two parts rather than one.
-            case OPERATION_AND_PARAMETER -> Optional.empty();
         };
     }
 
@@ -172,22 +132,9 @@ public final class ValueDictionary implements Dictionary {
         };
     }
 
-    private static Optional<String> formatOf(CanonicalSchema schema) {
-        return switch (schema) {
-            case StringSchema text -> text.format();
-            case NumberSchema number -> number.format();
-            default -> Optional.empty();
-        };
-    }
-
     @Override
     public String name() {
         return name;
-    }
-
-    @Override
-    public boolean isAboutOneValueInParticular() {
-        return keying.isAboutOneValueInParticular();
     }
 
     /** What decides which of this dictionary's values apply. */
@@ -199,9 +146,8 @@ public final class ValueDictionary implements Dictionary {
      * The entries this dictionary holds for each operation it names, in the order the file wrote
      * them.
      *
-     * <p>Only a dictionary keyed by operation and place has any; the others are read through
-     * {@link #keys()}. A run reads this to say which of somebody's entries name a place the
-     * document it was pointed at does not have.
+     * <p>Only a dictionary somebody handed over has any. A run reads this to say which of their
+     * entries name a place the document it was pointed at does not have.
      *
      * @return the entries, operation by operation
      */
@@ -221,7 +167,7 @@ public final class ValueDictionary implements Dictionary {
      * @return the dictionary, or this one when there is nothing to rename
      */
     ValueDictionary withOperationsRenamed(Map<String, String> renaming) {
-        if (keying != Keying.OPERATION_AND_PARAMETER || renaming.isEmpty()) {
+        if (renaming.isEmpty()) {
             return this;
         }
         Map<String, Map<String, List<JsonValue>>> renamed = new LinkedHashMap<>();
@@ -259,21 +205,6 @@ public final class ValueDictionary implements Dictionary {
         return values.values().stream().allMatch(List::isEmpty)
                 && perOperation.values().stream()
                         .allMatch(places -> places.values().stream().allMatch(List::isEmpty));
-    }
-
-    /**
-     * The keys this dictionary holds values under, for a run to say when none of them matches
-     * anything in the document it was pointed at.
-     *
-     * @return the keys, in the order the file wrote them
-     */
-    public List<String> keys() {
-        if (keying == Keying.OPERATION_AND_PARAMETER) {
-            return List.copyOf(perOperation.keySet());
-        }
-        Map<String, List<JsonValue>> named = new LinkedHashMap<>(values);
-        named.remove(ANY);
-        return List.copyOf(named.keySet());
     }
 
     @Override

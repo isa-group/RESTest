@@ -141,10 +141,10 @@ public final class RandomTestCaseGenerator {
      * The name of the list of values to push at an API with.
      *
      * <p>A plan names the lists each way of building a request draws on, so a run can push with
-     * two lists, or push with one and fill ordinary requests from another. This is the name the
-     * one RESTest carries answers to, and the one a user adds to by handing over a list of their
-     * own called the same thing. It is also what makes a strategy one that pushes: a strategy is
-     * pushing because of the values it draws on, not because anything says so.
+     * two lists, or push with one and fill ordinary requests from another. This is the name of the
+     * one RESTest carries, and no list somebody hands over may take it: one of theirs to push with is
+     * named in the plan under a name of its own. It is also what makes a strategy one that pushes:
+     * a strategy is pushing because of the values it draws on, not because anything says so.
      */
     static final String PUSHES_AT_THE_API = "fuzzing";
 
@@ -153,7 +153,6 @@ public final class RandomTestCaseGenerator {
     private final long seed;
     private final RandomGenerator random;
     private final ValueProvider values;
-    private final List<Dictionary> given;
     private final ObservedValues observed;
     private final AcceptedRequests accepted;
     private final Mutations mutations;
@@ -258,7 +257,6 @@ public final class RandomTestCaseGenerator {
         // asking by name means the tool cannot start on the oldest runtime it promises to run on.
         // This one is in java.base on every release, which every runtime has by definition.
         this.random = new SplittableRandom(seed);
-        this.given = List.copyOf(dictionaries);
         this.campaign = campaign;
         // Only when the plan asks for it. A run whose plan says nothing about what the API has
         // returned does not listen to its own replies at all, and stays repeatable from its seed.
@@ -395,29 +393,6 @@ public final class RandomTestCaseGenerator {
      */
     public Map<OperationId, String> untestableOperations() {
         return untestable;
-    }
-
-    /**
-     * The lists this run was given and will not draw a single value from.
-     *
-     * <p>One thing puts a list here: being named for pushing at the API in a run told to do no
-     * pushing, and to send no value of the wrong kind in a request it changes either, which draws
-     * on the same lists. Somebody has asked for two things that cancel, and one of them is probably
-     * a mistake - which is exactly when saying so is worth the line. Named once however many lists
-     * answer to it, since the name is all anybody could act on.
-     *
-     * @return the names, empty when every list given will be used
-     */
-    public java.util.List<String> listsGivenButNotUsed() {
-        if (!sourcesThatPushAtTheApi().isEmpty()
-                || mutations != null && mutations.drawsOnTheAwkwardValues()) {
-            return List.of();
-        }
-        return given.stream()
-                .map(Dictionary::name)
-                .filter(PUSHES_AT_THE_API::equals)
-                .distinct()
-                .toList();
     }
 
     /**
@@ -1173,18 +1148,12 @@ public final class RandomTestCaseGenerator {
             };
             case Campaign.Source.OneList list -> asOne(dictionaries.stream()
                     .filter(held -> held.name().equals(list.name())).toList(), random);
-            // Every list except one for pushing at the API. Those were gathered for a different
-            // job, and sending their values as though somebody believed in them is not what
-            // anybody asked for - which is why a strategy that wants them names them.
-            //
-            // Asked most particular first, which is the one piece of ranking that does not come
-            // from the plan: a list somebody wrote for one parameter of one operation knows more
-            // about that value than a list of every date in the world, and no plan should have to
-            // say so.
-            case Campaign.Source.EveryListGiven ignored -> asOne(Stream.concat(
-                    handedOver(dictionaries).filter(Dictionary::isAboutOneValueInParticular),
-                    handedOver(dictionaries).filter(held -> !held.isAboutOneValueInParticular()))
-                    .toList(), random);
+            // Every list except the one for pushing at the API, in the order they were handed
+            // over. That one was gathered for a different job, and sending its values as though
+            // somebody believed in them is not what anybody asked for - which is why a strategy
+            // that wants it names it.
+            case Campaign.Source.EveryListGiven ignored ->
+                    asOne(handedOver(dictionaries).toList(), random);
         };
     }
 
@@ -1231,8 +1200,9 @@ public final class RandomTestCaseGenerator {
      */
     private ValueRequest ask(Operation operation, Parameter parameter) {
         // The name survives being resolved: a shape the document declared once and named is worth
-        // recognising again, because whoever keeps a list of values that worked for an Owner wants
-        // to be asked about an Owner, not about "an object with four properties".
+        // recognising again, because the API's own replies are kept under it, and an Owner the API
+        // sent back is found by being asked about an Owner, not about "an object with four
+        // properties".
         Optional<String> shape = parameter.schema() instanceof SchemaReference reference
                 ? Optional.of(reference.name()) : Optional.empty();
         return new ValueRequest(operation.id(), parameter.name(), parameter.name(),
@@ -1244,8 +1214,8 @@ public final class RandomTestCaseGenerator {
      *
      * <p>The same question a parameter gets, with the body's shape and the samples the document
      * wrote beside that media type - a whole body an author showed working, which is the most
-     * valuable thing a document can offer here. The shape's name travels too, so that a list of
-     * values written for an {@code Owner} answers when an {@code Owner} is what the API wants sent.
+     * valuable thing a document can offer here. The shape's name travels too, so that an
+     * {@code Owner} the API itself sent back answers when an {@code Owner} is what it wants sent.
      */
     private ValueRequest askForBody(Operation operation, RequestBodyModel body, String mediaType) {
         BodyContent content = body.contentFor(mediaType).orElseThrow();

@@ -493,8 +493,8 @@ a behaviour anybody chose, so there is no switch to bring it back.
 Three kinds of change draw on more than their first versions did, and none of the three has a switch
 of its own, since each widens a kind that already has one:
 
-- a value of the wrong kind is drawn from every awkward value the run holds and a few more of
-  RESTest's own; `mutation.wrongType` turns the kind off whole;
+- a value of the wrong kind is drawn from every awkward value in RESTest's own list to push with
+  and a few more it keeps for it; `mutation.wrongType` turns the kind off whole;
 - a body that is not JSON is broken in six ways, and a number past its format's width can be
   thousands of digits long; `mutation.notJson` and `mutation.beyondItsWidth` turn those kinds off
   whole;
@@ -509,15 +509,13 @@ the two apart is a comparison of two versions of RESTest, not of two settings.
 
 ## What has no switch yet
 
-Three behaviours are older than the settings and have no switch. They are given one when the code
+Two behaviours are older than the settings and have no switch. They are given one when the code
 around them is next changed, and until then the tool always does them:
 
 - where an operation wants a whole thing of a shape the API has returned, one it returned is sent
   back with one value in it changed. This is part of the memory, so the plan without the memory
   goes without it too;
-- the `Accept` header asks for JSON first, and for anything else after it;
-- of the lists of values handed over, the ones written for one particular place are asked before
-  the ones written for a whole kind of value.
+- the `Accept` header asks for JSON first, and for anything else after it.
 
 ## Where a run says which switches it had
 
