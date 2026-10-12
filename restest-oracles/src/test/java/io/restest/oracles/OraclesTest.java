@@ -21,7 +21,6 @@ import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.OperationId;
-import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
 import io.restest.core.oracle.WfcFault;
@@ -93,36 +92,6 @@ class OraclesTest {
 
         assertThat(announced).extracting(Finding::category)
                 .containsExactly(WfcFault.HTTP_STATUS_500, WfcFault.SCHEMA_INVALID_RESPONSE);
-    }
-
-    @Test
-    @DisplayName("with one check switched off, the same reply is reported by the other alone")
-    void a_check_switched_off_reports_nothing() {
-        assertThat(judged(new CheckSettings(true, false)))
-                .describedAs("a reply of 500 whose body is off its schema, with that check off")
-                .containsExactly(WfcFault.HTTP_STATUS_500);
-        assertThat(judged(new CheckSettings(false, true)))
-                .describedAs("the same reply, with the check for a 500 off")
-                .containsExactly(WfcFault.SCHEMA_INVALID_RESPONSE);
-        assertThat(judged(new CheckSettings(false, false))).isEmpty();
-    }
-
-    /** What the listener announces about a reply of 500 whose body is off its schema. */
-    private static List<FaultCategory> judged(CheckSettings switches) {
-        List<Finding> announced = new CopyOnWriteArrayList<>();
-        try (EventStream events = new EventStream()) {
-            events.subscribe(event -> {
-                if (event instanceof RunEvent.FaultFound found) {
-                    announced.add(found.finding());
-                }
-            });
-            events.subscribe(OracleListener.standard(Specifications.pets(), switches, events));
-
-            events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
-                    Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 500,
-                            "application/json", "{\"id\": \"seven\"}")));
-        }
-        return announced.stream().map(Finding::category).toList();
     }
 
     @Test

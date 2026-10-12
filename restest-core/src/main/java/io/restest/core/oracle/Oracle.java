@@ -32,7 +32,8 @@ import java.util.List;
  * that guesses produces complaints about working APIs, and a tool that cries wolf gets switched
  * off.
  *
- * <p>Adding a new kind of check to RESTest means writing one of these and nothing else. Oracles
+ * <p>Adding a new kind of check to RESTest means writing one of these; one RESTest ships also gets a
+ * switch among the settings, so that a run can do without it. Oracles
  * that need to look at a whole run rather than one attempt at a time - "this resource was deleted,
  * so why can it still be read?" - are a separate kind, and arrive later.
  */

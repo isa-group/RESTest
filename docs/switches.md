@@ -90,13 +90,12 @@ catalogue [the faults](faults.md) describes.
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
-| `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`). The operations that answered 500 are still counted under `serverErrors` in `report.json` |
+| `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`) |
 | `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
 
-These build the same requests as the tool as shipped: they change which replies are called faults,
-and so the exit code, never which requests are built. That is why they belong to neither of the
-families below. [The faults](faults.md#switching-a-check-off) says what else switching one off
-changes, and what it does not.
+They change which replies are called faults, and so the exit code, never which requests are built.
+[The faults](faults.md#switching-a-check-off) says what else switching one off changes, and what it
+does not.
 
 ### And one that is not a lever
 
@@ -121,7 +120,7 @@ changes, and what it does not.
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same share, and the seed |
 | Series | The share given to the strategy that sends series, fifteen in a hundred of the run, which builds an ordinary request whenever what it drew is not a creation; a series' later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
 | A reply of 500 | One look at the status code of each reply |
-| A reply off its schema | Checking the body of every JSON reply against the shape the document gives it. It is done while the run goes on sending, but when the checks fall behind the run waits for them, so a run with it off may send more requests in the same budget |
+| A reply off its schema | Checking the body of every JSON reply against the shape the document gives it, which can leave fewer requests sent within the budget ([the faults](faults.md#switching-a-check-off) says why) |
 
 What each was measured to be worth while the rewrite was first built is kept with the rest of that
 record, on the

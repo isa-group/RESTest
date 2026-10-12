@@ -32,10 +32,10 @@ under version 0.8.0, has no key: there `F100` and `F200` have the same numbers a
 
 ## The kinds this version reports
 
-| Code | The catalogue's name | What it means | Switched off with |
-|---|---|---|---|
-| `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code | `checks.internalServerError` |
-| `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives | `checks.replyOffSchema` |
+| Code | The catalogue's name | What it means |
+|---|---|---|
+| `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code |
+| `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
 
 The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
 after it was deleted, security problems — and this version reports none of them. A run that finds
@@ -116,8 +116,8 @@ A check switched off is not made at all. What that changes, and what it does not
   where it came from, so a report says which checks its run made. The screen says that some
   settings are not what RESTest does by default, and `--print-settings` lists which.
 
-A switch is for the whole run: turning `checks.replyOffSchema` off because of one operation's error
-replies hides every other reply off its schema too ([known limitations](known-limitations.md#what-a-run-says)).
+A switch is for the whole run, never for one operation ([known
+limitations](known-limitations.md#what-a-run-says)).
 
 ## How a fault looks on the screen
 
@@ -183,7 +183,6 @@ the same operation are counted as two, however alike they look.
 ## What a fault does to the exit code
 
 A run that ran to the end and found at least one fault ends with `1`, and one that found none ends
-with `0`, so that a build server can go red when the API is broken. A check switched off reports no
-fault, so it cannot make a run end with `1`. A run stopped from outside ends
+with `0`, so that a build server can go red when the API is broken. A run stopped from outside ends
 with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found.
 [The exit codes](command-line.md#exit-codes) has every number a run can end with.

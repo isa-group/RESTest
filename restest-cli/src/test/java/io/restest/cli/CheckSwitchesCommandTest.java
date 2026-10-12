@@ -88,10 +88,12 @@ class CheckSwitchesCommandTest {
     @Test
     @DisplayName("with every check on, a 500 whose body is off its schema is two faults")
     void every_check_on(@TempDir Path directory) throws IOException {
-        int answer = run(directory);
+        StringWriter screen = new StringWriter();
+
+        int answer = run(directory, screen);
 
         JsonValue.JsonObject report = report(directory);
-        assertThat(answer).isEqualTo(1);
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
         assertThat(codesFound(report)).containsExactlyInAnyOrder(100, 200);
     }
 
@@ -99,27 +101,31 @@ class CheckSwitchesCommandTest {
     @DisplayName("with the check of the reply's shape off, the 500 is still reported, and the run "
             + "records the switch")
     void one_check_off(@TempDir Path directory) throws IOException {
-        int answer = run(directory, "--set", "checks.replyOffSchema=false");
+        StringWriter screen = new StringWriter();
+
+        int answer = run(directory, screen, "--set", "checks.replyOffSchema=false");
 
         JsonValue.JsonObject report = report(directory);
-        assertThat(answer).isEqualTo(1);
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
         assertThat(codesFound(report)).containsExactly(100);
-        assertThat(setting(report, "checks.replyOffSchema"))
-                .containsExactly("false", "command line");
-        assertThat(setting(report, "checks.internalServerError"))
-                .containsExactly("true", "default");
+        assertThat(settingsIn(report)).contains(
+                "checks.internalServerError true default",
+                "checks.replyOffSchema false command line");
     }
 
     @Test
     @DisplayName("with both off, nothing is reported and the run ends 0, while the 500s are still "
             + "counted as something the API did")
     void every_check_off(@TempDir Path directory) throws IOException {
-        int answer = run(directory, "--set", "checks.replyOffSchema=false",
+        StringWriter screen = new StringWriter();
+
+        int answer = run(directory, screen, "--set", "checks.replyOffSchema=false",
                 "--set", "checks.internalServerError=false");
 
         JsonValue.JsonObject report = report(directory);
         assertThat(answer)
-                .describedAs("a run ends 1 for a fault reported, and with every check off none is")
+                .describedAs("a run ends 1 for a fault reported, and with every check off none "
+                        + "is; the run said:%n%s", screen)
                 .isZero();
         assertThat(codesFound(report)).isEmpty();
         JsonValue.JsonObject serverErrors =
@@ -127,18 +133,19 @@ class CheckSwitchesCommandTest {
         assertThat(serverErrors.member("operationsAnswering500"))
                 .describedAs("what the API answered is counted whichever checks are made")
                 .contains(JsonValue.of(1));
-        assertThat(setting(report, "checks.internalServerError"))
-                .containsExactly("false", "command line");
+        assertThat(settingsIn(report)).contains(
+                "checks.internalServerError false command line",
+                "checks.replyOffSchema false command line");
     }
 
     /** A short run against the stand-in, with these settings, and the code it ended with. */
-    private static int run(Path directory, String... settings) throws IOException {
+    private static int run(Path directory, StringWriter screen, String... settings)
+            throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), DOCUMENT);
         List<String> arguments = new ArrayList<>(List.of("run", document.toString(),
-                "--url", api.baseUrl(), "--budget", "2s", "--seed", "1",
+                "--url", api.baseUrl(), "--budget", "1s", "--seed", "1",
                 "--out", directory.resolve("out").toString()));
         arguments.addAll(List.of(settings));
-        StringWriter screen = new StringWriter();
         PrintWriter out = new PrintWriter(screen);
         try {
             return Restest.run(arguments.toArray(String[]::new), out, out);
@@ -162,15 +169,14 @@ class CheckSwitchesCommandTest {
                 .toList();
     }
 
-    /** One setting as the report records it: its value, and where that value came from. */
-    private static List<String> setting(JsonValue.JsonObject report, String key) {
+    /** Every setting the report states, as "name value source", for reading in a test. */
+    private static List<String> settingsIn(JsonValue.JsonObject report) {
         JsonValue.JsonArray rows = (JsonValue.JsonArray) report.member("settings").orElseThrow();
-        JsonValue.JsonObject row = rows.elements().stream()
+        return rows.elements().stream()
                 .map(JsonValue.JsonObject.class::cast)
-                .filter(each -> each.member("key").orElseThrow().equals(JsonValue.of(key)))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError(key + " is not among the run's settings"));
-        return List.of(text(row, "value"), text(row, "source"));
+                .map(row -> text(row, "key") + " " + text(row, "value") + " "
+                        + text(row, "source"))
+                .toList();
     }
 
     private static String text(JsonValue.JsonObject row, String member) {

@@ -472,9 +472,8 @@ switches](switches.md#switching-off-one-idea) has that file.
 
 ### `checks.*`
 
-The checks a run makes on every reply, each of which reports a kind of fault. Switching one off
-changes which replies are called faults, never which requests are built; [the
-faults](faults.md#switching-a-check-off) says what else it changes, and what it does not.
+The checks a run makes on every reply, each of which reports a kind of fault. [The
+faults](faults.md#switching-a-check-off) says what switching one off changes, and what it does not.
 
 | Setting | Default | What it does |
 |---|---|---|
