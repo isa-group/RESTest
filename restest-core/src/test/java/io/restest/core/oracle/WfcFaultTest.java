@@ -36,27 +36,25 @@ import org.junit.jupiter.api.Test;
  * <p>The whole reason for using somebody else's numbering is that a fault count from RESTest can be
  * put beside a fault count from another tool. That only holds while the two lists agree, and a list
  * copied by hand drifts silently. So the published file is kept beside this test and compared with
- * what RESTest ships, entry by entry.
- *
- * <p>The copy comes from {@code WebFuzzing/Commons}, file
- * {@code src/main/resources/wfc/faults/fault_categories.json}, at tag {@code v0.11.0}, commit
- * {@code 962e1f75bbfc64bc51de2a34498dc6565dfeaf44}, faults version {@code 0.9.0}, fetched on
- * 2026-10-12. The file the four version numbers are declared in,
- * {@code src/main/java/com/webfuzzing/commons/VersionNumbers.java}, is pinned beside it from the same
- * commit, because the release tag and the fault catalogue's own version are two different numbers.
- * Both are kept byte for byte as published: {@code git hash-object} gives
- * {@code a883045a40971671365a4865053c1d779e1f637c} for the catalogue and
- * {@code d32103bb847104f5973a945418891a548ce5a2a4} for the version file, the hashes the catalogue's
- * own repository gives them. Refreshing them is a deliberate act: this test failing means the
- * catalogue has moved on, which is news rather than a nuisance.
+ * what RESTest ships, entry by entry. The file the catalogue's own version is declared in is kept
+ * beside it, because the version of the collection it is published in is a different number. Both
+ * are kept byte for byte as published. Refreshing them is a deliberate act: this test failing means
+ * the catalogue has moved on, which is news rather than a nuisance.
  *
  * <p>It moved once already. Between faults 0.7.0 and 0.8.0 the numbers were rearranged, not merely
  * added to: a schema mismatch went from 101 to 200 and every security weakness from the 200s to the
  * 300s. A count of "F101" published before the move and one published after name different faults,
  * which is exactly why a report states the version it counted under. Faults 0.9.0 moved no number:
- * it added five kinds, and gave every kind a key in words that the catalogue promises never to
+ * it added five kinds, and gave every kind a key in words that the catalogue says is meant never to
  * change.
  */
+// Where the two pinned files come from: WebFuzzing/Commons, tag v0.11.0, commit
+// 962e1f75bbfc64bc51de2a34498dc6565dfeaf44, fetched on 2026-10-12 with
+//   gh api -H 'Accept: application/vnd.github.raw' 'repos/WebFuzzing/Commons/contents/<path>?ref=<commit>'
+// for src/main/resources/wfc/faults/fault_categories.json (faults 0.9.0) and
+// src/main/java/com/webfuzzing/commons/VersionNumbers.java. git hash-object gives
+// a883045a40971671365a4865053c1d779e1f637c and d32103bb847104f5973a945418891a548ce5a2a4, the hashes
+// the catalogue's own repository gives them.
 class WfcFaultTest {
 
     @Test
@@ -116,9 +114,10 @@ class WfcFaultTest {
     @Test
     @DisplayName("the catalogue publishes exactly the fields RESTest expects it to")
     void the_catalogue_has_the_shape_this_test_assumes() {
-        // Two of these are deliberately not copied into the enum, and 'id' is the name of each entry. 'fullDescription' is a paragraph
-        // for a person to read and belongs in the catalogue rather than in our source; 'group' is
-        // the catalogue's own filing, which our code ranges already carry. A field appearing or
+        // Two of these are deliberately not copied into the enum, and 'id' is the name of each
+        // entry. 'fullDescription' is a paragraph for a person to read and belongs in the catalogue
+        // rather than in our source; 'group' is the catalogue's own filing, which our code ranges
+        // already carry. A field appearing or
         // disappearing changes what "copied faithfully" means, so it is checked rather than
         // assumed.
         assertThat(published()).allSatisfy(entry ->

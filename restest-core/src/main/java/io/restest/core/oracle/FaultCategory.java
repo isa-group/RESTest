@@ -22,9 +22,9 @@ package io.restest.core.oracle;
  * what, counted how? The Web Fuzzing Commons catalogue exists to answer that. It gives each kind of
  * fault a code and a name - {@code F100}, "HTTP Status 500" - and several tools use the same ones,
  * so a count from RESTest and a count from another tool are counting the same things and can
- * honestly be put side by side. It also gives each kind a key written in words,
- * {@code HTTP_STATUS_500}, which it promises never to change, because the numbers have been changed
- * once already.
+ * honestly be put side by side. Since its version 0.9.0 it also gives each kind a key written in
+ * words, {@code HTTP_STATUS_500}, which it says is meant never to change, and would change only in a
+ * new major version, because the numbers have been changed once already.
  *
  * <p>This is an interface rather than a plain list for one reason: the catalogue reserves the 900s
  * for codes a tool defines for itself, for the kinds of fault nobody has agreed a shared name for
@@ -40,11 +40,17 @@ public interface FaultCategory {
     int code();
 
     /**
-     * The catalogue's key for this kind, for example {@code HTTP_STATUS_500}. Unlike the number, the
-     * catalogue promises never to change it, so it is what lets a count made under one version of
-     * the catalogue be matched with a count made under another.
+     * The catalogue's key for this kind, for example {@code HTTP_STATUS_500}. Unlike the number, it
+     * is meant never to change, so it is what lets a count made under one version of the catalogue
+     * be matched with a count made under another.
+     *
+     * <p>A kind a tool defines for itself, in the 900s the catalogue leaves to tools, has no key in
+     * the catalogue. Unless it says otherwise, its key is {@code RESTEST_} followed by its number,
+     * {@code RESTEST_950}, which no key of the catalogue can be mistaken for.
      */
-    String id();
+    default String id() {
+        return "RESTEST_" + code();
+    }
 
     /** What the catalogue calls this kind of fault, for example "HTTP Status 500". */
     String descriptiveName();

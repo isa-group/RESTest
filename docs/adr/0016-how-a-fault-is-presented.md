@@ -230,15 +230,19 @@ kinds 0.9.0 adds — `F121`, `F122`, `F207`, `F311` and `F312` — are in RESTes
 reports them yet.
 
 **Every kind now has two names, and each has a role.** 0.9.0 gives each kind an `id`, such as
-`HTTP_STATUS_500`, which the catalogue promises never to change, while it says a number "might"
-change between minor versions, as numbers did at 0.8.0. This record's decision stands: within one
+`HTTP_STATUS_500`, which the catalogue says is meant never to change and would change only in a new
+major version, while it says a number "might" change between minor versions, as numbers did at
+0.8.0. This record's decision stands: within one
 version of the catalogue the number is a fault's identity, what is counted by, and what a person
 reads and writes. The id is written beside the number wherever `report.json` writes one, as the key
-for matching a count with one made under another version of the catalogue. That is what the tools
+for matching a count with one made under another version of the catalogue from 0.9.0 on; a report of
+RESTest 2.0 to 2.2 has none, and its `F100` and `F200` compare by number. A kind RESTest might
+define for itself, in the 900s the catalogue leaves to tools, has no key in the catalogue; its key is
+`RESTEST_` followed by its number unless it gives one, as Schemathesis prefixes its own. That is what the tools
 that use the catalogue do, checked on 12 October 2026: EvoMaster, whose authors keep the catalogue,
 switches its rules off by number (`--disabledOracleCodes`), and its export in the catalogue's report
-format writes the number and no id; Schemathesis 4.30.1 tells faults apart by number and operation
-and writes both in that export. The console shows the number and the name, as before. In RESTest's
+format writes the number and no id; Schemathesis 4.30.1 tells faults apart by number and a context
+naming the operation and the failure, and writes both in that export. The console shows the number and the name, as before. In RESTest's
 copy each kind is named by its id, which gave two of them new names.
 
 **Server errors stay beside the list.** `F121` now names a 5xx other than 500 and 501, so the second

@@ -165,8 +165,9 @@ public final class JsonReport implements RunListener {
     private final Map<ByStatus, Integer> faultsByStatus = new LinkedHashMap<>();
 
     /**
-     * What describes each catalogue number, taken from the first fault that carried it, for the key
-     * and the words that go beside the number where only the number was kept.
+     * What describes each catalogue number, taken from the first fault that carried it: the one
+     * place the key and the words that go beside a number come from, wherever faults are counted by
+     * number.
      */
     private final Map<Integer, FaultCategory> kinds = new LinkedHashMap<>();
 
@@ -472,12 +473,12 @@ public final class JsonReport implements RunListener {
 
     /** One row a build server can read, in the order the kinds were first seen. */
     private JsonValue faultsByCategory() {
-        Map<FaultCategory, Integer> byCategory = new LinkedHashMap<>();
-        tallies.forEach((kind, tally) -> byCategory.merge(tally.category, tally.count, Integer::sum));
-        return JsonValue.array(byCategory.entrySet().stream()
+        Map<Integer, Integer> byNumber = new LinkedHashMap<>();
+        tallies.forEach((kind, tally) -> byNumber.merge(kind.code(), tally.count, Integer::sum));
+        return JsonValue.array(byNumber.entrySet().stream()
                 .map(entry -> {
-                    Map<String, JsonValue> counted = new LinkedHashMap<>(
-                            ((JsonValue.JsonObject) categoryOf(entry.getKey())).members());
+                    Map<String, JsonValue> counted = new LinkedHashMap<>(((JsonValue.JsonObject)
+                            categoryOf(kinds.get(entry.getKey()))).members());
                     counted.put("count", JsonValue.of(entry.getValue()));
                     return (JsonValue) JsonValue.object(counted);
                 })

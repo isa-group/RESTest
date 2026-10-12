@@ -37,9 +37,10 @@ import java.util.Optional;
  *
  * <p>These numbers move between published versions of the catalogue, and have. A reader comparing
  * two fault counts has to read the version beside them before the numbers mean anything, which is
- * why every report carries it. Each entry here is named by the catalogue's own key for it, which
- * the catalogue promises never to change: a count made under one version can be matched with a
- * count made under another by that key, whatever happened to the numbers in between.
+ * why every report carries it. Each entry here is named by the catalogue's own key for it, which the
+ * catalogue gave every kind in its version 0.9.0 and says is meant never to change: a count made
+ * under 0.9.0 or a later version can be matched with another by that key, whatever happens to the
+ * numbers in between.
  */
 public enum WfcFault implements FaultCategory {
 

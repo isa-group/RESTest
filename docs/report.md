@@ -313,7 +313,7 @@ In the order the kinds were first found.
 | Key | Value | What it says |
 |---|---|---|
 | `code` | number | The catalogue number: `100` for `F100` |
-| `id` | text | The catalogue's key for the kind, `HTTP_STATUS_500` for `F100`, which it promises never to change; the key to match on when comparing with a report made under another version of the catalogue |
+| `id` | text | The catalogue's key for the kind, `HTTP_STATUS_500` for `F100`, which it says is meant never to change; the key to match on when comparing with a report made under another version of the catalogue from 0.9.0 on. Reports written under 0.8.0, by RESTest 2.0 to 2.2, have none |
 | `descriptiveName` | text | The catalogue's name for the kind |
 | `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it |
 | `label` | text | Number and name in one: `F100:HTTP Status 500` |

@@ -21,12 +21,13 @@ than filed.
 
 `report.json` says which catalogue it counted by, and which version of it, in `faultCatalogue`, since
 a number only means something next to the list it was taken from: the catalogue has renumbered its
-kinds once, and under its version 0.7.0 `F101` meant what `F200` means now. So `report.json` also
-writes, beside every number, the catalogue's own key for the kind — `HTTP_STATUS_500` for `F100` —
-which the catalogue promises never to change. Within one version, the number is what tells two kinds
-apart; to match a count with one made under another version of the catalogue, match on the key.
-`F100` and `F200` have the same numbers, names and keys under version 0.8.0, which RESTest 2.0 to 2.2
-used, and under 0.9.0, so their counts compare across those versions as they are.
+kinds once, and under its version 0.7.0 `F101` meant what `F200` means now. Since its version 0.9.0
+the catalogue also gives every kind a key — `HTTP_STATUS_500` for `F100` — which it says is meant
+never to change, and would change only in a new major version. `report.json` writes that key beside
+every number. Within one version, the number is what tells two kinds apart; to match a count with one
+made under another version from 0.9.0 on, match on the key. A report of RESTest 2.0 to 2.2, written
+under version 0.8.0, has no key: there `F100` and `F200` have the same numbers and names as under
+0.9.0, so their counts compare by number.
 
 ## The kinds this version reports
 
