@@ -91,9 +91,8 @@ import java.util.function.Function;
  * with the {@code id} of one of them. A gap named for a thing's name, such as
  * {@code {productName}}, is filled with the {@code name} of one of the products in the same way,
  * and an API that lists its products as nothing but their names - {@code ["car", "bike"]} - has
- * each of those words kept as the name of one product. This one is not a list of values anybody
- * could write in a file, because what it is keyed by is worked out from the document's addresses
- * rather than written down, and it is kept only when
+ * each of those words kept as the name of one product. What this one is keyed by is worked out
+ * from the document's addresses rather than written down, and it is kept only when
  * {@link MemorySettings#identifiersByResource()} is on.
  *
  * <p>It also keeps what the API <em>accepted</em>, which no reply may ever show: when a request is

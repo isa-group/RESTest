@@ -77,7 +77,7 @@ so records written from now on cite none.
 | [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted, amended on 12 October 2026 |
 | [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1, M10.3 and on 1 and 12 October 2026 |
 | [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted, amended on 3, 4, 5, 11 and 12 October 2026 |
-| [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b and on 1 October 2026 |
+| [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b and on 1 and 12 October 2026 |
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12 October 2026 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 October 2026 |

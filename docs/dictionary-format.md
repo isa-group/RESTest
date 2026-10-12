@@ -53,9 +53,8 @@ leave the first list quietly replaced.
 several files.
 
 **`fuzzing` is not a name you can give a list.** It is the name of the list of values RESTest
-carries to push at an API with, and a file of yours called that is refused. To push with values of
-your own, give your list a name of its own and name it in the plan — see [Which lists get used for
-what](#which-lists-get-used-for-what).
+carries to push at an API with, and a file of yours called that is refused. The values a run pushes
+at an API with are RESTest's own.
 
 **A dictionary does not say what the API will make of its values, and could not.** A value can be
 perfectly good and the request still refused for a rule about some other parameter; and a value that
@@ -216,21 +215,6 @@ RESTest's own, written for kinds of value rather than for any API's places — f
 push at the API, and asks for every list you handed over, in the order you handed them over, when
 building requests meant to work. In a plan of your own, one list can feed two kinds of request, or
 two lists one kind.
-
-**To push with values of your own**, name your list in the pushing strategy, above RESTest's:
-
-```yaml
-  - name: fuzzing
-    share: 30
-    sources:
-      - dictionary: my-pushes   # yours, asked first, at the places it names
-      - dictionary: fuzzing     # RESTest's, everywhere else
-      - source: random
-```
-
-Sources are asked in order and the first answer is taken, so your values are sent wherever your
-list names a place, and RESTest's everywhere else. A request that pushes asks for its body whole,
-so give such a list a whole `body` rather than pieces of one.
 
 One more thing reads RESTest's `fuzzing` list, and no plan names it. When a request the API
 accepted is sent again with one value of the wrong kind in it — see [the campaign

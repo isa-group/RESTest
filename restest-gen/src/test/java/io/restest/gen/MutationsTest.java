@@ -442,6 +442,11 @@ class MutationsTest {
                         value: ["from-a-file-of-somebodys"]
                     """, "mine.yaml");
 
+            assertThat(handedOver.valuesFor(io.restest.core.gen.ValueRequest.of(
+                    OperationId.of("any"), "value", ParameterLocation.BODY, StringSchema.of())))
+                    .describedAs("the file's list does answer the question the changes ask, so "
+                            + "what keeps it out below is its name alone")
+                    .containsExactly(JsonValue.of("from-a-file-of-somebodys"));
             assertThat(Mutations.awkwardValuesIn(List.of(toPushWith, ofAnotherName, handedOver)))
                     .contains(JsonValue.of("only-in-the-list-to-push-with"))
                     .doesNotContain(JsonValue.of("never-a-wrong-kind"),

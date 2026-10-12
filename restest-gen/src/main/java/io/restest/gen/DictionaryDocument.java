@@ -88,20 +88,23 @@ final class DictionaryDocument {
     static ValueDictionary read(String text, String describedAs) {
         JsonValue.JsonObject document = document(text, describedAs);
         String name = text(document, "name", describedAs);
+        String keyedBy = text(document, "keyedBy", describedAs);
+        // Both said at once when both are wrong, as they are in a list written the way RESTest 2.1
+        // let somebody add to its own: fixing one only to be told of the other is a wasted run.
+        List<String> wrong = new java.util.ArrayList<>();
+        if (!BY_OPERATION_AND_PLACE.equals(keyedBy)) {
+            wrong.add("says its values are keyed by '" + keyedBy + "'; a dictionary puts each "
+                    + "list under its operation and the place in its request (keyedBy: "
+                    + BY_OPERATION_AND_PLACE + ")");
+        }
         if (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(name)) {
             // The plan names lists by the name inside them, so a list of somebody's own under this
-            // name would be asked alongside RESTest's - and after it, where RESTest's has something
-            // for almost every value there is. Refused rather than kept and never used: naming a
-            // list of one's own in the plan is how it gets pushed with, and that works.
-            throw new JsonException(describedAs + " is called '" + name + "', which is the name of "
-                    + "RESTest's own list of values to push with. Call yours something else, and "
-                    + "name it in the plan's pushing strategy to have it pushed with");
+            // name would be taken for RESTest's own wherever the plan asks for that one.
+            wrong.add("is called '" + name + "', which is the name of RESTest's own list of values "
+                    + "to push with; give yours another name");
         }
-        String keyedBy = text(document, "keyedBy", describedAs);
-        if (!BY_OPERATION_AND_PLACE.equals(keyedBy)) {
-            throw new JsonException(describedAs + " says its values are keyed by '" + keyedBy
-                    + "'; a dictionary puts each list under its operation and the place in its "
-                    + "request (keyedBy: " + BY_OPERATION_AND_PLACE + ")");
+        if (!wrong.isEmpty()) {
+            throw new JsonException(describedAs + " " + String.join(", and ", wrong));
         }
         Map<String, Map<String, List<JsonValue>>> perOperation = new LinkedHashMap<>();
         values(document, describedAs).members().forEach((operation, places) -> {

@@ -918,6 +918,24 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("every list handed over is asked in the order it was handed over, whichever that is")
+    void the_lists_given_are_asked_in_the_order_given() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        Dictionary first = ours("GET /pets", "name", "from the first");
+        Dictionary second = ours("GET /pets", "name", "from the second");
+
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L, List.of(first, second),
+                chaining()), search))
+                .isEqualTo("from the first");
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L, List.of(second, first),
+                chaining()), search))
+                .describedAs("nothing about the lists themselves ranks one above the other")
+                .isEqualTo("from the second");
+    }
+
+    @Test
     @DisplayName("where a list is asked against the document's own sample is the plan's to say, and "
             + "both sides of it are sayable")
     void where_a_list_is_asked_is_the_plans_to_say() {

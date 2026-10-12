@@ -360,5 +360,5 @@ Since [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md), e
 over is written for places of one API, so the ranking that survived inside `dictionaries: given` has
 nothing left to rank. The lists are asked in the order they were handed over.
 
-A list of the user's can no longer be called `fuzzing`. To push with values of one's own, the plan
-names the list in its pushing strategy, above `dictionary: fuzzing`.
+A list of the user's can no longer be called `fuzzing`, so `dictionary: fuzzing` names RESTest's own
+list and nothing else.

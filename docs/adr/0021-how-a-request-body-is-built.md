@@ -1077,8 +1077,8 @@ is invented ([ADR-0020](0020-what-a-dictionary-is.md), 2.1 amendment).
 
 **Date:** 2026-10-12
 
-§6 says the API's memory keeps what it heard under "the two keyings the format already has",
-`Keying.NAME` and `Keying.SCHEMA`. Since
+§6 says the API's memory keeps what it heard under "the two keyings the format already has", `name`
+and `schema`, and the M2.5b amendment names them `Keying.NAME` and `Keying.SCHEMA`. Since
 [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) the format has one keying,
 operation and place. The memory keeps its two, by name and by shape, as its own, and nothing it does
 changes.

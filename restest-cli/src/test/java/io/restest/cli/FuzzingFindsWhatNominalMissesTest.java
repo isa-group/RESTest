@@ -253,35 +253,10 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     @Test
-    @DisplayName("a list of your own named in the pushing strategy is pushed with; one called what "
-            + "RESTest's own is called is refused, and the refusal says how to do the first")
-    void a_list_of_your_own_is_pushed_with_by_naming_it(@TempDir Path directory)
-            throws IOException {
+    @DisplayName("a list of your own called what RESTest's own list to push with is called is "
+            + "refused, said out loud, and its values never sent")
+    void a_list_called_like_restests_own_is_refused(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
-        Path pushes = Files.writeString(directory.resolve("pushes.yaml"), """
-                version: 1
-                name: my-pushes
-                keyedBy: operationAndParameter
-                values:
-                  search:
-                    q: [ZZPUSHZZ]
-                """);
-        Path plan = plan(directory, """
-                version: 1
-                strategies:
-                  - name: fuzzing
-                    share: 100
-                    sources:
-                      - dictionary: my-pushes
-                      - dictionary: fuzzing
-                      - source: random
-                """);
-
-        run(directory.resolve("a"), document, "--campaign", plan.toString(),
-                "--dictionary", pushes.toString());
-
-        searchedAtLeastOnceFor("ZZPUSHZZ");
-
         Path calledLikeOurs = Files.writeString(directory.resolve("fuzzing.yaml"), """
                 version: 1
                 name: fuzzing
@@ -290,11 +265,16 @@ class FuzzingFindsWhatNominalMissesTest {
                   search:
                     q: [ZZNEVERZZ]
                 """);
-        assertThat(run(directory.resolve("b"), document,
+
+        assertThat(run(directory.resolve("out"), document,
                 "--dictionary", calledLikeOurs.toString()))
                 .contains("is called 'fuzzing', which is the name of RESTest's own list")
-                .contains("name it in the plan's pushing strategy")
+                .contains("give yours another name")
                 .contains("1 list of values could not be read");
+        api.verify(0, com.github.tomakehurst.wiremock.client.WireMock
+                .getRequestedFor(urlPathEqualTo("/search"))
+                .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
+                        .equalTo("ZZNEVERZZ")));
     }
 
     @Test
@@ -335,8 +315,7 @@ class FuzzingFindsWhatNominalMissesTest {
         assertThat(screen).contains("were pushing at the API");
     }
 
-    /** A plan written to a file of its own in the directory, for {@code --campaign}. */
-    /** Whether the API was searched at least once for this exact word. */
+    /** Checks that the API was searched at least once for this exact word. */
     private static void searchedAtLeastOnceFor(String word) {
         api.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
                 com.github.tomakehurst.wiremock.client.WireMock
@@ -345,6 +324,7 @@ class FuzzingFindsWhatNominalMissesTest {
                                 com.github.tomakehurst.wiremock.client.WireMock.equalTo(word)));
     }
 
+    /** A plan written to a file of its own in the directory, for {@code --campaign}. */
     private static Path plan(Path directory, String text) throws IOException {
         return Files.writeString(Files.createTempFile(directory, "plan", ".yaml"), text);
     }

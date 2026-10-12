@@ -109,8 +109,8 @@ class DictionaryDocumentTest {
     }
 
     @Test
-    @DisplayName("a file called what RESTest's own list to push with is called is refused, and told "
-            + "how to have its values pushed with")
+    @DisplayName("a file called what RESTest's own list to push with is called is refused, and a "
+            + "file written the way 2.1 let somebody add to that list is told both things at once")
     void the_name_of_restests_own_list_is_refused() {
         assertThatExceptionOfType(JsonException.class)
                 .isThrownBy(() -> read("""
@@ -121,9 +121,18 @@ class DictionaryDocumentTest {
                           getOwner:
                             ownerId: [-1]
                         """))
-                .withMessageContaining("is called 'fuzzing'")
-                .withMessageContaining("Call yours something else, and name it in the plan's "
-                        + "pushing strategy");
+                .withMessageContaining("is called 'fuzzing', which is the name of RESTest's own "
+                        + "list of values to push with; give yours another name");
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: fuzzing
+                        keyedBy: type
+                        values:
+                          string: [x]
+                        """))
+                .withMessageContaining("keyed by 'type'")
+                .withMessageContaining(", and is called 'fuzzing'");
     }
 
     @Test

@@ -79,12 +79,21 @@ The list RESTest carries to push at an API with cannot know any API's places, so
 
 It is read through a path of its own. A file of the user's can no longer take that shape.
 
-Its name, `fuzzing`, is RESTest's.
-- **A file called `fuzzing` is refused**, with a message saying to give it another name and name it
-  in the plan's pushing strategy.
-- **The plan already allows that:** `- dictionary: mine` above `- dictionary: fuzzing`. Sources are
-  asked in order, so the user's values go wherever their list names a place, and RESTest's go
-  everywhere else.
+Its name, `fuzzing`, is RESTest's. A file called `fuzzing` is refused, with a message saying to give
+it another name. A file keyed by type and called `fuzzing`, as 2.1 let somebody add to RESTest's
+list, is told both things in one message.
+
+**The values a run pushes at an API with are RESTest's own, and nothing else is offered for now.**
+Naming a list of one's own in the pushing strategy, above `dictionary: fuzzing`, does send its
+values there, but nothing else in a run treats them as pushing:
+- such a request is counted as an ordinary one;
+- it is learnt from like any request meant to work;
+- the plan RESTest carries also hands the list to every ordinary strategy through
+  `dictionaries: given`.
+
+Making that a supported way of pushing is a design of its own, left until somebody needs it. 2.1's
+way did not work either: a list of the user's called `fuzzing` was asked after RESTest's, which has
+something for almost every value, so it was almost never asked.
 
 ### 5. `wrongType` draws on RESTest's list only
 
@@ -136,8 +145,8 @@ any of them in a minor version.
   takes `ownerId`. An agent does not mind; a person writing by hand repeats lines, or uses YAML's
   own anchors.
 - **What goes:**
-  - extending RESTest's list to push with by giving a list its name; naming a list in the plan
-    replaces it;
+  - extending RESTest's list to push with by giving a list its name, which barely worked and nobody
+    used; nothing replaces it for now;
   - every keying but one; what they said can be written place by place.
 - **The format page, the manual's chapter 6 and the README** show files keyed by operation only. The
   manual's example was run against pet-clinic again: of 98 surnames the search sent in a 30-second
@@ -150,6 +159,10 @@ any of them in a minor version.
 - **Leave them out of the documentation and the schema, and keep reading them.** The cheapest. It
   leaves code nobody sees and a schema stricter than the reader, which is two answers to "what does
   a dictionary look like".
-- **Keep `type` for a user's list called `fuzzing`.** It keeps the one useful thing a user's type
-  list did, adding to the values pushed at every place. That keeps two shapes in the public format,
-  and the plan already lets a list of the user's be pushed with, at the places it names.
+- **Keep `type` for a user's list called `fuzzing`.** It keeps the one thing a user's type list could
+  do, adding to the values pushed at every place. It keeps two shapes in the public format for a
+  feature that, as built, almost never sent a value.
+- **Treat a list named in a pushing strategy as a list to push with.** Its requests would then count
+  as pushing, would not be learnt from, and the list would be left out of `dictionaries: given`.
+  Rejected for now by the maintainer: it is new behaviour nobody has asked for, and it is a design of
+  its own.

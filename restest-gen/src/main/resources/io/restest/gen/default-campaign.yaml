@@ -159,8 +159,8 @@ strategies:
     share: 10
     sources:
 
-      # The list of awkward values that travels with RESTest. To push with values of your own
-      # as well, name your list on a line of its own above this one: - dictionary: <its name>.
+      # The list of awkward values that travels with RESTest, and RESTest's own: no list handed
+      # over can take its name.
       - dictionary: fuzzing
 
       # For the values that list has nothing sendable for - a parameter whose shape has no kind

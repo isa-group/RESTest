@@ -294,6 +294,25 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("places written under 'any' are for an operation called that, which this API does "
+            + "not have, and are said to be unused like any other")
+    void places_under_any_are_an_operation_like_any_other(@TempDir Path directory)
+            throws IOException {
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  any:
+                    ownerId: [1]
+                """);
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_SHOP).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("no such operation in this API (ownerId in any)");
+    }
+
+    @Test
     @DisplayName("a dictionary written for operations this API does not have is a stale file, and "
             + "says so instead of silently doing nothing")
     void a_dictionary_naming_unknown_operations_is_reported(@TempDir Path directory)
@@ -859,7 +878,7 @@ class DictionariesTest {
 
     @Test
     @DisplayName("a list of your own called what RESTest's own list to push with is called is "
-            + "refused, and told how to have its values pushed with")
+            + "refused, and told to take another name")
     void a_list_called_like_restests_own_is_refused(@TempDir Path directory) throws IOException {
         Path mine = directory.resolve("mine.yaml");
         write(mine, "fuzzing");
@@ -872,7 +891,7 @@ class DictionariesTest {
         assertThat(found.refused()).singleElement().satisfies(refused -> {
             assertThat(refused.from()).isEqualTo(mine.toString());
             assertThat(refused.reason()).contains("is called 'fuzzing'")
-                    .contains("name it in the plan's pushing strategy");
+                    .contains("give yours another name");
         });
     }
 

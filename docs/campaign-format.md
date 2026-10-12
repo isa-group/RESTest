@@ -188,10 +188,8 @@ off. [The switches](switches.md#getting-the-seed-back) shows the plan RESTest ca
 `dictionaries: given` is one source, not one per file, so it carries one weight however many lists
 there are. Within it, the lists are asked in the order they were handed over.
 
-To place a list somewhere else in the order, name it: `dictionary: my-good-values`. That is also how
-a list of yours is pushed with: named in the pushing strategy, above `dictionary: fuzzing`, it is
-asked first at the places it names, and RESTest's own list everywhere else. `fuzzing` is RESTest's
-own list, and no list of yours can take its name.
+To place a list somewhere else in the order, name it: `dictionary: my-good-values`. `fuzzing` is
+RESTest's own list to push with, and no list of yours can take its name.
 
 ## Choosing instead of ordering
 

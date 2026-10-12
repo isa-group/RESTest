@@ -100,7 +100,7 @@ requests draw on which lists — but a file that was not read was certainly not 
 
 A dictionary is often written from the OpenAPI document, by a person or a program going through it
 operation by operation. [Writing one of these from a
-specification](../dictionary-format.md#writing-one-of-these-from-a-specification) has the four rules
+specification](../dictionary-format.md#writing-one-of-these-from-a-specification) has the five rules
 that keep such a file correct.
 
 The [next chapter](07-settings.md) changes how the tool itself behaves.
