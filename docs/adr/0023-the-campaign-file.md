@@ -304,3 +304,50 @@ adjusted the share of the pushing strategy in the plan RESTest carries, and was 
 [ADR-0015](0015-command-line-contract.md)'s amendment of the same date. To push more, less or not
 at all, a person prints the plan with `--print-campaign`, changes the shares, and hands it back. The
 code that shared out the rest of a run when one share was set goes with the option.
+
+## Amendment (12 October 2026): the shipped plan's shares
+
+**Date:** 2026-10-12
+
+**The plan RESTest ships gives its four strategies 45, 15, 30 and 10:** nominal 45, sequences 15,
+mutation 30, fuzzing 10, in place of 45, 10, 20 and 25. Nothing else in the plan changes: the same
+strategies, in the same order, with the same sources. The format is untouched.
+
+These are the shares [ADR-0024](0024-the-competition-version.md)'s amendment of 4 October handed the
+competition's runs of 2.0.0 and 2.1.0 with `--campaign`. That amendment kept RESTest's own plan,
+calling the evidence enough to choose between two configurations for one event and too weak to
+change what every user gets. On 12 October 2026 the maintainer decided to change it on that same
+evidence, without a new measurement. What the evidence is, and is not:
+
+- **It is one comparison**, on 2.0.0's code: campaigns `20261003-192803` (45, 10, 20, 25) and
+  `20261004-000542` (45, 15, 30, 10), sixteen APIs, twenty minutes, two runs each, a dictionary for
+  each of the five APIs the competition had named. 2.1.0's campaigns ran the new shares alone, so
+  they compare nothing about shares.
+- **At twenty minutes no total fell.** On the fifteen APIs other than erc20, whose error messages
+  make almost every failure look unique: faults by the reference paper's count 792 → 919, operations
+  answered with a 2XX 272.5 → 277.5, branch coverage 29.3% → 30.0%. None of the differences is
+  significant across APIs.
+- **For a run handed no dictionary, the faults are one API's.** On the ten of those APIs that got no
+  dictionary, faults went from 591 to 706, and person-controller alone accounts for 116.5 of the
+  115 more; the other nine together moved by −1.5. Operations went from 156 to 160.5 and branch
+  coverage from 30.6% to 31.1%.
+- **At the default budget it is level.** `--budget` defaults to sixty seconds. Over all sixteen
+  APIs, erc20 included, operations reached at 10 seconds went from 208 to 193, at 30 from 251 to
+  249, at 60 from 258 to 263; branch coverage at 10 seconds from 24.8% to 22.4%, at 60 from 30.1% to
+  29.8%. Most of the fall at 10 seconds is features-service, which reached no operation at all in its
+  first 10 seconds under the new shares and was level again by 30: a late start, as ADR-0024 says,
+  which the shares cannot cause, since the first round of a run sends every operation once whatever
+  they are. Operations at 10 seconds otherwise fell on flight-search (4), restcountries (3) and
+  pet-clinic (1); without features-service and restcountries they are 178 in both. Branch coverage
+  at 10 seconds fell mostly on erc20, features-service and restcountries.
+- **The shares are what is drawn, not what is sent.** A draw for the strategy that changes accepted
+  requests builds an ordinary request while nothing accepted can be changed, and one for the series
+  does the same when it did not draw a creation. On the fifteen APIs other than erc20, changed
+  requests went from 8.4% of what was sent to 13.0%, the steps of series from 2.2% to 3.4%, and
+  requests that push from 21.3% to 8.5%; on the ten with no dictionary, from 5.5% to 8.5%, from 0.9%
+  to 1.3% and from 19.8% to 7.9%.
+
+[ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s amendment of the same date says what
+this does to the share that pushes. To run with the old shares, print the plan with
+`--print-campaign`, set sequences, mutation and fuzzing to 10, 20 and 25, and hand it back with
+`--campaign`.

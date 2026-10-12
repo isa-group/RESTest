@@ -130,19 +130,22 @@ RESTest reports](docs/faults.md) says what each kind of fault means.
    step waiting for the answers to the one before so that an identifier just handed back can be
    used by the next. [The first round of a run](docs/campaign-format.md#the-first-round-of-a-run).
 3. **Then, until the budget runs out, it draws requests**, by the plan RESTest carries:
-   - nearly half are built to be accepted, from the values the document states, from what the API has
-     already returned — identifiers that exist rather than invented ones — from values it makes up
-     to suit what the document says, and from lists of your own;
-   - about a quarter push at the API with values nobody sensible would send — an empty word, a
-     number one past the largest 32-bit integer, text where a number belongs — since an API that
-     falls over on one of those has a fault whatever was sent
-     ([how much of a run pushes](docs/campaign-format.md#how-much-of-a-run-pushes-at-the-api));
-   - about a fifth take a request the API accepted and send it again with exactly one thing broken,
-     which gets past every check the API makes but one
+   - nearly half of the draws build a request meant to be accepted, from the values the document
+     states, from what the API has already returned — identifiers that exist rather than invented
+     ones — from values it makes up to suit what the document says, and from lists of your own;
+   - nearly a third take a request the API accepted and send it again with exactly one thing broken,
+     which gets past every check the API makes but one; until the API has accepted something that
+     can be changed, such a draw builds a request meant to be accepted instead, so fewer requests
+     than that are sent this way
      ([changing one thing](docs/campaign-format.md#changing-one-thing-in-a-request-that-worked));
-   - about a tenth turn a creation into the first step of a short series about the thing created —
-     delete it and read it again, create it twice
-     ([series](docs/campaign-format.md#series-of-requests-around-a-thing-the-run-created)).
+   - about one in seven may turn a creation into the first step of a short series about the thing
+     created — delete it and read it again, create it twice — and builds an ordinary request when
+     what it drew is not a creation
+     ([series](docs/campaign-format.md#series-of-requests-around-a-thing-the-run-created));
+   - a tenth push at the API with values nobody sensible would send — an empty word, a number one
+     past the largest 32-bit integer, text where a number belongs — since an API that falls over on
+     one of those has a fault whatever was sent
+     ([how much of a run pushes](docs/campaign-format.md#how-much-of-a-run-pushes-at-the-api)).
 4. **It judges every reply**: a 500 is a fault, and so is a reply whose body is not the shape the
    document promised.
 

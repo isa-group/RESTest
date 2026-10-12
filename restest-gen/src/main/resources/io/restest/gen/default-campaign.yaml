@@ -108,7 +108,7 @@ strategies:
   #
   # The sources below are where every step's values come from, the creation's included.
   - name: sequences
-    share: 10
+    share: 15
     sends: sequences
     sources:
       - source: enum
@@ -139,7 +139,7 @@ strategies:
   # operation, or when nothing in what it accepted can be changed, the request is built from them,
   # the same way nominal builds one.
   - name: mutation
-    share: 20
+    share: 30
     mutates: accepted
     sources:
       - source: enum
@@ -157,7 +157,7 @@ strategies:
 
   # Requests built from values nobody sensible would send.
   - name: fuzzing
-    share: 25
+    share: 10
     sources:
 
       # The list of awkward values that travels with RESTest. Add to it by handing over a list

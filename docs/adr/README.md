@@ -72,15 +72,15 @@ so records written from now on cite none.
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
 | [0019](0019-the-samples-a-document-writes-down.md) | A document's own sample values are read, sent as written, and named in the record | Accepted |
-| [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1 October 2026 |
+| [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1, 4 and 12 October 2026 |
 | [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted, amended at M2.5b and M9.2 |
 | [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted |
-| [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1, M10.3 and on 1 October 2026 |
-| [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted, amended on 3, 4, 5 and 11 October 2026 |
+| [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1, M10.3 and on 1 and 12 October 2026 |
+| [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted, amended on 3, 4, 5, 11 and 12 October 2026 |
 | [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b and on 1 October 2026 |
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
-| [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2 and M8.5 |
-| [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 |
+| [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12 October 2026 |
+| [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 October 2026 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |

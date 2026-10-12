@@ -52,7 +52,7 @@ class CampaignsTest {
                 .containsExactly("nominal", "sequences", "mutation", "fuzzing");
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::share)
                 .describedAs("the shares of a plan add up to a hundred, this one included")
-                .containsExactly(45, 10, 20, 25);
+                .containsExactly(45, 15, 30, 10);
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::sendsSequences)
                 .containsExactly(false, true, false, false);
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::mutatesAccepted)

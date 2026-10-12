@@ -151,9 +151,7 @@ class MutatingStrategyTest {
         // The plan before there was a strategy that changes accepted requests: nominal with every
         // share that is not pushing, and fuzzing. The series a creation may start are switched
         // off throughout, so that what is compared is the changes and nothing else.
-        Campaign before = new Campaign(List.of(
-                new Campaign.PlannedStrategy("nominal", 75, strategy(shipped, "nominal").sources()),
-                strategy(shipped, "fuzzing")), WhichOperations.everything());
+        Campaign before = Plans.pushing(strategy(shipped, "fuzzing").share());
         Settings noSeries = Settings.defaults().withSequences(SequenceSettings.noneSent());
         Settings off = noSeries.withMutation(noSeries.mutation().withNothingChanged());
         List<Dictionary> fuzzing = Dictionaries.fuzzing().map(List::of).orElse(List.of());

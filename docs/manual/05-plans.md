@@ -23,11 +23,11 @@ out of it:
   - name: nominal
     share: 45
   - name: sequences
-    share: 10
+    share: 15
   - name: mutation
-    share: 20
+    share: 30
   - name: fuzzing
-    share: 25
+    share: 10
 ```
 
 A plan is a handful of **strategies**, each a way of building a request, with a

@@ -824,8 +824,10 @@ class RandomTestCaseGeneratorTest {
                 ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
                 List.of(awkward("", -1)));
 
+        // Enough draws that a tenth, the share RESTest carries, is told from half of it.
+        int draws = 500;
         int pushing = 0;
-        for (int draw = 0; draw < 200; draw++) {
+        for (int draw = 0; draw < draws; draw++) {
             TestCase testCase = generator.generate(search).orElseThrow();
             boolean fromTheListToPushWith = testCase.parameterValues().stream()
                     .map(io.restest.core.execution.ParameterValue::origin)
@@ -842,9 +844,16 @@ class RandomTestCaseGeneratorTest {
             }
         }
 
+        // The share is read from the plan this generator follows, so that changing it is one
+        // test's business. A fair draw lands within three standard deviations of what it asks for.
+        double share = generator.campaign().strategies().stream()
+                .filter(Campaign.PlannedStrategy::pushesAtTheApi).findFirst().orElseThrow()
+                .share() / (double) Campaign.WHOLE;
+        double expected = draws * share;
+        double spread = 3 * Math.sqrt(draws * share * (1 - share));
         assertThat(pushing)
-                .describedAs("a quarter of 200 is 50, and a draw this size lands within a few of it")
-                .isBetween(30, 75);
+                .describedAs("a fair draw lands within three standard deviations of the share")
+                .isBetween((int) Math.floor(expected - spread), (int) Math.ceil(expected + spread));
         assertThat(generator.sourcesThatPushAtTheApi()).containsExactly("fuzzing");
     }
 
