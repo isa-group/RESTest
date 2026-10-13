@@ -136,6 +136,8 @@ None of the known plans does any of these.
     request's intent has been recorded since M10.1, under its own name, so a strategy's kind no
     longer competes with it.
 - **The format of ADR-0023, 0027 and 0028**, as the translation says.
+- **ADR-0033 §4 on pushing with a list of one's own**, which named it above `dictionary: fuzzing`: a
+  strategy of kind `fuzzing` now asks RESTest's list first, whatever it names.
 - **Semantic versioning, and design principle 10.** Every plan of version 1 is refused from 2.2.0, a
   minor version, as [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) already
   does for dictionaries. The evidence is its own: every known plan translates. 2.2.0's release notes
@@ -147,10 +149,10 @@ cannot be read ends the run before anything is sent and answers `2`, as before.
 ## Consequences
 
 - **Every thing a plan says has one way to be written**, which a JSON Schema can describe exactly.
-- **The plan's schema comes next, with the dictionary's.** The convention is that a new format comes
-  with its schema in the same pull request. This one ships without, because the schemas, and where
-  they live, are the next increment, which follows before any release. No published version has a
-  format without a schema.
+- **The plan's schema comes next, with the dictionary's.** A format ought to come with its schema,
+  so that a file can be checked before it is used. This one ships without, because the schemas, and
+  where they live, are the next change, which follows before any release. No published version has
+  a format without a schema.
 - **Plans outside RESTest move to version 2 when they move to 2.2.0:** those of the evaluation
   campaigns and of the competition's package.
 - **Messages say what to write.** For example, a weight outside a group, a group written as a list,

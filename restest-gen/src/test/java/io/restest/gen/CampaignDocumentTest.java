@@ -133,7 +133,8 @@ class CampaignDocumentTest {
     void a_group_is_a_map_in_a_fixed_order() {
         Campaign written = read("""
                 - weighted:
-                    dictionary: {zoo: 10, pet-clinic: 20}
+                    dictionary: {zoo: 10, pet-clinic: 15}
+                    enum: 5
                     default: 5
                     dictionaries: 25
                     example: 15
@@ -144,7 +145,8 @@ class CampaignDocumentTest {
                     example: 15
                     dictionaries: 25
                     default: 5
-                    dictionary: {pet-clinic: 20, zoo: 10}""");
+                    enum: 5
+                    dictionary: {pet-clinic: 15, zoo: 10}""");
 
         assertThat(written.strategies().get(0).sources()).containsExactly(
                 new Campaign.Entry.Group(List.of(
@@ -155,7 +157,9 @@ class CampaignDocumentTest {
                         new Campaign.Share(new Campaign.Source.EveryListGiven(), 25),
                         new Campaign.Share(
                                 new Campaign.Source.Builtin(Campaign.Builtin.DEFAULT), 5),
-                        new Campaign.Share(new Campaign.Source.OneList("pet-clinic"), 20),
+                        new Campaign.Share(
+                                new Campaign.Source.Builtin(Campaign.Builtin.ENUM), 5),
+                        new Campaign.Share(new Campaign.Source.OneList("pet-clinic"), 15),
                         new Campaign.Share(new Campaign.Source.OneList("zoo"), 10))));
         assertThat(reordered)
                 .describedAs("a tool that sorts the keys of a map does not change what is drawn")
@@ -272,8 +276,7 @@ class CampaignDocumentTest {
         void a_source_nobody_has() {
             assertThatThrownBy(() -> read("- source: observations"))
                     .isInstanceOf(JsonException.class)
-                    .hasMessageContaining("'observations' which is not one of RESTest's own "
-                            + "sources")
+                    .hasMessageContaining("'observations' is not one of RESTest's own sources")
                     .hasMessageContaining("example, random, observed, dictionaries, default, enum")
                     .describedAs("somebody meaning a list of their own is told which word to use")
                     .hasMessageContaining("'dictionary'");
@@ -365,8 +368,9 @@ class CampaignDocumentTest {
         void a_group_with_an_unknown_key() {
             assertThatThrownBy(() -> read("- weighted: {exmaple: 50, random: 50}"))
                     .isInstanceOf(JsonException.class)
-                    .hasMessageContaining("has 'exmaple'")
-                    .hasMessageContaining("your dictionaries under 'dictionary'");
+                    .hasMessageContaining("names 'exmaple': 'exmaple' is not one of RESTest's own "
+                            + "sources")
+                    .hasMessageContaining("your dictionaries go under 'dictionary'");
         }
 
         @Test
@@ -382,10 +386,14 @@ class CampaignDocumentTest {
         void weights_out_of_range() {
             assertThatThrownBy(() -> read("- weighted: {example: 0, random: 100}"))
                     .isInstanceOf(JsonException.class)
-                    .hasMessageContaining("no weight would never be chosen");
+                    .hasMessageContaining("'example' in a 'weighted' group of the strategy called "
+                            + "'nominal' is 0")
+                    .hasMessageContaining("a whole number from 1 to 100")
+                    .hasMessageContaining("left out instead");
             assertThatThrownBy(() -> read("- weighted: {example: 101, random: 1}"))
                     .isInstanceOf(JsonException.class)
-                    .hasMessageContaining("between 0 and 100");
+                    .hasMessageContaining("is 101")
+                    .hasMessageContaining("a whole number from 1 to 100");
             assertThatThrownBy(() -> read("- weighted: {example: 50.5, random: 49.5}"))
                     .isInstanceOf(JsonException.class)
                     .hasMessageContaining("whole number");
@@ -401,12 +409,19 @@ class CampaignDocumentTest {
         }
 
         @Test
-        @DisplayName("a group with one source in it, told to write that source on its own")
+        @DisplayName("a group with one source in it, told to write that very source on its own, "
+                + "and a group with none")
         void a_group_of_one() {
-            assertThatThrownBy(() -> read("- weighted: {random: 100}"))
+            assertThatThrownBy(() -> read("- weighted: {example: 100}"))
                     .isInstanceOf(JsonException.class)
                     .hasMessageContaining("has one source in it")
-                    .hasMessageContaining("source: random");
+                    .hasMessageContaining("as source: example");
+            assertThatThrownBy(() -> read("- weighted: {dictionary: {pet-clinic: 100}}"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("as dictionary: pet-clinic");
+            assertThatThrownBy(() -> read("- weighted: {}"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("names no source");
         }
 
         @Test

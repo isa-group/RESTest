@@ -231,7 +231,8 @@ final class CampaignDocument {
     }
 
     /**
-     * One step of a strategy's list: a single source, or a group to choose between.
+     * One step of a strategy's list: one source of RESTest's own, one list of somebody's, or a
+     * group to choose between.
      *
      * <p>Which of the three it is comes from the word it is written under, so that none has to be
      * worked out from its shape.
@@ -294,10 +295,9 @@ final class CampaignDocument {
                 continue;
             }
             if (!OWN_SOURCES.containsKey(key)) {
-                throw new JsonException(describedAs + ": " + what + " has '" + key + "', "
-                        + whatIsNotASource(key) + "; a group holds RESTest's own sources ("
-                        + String.join(", ", SOURCE_WORDS) + ") and your dictionaries under '"
-                        + DICTIONARY + "'");
+                throw new JsonException(describedAs + ": " + what + " names '" + key + "': "
+                        + notASource(key) + "; your dictionaries go under '" + DICTIONARY
+                        + "'");
             }
             own.put(key, upToAHundred(member.getValue(), "'" + key + "' in " + what,
                     describedAs));
@@ -312,10 +312,19 @@ final class CampaignDocument {
         }
         lists.forEach((name, weight) -> among.add(new Campaign.Share(oneList(name, describedAs),
                 weight)));
+        if (among.isEmpty()) {
+            throw new JsonException(describedAs + ": " + what + " names no source, and a group "
+                    + "chooses between at least two, as " + WEIGHTED + ": {example: 50, random: "
+                    + "50}");
+        }
         if (among.size() < 2) {
+            // Said as the one source the file wrote, so that the fix can be copied as it stands.
+            String alone = own.isEmpty()
+                    ? DICTIONARY + ": " + lists.keySet().iterator().next()
+                    : SOURCE + ": " + own.keySet().iterator().next();
             throw new JsonException(describedAs + ": " + what + " has one source in it, and a "
                     + "group is for choosing between several; one on its own is written on its "
-                    + "own, as " + SOURCE + ": random");
+                    + "own, as " + alone);
         }
         return new Campaign.Entry.Group(among);
     }
@@ -340,18 +349,28 @@ final class CampaignDocument {
         return weights;
     }
 
-    /** A share or a weight, read as the whole number from 0 to 100 it has to be. */
+    /**
+     * A share or a weight, read as the whole number from 1 to 100 it has to be.
+     *
+     * <p>Checked before it is narrowed to the size the rest of the tool holds it in. Narrowing
+     * first is how {@code 4294967396} became {@code 100} and passed the check that shares add up.
+     */
     private static int upToAHundred(JsonValue said, String what, String describedAs) {
-        return asShare(YamlText.asWholeNumber(said, what, describedAs), what, describedAs);
+        long stated = YamlText.asWholeNumber(said, what, describedAs);
+        if (stated < 1 || stated > Campaign.WHOLE) {
+            throw new JsonException(describedAs + ": " + what + " is " + stated + ", and a share "
+                    + "or a weight is a whole number from 1 to " + Campaign.WHOLE + "; what "
+                    + "should get none of it is left out instead");
+        }
+        return (int) stated;
     }
 
     /** One of the tool's own sources, by the word that names it. */
     private static Campaign.Source ownSource(String word, String describedAs) {
         Campaign.Source named = OWN_SOURCES.get(word);
         if (named == null) {
-            throw new JsonException(describedAs + ": '" + word + "' " + whatIsNotASource(word)
-                    + "; RESTest's own sources are " + String.join(", ", SOURCE_WORDS)
-                    + ", and one of your dictionaries is named with '" + DICTIONARY + "' instead");
+            throw new JsonException(describedAs + ": " + notASource(word) + "; one of your "
+                    + "dictionaries is named with '" + DICTIONARY + "' instead");
         }
         return named;
     }
@@ -380,21 +399,22 @@ final class CampaignDocument {
     }
 
     /**
-     * What a word that names none of the tool's sources most likely meant, said after it.
+     * Why a word is not one of the tool's sources, said as a sentence about it.
      *
      * <p>Two near misses are worth naming. The list of awkward values RESTest carries is not a
      * source a plan names, since it comes with the kind that pushes; and {@code dictionary} and
      * {@code dictionaries} are one letter apart and mean different things.
      */
-    private static String whatIsNotASource(String word) {
+    private static String notASource(String word) {
         if (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(word)) {
-            return "which is not a source: " + whatFuzzingIs();
+            return whatFuzzingIs();
         }
         if (DICTIONARY.equals(word)) {
-            return "which is not one of RESTest's own sources: for every dictionary handed over, "
-                    + "write '" + EVERY_LIST_GIVEN + "'";
+            return "'" + word + "' is not one of RESTest's own sources: for every dictionary "
+                    + "handed over, write '" + EVERY_LIST_GIVEN + "'";
         }
-        return "which is not one of RESTest's own sources";
+        return "'" + word + "' is not one of RESTest's own sources, which are "
+                + String.join(", ", SOURCE_WORDS);
     }
 
     private static String whatFuzzingIs() {
@@ -438,20 +458,6 @@ final class CampaignDocument {
                 + java.util.Arrays.stream(HttpMethod.values()).map(HttpMethod::name)
                         .reduce((a, b) -> a + ", " + b).orElseThrow()
                 .toUpperCase(Locale.ROOT));
-    }
-
-    /**
-     * A share or a weight, which is a number between nothing and a hundred.
-     *
-     * <p>Checked before it is narrowed to the size the rest of the tool holds it in. Narrowing
-     * first is how {@code 4294967396} became {@code 100} and passed the check that shares add up.
-     */
-    private static int asShare(long stated, String what, String describedAs) {
-        if (stated < 0 || stated > Campaign.WHOLE) {
-            throw new JsonException(describedAs + ": " + what + " is " + stated
-                    + ", and a share of something is between 0 and " + Campaign.WHOLE);
-        }
-        return (int) stated;
     }
 
     private static JsonValue required(JsonValue.JsonObject document, String member,

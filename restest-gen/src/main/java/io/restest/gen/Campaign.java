@@ -246,10 +246,11 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
     /**
      * Where a plan says some of its values should come from.
      *
-     * <p>Three kinds, and a plan says which it means rather than leaving it to be guessed. The
-     * tool's own sources are named by one of a small fixed set of words. A list of values is named
-     * by the name the list carries. And a plan may say "every list this run was handed", which is
-     * how the plan RESTest ships can speak about lists whose names it cannot know.
+     * <p>Three sorts, and a plan's file says which it means rather than leaving it to be guessed.
+     * The tool's own sources are named by one of a small fixed set of words. A list of values is
+     * named by the name the list carries. And every list this run was handed is one more word of
+     * the tool's own, which is how the plan RESTest ships can speak about lists whose names it
+     * cannot know.
      */
     public sealed interface Source {
 

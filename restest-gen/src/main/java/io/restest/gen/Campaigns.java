@@ -208,7 +208,10 @@ public final class Campaigns {
         for (Campaign.PlannedStrategy strategy : campaign.strategies()) {
             strategy.sources().stream()
                     .flatMap(entry -> entry.sources().stream())
+                    // RESTest's own list to push with is never handed over: a build that cannot
+                    // read it says so already, and nobody could act on being told to hand it over.
                     .filter(source -> source instanceof Campaign.Source.OneList list
+                            && !list.name().equals(RandomTestCaseGenerator.PUSHES_AT_THE_API)
                             && !listsHandedOver.contains(list.name()))
                     .map(source -> ((Campaign.Source.OneList) source).name())
                     .distinct()

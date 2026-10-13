@@ -998,9 +998,8 @@ public final class RandomTestCaseGenerator {
      * the list to push with and then inventing, from one that draws on a list of somebody's own and
      * then invents, because they are the same shape. It threw away the second, which is the
      * plainest thing anybody would write for a list of their own, and handed the whole run to the
-     * strategy that pushes. A strategy that merely
-     * lost a list still invents, which is what it would have done for every value the list had
-     * nothing for anyway.
+     * strategy that pushes. A strategy that merely lost a list still invents, which is what it
+     * would have done for every value the list had nothing for anyway.
      */
     private static boolean pushesWithNothingToPushWith(Campaign.PlannedStrategy planned,
             List<Dictionary> dictionaries) {

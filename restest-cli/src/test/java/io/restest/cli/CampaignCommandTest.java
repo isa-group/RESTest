@@ -232,7 +232,7 @@ class CampaignCommandTest {
                 "--campaign", zero.toString(), "--out", directory.resolve("out2").toString()))
                 .describedAs("a person's typo answers 2, not the 4 that means RESTest broke")
                 .isEqualTo(2);
-        assertThat(problems.toString()).contains("would never be chosen");
+        assertThat(problems.toString()).contains("a whole number from 1 to 100");
     }
 
     @Test

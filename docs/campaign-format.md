@@ -10,8 +10,9 @@ restest run --print-campaign > plan.yaml
 restest run api.yaml --url http://localhost:9966 --campaign plan.yaml
 ```
 
-The decisions behind the format are in [ADR-0023](adr/0023-the-campaign-file.md). What a list of
-values is, and how one is written, is [the dictionary format](dictionary-format.md).
+The decisions behind the format are in [ADR-0023](adr/0023-the-campaign-file.md), and its version 2
+in [ADR-0034](adr/0034-version-2-of-the-plans-format.md). What a list of values is, and how one is
+written, is [the dictionary format](dictionary-format.md).
 
 A plan is about the API. How the tool itself behaves — how hard it pushes, how much it keeps, how
 deep it goes — is [the settings](settings.md), which travel with a machine rather than with an API.
@@ -96,7 +97,7 @@ Two ways to name one, and a third to choose between several ([below](#choosing-i
 | `dictionary: <name>` | one list of values of yours, by the `name` inside the list's own file |
 | `weighted: {...}` | a group to choose between |
 
-Saying which kind you mean is not ceremony: without it, a list of yours called `example` would
+Saying which sort of source you mean is not ceremony: without it, a list of yours called `example` would
 silently shadow RESTest's own samples, and nobody reading the file could tell which a bare name was.
 And a misspelt word of RESTest's, such as `source: exmaple`, is refused rather than taken for the
 name of a list.
@@ -263,10 +264,10 @@ correct request never reaches tend to live, never runs. Changing one thing gets 
 one, and whatever the API does next is down to that one thing: it refuses it, which is right; it
 accepts it, which says a check is missing; or it fails, which is what a run is looking for.
 
-Its `sources:` are what it falls back on: until the API has accepted something for an operation, or when nothing in
-what it accepted can be changed, the request is built from them the ordinary way. The plan RESTest
-carries gives its `mutation` strategy the same sources as `nominal`, so that its fallback requests
-are exactly the ones `nominal` would build.
+Its `sources:` are what it falls back on: until the API has accepted something for an operation, or
+when nothing in what it accepted can be changed, the request is built from them the ordinary way.
+The plan RESTest carries gives its `mutation` strategy the same sources as `nominal`, so that its
+fallback requests are exactly the ones `nominal` would build.
 
 What is changed is one value — a parameter, or one property inside a JSON body, however deep — or
 the JSON body as a whole, and how is one of fifteen kinds, each breaking something the
@@ -346,10 +347,10 @@ that were there before. A `POST` whose address ends in a gap, such as `POST /pet
 thing that already exists, so it is only ever sent twice. A series stops when a step its question
 needs is not a success: nothing is asked about a creation the API refused.
 
-Its `sources:` build every step of every series, the creation
-included, and every request the strategy builds for an operation that creates nothing, which is
-built the ordinary way. The plan RESTest carries gives its `sequences` strategy nominal's sources, so
-that a turn that starts no series builds exactly the request nominal would.
+Its `sources:` build every step of every series, the creation included, and every request the
+strategy builds for an operation that creates nothing, which is built the ordinary way. The plan
+RESTest carries gives its `sequences` strategy nominal's sources, so that a turn that starts no
+series builds exactly the request nominal would.
 
 Which series are sent is a **setting**, not part of the plan - see
 [`sequences.*`](settings.md#sequences). With all six off, the strategy builds every request the
