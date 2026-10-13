@@ -133,6 +133,51 @@ class YamlTextTest {
         }
 
         @Test
+        @DisplayName("a list or a map that contains itself, through an alias, rather than walking "
+                + "it for ever")
+        void a_value_that_contains_itself() {
+            assertThatThrownBy(() -> YamlText.read("a: &x [1, *x]\n", "my file"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("my file")
+                    .hasMessageContaining("contains itself");
+            assertThatThrownBy(() -> YamlText.read("a: &x {b: *x}\n", "my file"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("contains itself");
+        }
+
+        @Test
+        @DisplayName("an alias used twice is not a value that contains itself")
+        void an_alias_used_twice_is_fine() {
+            JsonValue read = YamlText.read("a: &x [1, 2]\nb: [*x, *x]\n", "my file");
+
+            assertThat(((JsonValue.JsonObject) read).members().get("b"))
+                    .isEqualTo(JsonValue.array(List.of(
+                            JsonValue.array(List.of(JsonValue.of(1), JsonValue.of(2))),
+                            JsonValue.array(List.of(JsonValue.of(1), JsonValue.of(2))))));
+        }
+
+        @Test
+        @DisplayName("a file longer than is read, in RESTest's words rather than the reader's")
+        void a_file_too_long() {
+            String tooLong = "a: " + "x".repeat(YamlText.MOST_CHARACTERS);
+
+            assertThatThrownBy(() -> YamlText.read(tooLong, "my file"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("my file")
+                    .hasMessageContaining("at most " + YamlText.MOST_CHARACTERS);
+        }
+
+        @Test
+        @DisplayName("a value deeper inside others than is read")
+        void a_value_too_deep() {
+            String tooDeep = "a: " + "[".repeat(YamlText.DEEPEST + 1) + "]".repeat(YamlText.DEEPEST + 1);
+
+            assertThatThrownBy(() -> YamlText.read(tooDeep, "my file"))
+                    .isInstanceOf(JsonException.class)
+                    .hasMessageContaining("my file");
+        }
+
+        @Test
         @DisplayName("a date written plainly is a piece of text, since nothing here reads a kind "
                 + "into a word that does not say what it is")
         void a_plain_date_is_text() {

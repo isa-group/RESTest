@@ -78,3 +78,8 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **The settings file has no JSON Schema.** A dictionary and a plan have one ([the JSON
   Schemas](schemas.md)); a file of settings is checked only by RESTest, as it starts. Start one from
   what `restest run --print-settings` writes, which RESTest reads back as it is.
+- **A file is read up to three million characters and fifty levels deep.** A dictionary, a plan or
+  a file of settings longer or deeper than that is refused by name, before the run starts. A
+  dictionary a program writes for a large API is tens of thousands of characters and three levels
+  deep, so neither limit is one a file somebody meant reaches. A list or a map that contains itself,
+  through a YAML alias to something it is inside of, is refused the same way.
