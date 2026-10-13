@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/isa-group/RESTest/v2.2.0/schemas/dictionary.schema.json",
+  "title": "RESTest dictionary",
+  "description": "A list of values worth sending to one API, handed to RESTest with --dictionary and written in YAML or JSON. Every list sits under the operation it is for, and under the place in that operation's request its values go. RESTest checks what no schema can: that the operations and places exist in the API, and that the name is not 'fuzzing'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "name", "keyedBy", "values"],
+  "properties": {
+    "version": {
+      "description": "The version of this format, not of the file. Always 1.",
+      "type": "integer",
+      "const": 1
+    },
+    "name": {
+      "description": "What this dictionary is called. A plan names a dictionary by it, and reports print it beside a value that came from it. Any name but 'fuzzing', which is RESTest's own list of values to push with.",
+      "type": "string"
+    },
+    "description": {
+      "description": "For whoever reads the file next. Optional, and left empty if written with nothing after it.",
+      "type": ["string", "null"]
+    },
+    "keyedBy": {
+      "description": "Always 'operationAndParameter': the keys under 'values' are operations, and under each of them the places in its request.",
+      "type": "string",
+      "const": "operationAndParameter"
+    },
+    "values": {
+      "description": "The lists of values, by operation. An operation is named by its operationId, such as 'getPetById', or by its method in capitals, one space and its path as the document writes it, such as 'GET /pets/{petId}'. Empty when written with nothing under it.",
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "$ref": "#/definitions/operation"
+      }
+    }
+  },
+  "definitions": {
+    "operation": {
+      "description": "The lists of values for one operation, by the place in its request each goes: 'ownerId' for the parameter of that name wherever it is; 'tags[]' for every element of a list parameter; 'filter.city' for a property of an object parameter; 'body' for the whole request body; 'body.city' and 'body.owner.email' for properties inside it; 'body.tags[].label' for a property of every element of a list in it; 'body[]' for every element of a body that is a list. Empty when written with nothing under it.",
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "$ref": "#/definitions/list"
+      }
+    },
+    "list": {
+      "description": "The values for one place, any JSON value each: text, a number, true or false, null, a list or a whole object. One is drawn at random each time. Write [] for no values and [null] to send null.",
+      "type": "array",
+      "items": {
+        "description": "One value, of any kind JSON has.",
+        "type": ["string", "number", "boolean", "null", "array", "object"],
+        "additionalProperties": true
+      }
+    }
+  }
+}

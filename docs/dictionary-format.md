@@ -4,10 +4,12 @@ A dictionary is a list of values worth sending, in a YAML file. RESTest reads th
 sources it asks when it needs a value, and uses them alongside everything the specification itself
 says.
 
-This is a published format. YAML, with no schema to install and no tooling to run, because the point
+This is a published format. YAML, with nothing to install and no tooling to run, because the point
 of a dictionary is that a person can write one in an afternoon — or a script can produce one — and
 commit it next to the specification it belongs to, which is written in YAML too. JSON is a subset of
-YAML, so a file written that way is read the same way without anybody being told.
+YAML, so a file written that way is read the same way without anybody being told. A
+[JSON Schema of the format](schemas.md) lets an editor, or a language model writing one, get its
+shape right before a run; a file never needs it to be read.
 
 ```bash
 restest run api.yaml --url https://api.example --dictionary ids.yaml --dictionary ./dictionaries/
@@ -41,7 +43,7 @@ values:
 |---|---|---|
 | `version` | required | The version of **this format**, not of your file. Today it is `1`. A file written in a version RESTest does not know is refused by name rather than half-read |
 | `name` | required | What this dictionary is called. A plan names the dictionaries each kind of request draws on, so the name is how a list gets used, and it is what a report prints beside a value that came from it |
-| `description` | optional | For whoever reads the file next |
+| `description` | optional | For whoever reads the file next: a piece of text, or nothing at all |
 | `keyedBy` | required | Always `operationAndParameter`: each list sits under its operation, and under the place in that operation's request it goes |
 | `values` | required | The values themselves, under their keys |
 
@@ -324,7 +326,9 @@ operation by operation. Five rules make that reliable:
    is written again under `updateOwner` and `deleteOwner`: a list only ever answers at the places
    it names.
 
-Then look at what the run says about the file. The check happens as the file is read, before the
-first request, so the first few lines of any run tell you what is wrong with it. There is no command
-that reads a file and stops; until there is, point a short run at a server of your own rather than at
-somebody else's API to see them.
+Before a run, check the file against [the format's JSON Schema](schemas.md), or have a language model
+held to it while it writes: that settles the file's shape, though not whether its operations and
+places are the API's. Then look at what the run says about the file. The check happens as the file
+is read, before the first request, so the first few lines of any run tell you what is wrong with it.
+There is no command that reads a file and stops; until there is, point a short run at a server of
+your own rather than at somebody else's API to see them.

@@ -189,3 +189,12 @@ workflow against a public release. 2.2.0 is the first release that carries them;
 - **A Java runtime cut down with `jlink`, or an image without a shell.** Smaller, but the launcher
   is a shell script, and RESTest's libraries are not all modules.
 - **Images and archives for 2.0.0 and 2.1.0** (§7).
+
+## Amendment (13 October 2026): the JSON Schemas
+
+**Date:** 2026-10-13
+
+The archive's folder also carries `schemas/`, with the JSON Schemas of a dictionary and a plan
+([ADR-0035](0035-json-schemas-of-the-dictionary-and-the-plan.md)), and the image has them in
+`/opt/restest/schemas/`; `check-restest.sh` checks that the image, and a launcher in a release's
+folder, carry both.

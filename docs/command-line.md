@@ -33,8 +33,8 @@ path. Every option has a default, and the defaults are the tool's zero-configura
 | `--budget` | `<duration>` | `60s` | How long to keep testing: `500ms`, `30s`, `5m`, `2h`, a plain number of seconds, or ISO-8601 such as `PT1M30S`. All of it is used, reading the document included |
 | `--seed` | `<number>` | one chosen and printed | With the plan RESTest carries, the same number gives a similar run rather than the same one, because what a run sends also depends on what the API answers; `--store` keeps the run you had. The number fixes every random choice. [Getting the seed back](switches.md#getting-the-seed-back) says how to make it repeat a run exactly |
 | `--out` | `<directory>` | `restest-out` | Where this run's files go: `report.json`, and `run.sqlite` with `--store`. What an earlier run wrote there is replaced; nothing else in the directory is touched |
-| `--dictionary` | `<file-or-directory>` | none | A list of values to send, or a directory of them. Repeat for several. [The format](dictionary-format.md) |
-| `--campaign` | `<file>` | the plan RESTest carries | A plan saying where values come from and which operations the run may touch. [The format](campaign-format.md) |
+| `--dictionary` | `<file-or-directory>` | none | A list of values to send, or a directory of them. Repeat for several. [The format](dictionary-format.md), and [its JSON Schema](schemas.md) |
+| `--campaign` | `<file>` | the plan RESTest carries | A plan saying where values come from and which operations the run may touch. [The format](campaign-format.md), and [its JSON Schema](schemas.md) |
 | `--print-campaign` | — | — | Writes out the plan RESTest carries, and stops. Not with `--campaign` or `--print-settings` |
 | `--settings` | `<file>` | none | A file of settings, saying how the tool itself behaves. [The settings](settings.md) |
 | `--set` | `<group.key=value>` | none | One setting. Repeat for several |

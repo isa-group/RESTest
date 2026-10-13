@@ -378,7 +378,7 @@ Versions are pinned here and in the root POM, and the container image's two base
 | Container image | Built on `eclipse-temurin:25-jdk`, runs on `eclipse-temurin:21-jre` ([ADR-0032](adr/0032-how-a-release-is-published.md)) | 25, 21 |
 | Build | Maven with wrapper | 3.9.16 |
 | OAS parser | `io.swagger.parser.v3:swagger-parser`, behind our own interface | 2.1.47 |
-| JSON Schema validation | `com.networknt:json-schema-validator`, confined to `restest-oracles` ([ADR-0014](adr/0014-response-conformance.md)) | 3.0.7 |
+| JSON Schema validation | `com.networknt:json-schema-validator`, confined to `restest-oracles` in production code ([ADR-0014](adr/0014-response-conformance.md)); the test that holds the published schemas to their readers uses it too ([ADR-0035](adr/0035-json-schemas-of-the-dictionary-and-the-plan.md)) | 3.0.7 |
 | Command-line framework | picocli | 4.7.7 |
 | HTTP client | OkHttp — network interceptors give exact request and response capture | 5.5.0 |
 | Concurrency | Virtual threads | JDK 21+ |

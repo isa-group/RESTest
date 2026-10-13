@@ -95,13 +95,14 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 | Compilation and unit tests | every module | the obvious |
 | Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release; a published jar that does not say which version of RESTest it is |
 | Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; the schema validator outside `restest-oracles`; the JSON library outside `restest-core`; the database driver outside `restest-store`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); a reassignable static field; a network dependency in `restest-core` |
+| The published JSON Schemas | `PublishedSchemasTest` | a schema and RESTest's reader disagreeing about a file: a whole example in `README.md` or `docs/`, the plan RESTest carries, or a file with one thing broken; a member or a word one allows and the other does not; a keyword the engines that hold a language model to a schema do not all accept; an `$id` that does not name the version being prepared |
 | The rules themselves | `ArchitectureRulesSelfTest`, and for the source-tree rules the self-tests in `SourceTreeRulesTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
 | The harness's reach | `HarnessCoverageTest` | a module whose compiled classes the rules cannot see, so no rule constrains them |
 | Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference in any file of this repository, or in the name of one, outside the documents the rule names; one of those no longer needing to be named there; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
-| How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs and in `release.yml` | the image or a launcher failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` when there is no Java it can use, `143` when `docker stop` ends a run in the image |
+| How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs and in `release.yml` | the image or a launcher failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` when there is no Java it can use, `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
 ### Coverage
@@ -327,15 +328,19 @@ The steps of every release, in order, each taken by a maintainer:
 1. **The base images.** While Dependabot is switched off, move the `Dockerfile`'s two digests to the
    newest patch of `eclipse-temurin:25-jdk` and `eclipse-temurin:21-jre`
    (`docker buildx imagetools inspect eclipse-temurin:21-jre` prints the digest).
-2. **The pull request that prepares the release**: the version in every `pom.xml`, and the pages that
-   name the version to install — the README's installation section and chapters 2 and 9 of the
-   manual — with output from the image and the archive built from that commit.
+2. **The pull request that prepares the release**: the version in every `pom.xml`; the version in the
+   `$id` of both files in `schemas/`, which `PublishedSchemasTest` requires to equal it on a release;
+   and the pages that name the version to install — the README's installation section and chapters 2
+   and 9 of the manual — with output from the image and the archive built from that commit.
 3. **The tag**, pushed once that pull request is merged.
 4. **The draft**: its notes written, read, and the release published.
 5. **The first time only**: the package `ghcr.io/isa-group/restest` is created private; an
    organisation owner makes it public in its settings.
 6. **From outside**: the README's installation commands, run against the published release with no
    one signed in to GitHub or to the registry.
+7. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
+   the `$id` of both schemas to the next release, since the schemas on `master` name the release
+   being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
 
 ## Dependency updates
 

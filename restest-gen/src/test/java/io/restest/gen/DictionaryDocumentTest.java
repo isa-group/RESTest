@@ -240,6 +240,32 @@ class DictionaryDocumentTest {
     }
 
     @Test
+    @DisplayName("a description is a piece of text, or nothing at all, and anything else is refused")
+    void a_description_is_text_or_nothing() {
+        // Written with nothing after it, to be filled in later, it is no description: refusing it
+        // would cost the file every value in it for a line that changes nothing that is sent.
+        assertThat(read("""
+                version: 1
+                name: d
+                description:
+                keyedBy: operationAndParameter
+                values:
+                  GET /owners:
+                    lastName: ["Franklin"]
+                """).holdsNoValues()).isFalse();
+        // Anything else is not what the member is for, and the published schema says text.
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        description: [owners, pets]
+                        keyedBy: operationAndParameter
+                        values: {}
+                        """))
+                .withMessageContaining("'description' is not text");
+    }
+
+    @Test
     @DisplayName("an operation with something under it that is not a set of places is still refused")
     void an_operation_holding_something_else_is_still_refused() {
         assertThatExceptionOfType(JsonException.class)

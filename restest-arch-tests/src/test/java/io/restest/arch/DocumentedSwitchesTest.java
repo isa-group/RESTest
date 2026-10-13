@@ -17,6 +17,7 @@ package io.restest.arch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.arch.YamlBlocks.Block;
 import io.restest.cli.Restest;
 import io.restest.core.json.JsonValue;
 import io.restest.core.json.YamlText;
@@ -88,9 +89,6 @@ class DocumentedSwitchesTest {
 
     /** What begins like the name of a setting and is not one: a file the page mentions. */
     private static final Set<String> FILE_NAMES = Set.of("report.json");
-
-    /** The label the page gives a file: the words in bold before it, up to a comma or a colon. */
-    private static final Pattern LABEL = Pattern.compile("^\\*\\*([^,:*]+)");
 
     /** The idea the series are part of, and the label of the file that turns them off. */
     private static final String SERIES = "Series";
@@ -405,38 +403,9 @@ class DocumentedSwitchesTest {
                 .toList();
     }
 
-    /** A block of YAML on the page, with the label before it, if any, and the heading above it. */
-    private record Block(String text, String label, String heading) {
-    }
-
     /** Every block of YAML on the page, as it is written there. */
     private static List<Block> blocks() {
-        List<Block> found = new ArrayList<>();
-        String heading = "";
-        String label = "";
-        StringBuilder inside = null;
-        for (String line : page.lines().toList()) {
-            if (inside != null) {
-                if (line.equals("```")) {
-                    found.add(new Block(inside.toString(), label, heading));
-                    inside = null;
-                    label = "";
-                } else {
-                    inside.append(line).append('\n');
-                }
-            } else if (line.equals("```yaml")) {
-                inside = new StringBuilder();
-            } else if (line.startsWith("## ")) {
-                heading = line.substring("## ".length()).trim();
-                label = "";
-            } else {
-                Matcher labelled = LABEL.matcher(line);
-                if (labelled.find()) {
-                    label = labelled.group(1).trim();
-                }
-            }
-        }
-        return found;
+        return YamlBlocks.on(page);
     }
 
     /** The blocks that are files of settings: every one that is not a plan. */
@@ -511,8 +480,7 @@ class DocumentedSwitchesTest {
     }
 
     private static boolean isAPlan(String block) {
-        return YamlText.read(block, "a block on the switches page")
-                instanceof JsonValue.JsonObject read && read.members().containsKey("strategies");
+        return YamlBlocks.members(block).contains("strategies");
     }
 
     /**

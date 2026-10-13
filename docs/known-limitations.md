@@ -72,3 +72,9 @@ of its own. Whether you may test an API at all is not something any tool can che
   A run that ends with `3` although the API is reachable is worth reading as one of these.
 - **`report.json` does not say that a run broke.** When a run ends with `4`, the file reads like that
   of a finished run. Read the exit code, not only the file.
+
+## The files a run reads
+
+- **The settings file has no JSON Schema.** A dictionary and a plan have one ([the JSON
+  Schemas](schemas.md)); a file of settings is checked only by RESTest, as it starts. Start one from
+  what `restest run --print-settings` writes, which RESTest reads back as it is.

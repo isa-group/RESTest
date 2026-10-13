@@ -6,9 +6,10 @@
 #     dist/assemble.sh <output-directory> [--archives]
 #
 # leaves <output-directory>/restest-<version>/ with bin/ (the two launchers), lib/ (RESTest and every
-# library it runs with), LICENSE, NOTICE and README.md; with --archives, restest-<version>.zip and
-# restest-<version>.tgz beside it, which are what a release carries. The container image runs it too,
-# while it builds, so that the folder in the image and in the archives is the same one.
+# library it runs with), schemas/ (the JSON Schemas of a dictionary and a plan), LICENSE, NOTICE and
+# README.md; with --archives, restest-<version>.zip and restest-<version>.tgz beside it, which are what
+# a release carries. The container image runs it too, while it builds, so that the folder in the image
+# and in the archives is the same one.
 #
 # Plain sh, and the tools every macOS and Linux has; zip only for --archives.
 
@@ -35,11 +36,12 @@ name=restest-$version
 mkdir -p "$out"
 out=$(cd "$out" && pwd)
 rm -rf "${out:?}/$name" "$out/$name.zip" "$out/$name.tgz"
-mkdir -p "$out/$name/bin" "$out/$name/lib"
+mkdir -p "$out/$name/bin" "$out/$name/lib" "$out/$name/schemas"
 
 # The launchers keep the line endings .gitattributes gives them: LF for sh, CRLF for cmd.exe.
 cp "$here/bin/restest" "$here/bin/restest.cmd" "$out/$name/bin/"
 cp "$jar" "$target"/lib/*.jar "$out/$name/lib/"
+cp "$root"/schemas/*.schema.json "$out/$name/schemas/"
 cp "$root/LICENSE" "$root/NOTICE" "$root/README.md" "$out/$name/"
 
 if [ "$archives" = --archives ]; then

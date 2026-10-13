@@ -104,8 +104,8 @@ No exceptions.
 - OpenAPI scope: 2.0 (by conversion), 3.0.x and 3.1.x, via a single swagger-parser backend. Not 3.2
   (too recent, adopted by almost nothing yet) and not 4.x, which has no specification text.
 - Stack: swagger-parser (behind our own interface), networknt json-schema-validator (confined to
-  `restest-oracles`), rgxgen (confined to `restest-gen`), picocli, OkHttp, virtual threads, SQLite,
-  JUnit 6, AssertJ, Testcontainers, WireMock, ArchUnit, PIT, JaCoCo.
+  `restest-oracles` in production code), rgxgen (confined to `restest-gen`), picocli, OkHttp,
+  virtual threads, SQLite, JUnit 6, AssertJ, Testcontainers, WireMock, ArchUnit, PIT, JaCoCo.
 
 ## Module boundaries
 
@@ -154,6 +154,7 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 | One page per subject: command line, report, faults, plan, dictionaries, settings, switches | `docs/README.md` and the pages it lists |
 | The command line and its exit codes, which a build checks against the tool | `docs/command-line.md` |
 | What the tool does not do yet | `docs/known-limitations.md` |
+| The JSON Schemas of a dictionary and a plan, which a test holds to RESTest's reader | `schemas/`, `docs/schemas.md` |
 | Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |

@@ -36,6 +36,18 @@
             <scope>test</scope>
         </dependency>
 
+        <!--
+          The schema validator restest-oracles judges replies with, here to hold the JSON Schemas
+          RESTest publishes to the reader they describe (PublishedSchemasTest). At test scope only:
+          in production code it stays confined to restest-oracles, which ProductionArchitectureTest
+          checks on the production classes alone.
+        -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- All nine production modules, so their classes are on the test classpath. -->
         <dependency>
             <groupId>io.restest</groupId>

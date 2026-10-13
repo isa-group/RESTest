@@ -13,6 +13,7 @@ what to look things up in afterwards.
 | [The faults RESTest reports](faults.md) | The kinds of fault a run reports, what each means, and how they are counted |
 | [The campaign file](campaign-format.md) | The plan a run follows: where its values come from, how much of it pushes at the API, which operations it may touch |
 | [The dictionary format](dictionary-format.md) | Lists of values of your own, handed over with `--dictionary` |
+| [The JSON Schemas](schemas.md) | The schemas of a dictionary and a plan: where they are, and how an editor, a validator or a language model uses them |
 | [The settings](settings.md) | Every number that says how the tool behaves, with its default, and the four ways to change one |
 | [The switches](switches.md) | The settings that turn one thing a run does off, what leaving each on costs, and files that turn off a whole idea |
 | [Known limitations](known-limitations.md) | What RESTest does not do yet, or does in a way that may surprise you, and what to do about it |

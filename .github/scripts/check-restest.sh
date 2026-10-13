@@ -18,8 +18,10 @@
 #
 # A launcher and an image are also checked for answering 127 when there is no Java they can use - none
 # at all, or a JAVA_HOME with none in it, and a Java older than 21 when OLD_JAVA_HOME names one. A
-# launcher on macOS or Linux is also started through a symbolic link. An image is also checked for
-# being stopped the way `docker stop` stops it: 143, and a report that says the run was cut short.
+# launcher on macOS or Linux is also started through a symbolic link. An image, and a launcher in a
+# release's folder, are also checked for carrying the JSON Schemas of a dictionary and a plan. An image
+# is also checked for being stopped the way `docker stop` stops it: 143, and a report that says the run
+# was cut short.
 #
 # Plain sh, run from Git Bash on Windows. Leaves nothing behind.
 
@@ -159,6 +161,29 @@ ok "a run where nothing answers ends with 3 and leaves report.json and run.sqlit
 [ "$mode" = --checkout ] && exit 0
 
 # --- What a launcher and an image are also checked for ---
+
+# The JSON Schemas travel with RESTest, so that whoever writes a dictionary or a plan finds them beside
+# the tool: in the image, and in a release's folder, known by this version's jar in the lib/ beside the
+# launcher's bin/. A command some installer puts on the PATH may live elsewhere, beside a lib/ of
+# other programs', and is not asked for them.
+case $mode in
+  --image)
+    docker run --rm --entrypoint ls "$subject" /opt/restest/schemas/dictionary.schema.json \
+      /opt/restest/schemas/campaign.schema.json > /dev/null 2>&1 \
+      || fail "the image has no /opt/restest/schemas/ holding both JSON Schemas"
+    ok "the image carries the JSON Schemas in /opt/restest/schemas/"
+    ;;
+  *)
+    release=$(cd "$(dirname "$subject")/.." && pwd)
+    if [ -f "$release/lib/restest-cli-$expected.jar" ]; then
+      for schema in dictionary campaign; do
+        [ -f "$release/schemas/$schema.schema.json" ] \
+          || fail "the release's folder has no schemas/$schema.schema.json"
+      done
+      ok "the release's folder carries the JSON Schemas in schemas/"
+    fi
+    ;;
+esac
 
 case $mode in
   --image)
