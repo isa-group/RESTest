@@ -59,7 +59,8 @@ Save it, change it, hand it back:
 
 A plan RESTest cannot read stops the run before it sends anything, and says why: a misspelt word, a
 share that does not add up. It never carries on with half a plan, because what a plan leaves out may
-be exactly what you asked it to keep away from.
+be exactly what you asked it to keep away from. An editor can catch most of those as you type, with
+[the plan's JSON Schema](../schemas.md).
 
 ### Changing nothing on the API
 

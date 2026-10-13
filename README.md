@@ -179,7 +179,8 @@ values:
     --url https://petstore3.swagger.io/api/v3 --budget 10s --dictionary pet-ids.yaml
 ```
 
-[The dictionary format](docs/dictionary-format.md).
+[The dictionary format](docs/dictionary-format.md). A dictionary and a plan each have a [JSON
+Schema](docs/schemas.md), for an editor, or a language model, to get the shape of one right first.
 
 **The plan** — where values come from, how much of a run pushes at the API, which operations it may
 touch — is a file. `--print-campaign` writes out the one RESTest follows; save it, change a line,

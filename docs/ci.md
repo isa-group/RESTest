@@ -327,15 +327,19 @@ The steps of every release, in order, each taken by a maintainer:
 1. **The base images.** While Dependabot is switched off, move the `Dockerfile`'s two digests to the
    newest patch of `eclipse-temurin:25-jdk` and `eclipse-temurin:21-jre`
    (`docker buildx imagetools inspect eclipse-temurin:21-jre` prints the digest).
-2. **The pull request that prepares the release**: the version in every `pom.xml`, and the pages that
-   name the version to install — the README's installation section and chapters 2 and 9 of the
-   manual — with output from the image and the archive built from that commit.
+2. **The pull request that prepares the release**: the version in every `pom.xml`; the version in the
+   `$id` of both files in `schemas/`, which `PublishedSchemasTest` requires to equal it on a release;
+   and the pages that name the version to install — the README's installation section and chapters 2
+   and 9 of the manual — with output from the image and the archive built from that commit.
 3. **The tag**, pushed once that pull request is merged.
 4. **The draft**: its notes written, read, and the release published.
 5. **The first time only**: the package `ghcr.io/isa-group/restest` is created private; an
    organisation owner makes it public in its settings.
 6. **From outside**: the README's installation commands, run against the published release with no
    one signed in to GitHub or to the registry.
+7. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
+   the `$id` of both schemas to the next release, which `PublishedSchemasTest` requires to be no
+   older than that snapshot, so that a build of `master` is never taken for the release.
 
 ## Dependency updates
 

@@ -12,7 +12,9 @@ restest run api.yaml --url http://localhost:9966 --campaign plan.yaml
 
 The decisions behind the format are in [ADR-0023](adr/0023-the-campaign-file.md), and its version 2
 in [ADR-0034](adr/0034-version-2-of-the-plans-format.md). What a list of values is, and how one is
-written, is [the dictionary format](dictionary-format.md).
+written, is [the dictionary format](dictionary-format.md). A [JSON Schema of the format](schemas.md)
+lets an editor, or a language model writing a plan, get its shape right before a run; a plan never
+needs it to be read.
 
 A plan is about the API. How the tool itself behaves — how hard it pushes, how much it keeps, how
 deep it goes — is [the settings](settings.md), which travel with a machine rather than with an API.

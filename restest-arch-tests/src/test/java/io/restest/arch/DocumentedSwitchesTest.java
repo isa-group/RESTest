@@ -89,9 +89,6 @@ class DocumentedSwitchesTest {
     /** What begins like the name of a setting and is not one: a file the page mentions. */
     private static final Set<String> FILE_NAMES = Set.of("report.json");
 
-    /** The label the page gives a file: the words in bold before it, up to a comma or a colon. */
-    private static final Pattern LABEL = Pattern.compile("^\\*\\*([^,:*]+)");
-
     /** The idea the series are part of, and the label of the file that turns them off. */
     private static final String SERIES = "Series";
 
@@ -319,7 +316,7 @@ class DocumentedSwitchesTest {
         Map<String, String> partOf = new LinkedHashMap<>();
         rows().forEach(row -> partOf.put(row.name(), row.partOf()));
 
-        List<Block> forOneIdea = blocks().stream()
+        List<YamlBlocks.Block> forOneIdea = blocks().stream()
                 .filter(block -> partOf.containsValue(block.label()))
                 .toList();
         assertThat(forOneIdea).isNotEmpty();
@@ -405,55 +402,28 @@ class DocumentedSwitchesTest {
                 .toList();
     }
 
-    /** A block of YAML on the page, with the label before it, if any, and the heading above it. */
-    private record Block(String text, String label, String heading) {
-    }
-
     /** Every block of YAML on the page, as it is written there. */
-    private static List<Block> blocks() {
-        List<Block> found = new ArrayList<>();
-        String heading = "";
-        String label = "";
-        StringBuilder inside = null;
-        for (String line : page.lines().toList()) {
-            if (inside != null) {
-                if (line.equals("```")) {
-                    found.add(new Block(inside.toString(), label, heading));
-                    inside = null;
-                    label = "";
-                } else {
-                    inside.append(line).append('\n');
-                }
-            } else if (line.equals("```yaml")) {
-                inside = new StringBuilder();
-            } else if (line.startsWith("## ")) {
-                heading = line.substring("## ".length()).trim();
-                label = "";
-            } else {
-                Matcher labelled = LABEL.matcher(line);
-                if (labelled.find()) {
-                    label = labelled.group(1).trim();
-                }
-            }
-        }
-        return found;
+    private static List<YamlBlocks.Block> blocks() {
+        return YamlBlocks.on(page);
     }
 
     /** The blocks that are files of settings: every one that is not a plan. */
     private static List<String> filesOfSettings() {
-        return blocks().stream().map(Block::text).filter(block -> !isAPlan(block)).toList();
+        return blocks().stream().map(YamlBlocks.Block::text).filter(block -> !isAPlan(block))
+                .toList();
     }
 
     /** The blocks that are plans, told apart by the strategies only a plan has. */
     private static List<String> plans() {
-        return blocks().stream().map(Block::text).filter(DocumentedSwitchesTest::isAPlan).toList();
+        return blocks().stream().map(YamlBlocks.Block::text)
+                .filter(DocumentedSwitchesTest::isAPlan).toList();
     }
 
     /** The one file of settings on the page with this label in bold before it. */
     private static String labelled(String label) {
         List<String> found = blocks().stream()
                 .filter(block -> block.label().equals(label) && !isAPlan(block.text()))
-                .map(Block::text)
+                .map(YamlBlocks.Block::text)
                 .toList();
         assertThat(found)
                 .describedAs("the page is supposed to have one file labelled '%s'", label)
@@ -465,7 +435,7 @@ class DocumentedSwitchesTest {
     private static String fileUnder(String heading) {
         List<String> found = blocks().stream()
                 .filter(block -> block.heading().equals(heading) && !isAPlan(block.text()))
-                .map(Block::text)
+                .map(YamlBlocks.Block::text)
                 .toList();
         assertThat(found)
                 .describedAs("the page is supposed to have one file under '%s'", heading)
