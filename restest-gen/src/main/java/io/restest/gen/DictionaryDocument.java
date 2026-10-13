@@ -57,7 +57,9 @@ import java.util.Objects;
  * otherwise leave the first list quietly replaced by the second.
  *
  * <p>An operation written down with nothing under it is not one of those mistakes. It says there is
- * nothing to fill in for that operation, and it is read that way rather than costing the file.
+ * nothing to fill in for that operation, and it is read that way rather than costing the file. Nor
+ * is a {@code description} written with nothing after it, which is read as no description; one that
+ * holds anything but a piece of text is refused.
  */
 final class DictionaryDocument {
 

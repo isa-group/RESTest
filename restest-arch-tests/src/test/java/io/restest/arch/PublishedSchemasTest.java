@@ -40,6 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -91,7 +92,7 @@ class PublishedSchemasTest {
      */
     private static final Set<String> KEYWORDS = Set.of("$schema", "$id", "$ref", "title",
             "description", "definitions", "type", "properties", "required",
-            "additionalProperties", "items", "minItems", "maxItems", "enum", "const", "anyOf",
+            "additionalProperties", "items", "minItems", "enum", "const", "anyOf",
             "minLength", "minimum", "maximum");
 
     /** The keywords that only describe, and that some engines refuse on a schema with no type. */
@@ -122,7 +123,7 @@ class PublishedSchemasTest {
     /** The group of sources the valid plan chooses between. */
     private static final String GROUP = "{example: 20, random: 30, dictionaries: 50}";
 
-    /** Three of the rows below, whose refusals list the words RESTest has for what was misspelt. */
+    /** Rows below whose refusals list the words RESTest has for what was misspelt. */
     private static final Change KIND_MISSPELT = new Change(Format.PLAN, "a kind misspelt",
             "kind: nominal", "kind: nominl", "of kind 'nominl'", "$.strategies[0].kind enum");
     private static final Change WORD_MISSPELT = new Change(Format.PLAN, "a word misspelt",
@@ -131,6 +132,23 @@ class PublishedSchemasTest {
     private static final Change METHOD_UNKNOWN = new Change(Format.PLAN,
             "a method that is not one", "[GET, POST]", "[GET, FETCH]",
             "'FETCH' is not an HTTP method", "$.operations.methods[1] enum");
+    private static final Change DICTIONARY_MEMBER_UNKNOWN = new Change(Format.DICTIONARY,
+            "a member nobody recognises", "name: owners\n", "name: owners\nlabel: owners\n",
+            "does not recognise (label)", "$ additionalProperties");
+    private static final Change PLAN_MEMBER_UNKNOWN = new Change(Format.PLAN,
+            "a member nobody recognises", "operations:", "operation:",
+            "does not recognise (operation)", "$ additionalProperties");
+    private static final Change STRATEGY_MEMBER_UNKNOWN = new Change(Format.PLAN,
+            "version 1's way of saying a strategy changes accepted requests",
+            "    kind: nominal\n", "    kind: nominal\n    mutates: accepted\n",
+            "does not recognise (mutates)", "$.strategies[0] additionalProperties");
+    private static final Change SOURCE_MEMBER_UNKNOWN = new Change(Format.PLAN,
+            "a source named by a misspelt word", "- source: random", "- sorce: random",
+            "does not recognise (sorce)", "$.strategies[1].sources[0] additionalProperties");
+    private static final Change OPERATIONS_MEMBER_UNKNOWN = new Change(Format.PLAN,
+            "a member of operations nobody recognises", "  methods: [GET, POST]\n",
+            "  methods: [GET, POST]\n  except: [getOwner]\n", "does not recognise (except)",
+            "$.operations additionalProperties");
 
     @TempDir
     static Path files;
@@ -274,10 +292,11 @@ class PublishedSchemasTest {
                     .isTrue();
             ModuleDescriptor.Version said = ModuleDescriptor.Version.parse(named.group(1));
             if (release) {
-                assertThat(said)
+                // Exactly as written, not as equal numbers: v2.2 names no tag of 2.2.0.
+                assertThat(named.group(1))
                         .describedAs("schemas/%s names version %s, and this checkout is the "
                                 + "release of %s: write %s", format.file, said, checkout, shouldBe)
-                        .isEqualTo(thisCheckout);
+                        .isEqualTo(checkout);
             } else {
                 assertThat(said)
                         .describedAs("schemas/%s names version %s, older than this checkout's %s: "
@@ -320,11 +339,16 @@ class PublishedSchemasTest {
             for (YamlBlocks.Block block : YamlBlocks.on(
                     RepositoryRoot.read(page).replace("\r\n", "\n"))) {
                 Set<String> members = YamlBlocks.members(block.text());
-                if (!members.contains("version")) {
+                if (!members.contains("version") && !startsWithItsVersion(block.text())) {
                     // A piece of a file, which shows one part of the format rather than a file.
                     continue;
                 }
                 showing.add(where);
+                if (members.isEmpty()) {
+                    wrong.add(where + " shows a whole file that is not YAML RESTest can read: "
+                            + whyNotRead(block.text()));
+                    continue;
+                }
                 Optional<Format> format = formatOf(members);
                 if (format.isEmpty()) {
                     wrong.add(where + " shows a whole file that is neither a dictionary nor a "
@@ -429,12 +453,40 @@ class PublishedSchemasTest {
                         methods.stream().map(method -> method.toLowerCase(Locale.ROOT))).toList());
     }
 
+    @Test
+    @DisplayName("the members a schema allows in each part of a file are the members RESTest names "
+            + "when it refuses one it does not recognise there")
+    void the_members_are_restests_members() {
+        JsonValue.JsonObject dictionary = Format.DICTIONARY.schema();
+        JsonValue.JsonObject plan = Format.PLAN.schema();
+        JsonValue.JsonObject definitions = object(plan, "definitions");
+
+        assertSameMembers(object(dictionary, "properties").members().keySet(),
+                DICTIONARY_MEMBER_UNKNOWN, "a dictionary");
+        assertSameMembers(object(plan, "properties").members().keySet(), PLAN_MEMBER_UNKNOWN,
+                "a plan");
+        assertSameMembers(object(definitions, "strategy", "properties").members().keySet(),
+                STRATEGY_MEMBER_UNKNOWN, "a strategy");
+        assertSameMembers(object(definitions, "operations", "properties").members().keySet(),
+                OPERATIONS_MEMBER_UNKNOWN, "'operations'");
+        // A source is written one of three ways, each an object with its one member.
+        assertSameMembers(Stream.of("source", "dictionary", "weighted").map(way ->
+                strings(object(definitions, way).member("required").orElseThrow()).getFirst())
+                .toList(), SOURCE_MEMBER_UNKNOWN, "a source");
+        assertThat(YamlText.asList(object(definitions, "step").member("anyOf").orElseThrow(),
+                "'anyOf'", "a schema").stream()
+                .map(way -> text(asObject(way, "a way of writing a source"), "$ref")))
+                .containsExactly("#/definitions/source", "#/definitions/dictionary",
+                        "#/definitions/weighted");
+    }
+
     static Stream<Change> lenient() {
         Format d = Format.DICTIONARY;
         Format p = Format.PLAN;
         return Stream.of(
-                new Change(d, "values with nothing under them", "values:\n  getOwner:",
-                        "values:\n  # to be filled in\n  getOwnerLater:"),
+                new Change(d, "values with nothing under them",
+                        d.valid.substring(d.valid.indexOf("values:")),
+                        "values:\n  # to be filled in\n"),
                 new Change(d, "an operation with only a comment under it",
                         "  addOwner:\n    body.lastName: [Franklin, Davis]\n",
                         "  addOwner:\n    # nothing to fill\n"),
@@ -477,9 +529,7 @@ class PublishedSchemasTest {
                 new Change(d, "no values", values, "", "no 'values'", "$ required"),
                 new Change(d, "values written as a list", values, "values: [1, 2]\n",
                         "the values of a dictionary is not an object", "$.values type"),
-                new Change(d, "a member nobody recognises", "name: owners\n",
-                        "name: owners\nlabel: owners\n", "does not recognise (label)",
-                        "$ additionalProperties"),
+                DICTIONARY_MEMBER_UNKNOWN,
                 new Change(d, "a $schema member", "version: 1\n",
                         "$schema: https://example.org/dictionary.json\nversion: 1\n",
                         "does not recognise ($schema)", "$ additionalProperties"),
@@ -501,8 +551,7 @@ class PublishedSchemasTest {
                 new Change(p, "strategies written as a map", strategies,
                         "strategies:\n  nominal: {share: 100}\n", "'strategies' is not a list",
                         "$.strategies type"),
-                new Change(p, "a member nobody recognises", "operations:", "operation:",
-                        "does not recognise (operation)", "$ additionalProperties"),
+                PLAN_MEMBER_UNKNOWN,
                 new Change(p, "no kind", "    kind: nominal\n", "", "says no 'kind'",
                         "$.strategies[0] required"),
                 KIND_MISSPELT,
@@ -518,10 +567,9 @@ class PublishedSchemasTest {
                         "no 'sources'", "$.strategies[1] required"),
                 new Change(p, "no source", "    sources:\n      - source: random\n",
                         "    sources: []\n", "has no sources", "$.strategies[1].sources minItems"),
-                new Change(p, "version 1's way of saying a strategy changes accepted requests",
-                        "    kind: nominal\n", "    kind: nominal\n    mutates: accepted\n",
-                        "does not recognise (mutates)", "$.strategies[0] additionalProperties"),
+                STRATEGY_MEMBER_UNKNOWN,
                 WORD_MISSPELT,
+                SOURCE_MEMBER_UNKNOWN,
                 new Change(p, "RESTest's own list to push with named as a source",
                         "- source: random", "- source: fuzzing",
                         "is RESTest's own list of values to push with",
@@ -558,9 +606,7 @@ class PublishedSchemasTest {
                         "is 101, and a share or a weight",
                         "$.strategies[0].sources[1].weighted.dictionaries maximum"),
                 METHOD_UNKNOWN,
-                new Change(p, "a member of operations nobody recognises",
-                        "  methods: [GET, POST]\n", "  methods: [GET, POST]\n  except: [getOwner]\n",
-                        "does not recognise (except)", "$.operations additionalProperties"));
+                OPERATIONS_MEMBER_UNKNOWN);
     }
 
     static Stream<Change> onlyRestestJudges() {
@@ -609,6 +655,19 @@ class PublishedSchemasTest {
         assertThat(change.restest().refusal())
                 .describedAs("RESTest refuses a file with %s", change.what)
                 .hasValueSatisfying(refusal -> assertThat(refusal).contains(change.restestSays));
+    }
+
+    private static void assertSameMembers(Collection<String> inTheSchema, Change row,
+            String where) {
+        assertThat(inTheSchema)
+                .describedAs("the schema and RESTest allow different members in %s; change the "
+                        + "schema with the reader, in the order RESTest names them", where)
+                .containsExactlyElementsOf(membersNamedBy(row));
+    }
+
+    /** The members RESTest says belong where a row put one it does not recognise. */
+    private static List<String> membersNamedBy(Change change) {
+        return listAfter(refusalOf(change), "What belongs there is ");
     }
 
     /** What RESTest says, refusing the file a row makes. */
@@ -705,6 +764,26 @@ class PublishedSchemasTest {
                         ref.substring("#/definitions/".length())))
                 .map(definition -> definition.member("description").isPresent())
                 .orElse(false);
+    }
+
+    /**
+     * Whether a block begins the way a whole file does, with its version once comments are passed:
+     * so that one somebody broke, which no longer reads as YAML, is still judged as a file.
+     */
+    private static boolean startsWithItsVersion(String block) {
+        return block.lines().map(String::strip)
+                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                .findFirst().filter(line -> line.startsWith("version:")).isPresent();
+    }
+
+    /** Why RESTest's own YAML reader cannot read a block, in its own words. */
+    private static String whyNotRead(String block) {
+        try {
+            YamlText.read(block, "the block");
+            return "it is not an object";
+        } catch (JsonException notRead) {
+            return notRead.getMessage();
+        }
     }
 
     /** Which kind of file a whole one is, by the member only that kind has. */

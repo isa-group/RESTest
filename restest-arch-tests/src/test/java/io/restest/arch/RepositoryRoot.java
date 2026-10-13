@@ -89,8 +89,8 @@ final class RepositoryRoot {
     }
 
     /**
-     * The version this checkout builds, read from the aggregator POM the way
-     * {@code dist/version.sh} reads it: the first version indented as the project's own is.
+     * The version this checkout builds, read from the aggregator POM: the first version indented as
+     * the project's own is, which is how the release scripts read it too.
      */
     static String version() {
         Matcher version = Pattern.compile("^    <version>(.*)</version>$", Pattern.MULTILINE)

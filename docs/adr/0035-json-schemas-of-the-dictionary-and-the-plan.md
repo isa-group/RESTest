@@ -9,8 +9,9 @@ A dictionary and a plan are the two files somebody writes for a run, and more an
 somebody is a coding agent or a language model working before the run starts. Two things showed
 what a file of the wrong shape costs:
 
-- **At M8.3, RESTest refused every dictionary of two campaigns** and ran without them. The refusals
-  were in each run's output; nobody read them until the results were in.
+- **On 27 September 2026, RESTest was found to have refused every dictionary of two series of
+  measured runs**, and run without them ([ADR-0020](0020-what-a-dictionary-is.md)'s amendment of that
+  date). The refusals were in each run's output; nobody read them until the results were in.
 - **On 4 October 2026, a small language model wrote dictionaries** for the APIs RESTest is measured
   on. Held to a JSON Schema of the format while it wrote, even a model of three billion parameters
   wrote files RESTest read. That schema was written outside this repository, where nothing kept it
@@ -43,9 +44,9 @@ only from version 1.20.0.
 
 They use only what the open engines that hold a model to a schema — llama.cpp, XGrammar, Outlines
 and llguidance — all accept, as read in their code and documentation on 12 October 2026: `type`,
-`properties`, `required`, `additionalProperties`, `items`, `minItems`, `maxItems`, `enum`, `const`,
-`anyOf`, a `$ref` inside the same file, `minLength`, `minimum` and `maximum` on whole numbers,
-`title` and `description`. Never `oneOf`, `allOf`, `not`, `if`, `patternProperties` or `pattern`.
+`properties`, `required`, `additionalProperties`, `items`, `minItems`, `enum`, `const`, `anyOf`, a
+`$ref` inside the same file, `minLength`, `minimum` and `maximum` on whole numbers, `title` and
+`description`. Never `oneOf`, `allOf`, `not`, `if`, `patternProperties` or `pattern`.
 And:
 
 - **every part that may be an object says whether it takes members it does not name**, since the
@@ -92,7 +93,8 @@ RESTest reads them, and requires the same answer:
 - what only RESTest can judge is refused by RESTest and valid by the schema, and what RESTest reads
   and only reports is valid;
 - the closed lists of words in the plan's schema — kinds, sources, methods — are the words RESTest
-  lists when somebody misspells one.
+  lists when somebody misspells one, and the members each part of a file may hold are the ones
+  RESTest names when it refuses a member it does not recognise there.
 
 It also checks each schema against draft-07's own, against the keywords and rules of §2, and its
 `$id` against the version. The validator RESTest judges replies with, confined to `restest-oracles`
@@ -114,7 +116,9 @@ schema does, and 2.2.0's release notes say so beside ADR-0033's line.
 
 RESTest refuses, and the schema lets through: shares, or weights in one group, that do not add up to
 100; a group with fewer than two sources; two strategies with one name; a name of nothing but
-spaces; `fuzzing` as the name of a dictionary or of a dictionary a plan draws on; a key written twice.
+spaces, or of nothing at all for a dictionary inside a group; `fuzzing` as the name of a dictionary
+or of a dictionary a plan draws on. A key written twice never reaches a schema: the YAML is read
+first, and RESTest refuses such a file as it reads it.
 
 RESTest reads, and only reports: an operation the API does not have, in a dictionary or under a
 plan's `only:`; a dictionary a plan draws on that nobody handed over.
@@ -124,12 +128,14 @@ RESTest also reads `Get`.
 
 ## Checked by hand
 
-On 13 October 2026, each schema was given to llama.cpp's converter to its grammars (its last
-version written in Python, of 3 September 2026, matched by llguidance), to llguidance 1.3.0 and to
-outlines-core 0.2.14. Each accepted every whole file the documentation shows, and refused files with
-a member, a word or a kind of value wrong — except that Outlines does not hold whole numbers to their
-smallest and largest, so it lets through a share of 0. XGrammar was not run; its converter's code
-handles every keyword of §2. check-jsonschema 0.36.2 produced the output `docs/schemas.md` shows.
+On 13 October 2026, each schema was given to llguidance 1.3.0 and to outlines-core 0.2.14, and to
+llama.cpp's converter to its grammars written in Python, at commit `c5a5535e` of 3 September 2026,
+its last before llama.cpp kept only the converter built into its server; that converter's grammars
+were matched by llguidance, and the server's own converter was not run. Each accepted every whole
+file the documentation shows, and refused files with a member, a word or a kind of value wrong —
+except that Outlines does not hold whole numbers to their smallest and largest, so it lets through a
+share of 0. XGrammar was not run: its converter's code, at commit `f294c51e`, was read, and handles
+every keyword of §2. check-jsonschema 0.36.2 produced the output `docs/schemas.md` shows.
 
 ## Consequences
 
