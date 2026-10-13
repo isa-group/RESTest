@@ -15,8 +15,12 @@
  */
 package io.restest.arch;
 
+import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonValue;
+import io.restest.core.json.YamlText;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,5 +77,23 @@ final class YamlBlocks {
             }
         }
         return found;
+    }
+
+    /**
+     * The members a block holds at its top, which is what says what kind of file it is: a plan
+     * has {@code strategies}, a dictionary {@code keyedBy}, and a whole file of either holds its
+     * {@code version}. A piece of a file that is not an object, or not YAML at all, holds none.
+     *
+     * @param block a block's text
+     * @return the names of its members
+     */
+    static Set<String> members(String block) {
+        try {
+            return YamlText.read(block, "a block of a page") instanceof JsonValue.JsonObject object
+                    ? object.members().keySet()
+                    : Set.of();
+        } catch (JsonException notAFile) {
+            return Set.of();
+        }
     }
 }

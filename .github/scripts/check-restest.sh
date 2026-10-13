@@ -163,8 +163,9 @@ ok "a run where nothing answers ends with 3 and leaves report.json and run.sqlit
 # --- What a launcher and an image are also checked for ---
 
 # The JSON Schemas travel with RESTest, so that whoever writes a dictionary or a plan finds them beside
-# the tool: in the image, and in a release's folder, whose bin/ a launcher sits in beside its lib/. A
-# command some installer puts on the PATH may live elsewhere, and is not asked for them.
+# the tool: in the image, and in a release's folder, known by this version's jar in the lib/ beside the
+# launcher's bin/. A command some installer puts on the PATH may live elsewhere, beside a lib/ of
+# other programs', and is not asked for them.
 case $mode in
   --image)
     docker run --rm --entrypoint ls "$subject" /opt/restest/schemas/dictionary.schema.json \
@@ -174,7 +175,7 @@ case $mode in
     ;;
   *)
     release=$(cd "$(dirname "$subject")/.." && pwd)
-    if [ -d "$release/lib" ]; then
+    if [ -f "$release/lib/restest-cli-$expected.jar" ]; then
       for schema in dictionary campaign; do
         [ -f "$release/schemas/$schema.schema.json" ] \
           || fail "the release's folder has no schemas/$schema.schema.json"

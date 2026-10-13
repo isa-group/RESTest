@@ -89,11 +89,6 @@ final class DictionaryDocument {
         JsonValue.JsonObject document = document(text, describedAs);
         String name = text(document, "name", describedAs);
         String keyedBy = text(document, "keyedBy", describedAs);
-        // Read only to be checked: a description is for whoever opens the file next. Written with
-        // nothing after it, to be filled in later, it is none, as values with nothing under it are.
-        document.member("description")
-                .filter(written -> !(written instanceof JsonValue.JsonNull))
-                .ifPresent(written -> asText(written, "description", describedAs));
         // Both said at once when both are wrong, as they are in a list written the way RESTest 2.1
         // let somebody add to its own: fixing one only to be told of the other is a wasted run.
         List<String> wrong = new java.util.ArrayList<>();
@@ -164,6 +159,11 @@ final class DictionaryDocument {
                     + " of the format, and this version of RESTest reads version " + VERSION);
         }
         rejectAnythingUnrecognised(document, describedAs);
+        // Read only to be checked: a description is for whoever opens the file next. Written with
+        // nothing after it, to be filled in later, it is none, as values with nothing under it are.
+        document.member("description")
+                .filter(written -> !(written instanceof JsonValue.JsonNull))
+                .ifPresent(written -> asText(written, "description", describedAs));
         return document;
     }
 

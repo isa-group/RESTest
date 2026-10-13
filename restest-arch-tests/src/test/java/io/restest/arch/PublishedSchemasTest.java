@@ -24,7 +24,7 @@ import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SchemaRegistryConfig;
 import com.networknt.schema.dialect.Dialects;
-import com.networknt.schema.path.NodePath;
+import com.networknt.schema.path.PathType;
 import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
@@ -105,15 +105,32 @@ class PublishedSchemasTest {
     /** An API with no operations: every file is judged for its shape, not against an API. */
     private static final ApiModel NO_API = ApiModel.of("no API", "1", List.of());
 
-    /** The validator, which never fetches anything and explains itself in English. */
+    /**
+     * The validator, which never fetches anything, explains itself in English, and names a place
+     * in a file as an ordinary validator prints it to a person: {@code $.strategies[0].kind}.
+     */
     private static final SchemaRegistry REGISTRY = SchemaRegistry.withDefaultDialect(
             Dialects.getDraft7(), builder -> builder
                     .schemaLoader(loader -> loader.fetchRemoteResources(false))
                     .schemaRegistryConfig(SchemaRegistryConfig.builder()
                             .locale(Locale.ROOT)
+                            .pathType(PathType.LEGACY)
                             .build()));
 
     private static final Map<Format, Schema> CHECKERS = new EnumMap<>(Format.class);
+
+    /** The group of sources the valid plan chooses between. */
+    private static final String GROUP = "{example: 20, random: 30, dictionaries: 50}";
+
+    /** Three of the rows below, whose refusals list the words RESTest has for what was misspelt. */
+    private static final Change KIND_MISSPELT = new Change(Format.PLAN, "a kind misspelt",
+            "kind: nominal", "kind: nominl", "of kind 'nominl'", "$.strategies[0].kind enum");
+    private static final Change WORD_MISSPELT = new Change(Format.PLAN, "a word misspelt",
+            "- source: random", "- source: exmaple", "'exmaple' is not one of RESTest's own sources",
+            "$.strategies[1].sources[0].source enum");
+    private static final Change METHOD_UNKNOWN = new Change(Format.PLAN,
+            "a method that is not one", "[GET, POST]", "[GET, FETCH]",
+            "'FETCH' is not an HTTP method", "$.operations.methods[1] enum");
 
     @TempDir
     static Path files;
@@ -157,24 +174,40 @@ class PublishedSchemasTest {
             this.valid = valid;
         }
 
-        Path schema() {
-            return RepositoryRoot.locate().resolve("schemas").resolve(file);
+        /** The schema as it is written in the repository. */
+        String written() {
+            return RepositoryRoot.read(RepositoryRoot.locate().resolve("schemas").resolve(file));
+        }
+
+        /** The schema, read. */
+        JsonValue.JsonObject schema() {
+            return YamlText.asObject(JsonText.read(written()), "the schema", "schemas/" + file);
         }
     }
 
     /**
      * One file made from a valid one by one change, and what each reader is expected to say of it.
      *
-     * @param what the change, in words, which names the row in a report
      * @param format the kind of file changed, whose valid example the change starts from
+     * @param what the change, in words, which names the row in a report
      * @param from what is changed, written once in that example
      * @param to what it is changed into
      * @param restestSays what RESTest's refusal, or one of the problems it reports, contains
-     * @param at where the validator says the file is wrong, or nothing if it is valid
-     * @param keyword the rule of the schema the validator says it breaks there
+     * @param breaks where the validator says the file is wrong and the rule of the schema it breaks
+     *     there, such as {@code $.version const}, when it is wrong
      */
-    record Change(String what, Format format, String from, String to, String restestSays,
-            String at, String keyword) {
+    record Change(Format format, String what, String from, String to, String restestSays,
+            String breaks) {
+
+        /** A change both readers take. */
+        Change(Format format, String what, String from, String to) {
+            this(format, what, from, to, null, null);
+        }
+
+        /** A change the schema takes and RESTest refuses, or reports. */
+        Change(Format format, String what, String from, String to, String restestSays) {
+            this(format, what, from, to, restestSays, null);
+        }
 
         String file() {
             assertThat(format.valid.indexOf(from))
@@ -183,6 +216,17 @@ class PublishedSchemasTest {
                     .isNotNegative()
                     .isEqualTo(format.valid.lastIndexOf(from));
             return format.valid.replace(from, to);
+        }
+
+        Verdict restest() {
+            return PublishedSchemasTest.restest(format, file());
+        }
+
+        /** Each place the validator says the file is wrong, with the rule it breaks there. */
+        List<String> errors() {
+            return validate(format, file()).stream()
+                    .map(error -> error.getInstanceLocation() + " " + error.getKeyword())
+                    .toList();
         }
 
         @Override
@@ -199,12 +243,14 @@ class PublishedSchemasTest {
     @EnumSource(Format.class)
     @DisplayName("each schema is a JSON Schema of draft-07, which every editor and engine reads")
     void each_schema_is_a_draft_07_schema(Format format) {
-        Schema metaSchema = REGISTRY.getSchema(SchemaLocation.of(DRAFT_07));
+        String written = format.written();
 
-        assertThat(metaSchema.validate(read(format.schema()), InputFormat.JSON))
+        assertThat(REGISTRY.getSchema(SchemaLocation.of(DRAFT_07))
+                .validate(written, InputFormat.JSON))
                 .describedAs("schemas/%s is not a valid JSON Schema of draft-07", format.file)
                 .isEmpty();
-        assertThat(text(schemaOf(format), "$schema"))
+        assertThat(text(YamlText.asObject(JsonText.read(written), "the schema", format.file),
+                "$schema"))
                 .describedAs("schemas/%s says which draft it is written in", format.file)
                 .isEqualTo(DRAFT_07);
     }
@@ -213,12 +259,12 @@ class PublishedSchemasTest {
     @DisplayName("the address each schema gives itself is its file at the tag of the version being "
             + "prepared, the same for both, so that an editor fetching it gets this version's")
     void each_schema_names_the_version_it_ships_with() {
-        String checkout = pomVersion();
+        String checkout = RepositoryRoot.version();
         boolean release = !checkout.endsWith("-SNAPSHOT");
         ModuleDescriptor.Version thisCheckout = ModuleDescriptor.Version.parse(checkout);
         List<String> versions = new ArrayList<>();
         for (Format format : Format.values()) {
-            String id = text(schemaOf(format), "$id");
+            String id = text(format.schema(), "$id");
             Matcher named = ID.matcher(id);
             String shouldBe = "https://raw.githubusercontent.com/isa-group/RESTest/v"
                     + checkout.replace("-SNAPSHOT", "") + "/schemas/" + format.file;
@@ -252,7 +298,7 @@ class PublishedSchemasTest {
     @DisplayName("each schema uses only what the engines that hold a language model to a schema "
             + "accept, and describes every member")
     void each_schema_keeps_to_what_the_engines_accept(Format format) {
-        JsonValue.JsonObject schema = schemaOf(format);
+        JsonValue.JsonObject schema = format.schema();
         List<String> wrong = new ArrayList<>();
         checkSubschema(schema, "#", schema, wrong);
 
@@ -266,20 +312,26 @@ class PublishedSchemasTest {
     @DisplayName("every whole dictionary and plan the documentation shows is read by RESTest and "
             + "valid by its schema, and so is the plan RESTest carries")
     void every_whole_example_is_read_and_valid() throws IOException {
+        Path root = RepositoryRoot.locate();
         List<String> wrong = new ArrayList<>();
         List<String> showing = new ArrayList<>();
-        for (Path page : pages()) {
-            String where = RepositoryRoot.locate().relativize(page).toString().replace('\\', '/');
-            String written = Files.readString(page).replace("\r\n", "\n");
-            for (YamlBlocks.Block block : YamlBlocks.on(written)) {
-                if (!isWholeFile(block.text())) {
+        for (Path page : pages(root)) {
+            String where = root.relativize(page).toString().replace('\\', '/');
+            for (YamlBlocks.Block block : YamlBlocks.on(
+                    RepositoryRoot.read(page).replace("\r\n", "\n"))) {
+                Set<String> members = YamlBlocks.members(block.text());
+                if (!members.contains("version")) {
+                    // A piece of a file, which shows one part of the format rather than a file.
                     continue;
                 }
                 showing.add(where);
-                formatOf(block.text()).ifPresentOrElse(
-                        format -> judge(format, block.text(), where).ifPresent(wrong::add),
-                        () -> wrong.add(where + " shows a whole file that is neither a dictionary "
-                                + "nor a plan, which this test should be taught to check"));
+                Optional<Format> format = formatOf(members);
+                if (format.isEmpty()) {
+                    wrong.add(where + " shows a whole file that is neither a dictionary nor a "
+                            + "plan, which this test should be taught to check");
+                    continue;
+                }
+                judge(format.get(), block.text(), where).ifPresent(wrong::add);
             }
         }
         judge(Format.PLAN, Campaigns.shippedText(), "the plan RESTest carries")
@@ -296,12 +348,10 @@ class PublishedSchemasTest {
     @MethodSource("lenient")
     @DisplayName("what RESTest reads although it is written loosely is valid by the schema too")
     void what_restest_reads_loosely_is_valid(Change change) {
-        String file = change.file();
-
-        assertThat(restest(change.format, file).refusal())
+        assertThat(change.restest().refusal())
                 .describedAs("RESTest reads a file with %s", change.what)
                 .isEmpty();
-        assertThat(validate(change.format, file))
+        assertThat(change.errors())
                 .describedAs("the schema refuses a file with %s, which RESTest reads", change.what)
                 .isEmpty();
     }
@@ -311,16 +361,10 @@ class PublishedSchemasTest {
     @DisplayName("a file RESTest refuses for its shape is invalid by the schema, which names the "
             + "place and the rule")
     void a_file_refused_for_its_shape_is_invalid(Change change) {
-        String file = change.file();
-
-        assertThat(restest(change.format, file).refusal())
-                .describedAs("RESTest refuses a file with %s", change.what)
-                .hasValueSatisfying(refusal -> assertThat(refusal).contains(change.restestSays));
-        List<Error> errors = validate(change.format, file);
-        assertThat(errors.stream().map(PublishedSchemasTest::placeAndRule))
-                .describedAs("the validator says a file with %s breaks '%s' at %s; it says %s",
-                        change.what, change.keyword, change.at, errors)
-                .contains(change.at + " " + change.keyword);
+        assertRefusedByRestest(change);
+        assertThat(change.errors())
+                .describedAs("the validator says where a file with %s is wrong", change.what)
+                .contains(change.breaks);
     }
 
     @ParameterizedTest(name = "{0}")
@@ -328,12 +372,8 @@ class PublishedSchemasTest {
     @DisplayName("what only RESTest can judge, such as shares that do not add up to a hundred, is "
             + "refused by RESTest and valid by the schema, which says so in words")
     void what_only_restest_judges_is_valid_by_the_schema(Change change) {
-        String file = change.file();
-
-        assertThat(restest(change.format, file).refusal())
-                .describedAs("RESTest refuses a file with %s", change.what)
-                .hasValueSatisfying(refusal -> assertThat(refusal).contains(change.restestSays));
-        assertThat(validate(change.format, file))
+        assertRefusedByRestest(change);
+        assertThat(change.errors())
                 .describedAs("a file with %s is valid by the schema, which leaves it to RESTest; "
                         + "if the schema can say it now, move the row", change.what)
                 .isEmpty();
@@ -344,8 +384,7 @@ class PublishedSchemasTest {
     @DisplayName("what RESTest reads and only reports, such as a list nobody handed over, is valid "
             + "by the schema")
     void what_restest_only_reports_is_valid_by_the_schema(Change change) {
-        String file = change.file();
-        Verdict verdict = restest(change.format, file);
+        Verdict verdict = change.restest();
 
         assertThat(verdict.refusal())
                 .describedAs("RESTest reads a file with %s, and says so", change.what)
@@ -353,7 +392,7 @@ class PublishedSchemasTest {
         assertThat(verdict.problems())
                 .describedAs("RESTest reports a file with %s", change.what)
                 .anySatisfy(problem -> assertThat(problem).contains(change.restestSays));
-        assertThat(validate(change.format, file))
+        assertThat(change.errors())
                 .describedAs("a file with %s is valid by the schema", change.what)
                 .isEmpty();
     }
@@ -362,34 +401,30 @@ class PublishedSchemasTest {
     @DisplayName("a method written neither in capitals nor in small letters is read by RESTest and "
             + "invalid by the schema, the one place the schema is stricter")
     void a_method_in_mixed_case_is_read_and_invalid() {
-        Change change = new Change("a method in mixed case", Format.PLAN, "[GET, POST]",
-                "[Get, POST]", null, "$.operations.methods[0]", "enum");
-        String file = change.file();
+        Change change = new Change(Format.PLAN, "a method in mixed case", "[GET, POST]",
+                "[Get, POST]");
 
-        assertThat(restest(Format.PLAN, file).refusal()).isEmpty();
-        assertThat(validate(Format.PLAN, file).stream().map(PublishedSchemasTest::placeAndRule))
-                .contains(change.at + " " + change.keyword);
+        assertThat(change.restest().refusal()).isEmpty();
+        assertThat(change.errors()).contains("$.operations.methods[0] enum");
     }
 
     @Test
     @DisplayName("the words a schema offers for a kind, a source and a method are the words "
             + "RESTest tells a person who misspells one")
     void the_closed_lists_are_restests_words() {
-        JsonValue.JsonObject definitions = object(schemaOf(Format.PLAN), "definitions");
-        JsonValue.JsonObject strategy = object(object(definitions, "strategy"), "properties");
-        JsonValue.JsonObject group = object(object(definitions, "group"), "properties");
+        JsonValue.JsonObject definitions = object(Format.PLAN.schema(), "definitions");
 
-        assertThat(words(object(strategy, "kind")))
-                .isEqualTo(listAfter(refusalOf("a kind misspelt"), "kind is one of "));
-        List<String> sources = listAfter(refusalOf("a word misspelt"), "sources, which are ");
-        assertThat(words(object(object(object(definitions, "source"), "properties"), "source")))
+        assertThat(words(object(definitions, "strategy", "properties", "kind")))
+                .isEqualTo(listAfter(refusalOf(KIND_MISSPELT), "kind is one of "));
+        List<String> sources = listAfter(refusalOf(WORD_MISSPELT), "sources, which are ");
+        assertThat(words(object(definitions, "source", "properties", "source")))
                 .isEqualTo(sources);
-        assertThat(group.members().keySet().stream().filter(word -> !word.equals("dictionary")))
+        assertThat(object(definitions, "group", "properties").members().keySet().stream()
+                .filter(word -> !word.equals("dictionary")))
                 .containsExactlyElementsOf(sources);
-        List<String> methods = listAfter(refusalOf("a method that is not one"), "They are ");
+        List<String> methods = listAfter(refusalOf(METHOD_UNKNOWN), "They are ");
         assertThat(methods).isEqualTo(Arrays.stream(HttpMethod.values()).map(Enum::name).toList());
-        assertThat(words(object(object(object(definitions, "operations"), "properties"), "methods")
-                .member("items").map(JsonValue.JsonObject.class::cast).orElseThrow()))
+        assertThat(words(object(definitions, "operations", "properties", "methods", "items")))
                 .isEqualTo(Stream.concat(methods.stream(),
                         methods.stream().map(method -> method.toLowerCase(Locale.ROOT))).toList());
     }
@@ -398,208 +433,187 @@ class PublishedSchemasTest {
         Format d = Format.DICTIONARY;
         Format p = Format.PLAN;
         return Stream.of(
-                change(d, "values with nothing under them", "values:\n  getOwner:",
+                new Change(d, "values with nothing under them", "values:\n  getOwner:",
                         "values:\n  # to be filled in\n  getOwnerLater:"),
-                change(d, "an operation with only a comment under it",
+                new Change(d, "an operation with only a comment under it",
                         "  addOwner:\n    body.lastName: [Franklin, Davis]\n",
                         "  addOwner:\n    # nothing to fill\n"),
-                change(d, "a description with nothing after it",
+                new Change(d, "a description with nothing after it",
                         "description: Owners the clinic knows.", "description:"),
-                change(d, "the whole file written as JSON", d.valid, """
+                new Change(d, "the whole file written as JSON", d.valid, """
                         {"version": 1, "name": "owners", "keyedBy": "operationAndParameter",
                          "values": {"getOwner": {"ownerId": [1, 2, 3]}}}
                         """),
-                change(d, "values of every kind", "[1, 2, 3]",
+                new Change(d, "values of every kind", "[1, 2, 3]",
                         "[1, \"two\", 3.5, true, null, [], {owner: {id: 1}}]"),
-                change(p, "methods in small letters", "[GET, POST]", "[get, post]"),
-                change(p, "a group's sources in another order",
-                        "{example: 20, random: 30, dictionaries: 50}",
+                new Change(p, "methods in small letters", "[GET, POST]", "[get, post]"),
+                new Change(p, "a group's sources in another order", GROUP,
                         "{dictionaries: 50, random: 30, example: 20}"),
-                change(p, "dictionaries by name in a group", "dictionaries: 50",
+                new Change(p, "dictionaries by name in a group", "dictionaries: 50",
                         "dictionary: {owners: 30, pets: 20}"),
-                change(p, "no operations", "operations:\n  methods: [GET, POST]\n", ""));
+                new Change(p, "no operations", "operations:\n  methods: [GET, POST]\n", ""));
     }
 
     static Stream<Change> brokenShapes() {
         Format d = Format.DICTIONARY;
         Format p = Format.PLAN;
-        String values = "values:\n  getOwner:\n    ownerId: [1, 2, 3]\n  addOwner:\n"
-                + "    body.lastName: [Franklin, Davis]\n";
+        String values = d.valid.substring(d.valid.indexOf("values:"));
         String strategies = p.valid.substring(p.valid.indexOf("strategies:"),
                 p.valid.indexOf("operations:"));
-        String group = "{example: 20, random: 30, dictionaries: 50}";
         return Stream.of(
-                broken(d, "no version", "version: 1\n", "", "no 'version'", "$", "required"),
-                broken(d, "version 2", "version: 1", "version: 2", "in version 2 of the format",
-                        "$.version", "const"),
-                broken(d, "the version written as text", "version: 1", "version: \"1\"",
-                        "'version' is not a number", "$.version", "type"),
-                broken(d, "no name", "name: owners\n", "", "no 'name'", "$", "required"),
-                broken(d, "a name that is a number", "name: owners", "name: 7",
-                        "'name' is not text", "$.name", "type"),
-                broken(d, "a description that is a list", "description: Owners the clinic knows.",
-                        "description: [owners, pets]", "'description' is not text",
-                        "$.description", "type"),
-                broken(d, "values keyed by kind of value", "keyedBy: operationAndParameter",
-                        "keyedBy: type", "keyed by 'type'", "$.keyedBy", "const"),
-                broken(d, "no values", values, "", "no 'values'", "$", "required"),
-                broken(d, "values written as a list", values, "values: [1, 2]\n",
-                        "the values of a dictionary is not an object", "$.values", "type"),
-                broken(d, "a member nobody recognises", "name: owners\n",
-                        "name: owners\nlabel: owners\n", "does not recognise (label)", "$",
-                        "additionalProperties"),
-                broken(d, "a $schema member", "version: 1\n",
+                new Change(d, "no version", "version: 1\n", "", "no 'version'", "$ required"),
+                new Change(d, "version 2", "version: 1", "version: 2",
+                        "in version 2 of the format", "$.version const"),
+                new Change(d, "the version written as text", "version: 1", "version: \"1\"",
+                        "'version' is not a number", "$.version type"),
+                new Change(d, "no name", "name: owners\n", "", "no 'name'", "$ required"),
+                new Change(d, "a name that is a number", "name: owners", "name: 7",
+                        "'name' is not text", "$.name type"),
+                new Change(d, "a description that is a list",
+                        "description: Owners the clinic knows.", "description: [owners, pets]",
+                        "'description' is not text", "$.description type"),
+                new Change(d, "values keyed by kind of value", "keyedBy: operationAndParameter",
+                        "keyedBy: type", "keyed by 'type'", "$.keyedBy const"),
+                new Change(d, "no values", values, "", "no 'values'", "$ required"),
+                new Change(d, "values written as a list", values, "values: [1, 2]\n",
+                        "the values of a dictionary is not an object", "$.values type"),
+                new Change(d, "a member nobody recognises", "name: owners\n",
+                        "name: owners\nlabel: owners\n", "does not recognise (label)",
+                        "$ additionalProperties"),
+                new Change(d, "a $schema member", "version: 1\n",
                         "$schema: https://example.org/dictionary.json\nversion: 1\n",
-                        "does not recognise ($schema)", "$", "additionalProperties"),
-                broken(d, "an operation holding a list", "  getOwner:\n    ownerId: [1, 2, 3]\n",
-                        "  getOwner: [1, 2, 3]\n",
-                        "what is written under 'getOwner' is not an object", "$.values.getOwner",
-                        "type"),
-                broken(d, "nothing where a list of values belongs", "ownerId: [1, 2, 3]",
+                        "does not recognise ($schema)", "$ additionalProperties"),
+                new Change(d, "an operation holding a list",
+                        "  getOwner:\n    ownerId: [1, 2, 3]\n", "  getOwner: [1, 2, 3]\n",
+                        "what is written under 'getOwner' is not an object",
+                        "$.values.getOwner type"),
+                new Change(d, "nothing where a list of values belongs", "ownerId: [1, 2, 3]",
                         "ownerId:", "nothing under 'ownerId' in 'getOwner'",
-                        "$.values.getOwner.ownerId", "type"),
-                broken(d, "one value where a list of values belongs", "ownerId: [1, 2, 3]",
+                        "$.values.getOwner.ownerId type"),
+                new Change(d, "one value where a list of values belongs", "ownerId: [1, 2, 3]",
                         "ownerId: 7", "something other than a list of values under 'ownerId'",
-                        "$.values.getOwner.ownerId", "type"),
-                broken(p, "version 1", "version: 2", "version: 1", "in version 1 of the format",
-                        "$.version", "const"),
-                broken(p, "no strategies", strategies, "", "no 'strategies'", "$", "required"),
-                broken(p, "no strategy", strategies, "strategies: []\n", "no strategies in it",
-                        "$.strategies", "minItems"),
-                broken(p, "strategies written as a map", strategies,
+                        "$.values.getOwner.ownerId type"),
+                new Change(p, "version 1", "version: 2", "version: 1",
+                        "in version 1 of the format", "$.version const"),
+                new Change(p, "no strategies", strategies, "", "no 'strategies'", "$ required"),
+                new Change(p, "no strategy", strategies, "strategies: []\n",
+                        "no strategies in it", "$.strategies minItems"),
+                new Change(p, "strategies written as a map", strategies,
                         "strategies:\n  nominal: {share: 100}\n", "'strategies' is not a list",
-                        "$.strategies", "type"),
-                broken(p, "a member nobody recognises", "operations:", "operation:",
-                        "does not recognise (operation)", "$", "additionalProperties"),
-                broken(p, "no kind", "    kind: nominal\n", "", "says no 'kind'",
-                        "$.strategies[0]", "required"),
-                broken(p, "a kind misspelt", "kind: nominal", "kind: nominl",
-                        "of kind 'nominl'", "$.strategies[0].kind", "enum"),
-                broken(p, "a share of 0", "share: 70", "share: 0", "'share' is 0",
-                        "$.strategies[0].share", "minimum"),
-                broken(p, "a share of 101", "share: 70", "share: 101", "'share' is 101",
-                        "$.strategies[0].share", "maximum"),
-                broken(p, "a share that is not whole", "share: 70", "share: 24.5",
-                        "is 24.5, and a whole number belongs there", "$.strategies[0].share",
-                        "type"),
-                broken(p, "a strategy named with nothing", "name: nominal", "name: \"\"",
-                        "a strategy has a name", "$.strategies[0].name", "minLength"),
-                broken(p, "no sources", "    sources:\n      - source: random\n", "",
-                        "no 'sources'", "$.strategies[1]", "required"),
-                broken(p, "no source", "    sources:\n      - source: random\n",
-                        "    sources: []\n", "has no sources", "$.strategies[1].sources",
-                        "minItems"),
-                broken(p, "version 1's way of saying a strategy changes accepted requests",
+                        "$.strategies type"),
+                new Change(p, "a member nobody recognises", "operations:", "operation:",
+                        "does not recognise (operation)", "$ additionalProperties"),
+                new Change(p, "no kind", "    kind: nominal\n", "", "says no 'kind'",
+                        "$.strategies[0] required"),
+                KIND_MISSPELT,
+                new Change(p, "a share of 0", "share: 70", "share: 0", "'share' is 0",
+                        "$.strategies[0].share minimum"),
+                new Change(p, "a share of 101", "share: 70", "share: 101", "'share' is 101",
+                        "$.strategies[0].share maximum"),
+                new Change(p, "a share that is not whole", "share: 70", "share: 24.5",
+                        "is 24.5, and a whole number belongs there", "$.strategies[0].share type"),
+                new Change(p, "a strategy named with nothing", "name: nominal", "name: \"\"",
+                        "a strategy has a name", "$.strategies[0].name minLength"),
+                new Change(p, "no sources", "    sources:\n      - source: random\n", "",
+                        "no 'sources'", "$.strategies[1] required"),
+                new Change(p, "no source", "    sources:\n      - source: random\n",
+                        "    sources: []\n", "has no sources", "$.strategies[1].sources minItems"),
+                new Change(p, "version 1's way of saying a strategy changes accepted requests",
                         "    kind: nominal\n", "    kind: nominal\n    mutates: accepted\n",
-                        "does not recognise (mutates)", "$.strategies[0]",
-                        "additionalProperties"),
-                broken(p, "a word misspelt", "- source: random", "- source: exmaple",
-                        "'exmaple' is not one of RESTest's own sources",
-                        "$.strategies[1].sources[0].source", "enum"),
-                broken(p, "RESTest's own list to push with named as a source",
+                        "does not recognise (mutates)", "$.strategies[0] additionalProperties"),
+                WORD_MISSPELT,
+                new Change(p, "RESTest's own list to push with named as a source",
                         "- source: random", "- source: fuzzing",
                         "is RESTest's own list of values to push with",
-                        "$.strategies[1].sources[0].source", "enum"),
-                broken(p, "a source named two ways", "- source: random",
+                        "$.strategies[1].sources[0].source enum"),
+                new Change(p, "a source named two ways", "- source: random",
                         "- {source: random, dictionary: owners}", "named 2 ways at once",
-                        "$.strategies[1].sources[0]", "additionalProperties"),
-                broken(p, "a source named no way", "- source: random", "- {}",
-                        "says none of them", "$.strategies[1].sources[0]", "required"),
-                broken(p, "a weight outside a group", "- source: random",
+                        "$.strategies[1].sources[0] additionalProperties"),
+                new Change(p, "a source named no way", "- source: random", "- {}",
+                        "says none of them", "$.strategies[1].sources[0] required"),
+                new Change(p, "a weight outside a group", "- source: random",
                         "- {source: random, weight: 50}", "carries a 'weight'",
-                        "$.strategies[1].sources[0]", "additionalProperties"),
-                broken(p, "dictionaries with weights outside a group", "- source: random",
+                        "$.strategies[1].sources[0] additionalProperties"),
+                new Change(p, "dictionaries with weights outside a group", "- source: random",
                         "- dictionary: {owners: 40}", "gives 'dictionary' a map of weights",
-                        "$.strategies[1].sources[0].dictionary", "type"),
-                broken(p, "a dictionary named with nothing", "- source: random",
+                        "$.strategies[1].sources[0].dictionary type"),
+                new Change(p, "a dictionary named with nothing", "- source: random",
                         "- dictionary: \"\"", "a list of values is named by its name",
-                        "$.strategies[1].sources[0].dictionary", "minLength"),
-                broken(p, "a group written as a list", group,
+                        "$.strategies[1].sources[0].dictionary minLength"),
+                new Change(p, "a group written as a list", GROUP,
                         "[{source: example, weight: 50}, {source: random, weight: 50}]",
                         "is a map from each source to its weight",
-                        "$.strategies[0].sources[1].weighted", "type"),
-                broken(p, "a word misspelt in a group", "example: 20", "exmaple: 20",
-                        "names 'exmaple'", "$.strategies[0].sources[1].weighted",
-                        "additionalProperties"),
-                broken(p, "every dictionary written as one dictionary in a group",
+                        "$.strategies[0].sources[1].weighted type"),
+                new Change(p, "a word misspelt in a group", "example: 20", "exmaple: 20",
+                        "names 'exmaple'",
+                        "$.strategies[0].sources[1].weighted additionalProperties"),
+                new Change(p, "every dictionary written as one dictionary in a group",
                         "dictionaries: 50", "dictionary: 50",
                         "names your dictionaries and the weight of each",
-                        "$.strategies[0].sources[1].weighted.dictionary", "type"),
-                broken(p, "a weight of 0", "example: 20, random: 30", "example: 0, random: 50",
+                        "$.strategies[0].sources[1].weighted.dictionary type"),
+                new Change(p, "a weight of 0", "example: 20, random: 30", "example: 0, random: 50",
                         "is 0, and a share or a weight",
-                        "$.strategies[0].sources[1].weighted.example", "minimum"),
-                broken(p, "a weight of 101", "dictionaries: 50", "dictionaries: 101",
+                        "$.strategies[0].sources[1].weighted.example minimum"),
+                new Change(p, "a weight of 101", "dictionaries: 50", "dictionaries: 101",
                         "is 101, and a share or a weight",
-                        "$.strategies[0].sources[1].weighted.dictionaries", "maximum"),
-                broken(p, "a method that is not one", "[GET, POST]", "[GET, FETCH]",
-                        "'FETCH' is not an HTTP method", "$.operations.methods[1]", "enum"),
-                broken(p, "a member of operations nobody recognises", "  methods: [GET, POST]\n",
-                        "  methods: [GET, POST]\n  except: [getOwner]\n",
-                        "does not recognise (except)", "$.operations", "additionalProperties"));
+                        "$.strategies[0].sources[1].weighted.dictionaries maximum"),
+                METHOD_UNKNOWN,
+                new Change(p, "a member of operations nobody recognises",
+                        "  methods: [GET, POST]\n", "  methods: [GET, POST]\n  except: [getOwner]\n",
+                        "does not recognise (except)", "$.operations additionalProperties"));
     }
 
     static Stream<Change> onlyRestestJudges() {
         Format d = Format.DICTIONARY;
         Format p = Format.PLAN;
-        String group = "{example: 20, random: 30, dictionaries: 50}";
         return Stream.of(
-                change(d, "a dictionary called fuzzing", "name: owners", "name: fuzzing",
+                new Change(d, "a dictionary called fuzzing", "name: owners", "name: fuzzing",
                         "the name of RESTest's own list of values to push with"),
-                change(p, "shares that do not add up to a hundred", "share: 70", "share: 60",
+                new Change(p, "shares that do not add up to a hundred", "share: 70", "share: 60",
                         "add up to 100"),
-                change(p, "weights that do not add up to a hundred", "dictionaries: 50",
+                new Change(p, "weights that do not add up to a hundred", "dictionaries: 50",
                         "dictionaries: 40", "add up to 100"),
-                change(p, "a group of one source", group, "{random: 100}",
+                new Change(p, "a group of one source", GROUP, "{random: 100}",
                         "has one source in it"),
-                change(p, "a group of no source", group, "{}", "names no source"),
-                change(p, "no dictionary under dictionary in a group", "dictionaries: 50",
+                new Change(p, "a group of no source", GROUP, "{}", "names no source"),
+                new Change(p, "no dictionary under dictionary in a group", "dictionaries: 50",
                         "dictionary: {}", "this one names none"),
-                change(p, "a dictionary named with nothing in a group", "dictionaries: 50",
+                new Change(p, "a dictionary named with nothing in a group", "dictionaries: 50",
                         "dictionary: {\"\": 50}", "a list of values is named by its name"),
-                change(p, "two strategies with one name", "name: fuzzing", "name: nominal",
+                new Change(p, "two strategies with one name", "name: fuzzing", "name: nominal",
                         "cannot share a name"),
-                change(p, "a strategy named with spaces", "name: nominal", "name: \"  \"",
+                new Change(p, "a strategy named with spaces", "name: nominal", "name: \"  \"",
                         "a strategy has a name"),
-                change(p, "a dictionary named with spaces", "- source: random",
+                new Change(p, "a dictionary named with spaces", "- source: random",
                         "- dictionary: \"  \"", "a list of values is named by its name"),
-                change(p, "RESTest's own list to push with named as a dictionary",
+                new Change(p, "RESTest's own list to push with named as a dictionary",
                         "- source: random", "- dictionary: fuzzing",
                         "is RESTest's own list of values to push with"),
-                change(p, "RESTest's own list to push with named in a group", "dictionaries: 50",
-                        "dictionary: {fuzzing: 50}", "is RESTest's own list of values to push "
-                                + "with"));
+                new Change(p, "RESTest's own list to push with named in a group",
+                        "dictionaries: 50", "dictionary: {fuzzing: 50}",
+                        "is RESTest's own list of values to push with"));
     }
 
     static Stream<Change> onlyReported() {
         return Stream.of(
-                change(Format.DICTIONARY, "an operation the API does not have", "  getOwner:",
-                        "  getOwnerRenamedSince:", "no such operation in this API"),
-                change(Format.PLAN, "a dictionary nobody handed over", "- source: random",
+                new Change(Format.DICTIONARY, "an operation the API does not have",
+                        "  getOwner:", "  getOwnerRenamedSince:", "no such operation in this API"),
+                new Change(Format.PLAN, "a dictionary nobody handed over", "- source: random",
                         "- dictionary: owners", "draws on a list of values called 'owners'"),
-                change(Format.PLAN, "an operation the API does not have, under only",
+                new Change(Format.PLAN, "an operation the API does not have, under only",
                         "  methods: [GET, POST]\n", "  methods: [GET, POST]\n  only: [getOwner]\n",
                         "operation(s) this API does not have (getOwner)"));
     }
 
-    private static Change change(Format format, String what, String from, String to) {
-        return new Change(what, format, from, to, null, null, null);
+    private static void assertRefusedByRestest(Change change) {
+        assertThat(change.restest().refusal())
+                .describedAs("RESTest refuses a file with %s", change.what)
+                .hasValueSatisfying(refusal -> assertThat(refusal).contains(change.restestSays));
     }
 
-    private static Change change(Format format, String what, String from, String to,
-            String restestSays) {
-        return new Change(what, format, from, to, restestSays, null, null);
-    }
-
-    private static Change broken(Format format, String what, String from, String to,
-            String restestSays, String at, String keyword) {
-        return new Change(what, format, from, to, restestSays, at, keyword);
-    }
-
-    /** What RESTest says, refusing it, of the one file a broken shape names. */
-    private static String refusalOf(String what) {
-        Change change = brokenShapes().filter(row -> row.what.equals(what)).findFirst()
-                .orElseThrow();
-        return restest(change.format, change.file()).refusal().orElseThrow();
+    /** What RESTest says, refusing the file a row makes. */
+    private static String refusalOf(Change change) {
+        return change.restest().refusal().orElseThrow();
     }
 
     /** The words RESTest lists after these, separated by commas, up to the end of the sentence. */
@@ -612,8 +626,15 @@ class PublishedSchemasTest {
 
     /** The words a closed list of the schema offers. */
     private static List<String> words(JsonValue.JsonObject schema) {
-        return schema.member("enum").map(JsonValue.JsonArray.class::cast).orElseThrow()
-                .elements().stream().map(word -> ((JsonValue.JsonString) word).value()).toList();
+        return strings(schema.member("enum").orElseThrow(() ->
+                new AssertionError("no 'enum' in " + schema.members().keySet())));
+    }
+
+    /** A list of words, as a schema writes one. */
+    private static List<String> strings(JsonValue list) {
+        return YamlText.asList(list, "a list of words", "a schema").stream()
+                .map(word -> YamlText.asText(word, "a word in a list", "a schema"))
+                .toList();
     }
 
     /**
@@ -624,85 +645,74 @@ class PublishedSchemasTest {
     private static void checkSubschema(JsonValue.JsonObject part, String where,
             JsonValue.JsonObject schema, List<String> wrong) {
         Set<String> keys = part.members().keySet();
+        boolean described = keys.stream().anyMatch(ANNOTATIONS::contains);
         keys.stream().filter(key -> !KEYWORDS.contains(key))
                 .forEach(key -> wrong.add(where + " uses '" + key + "'"));
         if (keys.contains("$ref") && keys.size() > 1) {
             wrong.add(where + " has something beside its $ref, which some engines ignore");
         }
-        if (keys.contains("anyOf") && keys.stream().anyMatch(ANNOTATIONS::contains)) {
+        if (keys.contains("anyOf") && described) {
             wrong.add(where + " describes an anyOf, which some engines refuse with no type");
         }
-        if (keys.stream().anyMatch(ANNOTATIONS::contains) && !keys.contains("type")) {
+        if (described && !keys.contains("type")) {
             wrong.add(where + " is described and has no type, which some engines refuse");
         }
         if (types(part).contains("object") && !keys.contains("additionalProperties")) {
             wrong.add(where + " may be an object and does not say whether it takes members it "
                     + "does not name, which engines answer differently when it is left out");
         }
-        part.member("properties").map(JsonValue.JsonObject.class::cast).ifPresent(properties ->
-                properties.members().forEach((name, held) -> {
-                    JsonValue.JsonObject property = (JsonValue.JsonObject) held;
-                    if (!described(property, schema)) {
+        part.member("properties").ifPresent(properties -> asObject(properties, where).members()
+                .forEach((name, held) -> {
+                    JsonValue.JsonObject property = asObject(held, where);
+                    if (!isDescribed(property, schema)) {
                         wrong.add(where + "/properties/" + name + " is not described");
                     }
                     checkSubschema(property, where + "/properties/" + name, schema, wrong);
                 }));
-        part.member("definitions").map(JsonValue.JsonObject.class::cast).ifPresent(definitions ->
-                definitions.members().forEach((name, held) -> checkSubschema(
-                        (JsonValue.JsonObject) held, where + "/definitions/" + name, schema,
-                        wrong)));
-        Stream.of("items", "additionalProperties")
-                .flatMap(key -> part.member(key).stream().map(held -> Map.entry(key, held)))
-                .filter(held -> held.getValue() instanceof JsonValue.JsonObject)
-                .forEach(held -> checkSubschema((JsonValue.JsonObject) held.getValue(),
-                        where + "/" + held.getKey(), schema, wrong));
-        part.member("anyOf").map(JsonValue.JsonArray.class::cast).ifPresent(choices -> {
-            for (int i = 0; i < choices.elements().size(); i++) {
-                checkSubschema((JsonValue.JsonObject) choices.elements().get(i),
-                        where + "/anyOf/" + i, schema, wrong);
+        part.member("definitions").ifPresent(definitions -> asObject(definitions, where).members()
+                .forEach((name, held) -> checkSubschema(asObject(held, where),
+                        where + "/definitions/" + name, schema, wrong)));
+        for (String key : List.of("items", "additionalProperties")) {
+            if (part.member(key).orElse(JsonValue.NULL) instanceof JsonValue.JsonObject inside) {
+                checkSubschema(inside, where + "/" + key, schema, wrong);
             }
-        });
+        }
+        List<JsonValue> choices = part.member("anyOf")
+                .map(held -> YamlText.asList(held, "'anyOf'", where)).orElse(List.of());
+        for (int i = 0; i < choices.size(); i++) {
+            checkSubschema(asObject(choices.get(i), where), where + "/anyOf/" + i, schema, wrong);
+        }
     }
 
     /** The types a part of a schema allows, whether written as one word or as a list of them. */
     private static List<String> types(JsonValue.JsonObject part) {
         return switch (part.member("type").orElse(JsonValue.NULL)) {
             case JsonValue.JsonString one -> List.of(one.value());
-            case JsonValue.JsonArray several -> several.elements().stream()
-                    .map(type -> ((JsonValue.JsonString) type).value()).toList();
+            case JsonValue.JsonArray several -> strings(several);
             default -> List.of();
         };
     }
 
     /** Whether a member says what it is, itself or through the definition it refers to. */
-    private static boolean described(JsonValue.JsonObject property, JsonValue.JsonObject schema) {
+    private static boolean isDescribed(JsonValue.JsonObject property,
+            JsonValue.JsonObject schema) {
         if (property.member("description").isPresent()) {
             return true;
         }
-        return property.member("$ref").map(ref -> ((JsonValue.JsonString) ref).value())
+        return property.member("$ref").map(ref -> YamlText.asText(ref, "a '$ref'", "a schema"))
                 .filter(ref -> ref.startsWith("#/definitions/"))
-                .map(ref -> object(object(schema, "definitions"),
+                .map(ref -> object(schema, "definitions",
                         ref.substring("#/definitions/".length())))
                 .map(definition -> definition.member("description").isPresent())
                 .orElse(false);
     }
 
-    /**
-     * Whether a block of YAML is a whole file rather than a piece of one: its first line that is
-     * neither blank nor a comment is its version, as a file somebody copies starts.
-     */
-    private static boolean isWholeFile(String block) {
-        return block.lines().map(String::strip)
-                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
-                .findFirst().filter(line -> line.startsWith("version:")).isPresent();
-    }
-
     /** Which kind of file a whole one is, by the member only that kind has. */
-    private static Optional<Format> formatOf(String block) {
-        if (block.lines().anyMatch(line -> line.startsWith("keyedBy:"))) {
+    private static Optional<Format> formatOf(Set<String> members) {
+        if (members.contains("keyedBy")) {
             return Optional.of(Format.DICTIONARY);
         }
-        if (block.lines().anyMatch(line -> line.startsWith("strategies:"))) {
+        if (members.contains("strategies")) {
             return Optional.of(Format.PLAN);
         }
         return Optional.empty();
@@ -722,12 +732,12 @@ class PublishedSchemasTest {
     }
 
     /** README.md, and every page under docs/ but the decision records, which are history. */
-    private static List<Path> pages() throws IOException {
-        Path root = RepositoryRoot.locate();
+    private static List<Path> pages(Path root) throws IOException {
+        Path decisions = root.resolve("docs").resolve("adr");
         try (Stream<Path> docs = Files.walk(root.resolve("docs"))) {
             return Stream.concat(Stream.of(root.resolve("README.md")), docs
                     .filter(path -> path.toString().endsWith(".md"))
-                    .filter(path -> !path.startsWith(root.resolve("docs").resolve("adr")))
+                    .filter(path -> !path.startsWith(decisions))
                     .sorted()).toList();
         }
     }
@@ -762,55 +772,28 @@ class PublishedSchemasTest {
     /** What the validator makes of a file, read the way RESTest reads it. */
     private static List<Error> validate(Format format, String file) {
         Schema checker = CHECKERS.computeIfAbsent(format,
-                which -> REGISTRY.getSchema(read(which.schema()), InputFormat.JSON));
+                which -> REGISTRY.getSchema(which.written(), InputFormat.JSON));
         return checker.validate(JsonText.write(YamlText.read(file, "a file of the test")),
                 InputFormat.JSON);
     }
 
-    /**
-     * Where the validator says a file is wrong, and the rule of the schema it breaks there.
-     *
-     * <p>The place is written as an ordinary validator prints it to a person -
-     * {@code $.strategies[0].kind} - rather than in this validator's own notation, so that the rows
-     * above read the way the documentation's examples of a validator's output do.
-     */
-    private static String placeAndRule(Error error) {
-        NodePath path = error.getInstanceLocation();
-        StringBuilder place = new StringBuilder("$");
-        for (int i = 0; i < path.getNameCount(); i++) {
-            Object step = path.getElement(i);
-            place.append(step instanceof Integer index ? "[" + index + "]" : "." + step);
+    /** The object a path of members leads to inside a schema, or a failure naming the step. */
+    private static JsonValue.JsonObject object(JsonValue.JsonObject in, String... path) {
+        JsonValue.JsonObject at = in;
+        for (String member : path) {
+            JsonValue.JsonObject from = at;
+            at = asObject(from.member(member).orElseThrow(() -> new AssertionError(
+                    "no '" + member + "' in " + from.members().keySet())), "'" + member + "'");
         }
-        return place + " " + error.getKeyword();
+        return at;
     }
 
-    private static JsonValue.JsonObject schemaOf(Format format) {
-        return (JsonValue.JsonObject) JsonText.read(read(format.schema()));
-    }
-
-    private static JsonValue.JsonObject object(JsonValue.JsonObject in, String member) {
-        return in.member(member).map(JsonValue.JsonObject.class::cast).orElseThrow(() ->
-                new AssertionError("no '" + member + "' in " + in.members().keySet()));
+    private static JsonValue.JsonObject asObject(JsonValue value, String where) {
+        return YamlText.asObject(value, where, "a schema");
     }
 
     private static String text(JsonValue.JsonObject in, String member) {
-        return in.member(member).map(value -> ((JsonValue.JsonString) value).value())
-                .orElseThrow(() -> new AssertionError("no '" + member + "'"));
-    }
-
-    /** The version this checkout builds, read from the root pom as dist/version.sh reads it. */
-    private static String pomVersion() {
-        Matcher version = Pattern.compile("^    <version>(.*)</version>$", Pattern.MULTILINE)
-                .matcher(read(RepositoryRoot.locate().resolve("pom.xml")).replace("\r", ""));
-        assertThat(version.find()).describedAs("the root pom says its version").isTrue();
-        return version.group(1);
-    }
-
-    private static String read(Path file) {
-        try {
-            return Files.readString(file);
-        } catch (IOException cannotRead) {
-            throw new UncheckedIOException(cannotRead);
-        }
+        return YamlText.asText(in.member(member).orElseThrow(() ->
+                new AssertionError("no '" + member + "'")), "'" + member + "'", "a schema");
     }
 }

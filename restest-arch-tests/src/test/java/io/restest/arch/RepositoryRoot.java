@@ -88,6 +88,19 @@ final class RepositoryRoot {
         return List.copyOf(modules);
     }
 
+    /**
+     * The version this checkout builds, read from the aggregator POM the way
+     * {@code dist/version.sh} reads it: the first version indented as the project's own is.
+     */
+    static String version() {
+        Matcher version = Pattern.compile("^    <version>(.*)</version>$", Pattern.MULTILINE)
+                .matcher(read(locate().resolve("pom.xml")).replace("\r", ""));
+        if (!version.find()) {
+            throw new IllegalStateException("The aggregator POM says no version of its own.");
+        }
+        return version.group(1);
+    }
+
     static String read(Path file) {
         try {
             return Files.readString(file);

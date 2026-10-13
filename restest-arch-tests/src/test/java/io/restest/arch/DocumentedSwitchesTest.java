@@ -17,6 +17,7 @@ package io.restest.arch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.arch.YamlBlocks.Block;
 import io.restest.cli.Restest;
 import io.restest.core.json.JsonValue;
 import io.restest.core.json.YamlText;
@@ -316,7 +317,7 @@ class DocumentedSwitchesTest {
         Map<String, String> partOf = new LinkedHashMap<>();
         rows().forEach(row -> partOf.put(row.name(), row.partOf()));
 
-        List<YamlBlocks.Block> forOneIdea = blocks().stream()
+        List<Block> forOneIdea = blocks().stream()
                 .filter(block -> partOf.containsValue(block.label()))
                 .toList();
         assertThat(forOneIdea).isNotEmpty();
@@ -403,27 +404,25 @@ class DocumentedSwitchesTest {
     }
 
     /** Every block of YAML on the page, as it is written there. */
-    private static List<YamlBlocks.Block> blocks() {
+    private static List<Block> blocks() {
         return YamlBlocks.on(page);
     }
 
     /** The blocks that are files of settings: every one that is not a plan. */
     private static List<String> filesOfSettings() {
-        return blocks().stream().map(YamlBlocks.Block::text).filter(block -> !isAPlan(block))
-                .toList();
+        return blocks().stream().map(Block::text).filter(block -> !isAPlan(block)).toList();
     }
 
     /** The blocks that are plans, told apart by the strategies only a plan has. */
     private static List<String> plans() {
-        return blocks().stream().map(YamlBlocks.Block::text)
-                .filter(DocumentedSwitchesTest::isAPlan).toList();
+        return blocks().stream().map(Block::text).filter(DocumentedSwitchesTest::isAPlan).toList();
     }
 
     /** The one file of settings on the page with this label in bold before it. */
     private static String labelled(String label) {
         List<String> found = blocks().stream()
                 .filter(block -> block.label().equals(label) && !isAPlan(block.text()))
-                .map(YamlBlocks.Block::text)
+                .map(Block::text)
                 .toList();
         assertThat(found)
                 .describedAs("the page is supposed to have one file labelled '%s'", label)
@@ -435,7 +434,7 @@ class DocumentedSwitchesTest {
     private static String fileUnder(String heading) {
         List<String> found = blocks().stream()
                 .filter(block -> block.heading().equals(heading) && !isAPlan(block.text()))
-                .map(YamlBlocks.Block::text)
+                .map(Block::text)
                 .toList();
         assertThat(found)
                 .describedAs("the page is supposed to have one file under '%s'", heading)
@@ -481,8 +480,7 @@ class DocumentedSwitchesTest {
     }
 
     private static boolean isAPlan(String block) {
-        return YamlText.read(block, "a block on the switches page")
-                instanceof JsonValue.JsonObject read && read.members().containsKey("strategies");
+        return YamlBlocks.members(block).contains("strategies");
     }
 
     /**
