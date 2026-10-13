@@ -155,10 +155,11 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
         /**
          * Whether this strategy's requests are built to push at the API.
          *
-         * <p>Worked out from what it draws on rather than stated: a strategy that draws on the list
-         * of values to push with is pushing, because that is what those values are. Deriving it
-         * means a plan somebody wrote by hand gets the same treatment as the one RESTest ships,
-         * without a word in the file whose only job is to be true.
+         * <p>Worked out from what it draws on: a strategy that draws on the list of values to push
+         * with is pushing, because that is what those values are. A plan's file says so with the
+         * kind {@code fuzzing}, which is read as drawing on that list before anything else, so the
+         * word in the file and what the strategy does cannot come apart; and a strategy built
+         * without a file is judged the same way.
          *
          * @return whether it draws on the list of values to push with
          */
@@ -323,12 +324,6 @@ public record Campaign(List<PlannedStrategy> strategies, WhichOperations operati
                 }
             }
             return Optional.empty();
-        }
-
-        /** Every word a plan may use, in the order they are written here, for saying so. */
-        public static String allOfThem() {
-            return java.util.Arrays.stream(values()).map(Builtin::inAPlan)
-                    .reduce((a, b) -> a + ", " + b).orElseThrow();
         }
     }
 }

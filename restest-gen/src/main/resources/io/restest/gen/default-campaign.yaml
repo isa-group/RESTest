@@ -14,15 +14,19 @@
 # an API gets asked what it does when something unexpected arrives - looking not for a refusal,
 # which is a fair answer, but for the API falling over.
 #
-# The shares add up to 100, and so do the weights inside any one group.
+# Each strategy has a name, which is what reports print, and a kind, which is what it does:
+# nominal, sequences, mutation or fuzzing. Here every name is its kind's word, but a name can be
+# anything. The shares add up to 100, and so do the weights inside any one group, which is a map
+# from each source to its weight.
 
-version: 1
+version: 2
 
 strategies:
 
   # Requests meant to work.
   - name: nominal
     share: 45
+    kind: nominal
     sources:
 
       # A closed list of accepted values is not advice: it is the whole set of values the API
@@ -45,13 +49,11 @@ strategies:
 
           # What the document's author wrote down. Usually a value that existed in the API they
           # were looking at, which is why it is worth more than anything invented.
-          - source: example
-            weight: 15
+          example: 15
 
           # Invented to fit the shape. Here rather than after the group on purpose: a source
           # below a group is never reached for any value the group could answer.
-          - source: random
-            weight: 20
+          random: 20
 
           # What this API itself has already sent back, earlier in this run, and what it accepted
           # in a request to another operation - the password a registration went with, for a
@@ -79,19 +81,16 @@ strategies:
           # group so that they still add up to 100, switch the series and the changes off, and the
           # seed repeats the run again. What you have instead is --store, which keeps every request
           # and reply of the run you actually had.
-          - source: observed
-            weight: 20
+          observed: 20
 
           # Every list of values passed with --dictionary, in the order they were passed.
           # Nothing by default; when there is one it is the most specific thing anybody knows
           # about this API, which is why it is weighted highest of the five.
-          - dictionaries: given
-            weight: 40
+          dictionaries: 40
 
           # What the API uses when the caller sends nothing. One value, so it never varies,
           # which is why it is asked least.
-          - source: default
-            weight: 5
+          default: 5
 
   # A creation, sent as the first request of a short series about the thing it creates. Each series
   # asks one question: is a deleted thing gone when it is read again? is a second deletion answered
@@ -108,20 +107,15 @@ strategies:
   # The sources below are where every step's values come from, the creation's included.
   - name: sequences
     share: 15
-    sends: sequences
+    kind: sequences
     sources:
       - source: enum
       - weighted:
-          - source: example
-            weight: 15
-          - source: random
-            weight: 20
-          - source: observed
-            weight: 20
-          - dictionaries: given
-            weight: 40
-          - source: default
-            weight: 5
+          example: 15
+          random: 20
+          observed: 20
+          dictionaries: 40
+          default: 5
 
   # A request the API accepted, sent again with exactly one thing changed: something it requires
   # left out, a number one past the largest it allows, a word where it wants a number, a value off
@@ -139,29 +133,23 @@ strategies:
   # the same way nominal builds one.
   - name: mutation
     share: 30
-    mutates: accepted
+    kind: mutation
     sources:
       - source: enum
       - weighted:
-          - source: example
-            weight: 15
-          - source: random
-            weight: 20
-          - source: observed
-            weight: 20
-          - dictionaries: given
-            weight: 40
-          - source: default
-            weight: 5
+          example: 15
+          random: 20
+          observed: 20
+          dictionaries: 40
+          default: 5
 
-  # Requests built from values nobody sensible would send.
+  # Requests built from values nobody sensible would send. A strategy of this kind asks the list of
+  # awkward values that travels with RESTest first, before anything written below, which is what
+  # makes it push at the API.
   - name: fuzzing
     share: 10
+    kind: fuzzing
     sources:
-
-      # The list of awkward values that travels with RESTest, and RESTest's own: no list handed
-      # over can take its name.
-      - dictionary: fuzzing
 
       # For the values that list has nothing sendable for - a parameter whose shape has no kind
       # to look up, in a place its one catch-all value cannot be written into. Without this the

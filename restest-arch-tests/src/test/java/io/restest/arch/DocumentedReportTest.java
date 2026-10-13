@@ -220,24 +220,24 @@ class DocumentedReportTest {
      * builds ordinary requests, and a slow machine may reach neither in a few seconds.
      */
     private static final String A_PLAN_FOR_EVERY_PART = """
-            version: 1
+            version: 2
             strategies:
               - name: sequences
                 share: 45
-                sends: sequences
+                kind: sequences
                 sources:
                   - source: enum
                   - source: random
               - name: mutation
                 share: 45
-                mutates: accepted
+                kind: mutation
                 sources:
                   - source: enum
                   - source: random
               - name: fuzzing
                 share: 10
+                kind: fuzzing
                 sources:
-                  - dictionary: fuzzing
                   - source: random
             """;
 

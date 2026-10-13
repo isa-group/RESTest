@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Reads a plan out of the text of a file.
@@ -35,56 +37,49 @@ import java.util.Set;
  * for, and nothing in the output would say so.
  *
  * <pre>{@code
- * version: 1
+ * version: 2
  * strategies:
  *   - name: nominal
  *     share: 75
+ *     kind: nominal
  *     sources:
  *       - source: enum
- *       - weighted:
- *           - source: example
- *             weight: 60
- *           - source: random
- *             weight: 40
+ *       - weighted: {example: 60, random: 40}
  *   - name: mutation
  *     share: 15
- *     mutates: accepted
+ *     kind: mutation
  *     sources:
  *       - source: enum
  *       - source: random
  *   - name: sequences
  *     share: 10
- *     sends: sequences
+ *     kind: sequences
  *     sources:
- *       - source: enum
+ *       - dictionary: pet-clinic
  *       - source: random
  * operations:
  *   methods: [GET, POST]
  * }</pre>
+ *
+ * <p>Every thing a plan says has one way to be written. A strategy says what it does in its
+ * {@code kind}, one word. A source is one of RESTest's own, by a word, or one of the lists somebody
+ * handed over, by its name; a group to choose between is a map from each source to its weight.
+ * What a strategy of the kind that pushes at the API draws on first - the list of awkward values
+ * RESTest carries - comes with the kind, and is not written among its sources.
  */
 final class CampaignDocument {
 
     /** The version of the file format this build writes and reads. */
-    static final long VERSION = 1;
+    static final long VERSION = 2;
 
     /** The members a plan may have. Anything else is a typo, and a typo is worth saying. */
     private static final List<String> MEMBERS = List.of("version", "strategies", "operations");
 
-    /** The members one strategy may have. */
-    private static final List<String> STRATEGY_MEMBERS =
-            List.of("name", "share", "mutates", "sends", "sources");
+    /** The members one strategy may have, every one of them required. */
+    private static final List<String> STRATEGY_MEMBERS = List.of("name", "share", "kind", "sources");
 
-    /**
-     * What a strategy says it changes, when it builds its requests by changing ones the API
-     * accepted rather than from nothing. One word, for now: the requests the API accepted.
-     */
-    private static final String ACCEPTED = "accepted";
-
-    /**
-     * What a strategy says it sends, when a creation it builds starts a series of requests about
-     * the thing created rather than standing alone. One word, for now: series.
-     */
-    private static final String SEQUENCES = "sequences";
+    /** What a strategy can be, each a different way of building its requests. */
+    private static final List<String> KINDS = List.of("nominal", "fuzzing", "mutation", "sequences");
 
     /** The members the operation filter may have. */
     private static final List<String> OPERATIONS_MEMBERS = List.of("methods", "only");
@@ -92,18 +87,24 @@ final class CampaignDocument {
     /** How a step naming one of the tool's own sources is written. */
     private static final String SOURCE = "source";
 
-    /** How a step naming one list of values is written. */
+    /** How a step naming one list of values is written, and the key that names lists in a group. */
     private static final String DICTIONARY = "dictionary";
-
-    /** How a step naming every list the run was handed is written, and the one word it takes. */
-    private static final String DICTIONARIES = "dictionaries";
-    private static final String GIVEN = "given";
 
     /** How a step naming several sources to choose between is written. */
     private static final String WEIGHTED = "weighted";
 
-    /** What one source inside such a group says about how often it should be chosen. */
-    private static final String WEIGHT = "weight";
+    /** The word for every list this run was handed, which is one of the tool's own sources. */
+    private static final String EVERY_LIST_GIVEN = "dictionaries";
+
+    /**
+     * The words that name a source of the tool's own, and the order they always take inside a
+     * group - the order the plan RESTest carries writes them in, with the closed list of accepted
+     * values last because it is rarely chosen among at all. A group's members are drawn in this
+     * order whatever order a file wrote them in, so a file rewritten by a tool that sorts the keys
+     * of a map sends the same requests from the same seed.
+     */
+    private static final List<String> SOURCE_WORDS =
+            List.of("example", "random", "observed", EVERY_LIST_GIVEN, "default", "enum");
 
     private CampaignDocument() {
     }
@@ -123,9 +124,9 @@ final class CampaignDocument {
             return readOrRefuse(text, describedAs);
         } catch (IllegalArgumentException notAPlan) {
             // The records a plan is made of validate themselves, and what they throw for is a
-            // person's typo rather than a fault in the tool: a weight of nought, a list named by
-            // the empty string. Said the way every other thing wrong with a file is said, so the
-            // run answers "your file" rather than "RESTest broke".
+            // person's typo rather than a fault in the tool: shares that do not add up, a list
+            // named by the empty string. Said the way every other thing wrong with a file is said,
+            // so the run answers "your file" rather than "RESTest broke".
             throw new JsonException(describedAs + ": " + notAPlan.getMessage());
         }
     }
@@ -134,14 +135,15 @@ final class CampaignDocument {
         JsonValue.JsonObject document =
                 YamlText.asObject(YamlText.read(text, describedAs), "a plan", describedAs);
         // The version is read before anything else is judged, for the reason a dictionary reads
-        // its own first: a file written in a later version of the format will have members this
+        // its own first: a file written in another version of the format will have members this
         // build does not know, and telling its author they have misspelt something would be the
         // one message that is certainly wrong about it.
         long version = YamlText.asWholeNumber(required(document, "version", describedAs),
                 "'version'", describedAs);
         if (version != VERSION) {
             throw new JsonException(describedAs + " is a plan written in version " + version
-                    + " of the format, and this version of RESTest reads version " + VERSION);
+                    + " of the format, and this version of RESTest reads version " + VERSION
+                    + "; 'restest run --print-campaign' prints a plan it reads");
         }
         rejectAnythingUnrecognised(document, MEMBERS, "a plan", describedAs);
 
@@ -166,133 +168,186 @@ final class CampaignDocument {
         String where = "the strategy called '" + name + "'";
         int share = asShare(YamlText.asWholeNumber(required(stated, "share", describedAs),
                 where + "'s 'share'", describedAs), where + "'s 'share'", describedAs);
-        boolean mutates = stated.member("mutates")
-                .map(said -> mutates(YamlText.asText(said, where + "'s 'mutates'", describedAs),
-                        where, describedAs))
-                .orElse(false);
-        boolean sends = stated.member("sends")
-                .map(said -> sends(YamlText.asText(said, where + "'s 'sends'", describedAs),
-                        where, describedAs))
-                .orElse(false);
+        String kind = YamlText.asText(stated.member("kind").orElseThrow(() -> new JsonException(
+                describedAs + ": " + where + " says no 'kind', and every strategy says which it is: "
+                        + String.join(", ", KINDS))), where + "'s 'kind'", describedAs);
+        if (!KINDS.contains(kind)) {
+            throw new JsonException(describedAs + ": " + where + " is of kind '" + kind
+                    + "', and a strategy's kind is one of " + String.join(", ", KINDS));
+        }
         List<Campaign.Entry> sources = new ArrayList<>();
-        for (JsonValue held : YamlText.asList(required(stated, "sources", describedAs),
-                where + "'s 'sources'", describedAs)) {
+        if ("fuzzing".equals(kind)) {
+            // What makes a strategy one that pushes: the list of awkward values RESTest carries,
+            // asked before anything the strategy names, which is there for the values that list
+            // has nothing sendable for.
+            sources.add(new Campaign.Entry.Single(
+                    new Campaign.Source.OneList(RandomTestCaseGenerator.PUSHES_AT_THE_API)));
+        }
+        List<JsonValue> written = YamlText.asList(required(stated, "sources", describedAs),
+                where + "'s 'sources'", describedAs);
+        if (written.isEmpty()) {
+            throw new JsonException(describedAs + ": " + where + " has no sources, and every "
+                    + "strategy needs at least one: it is where values come from, and for a "
+                    + "strategy of kind fuzzing it is what is asked where RESTest's own awkward "
+                    + "values have nothing to send");
+        }
+        for (JsonValue held : written) {
             sources.add(entry(YamlText.asObject(held, "a source of " + where, describedAs),
                     where, describedAs));
         }
-        return new Campaign.PlannedStrategy(name, share, sources, mutates, sends);
-    }
-
-    /**
-     * What a strategy says it sends. Only series about a thing the run created can be sent, and
-     * anything else is refused by name, for the reason {@link #mutates} gives.
-     */
-    private static boolean sends(String said, String where, String describedAs) {
-        if (!SEQUENCES.equals(said)) {
-            throw new JsonException(describedAs + ": " + where + " says it sends '" + said
-                    + "', and the only thing a strategy can send besides single requests is a "
-                    + "series about a thing it created, written 'sends: " + SEQUENCES + "'");
-        }
-        return true;
-    }
-
-    /**
-     * What a strategy says it changes. Only the requests the API accepted can be changed, and
-     * anything else is refused by name: a plan that meant something this version cannot do should
-     * be told so, not run as though it had said nothing.
-     */
-    private static boolean mutates(String said, String where, String describedAs) {
-        if (!ACCEPTED.equals(said)) {
-            throw new JsonException(describedAs + ": " + where + " says it changes '" + said
-                    + "', and the only requests a strategy can change are the ones the API "
-                    + "accepted, written 'mutates: " + ACCEPTED + "'");
-        }
-        return true;
+        return new Campaign.PlannedStrategy(name, share, sources, "mutation".equals(kind),
+                "sequences".equals(kind));
     }
 
     /**
      * One step of a strategy's list: a single source, or a group to choose between.
      *
-     * <p>Which of the two it is comes from the word it is written under, so that neither has to be
-     * worked out from its shape. A step that uses none of the four words is a step nobody can act
-     * on, and saying which four they are is more use than saying it was not understood.
+     * <p>Which of the three it is comes from the word it is written under, so that none has to be
+     * worked out from its shape.
      */
     private static Campaign.Entry entry(JsonValue.JsonObject stated, String where,
             String describedAs) {
-        if (stated.member(WEIGHTED).isPresent()) {
-            rejectAnythingUnrecognised(stated, List.of(WEIGHTED), "a group of sources",
-                    describedAs);
-            List<Campaign.Share> among = new ArrayList<>();
-            for (JsonValue held : YamlText.asList(stated.member(WEIGHTED).orElseThrow(),
-                    "a '" + WEIGHTED + "' group of " + where, describedAs)) {
-                JsonValue.JsonObject one =
-                        YamlText.asObject(held, "a source inside a group", describedAs);
-                int weight = asShare(YamlText.asWholeNumber(
-                        one.member(WEIGHT).orElseThrow(() -> new JsonException(describedAs
-                                + ": a source inside a '" + WEIGHTED + "' group says how much of "
-                                + "the choice it gets, and this one has no '" + WEIGHT + "'")),
-                        "a '" + WEIGHT + "'", describedAs),
-                        "a '" + WEIGHT + "'", describedAs);
-                among.add(new Campaign.Share(source(one, List.of(WEIGHT), describedAs), weight));
+        if (stated.member("weight").isPresent()) {
+            throw new JsonException(describedAs + ": a source of " + where + " carries a "
+                    + "'weight', and a weight only goes inside a '" + WEIGHTED + "' group, as "
+                    + WEIGHTED + ": {example: 50, random: 50}");
+        }
+        rejectAnythingUnrecognised(stated, List.of(SOURCE, DICTIONARY, WEIGHTED), "a source",
+                describedAs);
+        List<String> ways = List.of(SOURCE, DICTIONARY, WEIGHTED).stream()
+                .filter(way -> stated.member(way).isPresent()).toList();
+        if (ways.isEmpty()) {
+            throw new JsonException(describedAs + ": a source of " + where + " says where its "
+                    + "values come from, with '" + SOURCE + "' for one of RESTest's own, '"
+                    + DICTIONARY + "' for one of your dictionaries by its name, or '" + WEIGHTED
+                    + "' for a group to choose between. This one says none of them");
+        }
+        if (ways.size() > 1) {
+            throw new JsonException(describedAs + ": a source of " + where + " is named one way, "
+                    + "and this one is named " + ways.size() + " ways at once ("
+                    + String.join(", ", ways) + ")");
+        }
+        JsonValue said = stated.member(ways.getFirst()).orElseThrow();
+        return switch (ways.getFirst()) {
+            case SOURCE -> new Campaign.Entry.Single(ownSource(
+                    YamlText.asText(said, "a '" + SOURCE + "'", describedAs), describedAs));
+            case DICTIONARY -> {
+                if (said instanceof JsonValue.JsonObject) {
+                    throw new JsonException(describedAs + ": a source of " + where + " gives '"
+                            + DICTIONARY + "' a map of weights, and weights only go inside a '"
+                            + WEIGHTED + "' group; on its own, one of your dictionaries is named "
+                            + "as " + DICTIONARY + ": <its name>");
+                }
+                yield new Campaign.Entry.Single(oneList(
+                        YamlText.asText(said, "a '" + DICTIONARY + "'", describedAs), describedAs));
             }
-            return new Campaign.Entry.Group(among);
-        }
-        if (stated.member(WEIGHT).isPresent()) {
-            throw new JsonException(describedAs + ": a source of " + where + " carries a '" + WEIGHT
-                    + "', but it is not inside a '" + WEIGHTED + "' group - and on its own a source "
-                    + "is simply asked, so there is no choice for a weight to divide");
-        }
-        return new Campaign.Entry.Single(source(stated, List.of(), describedAs));
+            default -> group(said, where, describedAs);
+        };
     }
 
     /**
-     * Which source one step names, out of the three ways of naming one.
-     *
-     * @param stated the step
-     * @param besides members that belong to the step rather than to the source, such as a weight
+     * A group to choose between: a map from each source to its weight, with the lists somebody
+     * handed over under {@code dictionary}, by name.
      */
-    private static Campaign.Source source(JsonValue.JsonObject stated, List<String> besides,
-            String describedAs) {
-        List<String> allowed = new ArrayList<>(besides);
-        allowed.add(SOURCE);
-        allowed.add(DICTIONARY);
-        allowed.add(DICTIONARIES);
-        rejectAnythingUnrecognised(stated, allowed, "a source", describedAs);
-
-        List<String> ways = List.of(SOURCE, DICTIONARY, DICTIONARIES).stream()
-                .filter(way -> stated.member(way).isPresent()).toList();
-        if (ways.size() > 1) {
-            throw new JsonException(describedAs + ": a source is named one way, and this one is "
-                    + "named " + ways.size() + " ways at once (" + String.join(", ", ways) + ")");
+    private static Campaign.Entry group(JsonValue said, String where, String describedAs) {
+        String what = "a '" + WEIGHTED + "' group of " + where;
+        if (!(said instanceof JsonValue.JsonObject map)) {
+            throw new JsonException(describedAs + ": " + what + " is a map from each source to its "
+                    + "weight, such as " + WEIGHTED + ": {example: 50, random: 50}");
         }
-        if (stated.member(SOURCE).isPresent()) {
-            String word = YamlText.asText(stated.member(SOURCE).orElseThrow(),
-                    "a '" + SOURCE + "'", describedAs);
-            return new Campaign.Source.Builtin(Campaign.Builtin.named(word)
-                    .orElseThrow(() -> new JsonException(describedAs + ": '" + word + "' is not "
-                            + "one of the sources RESTest has of its own, which are "
-                            + Campaign.Builtin.allOfThem() + ". A list of values is named with '"
-                            + DICTIONARY + "' instead")));
-        }
-        if (stated.member(DICTIONARY).isPresent()) {
-            return new Campaign.Source.OneList(YamlText.asText(
-                    stated.member(DICTIONARY).orElseThrow(), "a '" + DICTIONARY + "'",
-                    describedAs));
-        }
-        if (stated.member(DICTIONARIES).isPresent()) {
-            String word = YamlText.asText(stated.member(DICTIONARIES).orElseThrow(),
-                    "a '" + DICTIONARIES + "'", describedAs);
-            if (!GIVEN.equals(word)) {
-                throw new JsonException(describedAs + ": '" + DICTIONARIES + "' says which lists "
-                        + "are meant, and the only thing it can say is '" + GIVEN + "' - every list "
-                        + "this run was handed. To name one list, write '" + DICTIONARY + "'");
+        Map<String, Integer> own = new TreeMap<>(java.util.Comparator.comparingInt(
+                SOURCE_WORDS::indexOf));
+        Map<String, Integer> lists = new TreeMap<>();
+        map.members().forEach((key, weight) -> {
+            if (DICTIONARY.equals(key)) {
+                lists.putAll(weightedLists(weight, what, describedAs));
+                return;
             }
+            if (!SOURCE_WORDS.contains(key)) {
+                throw new JsonException(describedAs + ": " + what + " has '" + key + "', "
+                        + whatIsNotASource(key) + "; a group holds RESTest's own sources ("
+                        + String.join(", ", SOURCE_WORDS) + ") and your dictionaries under '"
+                        + DICTIONARY + "'");
+            }
+            own.put(key, weight(weight, "'" + key + "' in " + what, describedAs));
+        });
+        List<Campaign.Share> among = new ArrayList<>();
+        own.forEach((word, weight) -> among.add(new Campaign.Share(ownSource(word, describedAs),
+                weight)));
+        lists.forEach((name, weight) -> among.add(new Campaign.Share(oneList(name, describedAs),
+                weight)));
+        if (among.size() < 2) {
+            throw new JsonException(describedAs + ": " + what + " has one source in it, and a "
+                    + "group is for choosing between several; one on its own is written on its "
+                    + "own, as " + SOURCE + ": random");
+        }
+        return new Campaign.Entry.Group(among);
+    }
+
+    /** The lists somebody handed over, by name, with the weight each gets in a group. */
+    private static Map<String, Integer> weightedLists(JsonValue said, String what,
+            String describedAs) {
+        if (!(said instanceof JsonValue.JsonObject names) || names.members().isEmpty()) {
+            throw new JsonException(describedAs + ": '" + DICTIONARY + "' in " + what + " names "
+                    + "your dictionaries and the weight of each, as " + DICTIONARY
+                    + ": {pet-clinic: 40}" + (said instanceof JsonValue.JsonNumber
+                            ? "; for every dictionary handed over at once, write "
+                                    + EVERY_LIST_GIVEN + ": " + ((JsonValue.JsonNumber) said)
+                                            .value().toPlainString()
+                            : ", and this one names none"));
+        }
+        Map<String, Integer> weights = new TreeMap<>();
+        names.members().forEach((name, weight) -> weights.put(name,
+                weight(weight, "'" + name + "' in " + what, describedAs)));
+        return weights;
+    }
+
+    private static int weight(JsonValue said, String what, String describedAs) {
+        return asShare(YamlText.asWholeNumber(said, what, describedAs), what, describedAs);
+    }
+
+    /** One of the tool's own sources, by the word that names it. */
+    private static Campaign.Source ownSource(String word, String describedAs) {
+        if (EVERY_LIST_GIVEN.equals(word)) {
             return new Campaign.Source.EveryListGiven();
         }
-        throw new JsonException(describedAs + ": a source says where its values come from, with '"
-                + SOURCE + "' for one of RESTest's own, '" + DICTIONARY + "' for one list by name, "
-                + "or '" + DICTIONARIES + ": " + GIVEN + "' for every list this run was handed. "
-                + "This one says none of them");
+        return Campaign.Builtin.named(word).<Campaign.Source>map(Campaign.Source.Builtin::new)
+                .orElseThrow(() -> new JsonException(describedAs + ": '" + word + "' "
+                        + whatIsNotASource(word) + "; RESTest's own sources are "
+                        + String.join(", ", SOURCE_WORDS) + ", and one of your dictionaries is "
+                        + "named with '" + DICTIONARY + "' instead"));
+    }
+
+    /** One list somebody handed over, by its name. */
+    private static Campaign.Source oneList(String name, String describedAs) {
+        if (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(name)) {
+            throw new JsonException(describedAs + ": " + whatFuzzingIs());
+        }
+        return new Campaign.Source.OneList(name);
+    }
+
+    /**
+     * What a word that names none of the tool's sources most likely meant, said after it.
+     *
+     * <p>Two near misses are worth naming. The list of awkward values RESTest carries is not a
+     * source a plan names, since it comes with the kind that pushes; and {@code dictionary} and
+     * {@code dictionaries} are one letter apart and mean different things.
+     */
+    private static String whatIsNotASource(String word) {
+        if (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(word)) {
+            return "which is not a source: " + whatFuzzingIs();
+        }
+        if (DICTIONARY.equals(word)) {
+            return "which is not one of RESTest's own sources: for every dictionary handed over, "
+                    + "write '" + EVERY_LIST_GIVEN + "'";
+        }
+        return "which is not one of RESTest's own sources";
+    }
+
+    private static String whatFuzzingIs() {
+        return "'" + RandomTestCaseGenerator.PUSHES_AT_THE_API + "' is RESTest's own list of "
+                + "values to push with, which a strategy of kind fuzzing asks before its own "
+                + "sources, and is not named as a source";
     }
 
     private static WhichOperations operations(JsonValue.JsonObject stated, String describedAs) {

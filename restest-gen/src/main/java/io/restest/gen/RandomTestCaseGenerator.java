@@ -142,8 +142,8 @@ public final class RandomTestCaseGenerator {
      * <p>A plan names the lists each way of building a request draws on, so a run can push with
      * one list and fill ordinary requests from another. This is the name of the one RESTest
      * carries, and no list somebody hands over may take it. It is also what makes a strategy one
-     * that pushes: a strategy is pushing because of the values it draws on, not because anything
-     * says so.
+     * that pushes: a strategy is pushing because it draws on this list, which a plan's file asks
+     * for with the kind {@code fuzzing} rather than by name.
      */
     static final String PUSHES_AT_THE_API = "fuzzing";
 
@@ -975,9 +975,9 @@ public final class RandomTestCaseGenerator {
             // Every strategy in the plan pushes, and there is nothing to push with. Running some
             // other plan instead is what a review taught this code not to do: the person asked
             // for something specific and would be told, in the summary, that they got it.
-            throw new IllegalArgumentException("every strategy in this plan pushes at the API "
-                    + "with a list of values called '" + PUSHES_AT_THE_API + "', and no list of "
-                    + "that name was handed over, so there is nothing for the run to do");
+            throw new IllegalArgumentException("every strategy in this plan is of kind "
+                    + PUSHES_AT_THE_API + " and pushes at the API, and this run holds no list of "
+                    + "values to push with, so there is nothing for the run to do");
         }
         // The shares are counted against each other rather than out of a hundred, so dropping one
         // strategy leaves the rest in the same proportion to one another as the plan wrote them.
@@ -994,10 +994,11 @@ public final class RandomTestCaseGenerator {
      * allowed. Left out instead, and the remaining shares keep the proportions the plan wrote.
      *
      * <p>Deliberately this narrow. An earlier version asked the more general question - has this
-     * strategy anything left but invention? - and could not tell {@code [dictionary: fuzzing,
-     * source: random]} from {@code [dictionary: mine, source: random]}, because they are the same
-     * shape. It threw away the second, which is the plainest thing anybody would write for a list
-     * of their own, and handed the whole run to the strategy that pushes. A strategy that merely
+     * strategy anything left but invention? - and could not tell a strategy that pushes, drawing on
+     * the list to push with and then inventing, from one that draws on a list of somebody's own and
+     * then invents, because they are the same shape. It threw away the second, which is the
+     * plainest thing anybody would write for a list of their own, and handed the whole run to the
+     * strategy that pushes. A strategy that merely
      * lost a list still invents, which is what it would have done for every value the list had
      * nothing for anyway.
      */
