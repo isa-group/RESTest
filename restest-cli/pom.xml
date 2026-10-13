@@ -117,6 +117,19 @@
                       such load. Same flag, same reason, as restest-store.
                     -->
                     <argLine>@{argLine} --enable-native-access=ALL-UNNAMED</argLine>
+                    <!--
+                      Three test processes rather than one. This module's tests are the command
+                      run end to end, each class against a stand-in API of its own on a port of its
+                      own, writing under a directory of its own, and most of their time is spent
+                      waiting for an API to answer rather than computing; three of them side by
+                      side take a third of the time, on a machine with cores to spare and on the
+                      ones continuous integration runs on. The classes are shared out between the
+                      processes, never split, so a class's own set-up is still its own. Nothing a
+                      run keeps is shared between two of them: there is no global mutable state,
+                      which the architecture rules check.
+                    -->
+                    <forkCount>3</forkCount>
+                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
 

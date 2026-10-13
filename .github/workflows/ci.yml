@@ -1,4 +1,4 @@
-# Continuous integration for RESTest 2.0.
+# Continuous integration for RESTest.
 #
 # Three operating systems x Java 21, 25 and 26, every row building and testing the whole reactor
 # (ADR-0003). Every action is pinned to a commit SHA rather than a tag: a tag can be repointed at
@@ -8,9 +8,9 @@ name: CI
 
 on:
   push:
-    branches: [master, v2]
+    branches: [master]
   pull_request:
-    branches: [master, v2]
+    branches: [master]
   workflow_dispatch:
 
 # A new push supersedes the runs still queued for the same ref.
@@ -51,6 +51,16 @@ jobs:
 
       - name: Build and test
         run: ./mvnw --batch-mode --no-transfer-progress verify
+
+      # The mutation score of the oracles, from one row only: the score is the same whatever the
+      # operating system and the Java, and it costs about ten seconds, which is the module's tests
+      # run once per mutation. The profile binds the score to this module's verify, and the build
+      # reaches the module through the ones it depends on, which is what resolves them without an
+      # install. Coverage is switched off because the step above has measured it already, and the
+      # agent would otherwise ride along into every mutant's run.
+      - name: Check the mutation score of the oracles
+        if: matrix.os == 'ubuntu-latest' && matrix.java == '25'
+        run: ./mvnw --batch-mode --no-transfer-progress -Pmutation verify -pl restest-oracles -am -Djacoco.skip=true
 
       # Uploaded from one row only: nine identical reports would be noise.
       - name: Upload the coverage report

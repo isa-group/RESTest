@@ -47,18 +47,20 @@
               a build pass; a rule that gets relaxed whenever it fires is not a rule.
             -->
             <!--
-              Mutation testing, run on demand rather than on every build:
+              Mutation testing. It deliberately corrupts this module's own code - flips a
+              comparison, removes a call - and fails if the tests still pass. "Our tool finds bugs
+              in your API" is a claim worth far more when the code making it has been shown to
+              notice bugs in itself.
+
+              Run on its own at any time:
 
                   ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
 
-              It deliberately corrupts this module's own code - flips a comparison, removes a call -
-              and fails if the tests still pass. "Our tool finds bugs in your API" is a claim worth
-              far more when the code making it has been shown to notice bugs in itself.
-
-              Not bound to a build phase because it re-runs the tests once per mutation and so costs
-              minutes rather than seconds; the threshold below is what makes the number mean
-              something when it is run. Like the coverage floors, it is never to be lowered to make
-              a run pass.
+              and, by the `mutation` profile below, as part of this module's verify, which is how
+              one row of continuous integration runs it on every change. It re-runs the tests once
+              per mutation, which here is about ten seconds; the threshold below is what makes the
+              number mean something. Like the coverage floors, it is never to be lowered to make a
+              run pass.
             -->
             <plugin>
                 <groupId>org.pitest</groupId>
@@ -109,4 +111,33 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+          The mutation score as a gate of this module's build: `./mvnw verify -Pmutation`, which
+          continuous integration asks for on one row. A profile rather than an execution every
+          build runs, so that `./mvnw verify` on a laptop stays what it is and the score is still
+          paid for only where it is read.
+        -->
+        <profile>
+            <id>mutation</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <executions>
+                            <execution>
+                                <id>mutation-score</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
