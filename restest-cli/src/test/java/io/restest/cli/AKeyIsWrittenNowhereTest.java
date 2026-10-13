@@ -69,6 +69,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class AKeyIsWrittenNowhereTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String THREE_HUNDRED_REQUESTS = "schedule.requestsBeforeStopping=300";
+
     private static final String IN_A_HEADER = "Zk9-leakprobe-4f+q/Rw==";
     private static final String IN_THE_QUERY = "Qm7-leakprobe-8x+z/Pt==";
     private static final String IN_A_COOKIE = "Hs2-leakprobe-5c-w_Ls=";
@@ -187,7 +195,8 @@ class AKeyIsWrittenNowhereTest {
         try (PrintWriter printed = new PrintWriter(screen);
                 PrintWriter complained = new PrintWriter(problems)) {
             answer = Restest.run(new String[] {"run", document.toString(), "--url",
-                api.baseUrl(), "--budget", "3s", "--seed", "20260930", "--out", out.toString(),
+                api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", THREE_HUNDRED_REQUESTS, "--seed", "20260930", "--out", out.toString(),
                 "--store", "--auth", "inAHeader=" + IN_A_HEADER, "--auth",
                 "inTheQuery=" + IN_THE_QUERY}, printed, complained,
                     Map.of("RESTEST_AUTH", "inACookie=" + IN_A_COOKIE));

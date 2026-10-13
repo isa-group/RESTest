@@ -198,6 +198,16 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "whether a run starts by sending every operation once, the request likeliest to work"),
             key("schedule", "openingLapPatience", SettingKind.LENGTH_OF_TIME,
                     "how long each step of that opening lap waits for the answers to the one before"),
+            key("schedule", "stopAfterRequests", SettingKind.YES_OR_NO,
+                    "whether a run stops once it has sent a set number of requests, before its "
+                            + "budget is spent"),
+            key("schedule", "requestsBeforeStopping", SettingKind.WHOLE_NUMBER,
+                    "how many requests that is"),
+            key("schedule", "interruptWritingGrace", SettingKind.LENGTH_OF_TIME,
+                    "how long a run stopped from outside is then given to write what it found"),
+            key("schedule", "interruptLookingGrace", SettingKind.LENGTH_OF_TIME,
+                    "how long it then gives its directory to say what was written, when writing "
+                            + "did not finish"),
 
             key("generation", "optionalNestingDepth", SettingKind.WHOLE_NUMBER,
                     "below this depth, only what the description insists on is built"),

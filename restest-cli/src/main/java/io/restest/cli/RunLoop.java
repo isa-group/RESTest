@@ -149,6 +149,9 @@ final class RunLoop {
      *     faster than all three together; without a limit the backlog grows for as long as the run
      *     lasts, and a long run against a fast API ends by running out of memory rather than out of
      *     time. Pausing is the honest response, and is counted as time the tool wasted
+     * @param mostRequests how many requests the loop may send before it stops asking for more, as a
+     *     run of a known size asks; the answers to them are waited for as at the deadline. The
+     *     largest number there is when only the deadline ends the run
      * @param howLongToWaitForStragglers how long to go on waiting, past the deadline, for answers to
      *     requests that had already gone out
      * @param interruptGrace how long to wait for them instead, from the moment the run is stopped
@@ -159,10 +162,15 @@ final class RunLoop {
      * @return what the loop did with the time
      */
     static Outcome run(Scheduler scheduler, String baseUrl, int workAhead,
-            int announcementsAllowedToPileUp, Duration howLongToWaitForStragglers,
-            Duration interruptGrace, StopFromOutside stop, HttpEngine engine, EventStream events) {
+            int announcementsAllowedToPileUp, long mostRequests,
+            Duration howLongToWaitForStragglers, Duration interruptGrace, StopFromOutside stop,
+            HttpEngine engine, EventStream events) {
         Objects.requireNonNull(scheduler, "scheduler");
         Objects.requireNonNull(baseUrl, "baseUrl");
+        if (mostRequests < 1) {
+            throw new IllegalArgumentException("a run that may send no request at all tests "
+                    + "nothing: " + mostRequests);
+        }
         Objects.requireNonNull(howLongToWaitForStragglers, "howLongToWaitForStragglers");
         Objects.requireNonNull(interruptGrace, "interruptGrace");
         Objects.requireNonNull(stop, "stop");
@@ -225,6 +233,11 @@ final class RunLoop {
                         }
                     }
                     case Scheduler.Step.Send send -> {
+                        // A run of a known size has sent what it was asked to: it stops asking,
+                        // and goes on below to wait for the answers it is owed, as at a deadline.
+                        if (sent >= mostRequests) {
+                            break deciding;
+                        }
                         if (!waitForASlot(slots, deadline, stop)) {
                             break deciding;
                         }

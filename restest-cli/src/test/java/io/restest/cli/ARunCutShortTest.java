@@ -164,20 +164,25 @@ class ARunCutShortTest {
         StopWhen stop = new StopWhen(() -> asked() >= 20);
 
         // Stuck where the run says it is over, so nothing after that - the report, the stored run
-        // being closed - is done while the program waits for it.
+        // being closed - is done while the program waits for it. Writing is given a second rather
+        // than the usual five, so that the test takes one; the directory is given ten rather than
+        // one to say what is in it, so that a slow build machine, whose directory has taken longer
+        // than a second to answer, cannot turn this into a test of the machine.
         int answer = run(settings -> new StuckAtTheEnd(new OkHttpEngine(settings),
-                Duration.ofSeconds(7)), stop, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                Duration.ofSeconds(3)), stop, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
                 "--budget", BUDGET, "--seed", "7", "--store", "--out", directory.toString(),
-                "--set", "schedule.interruptGrace=0s");
+                "--set", "schedule.interruptGrace=0s",
+                "--set", "schedule.interruptWritingGrace=1s",
+                "--set", "schedule.interruptLookingGrace=10s");
         stop.awaitDone();
 
         assertThat(Duration.between(stop.setOffAt, stop.doneAt))
-                .describedAs("the grace, none here, and the five seconds writing is given")
-                .isGreaterThanOrEqualTo(Duration.ofMillis(4900))
-                .isLessThan(Duration.ofSeconds(7));
+                .describedAs("the grace, none here, and the second writing is given")
+                .isGreaterThanOrEqualTo(Duration.ofMillis(900))
+                .isLessThan(Duration.ofSeconds(3));
         assertThat(problems.toString())
                 .contains("restest: the run was stopped from outside and had not finished writing "
-                        + "what it found 5s later, so it ends here: report.json was not written; "
+                        + "what it found 1s later, so it ends here: report.json was not written; "
                         + "run.sqlite was not closed, so the last interactions it had not yet saved "
                         + "are lost, and some of what it did save is in run.sqlite-wal beside it: "
                         + "keep the three files together");

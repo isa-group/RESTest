@@ -175,7 +175,7 @@ class AuthCommandTest {
                     .willReturn(aResponse().withStatus(200)));
 
             int answer = run(Map.of(), "run", document(directory, PETSTORE), "--url",
-                    api.baseUrl(), "--budget", "2s", "--seed", "20260930", "--out",
+                    api.baseUrl(), "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40", "--seed", "20260930", "--out",
                     directory.resolve("out").toString(), "--auth", KEY);
 
             assertThat(answer).describedAs("%s%n%s", screen, problems).isBetween(0, 1);
@@ -209,7 +209,7 @@ class AuthCommandTest {
                     .atPriority(1).willReturn(aResponse().withStatus(200)));
 
             int answer = run(Map.of(), "run", document(directory, TWO_KEYS), "--url",
-                    api.baseUrl(), "--budget", "2s", "--seed", "20260930", "--out",
+                    api.baseUrl(), "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40", "--seed", "20260930", "--out",
                     directory.resolve("out").toString(), "--auth", "token=" + KEY, "--auth",
                     "session=" + cookie);
 
@@ -233,7 +233,7 @@ class AuthCommandTest {
                     .atPriority(1).willReturn(aResponse().withStatus(200)));
 
             int answer = run(Map.of(), "run", document(directory, WORDS), "--url", api.baseUrl(),
-                    "--budget", "2s", "--seed", "20260930", "--out",
+                    "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40", "--seed", "20260930", "--out",
                     directory.resolve("out").toString(), "--auth", "query:apiKey=" + KEY);
 
             assertThat(answer).describedAs("%s%n%s", screen, problems).isBetween(0, 1);
@@ -280,7 +280,7 @@ class AuthCommandTest {
             Path out = directory.resolve("out");
 
             int answer = run(Map.of(), "run", document(directory, signedIn), "--url",
-                    api.baseUrl(), "--budget", "2s", "--seed", "20260930", "--out", out.toString(),
+                    api.baseUrl(), "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40", "--seed", "20260930", "--out", out.toString(),
                     "--store", "--auth", "header:Authorization=Bearer " + token);
 
             assertThat(answer).describedAs("%s%n%s", screen, problems).isBetween(0, 1);
@@ -312,7 +312,7 @@ class AuthCommandTest {
                     .willReturn(aResponse().withStatus(200)));
 
             int alone = run(Map.of("RESTEST_AUTH", KEY), "run", document(directory, PETSTORE),
-                    "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260930", "--out",
+                    "--url", api.baseUrl(), "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40", "--seed", "20260930", "--out",
                     directory.resolve("alone").toString());
             assertThat(alone).describedAs("%s%n%s", screen, problems).isBetween(0, 1);
             assertThat(api.findAll(getRequestedFor(urlPathEqualTo("/pets")))).isNotEmpty()
@@ -321,7 +321,7 @@ class AuthCommandTest {
 
             api.resetRequests();
             int overruled = run(Map.of("RESTEST_AUTH", "api_key=the-one-left-behind"), "run",
-                    document(directory, PETSTORE), "--url", api.baseUrl(), "--budget", "1s",
+                    document(directory, PETSTORE), "--url", api.baseUrl(), "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40",
                     "--seed", "20260930", "--out", directory.resolve("overruled").toString(),
                     "--auth", KEY);
             assertThat(overruled).isBetween(0, 1);
@@ -336,7 +336,7 @@ class AuthCommandTest {
             api.stubFor(any(anyUrl()).atPriority(1).willReturn(aResponse().withStatus(200)));
 
             int answer = run(Map.of("RESTEST_AUTH", KEY), "run", document(directory, NO_SCHEME),
-                    "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260930", "--out",
+                    "--url", api.baseUrl(), "--budget", "30s", "--set", "schedule.stopAfterRequests=true", "--set", "schedule.requestsBeforeStopping=40", "--seed", "20260930", "--out",
                     directory.resolve("out").toString());
 
             assertThat(answer).describedAs("%s%n%s", screen, problems).isBetween(0, 1);

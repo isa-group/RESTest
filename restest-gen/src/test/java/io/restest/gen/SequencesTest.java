@@ -393,7 +393,9 @@ class SequencesTest {
         Settings oneAtATime = Settings.defaults()
                 .withSchedule(new ScheduleSettings(1, schedule.announcementsAllowedToPileUp(),
                         schedule.stragglerGrace(), schedule.interruptGrace(), schedule.openingLap(),
-                        schedule.openingLapPatience()))
+                        schedule.openingLapPatience(), schedule.stopAfterRequests(),
+                        schedule.requestsBeforeStopping(), schedule.interruptWritingGrace(),
+                        schedule.interruptLookingGrace()))
                 .withEngine(EngineSettings.defaults().withConcurrency(1, 1, 1))
                 .withSequences(only(Sequences.Shape.CREATE_TWICE));
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PET_CLINIC, SEED,
