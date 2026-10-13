@@ -48,6 +48,12 @@ class CampaignsTest {
     void the_shipped_plan_is_read_from_the_file_that_ships() throws IOException {
         Campaign carried = Campaigns.shipped();
 
+        // The whole plan, written out here rather than read from anywhere, so that a change to the
+        // file's format can be shown to leave the plan a run follows exactly as it was.
+        assertThat(carried)
+                .describedAs("the plan the file describes, every strategy, source and weight")
+                .isEqualTo(THE_SHIPPED_PLAN);
+
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::name)
                 .containsExactly("nominal", "sequences", "mutation", "fuzzing");
         assertThat(carried.strategies()).extracting(Campaign.PlannedStrategy::share)
@@ -80,6 +86,27 @@ class CampaignsTest {
                 .contains("# What a run does when nobody has said otherwise.")
                 .contains("--print-campaign");
     }
+
+    /** What nominal, sequences and mutation all draw on: a closed list first, then a choice. */
+    private static final List<Campaign.Entry> MEANT_TO_WORK = List.of(
+            new Campaign.Entry.Single(new Campaign.Source.Builtin(Campaign.Builtin.ENUM)),
+            new Campaign.Entry.Group(List.of(
+                    new Campaign.Share(new Campaign.Source.Builtin(Campaign.Builtin.EXAMPLE), 15),
+                    new Campaign.Share(new Campaign.Source.Builtin(Campaign.Builtin.RANDOM), 20),
+                    new Campaign.Share(new Campaign.Source.Builtin(Campaign.Builtin.OBSERVED), 20),
+                    new Campaign.Share(new Campaign.Source.EveryListGiven(), 40),
+                    new Campaign.Share(new Campaign.Source.Builtin(Campaign.Builtin.DEFAULT), 5))));
+
+    /** The plan RESTest carries, as a run follows it. */
+    private static final Campaign THE_SHIPPED_PLAN = new Campaign(List.of(
+            new Campaign.PlannedStrategy("nominal", 45, MEANT_TO_WORK, false, false),
+            new Campaign.PlannedStrategy("sequences", 15, MEANT_TO_WORK, false, true),
+            new Campaign.PlannedStrategy("mutation", 30, MEANT_TO_WORK, true, false),
+            new Campaign.PlannedStrategy("fuzzing", 10, List.of(
+                    new Campaign.Entry.Single(new Campaign.Source.OneList("fuzzing")),
+                    new Campaign.Entry.Single(new Campaign.Source.Builtin(Campaign.Builtin.RANDOM))),
+                    false, false)),
+            WhichOperations.everything());
 
     @Test
     @DisplayName("the plan RESTest carries chooses among its sources rather than ranking them, so "
