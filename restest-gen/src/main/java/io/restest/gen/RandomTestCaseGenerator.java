@@ -975,9 +975,9 @@ public final class RandomTestCaseGenerator {
             // Every strategy in the plan pushes, and there is nothing to push with. Running some
             // other plan instead is what a review taught this code not to do: the person asked
             // for something specific and would be told, in the summary, that they got it.
-            throw new IllegalArgumentException("every strategy in this plan is of kind "
-                    + PUSHES_AT_THE_API + " and pushes at the API, and this run holds no list of "
-                    + "values to push with, so there is nothing for the run to do");
+            throw new IllegalArgumentException("every strategy in this plan pushes at the API, "
+                    + "and this run holds no list of values to push with, so there is nothing for "
+                    + "the run to do");
         }
         // The shares are counted against each other rather than out of a hundred, so dropping one
         // strategy leaves the rest in the same proportion to one another as the plan wrote them.

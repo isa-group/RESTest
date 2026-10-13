@@ -163,6 +163,18 @@ class CampaignDocumentTest {
     }
 
     @Test
+    @DisplayName("every source of RESTest's own has its word in a plan, and every word names one")
+    void every_source_of_restests_own_has_its_word() {
+        assertThat(CampaignDocument.sourceWords())
+                .describedAs("a source added to RESTest and forgotten here would be read as "
+                        + "'source: <word>' and refused inside a group")
+                .containsExactlyInAnyOrderElementsOf(java.util.stream.Stream.concat(
+                        java.util.Arrays.stream(Campaign.Builtin.values())
+                                .map(Campaign.Builtin::inAPlan),
+                        java.util.stream.Stream.of("dictionaries")).toList());
+    }
+
+    @Test
     @DisplayName("a list of values called 'example' is a list, not the document's own samples")
     void a_list_may_be_called_after_a_source() {
         Campaign plan = read("""
