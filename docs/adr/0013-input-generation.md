@@ -728,3 +728,11 @@ Since [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md), a
 keyed by operation and place and by nothing else. The `format` keying the M2.4 amendment calls "a
 file a user writes" can no longer be written, and neither can `type`, `schema` or `name`. The list
 of awkward values RESTest carries keeps its keying by kind of value, as its own.
+
+## Amendment (13 October 2026): version 2 of the plan
+
+**Date:** 2026-10-13
+
+[ADR-0034](0034-version-2-of-the-plans-format.md) writes the plan in a version 2 of its format. The M10.1 amendment's `mutates: accepted`
+is now `kind: mutation`, and a strategy pushes by being of kind `fuzzing` rather than by naming
+`dictionary: fuzzing`. The plan a run follows is unchanged.

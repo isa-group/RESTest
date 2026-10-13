@@ -19,34 +19,27 @@ deep it goes — is [the settings](settings.md), which travel with a machine rat
 ## What a plan says
 
 ```yaml
-version: 1
+version: 2
 
 strategies:
   - name: nominal
     share: 60
+    kind: nominal
     sources:
       - source: enum
-      - weighted:
-          - source: example
-            weight: 20
-          - source: random
-            weight: 25
-          - dictionaries: given
-            weight: 50
-          - source: default
-            weight: 5
+      - weighted: {example: 20, random: 25, dictionaries: 50, default: 5}
 
   - name: mutation
     share: 15
-    mutates: accepted
+    kind: mutation
     sources:
       - source: enum
       - source: random
 
   - name: fuzzing
     share: 25
+    kind: fuzzing
     sources:
-      - dictionary: fuzzing
       - source: random
 
 operations:
@@ -55,8 +48,11 @@ operations:
 ```
 
 A plan is a handful of **strategies**. Each is one way of building a request: a name, a share of the
-run's time, and the **sources** its values come from. `operations:` at the end says what the run may
-touch at all, and can be left out.
+run's time, a **kind**, and the **sources** its values come from. `operations:` at the end says what
+the run may touch at all, and can be left out.
+
+`version` is the version of this format, `2`. A plan written in another version is refused, and told
+that `restest run --print-campaign` prints one this version reads.
 
 ## Strategies
 
@@ -68,31 +64,42 @@ such a strategy takes more of the run's time than its share says.
 `share` is out of a hundred, and the shares of a plan add up to a hundred. A file that does not is
 refused, and told what it does add up to.
 
-Most runs want two or three: one building requests meant to work, one pushing at the API with
-values nobody sensible would send, and one [changing a request that worked](#changing-one-thing-in-a-request-that-worked).
-The pushing one is not looking for a refusal — a refusal is a fair answer, and a great many APIs
-accept an empty word quite happily. It is looking for the API falling over.
+`kind` is what the strategy does, one of four words:
 
-No key says a strategy pushes. A strategy that draws on the list of values to push with is one that
-pushes, and each of its requests records that it was, which is how the run's summary knows how many
-were of that kind. A strategy that changes accepted requests does say so, with `mutates: accepted`,
-because nothing it draws on could tell.
+| `kind` | Each request it builds |
+|---|---|
+| `nominal` | is meant to work, built from its sources |
+| `fuzzing` | pushes at the API with values nobody sensible would send: RESTest's own list of them is asked first, and the strategy's sources are asked for whatever that list has nothing sendable for |
+| `mutation` | is [a request the API accepted, sent again with one thing changed](#changing-one-thing-in-a-request-that-worked); its sources are what it falls back on |
+| `sequences` | is meant to work, and a creation starts [a series of requests about the thing it creates](#series-of-requests-around-a-thing-the-run-created) |
+
+The `name` is a label, printed in reports; the `kind` is what the strategy does. In the plan RESTest
+carries every name is its kind's word, but a name can be anything, and two strategies can be of the
+same kind.
+
+Most runs want two or three: one building requests meant to work, one pushing at the API with
+values nobody sensible would send, and one changing a request that worked. The pushing one is not
+looking for a refusal — a refusal is a fair answer, and a great many APIs accept an empty word quite
+happily. It is looking for the API falling over. Each of its requests records that it was pushing,
+which is how the run's summary knows how many were of that kind.
 
 ## Sources
 
 The sources of a strategy are **asked in the order written, and the first answer is taken**. So the
 order is your statement about which source knows best.
 
-Three ways to name one:
+Two ways to name one, and a third to choose between several ([below](#choosing-instead-of-ordering)):
 
 | Written | Means |
 |---|---|
 | `source: <word>` | one of RESTest's own, from the table below |
-| `dictionary: <name>` | one list of values, by the `name` inside the list's own file |
-| `dictionaries: given` | every list handed over with `--dictionary` |
+| `dictionary: <name>` | one list of values of yours, by the `name` inside the list's own file |
+| `weighted: {...}` | a group to choose between |
 
 Saying which kind you mean is not ceremony: without it, a list of yours called `example` would
 silently shadow RESTest's own samples, and nobody reading the file could tell which a bare name was.
+And a misspelt word of RESTest's, such as `source: exmaple`, is refused rather than taken for the
+name of a list.
 
 ### RESTest's own sources
 
@@ -103,6 +110,7 @@ silently shadow RESTest's own samples, and nobody reading the file could tell wh
 | `default` | the value the document says applies when the caller sends nothing |
 | `observed` | what the API itself has already sent back earlier in this run, and what it accepted in a request to another operation |
 | `random` | a value invented to fit the shape |
+| `dictionaries` | every list of values handed over with `--dictionary`, in the order they were handed over |
 
 `enum` is worth putting first and leaving there. A closed list is not advice: it is the whole set of
 values the API will take, so anything else sent in its place is a value the document says is not
@@ -185,24 +193,36 @@ off. [The switches](switches.md#getting-the-seed-back) shows the plan RESTest ca
 
 ### Every list you handed over
 
-`dictionaries: given` is one source, not one per file, so it carries one weight however many lists
+`source: dictionaries` is one source, not one per file, so it carries one weight however many lists
 there are. Within it, the lists are asked in the order they were handed over.
 
 To place a list somewhere else in the order, name it: `dictionary: my-good-values`. `fuzzing` is
-RESTest's own list to push with, and no list of yours can take its name.
+RESTest's own list to push with, which a strategy of kind `fuzzing` asks first; it is not named as a
+source, and no list of yours can take its name.
 
 ## Choosing instead of ordering
 
 A `weighted:` group asks **every** source in it and picks one of the answers, in proportion to the
-weights. The weights in a group add up to a hundred.
+weights. It is a map from each source to its weight, and the weights in a group add up to a hundred:
+
+```yaml
+      - weighted: {random: 90, default: 10}
+```
+
+RESTest's own sources go in by their words, and lists of yours by name under `dictionary`:
 
 ```yaml
       - weighted:
-          - source: random
-            weight: 90
-          - source: default
-            weight: 10
+          random: 30
+          example: 10
+          dictionary: {pet-clinic: 40, seed-data: 20}
 ```
+
+A weight is a whole number from 1 to 100; a group holds at least two sources. However a group is
+written, it is asked in one order — `example`, `random`, `observed`, `dictionaries`, `default`,
+`enum`, then your lists by name — so a plan rewritten by a tool that sorts the keys of a map draws
+the same requests from the same seed. Proportions never depend on the order; which request a seed
+draws would.
 
 Use it where more than one source is worth hearing from. Asked in turn, a parameter whose document
 offers one sample would receive that same value on every request for the whole run; in a group it
@@ -225,13 +245,13 @@ satisfies leaves invention with no answer either.
 
 ## Changing one thing in a request that worked
 
-A strategy can build its requests a third way: take a request the API has already **accepted**, and
-send it again with exactly one thing changed.
+A strategy of kind `mutation` builds its requests another way: it takes a request the API has
+already **accepted**, and sends it again with exactly one thing changed.
 
 ```yaml
   - name: mutation
     share: 20
-    mutates: accepted
+    kind: mutation
     sources:
       - source: enum
       - source: random
@@ -243,8 +263,7 @@ correct request never reaches tend to live, never runs. Changing one thing gets 
 one, and whatever the API does next is down to that one thing: it refuses it, which is right; it
 accepts it, which says a check is missing; or it fails, which is what a run is looking for.
 
-`mutates:` takes one word, `accepted`. The `sources:` are still required, and they are what the
-strategy falls back on: until the API has accepted something for an operation, or when nothing in
+Its `sources:` are what it falls back on: until the API has accepted something for an operation, or when nothing in
 what it accepted can be changed, the request is built from them the ordinary way. The plan RESTest
 carries gives its `mutation` strategy the same sources as `nominal`, so that its fallback requests
 are exactly the ones `nominal` would build.
@@ -285,23 +304,23 @@ inside it.
 Which kinds of change are made, and how large an oversized value is, are **settings**, not part of
 the plan, because they are about how the tool behaves rather than about the API: every kind can be
 switched off, and `violations` switches them all off at once — see
-[`mutation.*`](settings.md#mutation). With it off, a strategy that says `mutates: accepted` builds
-every request from its sources, exactly as an ordinary one would.
+[`mutation.*`](settings.md#mutation). With it off, a strategy of kind `mutation` builds every request
+from its sources, exactly as an ordinary one would.
 
 A run that changes accepted requests is, like one that draws on `observed`, not repeated by its
 seed alone: which requests were accepted is the API's answer.
 
 ## Series of requests around a thing the run created
 
-A strategy can build its requests a fourth way. When it is drawn for an operation that **creates**
-something - a `POST` - that request becomes the first of a short **series** about the thing it
+A strategy of kind `sequences` builds its requests another way again. When it is drawn for an
+operation that **creates** something - a `POST` - that request becomes the first of a short **series** about the thing it
 creates. The rest of the series is sent one step at a time, each once the answer to the one before
 has arrived, with the identifier the API gave the thing.
 
 ```yaml
   - name: sequences
     share: 10
-    sends: sequences
+    kind: sequences
     sources:
       - source: enum
       - source: random
@@ -327,7 +346,7 @@ that were there before. A `POST` whose address ends in a gap, such as `POST /pet
 thing that already exists, so it is only ever sent twice. A series stops when a step its question
 needs is not a success: nothing is asked about a creation the API refused.
 
-`sends:` takes one word, `sequences`. The `sources:` build every step of every series, the creation
+Its `sources:` build every step of every series, the creation
 included, and every request the strategy builds for an operation that creates nothing, which is
 built the ordinary way. The plan RESTest carries gives its `sequences` strategy nominal's sources, so
 that a turn that starts no series builds exactly the request nominal would.
@@ -346,8 +365,9 @@ answers.
 
 Before anything is chosen, a run sends every operation it can test once, each with the request it
 is most likely to accept, and only then starts drawing. That first round uses your plan too: the
-first strategy that does not push at the API, with two differences. A plan whose every strategy
-pushes has no request anybody believes in, and so no first round.
+first strategy of kind `nominal`, or if there is none the first that is not of kind `fuzzing`, with
+two differences. A plan whose every strategy is of kind `fuzzing` has no request anybody believes in,
+and so no first round.
 
 - **Every group is asked in turn instead of chosen among**, best first: a closed list of accepted
   values, then what the API has already returned, then your own lists, then the document's sample,
@@ -408,6 +428,7 @@ will not happen, which nobody would otherwise find out about.
 - a list the plan names that nobody handed over
 - an operation under `only` that this API does not have
 - a source written below invention, which will hardly ever be reached
+
 A plan that cannot be read at all is the exception: the run **does not start**, and says why. That
 is deliberately not how the tool treats a specification or a list of values, which it works with as
 best it can. A plan is different because of what a plan can say — one of the things it is for is
@@ -416,7 +437,7 @@ the kind would answer "only read from this API" by writing to it.
 
 ## How much of a run pushes at the API
 
-The plan RESTest carries gives a tenth of the run to the strategy that pushes. To change that,
+The plan RESTest carries gives a tenth of the run to its strategy of kind `fuzzing`. To change that,
 change its `share` in a copy of the plan, and the shares of the others so that they still add up to
 a hundred. To push at the API not at all, leave the strategy out and share its tenth among the
 others. There is no option for it on the command line: the plan is the one place a share is said.
@@ -427,20 +448,19 @@ A plan this version cannot read is refused by name rather than half-understood �
 lost a strategy would send a quarter of its requests somewhere nobody asked for, and nothing in the
 output would say so.
 
-- a `version` this build does not read, said as a version rather than as a misspelling
+- a `version` this build does not read, said as a version rather than as a misspelling, with the
+  command that prints a plan it does read
 - a member nobody recognises, which is usually a typo and would otherwise load and do nothing
-- a `source:` word RESTest does not have, answered with the words it does
+- a strategy with no `kind`, or a `kind` that is not one of the four
+- a strategy with no sources, whatever its kind
+- a `source:` word RESTest does not have, answered with the words it does — `fuzzing` among them,
+  which is said to come with the kind `fuzzing`
 - a source named two ways at once, or none
-- `dictionaries:` saying anything but `given`
 - a `weight` on a source that is not in a group, where there is no choice for it to divide
-- a source in a group with no `weight`
+- a group written as a list rather than a map, a key in it that is neither one of RESTest's words nor
+  `dictionary`, or a `dictionary:` in it that names no list
+- a weight that is not a whole number from 1 to 100
 - shares, or the weights in one group, that do not add up to a hundred
 - a group with one source in it, where there is nothing to choose between
-- `mutates:` saying anything but `accepted`
-- a strategy that says `mutates: accepted` and has no `sources:` to fall back on
-- `sends:` saying anything but `sequences`
-- a strategy that says both `mutates:` and `sends:`, which would make its requests two different
-  things at once
-- a strategy that says `sends: sequences` and draws on the list of values to push with, since a
-  series is only worth sending about a thing created with values meant to work
+- two strategies with one name
 - a key written twice, which YAML allows and which would leave the first quietly replaced
