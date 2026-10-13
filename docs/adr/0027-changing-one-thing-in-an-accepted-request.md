@@ -538,5 +538,5 @@ pushing strategy, goes with it, since such a list can no longer exist.
 
 **Date:** 2026-10-13
 
-Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: mutation` where §1 says `mutates: accepted`. Its sources are what
-it falls back on, as before.
+Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: mutation` where §1 says
+`mutates: accepted`. Its sources are what it falls back on, as before.

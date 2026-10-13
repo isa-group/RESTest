@@ -733,6 +733,6 @@ of awkward values RESTest carries keeps its keying by kind of value, as its own.
 
 **Date:** 2026-10-13
 
-[ADR-0034](0034-version-2-of-the-plans-format.md) writes the plan in a version 2 of its format. The M10.1 amendment's `mutates: accepted`
-is now `kind: mutation`, and a strategy pushes by being of kind `fuzzing` rather than by naming
-`dictionary: fuzzing`. The plan a run follows is unchanged.
+[ADR-0034](0034-version-2-of-the-plans-format.md) writes the plan in a version 2 of its format. The
+M10.1 amendment's `mutates: accepted` is now `kind: mutation`, and a strategy pushes by being of
+kind `fuzzing` rather than by naming `dictionary: fuzzing`. The plan a run follows is unchanged.

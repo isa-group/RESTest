@@ -97,10 +97,10 @@ Two ways to name one, and a third to choose between several ([below](#choosing-i
 | `dictionary: <name>` | one list of values of yours, by the `name` inside the list's own file |
 | `weighted: {...}` | a group to choose between |
 
-Saying which sort of source you mean is not ceremony: without it, a list of yours called `example` would
-silently shadow RESTest's own samples, and nobody reading the file could tell which a bare name was.
-And a misspelt word of RESTest's, such as `source: exmaple`, is refused rather than taken for the
-name of a list.
+Saying which sort of source you mean is not ceremony: without it, a list of yours called `example`
+would silently shadow RESTest's own samples, and nobody reading the file could tell which a bare
+name was. And a misspelt word of RESTest's, such as `source: exmaple`, is refused rather than taken
+for the name of a list.
 
 ### RESTest's own sources
 

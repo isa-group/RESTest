@@ -296,8 +296,8 @@ final class CampaignDocument {
             }
             if (!OWN_SOURCES.containsKey(key)) {
                 throw new JsonException(describedAs + ": " + what + " names '" + key + "': "
-                        + notASource(key) + "; your dictionaries go under '" + DICTIONARY
-                        + "'");
+                        + notASource(key) + (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(key)
+                                ? "" : "; your dictionaries go under '" + DICTIONARY + "'"));
             }
             own.put(key, upToAHundred(member.getValue(), "'" + key + "' in " + what,
                     describedAs));
@@ -369,8 +369,10 @@ final class CampaignDocument {
     private static Campaign.Source ownSource(String word, String describedAs) {
         Campaign.Source named = OWN_SOURCES.get(word);
         if (named == null) {
-            throw new JsonException(describedAs + ": " + notASource(word) + "; one of your "
-                    + "dictionaries is named with '" + DICTIONARY + "' instead");
+            throw new JsonException(describedAs + ": " + notASource(word)
+                    + (RandomTestCaseGenerator.PUSHES_AT_THE_API.equals(word) ? ""
+                            : "; one of your dictionaries is named with '" + DICTIONARY
+                                    + "' instead"));
         }
         return named;
     }

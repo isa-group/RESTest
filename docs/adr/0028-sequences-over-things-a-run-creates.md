@@ -462,6 +462,6 @@ unchanged. [ADR-0023](0023-the-campaign-file.md)'s amendment of the same date is
 
 **Date:** 2026-10-13
 
-Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: sequences` where §1 says `sends: sequences`. Pushing and sending
-series cannot both be said of one strategy any more, since it has one kind. The plan class keeps
-refusing both, for a plan built in code.
+Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: sequences` where §1 says
+`sends: sequences`. Pushing and sending series cannot both be said of one strategy any more, since
+it has one kind. The plan class keeps refusing both, for a plan built in code.
