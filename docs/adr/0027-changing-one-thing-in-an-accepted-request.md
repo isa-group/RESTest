@@ -533,3 +533,10 @@ of value.
 
 The M10.4 warning, about a list of the user's called `fuzzing` going unused in a plan with no
 pushing strategy, goes with it, since such a list can no longer exist.
+
+## Amendment (13 October 2026): version 2 of the plan
+
+**Date:** 2026-10-13
+
+Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: mutation` where §1 says
+`mutates: accepted`. Its sources are what it falls back on, as before.

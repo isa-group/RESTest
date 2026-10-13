@@ -362,3 +362,16 @@ nothing left to rank. The lists are asked in the order they were handed over.
 
 A list of the user's can no longer be called `fuzzing`, so `dictionary: fuzzing` names RESTest's own
 list and nothing else.
+
+## Amendment (13 October 2026): version 2 of the format
+
+**Date:** 2026-10-13
+
+[ADR-0034](0034-version-2-of-the-plans-format.md) writes this record's format in a version 2:
+- a strategy says its kind in `kind:`;
+- a source is `source: <word>` or `dictionary: <name>`;
+- a group is a map from each source to its weight, asked in a fixed order;
+- version 1 is refused.
+
+§5, "derived, not declared", is superseded: the kind `fuzzing` says that a strategy pushes, and makes
+it so. The plan a run follows, and the plan RESTest carries, are unchanged.

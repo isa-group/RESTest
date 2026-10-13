@@ -45,7 +45,7 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 
 ### Breaking things in more ways
 
-What a strategy whose plan says `mutates: accepted` may change in a request the API accepted. A kind
+What a strategy of kind `mutation` may change in a request the API accepted. A kind
 of change is made only when its own switch and `mutation.violations` are both on.
 
 | Switch | By default | Part of | Off, a run… |
@@ -70,7 +70,7 @@ of change is made only when its own switch and `mutation.violations` are both on
 With every kind of change switched off one by one, a run is exactly the run `mutation.violations`
 off gives.
 
-What a strategy whose plan says `sends: sequences` may send around a thing it created itself. With
+What a strategy of kind `sequences` may send around a thing it created itself. With
 all six off, that strategy builds its whole share the way an ordinary one with the same sources
 would.
 
@@ -345,7 +345,7 @@ silenced would say something about the run that is not true.
 
 ### The memory of what the API returned
 
-`source: observed` is what lets a run send an identifier the API itself handed back, rather than one
+`observed` is what lets a run send an identifier the API itself handed back, rather than one
 it invented. It is in three of the shipped plan's four strategies, each time inside a group whose
 weights add up to a hundred. Taking it out means dividing its weight among the others in the
 proportions they already had, as nearly as whole numbers allow: in the plan RESTest ships today, 15,
@@ -353,58 +353,35 @@ proportions they already had, as nearly as whole numbers allow: in the plan REST
 that checks this page holds it to the shipped plan, so that it changes whenever that plan does:
 
 ```yaml
-version: 1
+version: 2
 
 strategies:
 
   - name: nominal
     share: 45
+    kind: nominal
     sources:
       - source: enum
-      - weighted:
-          - source: example
-            weight: 19
-          - source: random
-            weight: 25
-          - dictionaries: given
-            weight: 50
-          - source: default
-            weight: 6
+      - weighted: {example: 19, random: 25, dictionaries: 50, default: 6}
 
   - name: sequences
     share: 15
-    sends: sequences
+    kind: sequences
     sources:
       - source: enum
-      - weighted:
-          - source: example
-            weight: 19
-          - source: random
-            weight: 25
-          - dictionaries: given
-            weight: 50
-          - source: default
-            weight: 6
+      - weighted: {example: 19, random: 25, dictionaries: 50, default: 6}
 
   - name: mutation
     share: 30
-    mutates: accepted
+    kind: mutation
     sources:
       - source: enum
-      - weighted:
-          - source: example
-            weight: 19
-          - source: random
-            weight: 25
-          - dictionaries: given
-            weight: 50
-          - source: default
-            weight: 6
+      - weighted: {example: 19, random: 25, dictionaries: 50, default: 6}
 
   - name: fuzzing
     share: 10
+    kind: fuzzing
     sources:
-      - dictionary: fuzzing
       - source: random
 ```
 
@@ -412,14 +389,15 @@ Hand it over with `--campaign`. It takes identifiers by resource away too, since
 the things of its kind is filled from the same memory. What the memory is worth was measured when it
 was added; the record of the rewrite's first version has the numbers.
 
-A plan written for an earlier version of RESTest leaves out whatever strategies came after it: one
-written before accepted requests were changed, for example, has no strategy that changes them and
-none that sends series, so it switches those off too. Start from `restest run
---print-campaign` on the version being measured, or from the plan above.
+A plan written for an earlier version of RESTest may be refused, if its format has changed since,
+and otherwise leaves out whatever strategies came after it: one written before accepted requests
+were changed, for example, has no strategy that changes them and none that sends series, so it
+switches those off too. Start from `restest run --print-campaign` on the version being measured,
+or from the plan above.
 
 ### A list of values of your own
 
-`dictionaries: given` has nothing to say until a list is handed over, and its weight passes to the
+`dictionaries` has nothing to say until a list is handed over, and its weight passes to the
 others in its group until one is. So a run with a list of values and a run without one differ only
 in `--dictionary <file>`, and the plan does not change.
 

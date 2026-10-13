@@ -457,3 +457,11 @@ ten points for the series left the draw ranges of mutation and fuzzing where the
 of the shipped plan any more: it gives the four 45, 15, 30 and 10, so every strategy after nominal
 draws from a different range. The order of the strategies, and everything else §1 decides, is
 unchanged. [ADR-0023](0023-the-campaign-file.md)'s amendment of the same date is the record.
+
+## Amendment (13 October 2026): version 2 of the plan
+
+**Date:** 2026-10-13
+
+Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: sequences` where §1 says
+`sends: sequences`. Pushing and sending series cannot both be said of one strategy any more, since
+it has one kind. The plan class keeps refusing both, for a plan built in code.

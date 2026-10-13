@@ -31,20 +31,22 @@ out of it:
 ```
 
 A plan is a handful of **strategies**, each a way of building a request, with a
-**share** of the run out of a hundred:
+**share** of the run out of a hundred and a **kind**, which is what it does. Each of the four here is
+named after its kind, though a name is only a label for reports:
 
 - `nominal` builds requests meant to be accepted.
 - `sequences` does the same, and turns each creation into the first step of a short series about
   the thing created.
 - `mutation` takes a request the API accepted and changes one thing in it.
-- `fuzzing` pushes at the API with values nobody sensible would send.
+- `fuzzing` pushes at the API with values nobody sensible would send, from a list RESTest keeps for
+  that.
 
 Each strategy lists its **sources**, the places a value can come from, which are asked in the order
 written. `enum` is first: when the document gives a closed list of the values it accepts, a value
-comes from that list. After it comes a **weighted** group, among which the value is drawn by weight
-each time: `example` (a sample the document writes down), `random` (a value invented to fit what the
-document says), `observed` (a value the API has already returned), `dictionaries: given` (the lists
-you hand over), and `default` (the document's default).
+comes from that list. After it comes a **weighted** group, a map from each source to its weight,
+among which the value is drawn by weight each time: `example` (a sample the document writes down),
+`random` (a value invented to fit what the document says), `observed` (a value the API has already
+returned), `dictionaries` (the lists you hand over), and `default` (the document's default).
 
 ## Changing a plan
 

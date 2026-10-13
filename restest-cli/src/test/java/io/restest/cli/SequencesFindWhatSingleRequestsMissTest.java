@@ -130,16 +130,17 @@ class SequencesFindWhatSingleRequestsMissTest {
 
     /** Values from nothing the API returned, so that no ordinary request can name a real widget. */
     private static final String PLAN = """
-            version: 1
+            version: 2
             strategies:
               - name: nominal
                 share: 50
+                kind: nominal
                 sources:
                   - source: enum
                   - source: random
               - name: sequences
                 share: 50
-                sends: sequences
+                kind: sequences
                 sources:
                   - source: enum
                   - source: random

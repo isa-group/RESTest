@@ -396,7 +396,7 @@ spelling `--budget` takes.
 
 ### `mutation.*`
 
-What a strategy whose plan says `mutates: accepted` may change in a request the API accepted — see
+What a strategy of kind `mutation` may change in a request the API accepted — see
 [the campaign file](campaign-format.md#changing-one-thing-in-a-request-that-worked). Every kind of
 change breaks something the description states, so a refusal is the right answer. A kind is made
 only when its own switch and `violations` are both on; with `violations` off, such a strategy
@@ -432,7 +432,7 @@ once, the kinds that change one value or these last five.
 
 ### `sequences.*`
 
-Which series of requests a strategy whose plan says `sends: sequences` may send around a thing it
+Which series of requests a strategy of kind `sequences` may send around a thing it
 created itself — see [the campaign file](campaign-format.md#series-of-requests-around-a-thing-the-run-created).
 Each series starts with that strategy's own creation, asks one question, and sends each of its steps
 once the answer to the one before has arrived, with the identifier the API gave the thing. With every

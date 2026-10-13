@@ -157,10 +157,11 @@ class CampaignCommandTest {
         answersEverythingWith("{\"id\": 5, \"name\": \"Melibea\", \"tag\": \"cat\"}");
         Path plan = directory.resolve("plan.yaml");
         Files.writeString(plan, """
-                version: 1
+                version: 2
                 strategies:
                   - name: nominal
                     share: 100
+                    kind: nominal
                     sources:
                       - source: enum
                       - source: observed
@@ -188,10 +189,11 @@ class CampaignCommandTest {
     void a_plan_that_cannot_be_read_ends_the_run(@TempDir Path directory) throws Exception {
         Path plan = directory.resolve("plan.yaml");
         Files.writeString(plan, """
-                version: 1
+                version: 2
                 strategies:
                   - name: nominal
                     share: 100
+                    kind: nominal
                     sourses:
                       - source: random
                 operations:
@@ -218,22 +220,19 @@ class CampaignCommandTest {
 
         Path zero = planIn(directory, "");
         Files.writeString(zero, """
-                version: 1
+                version: 2
                 strategies:
                   - name: nominal
                     share: 100
+                    kind: nominal
                     sources:
-                      - weighted:
-                          - source: random
-                            weight: 100
-                          - source: example
-                            weight: 0
+                      - weighted: {random: 100, example: 0}
                 """);
         assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
                 "--campaign", zero.toString(), "--out", directory.resolve("out2").toString()))
                 .describedAs("a person's typo answers 2, not the 4 that means RESTest broke")
                 .isEqualTo(2);
-        assertThat(problems.toString()).contains("would never be chosen");
+        assertThat(problems.toString()).contains("a whole number from 1 to 100");
     }
 
     @Test
@@ -276,10 +275,11 @@ class CampaignCommandTest {
     private static Path planIn(Path directory, String extra) throws Exception {
         Path plan = directory.resolve("plan.yaml");
         Files.writeString(plan, """
-                version: 1
+                version: 2
                 strategies:
                   - name: nominal
                     share: 100
+                    kind: nominal
                     sources:
                       - source: enum
                       - source: example

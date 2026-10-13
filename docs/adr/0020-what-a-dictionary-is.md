@@ -742,3 +742,12 @@ a file somebody hands over: `operationAndParameter`.
 
 The Context's "a published format cannot be quietly replaced" is overridden, loudly: a refused file
 is said where every refusal is. The record says why on the evidence of the files that exist.
+
+## Amendment (13 October 2026): how a plan names lists, in version 2
+
+**Date:** 2026-10-13
+
+Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan names every list handed over as
+`source: dictionaries`, where version 1 wrote `dictionaries: given`, and one list as `dictionary:
+<name>`, as before. RESTest's own list to push with is no longer named in a plan: a strategy of kind
+`fuzzing` asks it first.

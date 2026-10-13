@@ -69,33 +69,24 @@ class FuzzingFindsWhatNominalMissesTest {
 
     /** A plan with no strategy that pushes at the API: every request is built to work. */
     private static final String NEVER_PUSHES = """
-            version: 1
+            version: 2
             strategies:
               - name: nominal
                 share: 100
+                kind: nominal
                 sources:
                   - source: enum
-                  - weighted:
-                      - source: example
-                        weight: 15
-                      - source: random
-                        weight: 20
-                      - source: observed
-                        weight: 20
-                      - dictionaries: given
-                        weight: 40
-                      - source: default
-                        weight: 5
+                  - weighted: {example: 15, random: 20, observed: 20, dictionaries: 40, default: 5}
             """;
 
     /** A plan whose only strategy pushes at the API: every request is built to be refused. */
     private static final String ONLY_PUSHES = """
-            version: 1
+            version: 2
             strategies:
               - name: fuzzing
                 share: 100
+                kind: fuzzing
                 sources:
-                  - dictionary: fuzzing
                   - source: random
             """;
 

@@ -274,8 +274,8 @@ class DocumentedSwitchesTest {
         assertThat(onThePage.strategies())
                 .describedAs("the plan on the page is no longer the one RESTest carries with the "
                         + "memory taken out. Print that plan with 'restest run --print-campaign', "
-                        + "take out every 'source: observed', share its weight among the rest of "
-                        + "its group in the proportions they had, and paste the result back in - "
+                        + "take 'observed' out of every group, share its weight among the rest of "
+                        + "the group in the proportions they had, and paste the result back in - "
                         + "and read again the sentences on the page that quote its shares and "
                         + "weights")
                 .isEqualTo(withoutTheMemory(Campaigns.shipped()));

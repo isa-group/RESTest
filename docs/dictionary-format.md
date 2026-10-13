@@ -14,9 +14,9 @@ restest run api.yaml --url https://api.example --dictionary ids.yaml --dictionar
 ```
 
 `--dictionary` takes a file or a directory, and may be repeated. A directory contributes every
-`.yaml`, `.yml` and `.json` file in it, read in name order. RESTest always uses its own list of
-values to push at an API with on top of whatever you give it; a plan without the strategy that
-pushes at the API leaves it unasked.
+`.yaml`, `.yml` and `.json` file in it, read in name order. RESTest always holds its own list of
+values to push at an API with on top of whatever you give it, for a strategy of kind `fuzzing` and
+for the changes a strategy of kind `mutation` makes.
 
 A file that cannot be read costs the values in it and is reported — as the run starts, again at
 the end of its summary, and in `report.json` (see [What a run says about your file](#what-a-run-says-about-your-file)).
@@ -209,14 +209,14 @@ gets asked what it does with the unexpected. Those are kept apart: an API stops 
 thing it does not like, so one odd value among good ones teaches nothing that a request of all odd
 values does not.
 
-**Which lists feed which kind of request is decided by the plan, by name**, and the plan is
-[a file you can write](campaign-format.md). The one RESTest carries names one list, `fuzzing` —
-RESTest's own, written for kinds of value rather than for any API's places — for the requests that
-push at the API, and asks for every list you handed over, in the order you handed them over, when
-building requests meant to work. In a plan of your own, one list can feed two kinds of request, or
-two lists one kind.
+**Which lists feed which kind of request is decided by the plan**, and the plan is
+[a file you can write](campaign-format.md). The one RESTest carries asks for every list you handed
+over, in the order you handed them over, when building requests meant to work; its strategy of kind
+`fuzzing` pushes at the API with RESTest's own list, written for kinds of value rather than for any
+API's places, which comes with that kind and is not named. In a plan of your own, a list can be
+named by its name, one list can feed two kinds of request, or two lists one kind.
 
-One more thing reads RESTest's `fuzzing` list, and no plan names it. When a request the API
+One more thing reads RESTest's `fuzzing` list. When a request the API
 accepted is sent again with one value of the wrong kind in it — see [the campaign
 file](campaign-format.md#changing-one-thing-in-a-request-that-worked) — that value is drawn from
 that list as well as from a few more RESTest keeps for it, and never from a list of yours, whose
@@ -235,7 +235,7 @@ enumeration at all, because the alternative is an operation that can never be te
 > place is asked, and one answer is drawn by weight. Your lists weigh 40 of 100, so where all five
 > answer, about two requests in five carry one of your values, and more where fewer of the others
 > have anything to say. Your lists only ever answer at the places they name. To make them the only
-> answer wherever they have one, write a plan that asks `dictionaries: given` before the group:
+> answer wherever they have one, write a plan that asks `source: dictionaries` before the group:
 > sources outside a group are asked in order, and the first answer is taken ([the campaign
 > file](campaign-format.md#sources)).
 
@@ -299,9 +299,9 @@ file it came from, beside every one it refused:
 
 Anything that runs RESTest with a file of yours and compares the results can check that the file is
 under `read` and nothing is under `refused` before it believes them. Being read is not the same as
-being used — which lists each kind of request asks is the plan's to decide, and a plan without the
-strategy that pushes, for one, leaves the list RESTest carries held and unasked — but a file that was
-never read was certainly not used.
+being used — which lists each kind of request asks is the plan's to decide, and a plan with no
+strategy of kind `fuzzing` or `mutation`, for one, leaves the list RESTest carries held and unasked
+— but a file that was never read was certainly not used.
 
 A file that is read and holds not a single value — every entry commented out, say — is not refused,
 since nothing in it is wrong, but it is said as the run starts, and so is an operation written with

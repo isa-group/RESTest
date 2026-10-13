@@ -166,3 +166,13 @@ any of them in a minor version.
   as pushing, would not be learnt from, and the list would be left out of `dictionaries: given`.
   Rejected for now by the maintainer: it is new behaviour nobody has asked for, and it is a design of
   its own.
+
+## Amendment (13 October 2026): naming a list to push with
+
+**Date:** 2026-10-13
+
+§4 says that naming a list of one's own in the pushing strategy, above `dictionary: fuzzing`, sends
+its values there. Since [ADR-0034](0034-version-2-of-the-plans-format.md) that cannot be written: a
+strategy pushes by being of kind `fuzzing`, which asks RESTest's own list before anything the
+strategy names. A list of one's own named among that strategy's sources is asked only where
+RESTest's list has nothing to send. Nothing else in §4 changes.
