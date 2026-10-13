@@ -676,8 +676,7 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().workAheadFactor() * settings.engine()
                                     .maxConcurrency(),
                             settings.schedule().announcementsAllowedToPileUp(),
-                            settings.engine().readTimeout()
-                                    .plus(settings.schedule().stragglerGrace()),
+                            settings.howLongToWaitForStragglers(),
                             settings.schedule().interruptGrace(), stop, sending, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
