@@ -5,8 +5,8 @@ behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries) and ADR-
 
 Two workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
 tag, and rehearses it on a pull request that touches how RESTest is packaged
-([Releases](#releases)). `ci.yml`'s triggers are pull requests against `master` or `v2`, pushes to
-those two branches, and manual dispatch. A push to a `feat/*` branch with no open pull request runs
+([Releases](#releases)). `ci.yml`'s triggers are pull requests against `master`, pushes to it,
+and manual dispatch. A push to a `feat/*` branch with no open pull request runs
 nothing, which is deliberate: a branch under active development would otherwise spend nine runners
 per commit.
 
@@ -94,13 +94,13 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 |---|---|---|
 | Compilation and unit tests | every module | the obvious |
 | Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release; a published jar that does not say which version of RESTest it is |
-| Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; the schema validator outside `restest-oracles`; the JSON library outside `restest-core`; the database driver outside `restest-store`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); a reassignable static field; a network dependency in `restest-core` |
+| Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; the HTTP client outside `restest-exec`; the schema validator outside `restest-oracles`; the JSON library outside `restest-core`; the YAML reader outside `restest-core` and `restest-spec`; the regular-expression builder outside `restest-gen`; the command-line framework outside `restest-cli`; the database driver outside `restest-store`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); the environment or the system properties read outside `restest-cli`; a random generator asked for by name; a reassignable static field; a network dependency in `restest-core` |
 | The published JSON Schemas | `PublishedSchemasTest` | a schema and RESTest's reader disagreeing about a file: a whole example in `README.md` or `docs/`, the plan RESTest carries, or a file with one thing broken; a member or a word one allows and the other does not; a keyword the engines that hold a language model to a schema do not all accept; an `$id` that does not name the version being prepared |
 | The rules themselves | `ArchitectureRulesSelfTest`, and for the source-tree rules the self-tests in `SourceTreeRulesTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
 | The harness's reach | `HarnessCoverageTest` | a module whose compiled classes the rules cannot see, so no rule constrains them |
 | Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference in any file of this repository, or in the name of one, outside the documents the rule names; one of those no longer needing to be named there; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
-| Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
+| Mutation score | PIT | `restest-oracles` scoring below 85%, on the `ubuntu-latest` / Java 25 row (`-Pmutation`) and whenever it is run by hand |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
 | How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs and in `release.yml` | the image or a launcher failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` when there is no Java it can use, `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
@@ -110,7 +110,7 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 JaCoCo's agent is attached to every module's test run, and `report` runs at `verify`. A module only
 produces `target/site/jacoco/` once it has tests: with no tests there is no execution data, so the
 report goal skips and says so. `restest-core` has both, so an HTML report is written
-under its `target/site/jacoco/` on every build — the first coverage output the project has had.
+under its `target/site/jacoco/` on every build.
 
 The ubuntu / 25 row uploads whatever exists as the `jacoco-report` artifact, with
 `if-no-files-found: warn`. Warn rather than ignore on purpose: a silent green upload of nothing
@@ -139,8 +139,16 @@ in itself.
 ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
 ```
 
-It is not bound to a build phase: it re-runs the tests once per mutation, so it costs minutes where
-the rest of the build costs seconds. The threshold is **85%**, against 98% measured when it was set.
+It re-runs the module's tests once per mutation, which takes about ten seconds, so one row of the
+matrix - `ubuntu-latest` with Java 25 - runs it on every change, as a second step after the build:
+
+```bash
+./mvnw --batch-mode --no-transfer-progress -Pmutation verify -pl restest-oracles -am -Djacoco.skip=true
+```
+
+The `mutation` profile, in `restest-oracles/pom.xml`, binds the score to that module's `verify`;
+the ordinary `./mvnw verify` does not run it, so a laptop pays for the score only when it asks. The
+threshold is **85%**, against 98% measured when it was set and 97% measured on 13 October 2026.
 
 Three survive, and they are named here rather than called equivalent, which they are not quite. All
 three are a `<` moved to a `<=` inside the schema oracle: how many pointers it will follow before
@@ -163,7 +171,7 @@ classes, the skips are gone, and what stood in their place is now an assertion: 
 the reactor was not built, and says so. `./mvnw verify` says:
 
 ```
-[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 Second, `ArchitectureRulesSelfTest` proves the rules independently of whether production code
@@ -182,8 +190,8 @@ that compiled five hundred and shipped one.
 
 `allowEmptyShould(true)` remains on the individual production checks, for a reason that
 outlasts the first weeks: the modules fill in at different times, so a rule scoped to one of them — the parser
-confinement rule, now that `restest-core` holds classes and `restest-spec` does not yet —
-legitimately has an empty subject set for a while. What it must not excuse is every rule being empty
+confinement rule, while `restest-core` held classes and `restest-spec` did not yet —
+legitimately had an empty subject set for a while. What it must not excuse is every rule being empty
 at once, and that cannot happen quietly: the inward-dependency and no-network rules both
 have subjects, and `HarnessCoverageTest` fails if a module ever leaves the import.
 
@@ -249,8 +257,8 @@ dist/assemble.sh target/dist --archives
 ```
 
 There is no shortcut worth having here: `restest-arch-tests` depends on all eight modules, so `-am`
-builds the whole reactor anyway. On this project the full build takes a few seconds; just run
-`./mvnw verify`.
+builds the whole reactor anyway. The full build takes a couple of minutes, most of it the
+command-line module's tests, which run three classes at a time; just run `./mvnw verify`.
 
 Worth knowing where the rules are actually looking. Under `verify` the reactor has reached
 `package`, so what the rules read is each module's **jar**, not its `target/classes` — only
