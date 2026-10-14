@@ -24,6 +24,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /** The specifications these tests read, and a way of finding an operation in one by its address. */
@@ -32,6 +34,13 @@ final class TheCorpus {
     private TheCorpus() {
     }
 
+    /**
+     * The documents already read, kept for the rest of the tests. Reading one takes a noticeable
+     * fraction of a second, there are forty-six, and a dozen test classes walk all of them; what a
+     * document reads as never changes while the tests run, and what is read is never changed.
+     */
+    private static final Map<Path, ApiModel> READ = new ConcurrentHashMap<>();
+
     /** One of the five APIs of the priority corpus, read the way a run reads it. */
     static ApiModel priority(String api) {
         Path document = specifications().resolve("restleague-2027").resolve(api)
@@ -39,7 +48,7 @@ final class TheCorpus {
         if (!Files.isRegularFile(document)) {
             throw new IllegalArgumentException("the priority corpus has no " + api);
         }
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return parse(document);
     }
 
     /** One of the documents the community wrote, read the way a run reads it. */
@@ -49,7 +58,7 @@ final class TheCorpus {
         if (!Files.isRegularFile(document)) {
             throw new IllegalArgumentException("the community corpus has no " + api);
         }
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return parse(document);
     }
 
     /** Every document of the corpus, without the deliberately broken ones kept beside it. */
@@ -66,8 +75,10 @@ final class TheCorpus {
         }
     }
 
+    /** A document of the corpus, read the way a run reads it, once for every test that asks. */
     static ApiModel parse(Path document) {
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return READ.computeIfAbsent(document.toAbsolutePath().normalize(),
+                path -> new SwaggerSpecificationParser().parse(path.toString()));
     }
 
     /** The operation at this address with this method. */
