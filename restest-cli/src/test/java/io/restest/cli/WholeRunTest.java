@@ -121,7 +121,9 @@ class WholeRunTest {
         // run is not asked to keep anything unless it is told to.
         int answer = run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260913", "--out", directory.toString(), "--store");
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260913",
+                "--out",
+                directory.toString(), "--store");
 
         assertThat(answer).describedAs("faults were found, so the answer is 1").isEqualTo(1);
 
@@ -175,7 +177,8 @@ class WholeRunTest {
 
         run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out", directory.toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
+                directory.toString());
 
         String command = screen.toString().lines()
                 .map(String::trim)

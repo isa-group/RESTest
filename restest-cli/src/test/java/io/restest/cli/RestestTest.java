@@ -100,7 +100,9 @@ class RestestTest {
     void faults_found_answer_one(@TempDir Path directory) throws Exception {
         int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260914", "--out", directory.toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260914",
+                "--out",
+                directory.toString());
 
         assertThat(answer).isEqualTo(1);
         assertThat(screen.toString())
@@ -152,7 +154,9 @@ class RestestTest {
 
         int answer = run("run", "pet-shelter-under-a-directory.yaml", "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260918", "--out", directory.toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260918",
+                "--out",
+                directory.toString());
 
         assertThat(answer)
                 .describedAs("nothing here is broken - though this says only that the run finished, "
@@ -210,7 +214,8 @@ class RestestTest {
         PrintWriter out = new PrintWriter(second);
         Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
             "--budget", "30s",
-                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "2", "--out", directory.toString()},
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "2", "--out",
+                    directory.toString()},
                 out, new PrintWriter(problems));
         out.flush();
 
@@ -243,7 +248,8 @@ class RestestTest {
     void a_clean_run_answers_zero(@TempDir Path directory) throws Exception {
         int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl() + "/shelters-only",
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out", directory.toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
+                directory.toString());
 
         // Nothing is stubbed under that prefix, so every reply is a 404 - which no oracle in this
         // version complains about, because a document that does not describe 404 has not been
@@ -343,7 +349,8 @@ class RestestTest {
             @TempDir Path directory) {
         int answer = run("run", "pet-search-with-a-body.yaml", "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out", directory.toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out",
+                directory.toString());
 
         assertThat(answer).isEqualTo(3);
         assertThat(problems.toString())
@@ -369,7 +376,9 @@ class RestestTest {
 
         int answer = run("run", "pet-search-with-an-optional-body.yaml", "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260923", "--out", directory.toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260923",
+                "--out",
+                directory.toString());
 
         assertThat(answer).isZero();
         assertThat(screen.toString())
@@ -586,7 +595,8 @@ class RestestTest {
         try {
             int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
                     "--budget", "30s",
-                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out", directory.toString());
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out",
+                    directory.toString());
 
             assertThat(answer)
                     .describedAs("nowhere to write the results is one of the ways a run cannot "
@@ -727,7 +737,8 @@ class RestestTest {
         // Somewhere to write problems that breaks when it is written to stands in for that.
         int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
             "--budget", "30s",
-                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out", directory.toString()},
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out",
+                    directory.toString()},
                 new PrintWriter(screen), aScreenThatBreaks(),
                 anEnvironmentThatBreaks(() -> {
                     throw new StackOverflowError("a shape too deep to walk");

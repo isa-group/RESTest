@@ -276,7 +276,8 @@ class CampaignCommandTest {
 
         assertThat(run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
                 "--url", api.baseUrl(), "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--campaign", plan.toString(),
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--campaign",
+                plan.toString(),
                 "--out", directory.resolve("out").toString()))
                 .isEqualTo(3);
         assertThat(problems.toString())

@@ -39,14 +39,14 @@ import java.util.Objects;
  * size rather than a length: told to stop after so many requests, it ends when they have been
  * answered, however fast or slow the machine it runs on.
  *
- * <p>The ones about the opening lap are about how a run begins. Before anything is chosen by chance, a run can send
- * every operation once, each with the request the API is most likely to accept: it first asks for
- * the lists of what is there, then creates, then asks for single things, then changes them, and
- * deletes last. Each of those steps waits for the answers to the one before, so that an identifier
- * one step has just been handed is there for the next. That first round is what gets an API's
- * operations answered in the first seconds of a run rather than whenever chance gets round to them.
- * It can be switched off, and how long a step waits is bounded, so one request the API never
- * answers cannot hold the start of a run up.
+ * <p>The ones about the opening lap are about how a run begins. Before anything is chosen by
+ * chance, a run can send every operation once, each with the request the API is most likely to
+ * accept: it first asks for the lists of what is there, then creates, then asks for single things,
+ * then changes them, and deletes last. Each of those steps waits for the answers to the one before,
+ * so that an identifier one step has just been handed is there for the next. That first round is
+ * what gets an API's operations answered in the first seconds of a run rather than whenever chance
+ * gets round to them. It can be switched off, and how long a step waits is bounded, so one request
+ * the API never answers cannot hold the start of a run up.
  *
  * @param workAheadFactor how many requests may be waiting for an answer at once, as a multiple of
  *     the most the engine will ever have in flight. Above one, so the engine is never left with a

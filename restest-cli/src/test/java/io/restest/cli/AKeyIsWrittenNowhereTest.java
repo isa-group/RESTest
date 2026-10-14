@@ -196,7 +196,8 @@ class AKeyIsWrittenNowhereTest {
                 PrintWriter complained = new PrintWriter(problems)) {
             answer = Restest.run(new String[] {"run", document.toString(), "--url",
                 api.baseUrl(), "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", THREE_HUNDRED_REQUESTS, "--seed", "20260930", "--out", out.toString(),
+                "--set", STOP_AFTER_REQUESTS, "--set", THREE_HUNDRED_REQUESTS, "--seed", "20260930",
+                "--out", out.toString(),
                 "--store", "--auth", "inAHeader=" + IN_A_HEADER, "--auth",
                 "inTheQuery=" + IN_THE_QUERY}, printed, complained,
                     Map.of("RESTEST_AUTH", "inACookie=" + IN_A_COOKIE));

@@ -146,7 +146,8 @@ class OpeningLapCommandTest {
 
         run(new StringWriter(), "run", document.toString(), "--url", api.baseUrl(),
                 "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out", directory.resolve("out").toString());
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
+                directory.resolve("out").toString());
 
         List<LoggedRequest> pinged = api.findAll(getRequestedFor(urlEqualTo("/ping")));
         assertThat(pinged).isNotEmpty();

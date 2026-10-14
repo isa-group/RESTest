@@ -111,7 +111,8 @@ class SchedulerTest {
     @DisplayName("told not to wait at all, the first round goes straight from one step to the next")
     void no_patience_means_no_waiting() {
         ScheduleSettings impatient = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
-                Duration.ofSeconds(2), true, Duration.ZERO, false, 1_000, Duration.ofSeconds(5), Duration.ofSeconds(1));
+                Duration.ofSeconds(2), true, Duration.ZERO, false, 1_000, Duration.ofSeconds(5),
+                Duration.ofSeconds(1));
         Scheduler scheduler = scheduler(PETS, impatient, Duration.ofMinutes(1));
 
         assertThat(steps(scheduler, 5)).containsExactly("send listPets (first round)",
@@ -364,6 +365,7 @@ class SchedulerTest {
 
     private static ScheduleSettings withoutAFirstRound() {
         return new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
-                Duration.ofSeconds(2), false, Duration.ofSeconds(2), false, 1_000, Duration.ofSeconds(5), Duration.ofSeconds(1));
+                Duration.ofSeconds(2), false, Duration.ofSeconds(2), false, 1_000,
+                Duration.ofSeconds(5), Duration.ofSeconds(1));
     }
 }

@@ -139,7 +139,8 @@ class RunLoopTest {
     }
 
     @Test
-    @DisplayName("told its size, a run stops once it has sent that many requests, having waited for their answers")
+    @DisplayName("told its size, a run stops once it has sent that many requests, having waited "
+            + "for their answers")
     void a_run_of_a_known_size_stops_after_that_many_requests() {
         engine.takes(request -> Duration.ofMillis(1));
         long began = System.nanoTime();
@@ -350,7 +351,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, new StopFromOutside(), engine, events);
+                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, new StopFromOutside(), engine,
+                    events);
         }
 
         assertThat(outcome.lost()).describedAs("list reads were sent and lost: %s", outcome)
@@ -742,7 +744,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
             org.assertj.core.api.Assertions.assertThatThrownBy(() -> RunLoop.run(scheduler,
-                    "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE,
+                    "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT,
+                    GRACE,
                     new StopFromOutside(), engine, events))
                     .isInstanceOf(IllegalStateException.class);
             Thread.sleep(1200);
@@ -834,8 +837,8 @@ class RunLoopTest {
         try (EventStream events = new EventStream()) {
             Scheduler scheduler = new Scheduler(generator(), schedule,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
-            return RunLoop.run(scheduler, baseUrl, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT,
-                    GRACE, new StopFromOutside(), engine, events);
+            return RunLoop.run(scheduler, baseUrl, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
+                    PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
     }
 
