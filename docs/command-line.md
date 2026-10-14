@@ -125,12 +125,13 @@ $ echo $?
 
 An answer that has not come back by the end of that wait counts as never answered, and the run
 says how many there were. A second Ctrl-C does nothing: the run is already stopping, and is done in
-a few seconds. If it has not finished writing `schedule.interruptGrace` and five seconds after it
-was stopped — a report that got stuck, say — it says what it did not leave behind, and ends.
-`report.json` is only ever there whole. A `run.sqlite` that was not closed has lost the last
-interactions it had not yet saved, and keeps some of what it did save in `run.sqlite-wal` beside
-it, so the three files go together. If the directory itself does not answer, the run says that
-instead, a second later.
+a few seconds. If it has not finished writing `schedule.interruptGrace` and
+`schedule.interruptWritingGrace` — five seconds unless set otherwise — after it was stopped, a
+report that got stuck, say, it says what it did not leave behind, and ends. `report.json` is only
+ever there whole. A `run.sqlite` that was not closed has lost the last interactions it had not yet
+saved, and keeps some of what it did save in `run.sqlite-wal` beside it, so the three files go
+together. If the directory itself does not answer within `schedule.interruptLookingGrace`, a second
+unless set otherwise, the run says that instead.
 
 A run stopped while it is still reading the document writes nothing, since it has found nothing
 yet, and says so: the directory it would have written to is left as it was, with whatever an

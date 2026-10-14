@@ -97,11 +97,12 @@ No check decides what a run sends: switching one off changes which replies are c
 so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
 it does not.
 
-### And one that is not a lever
+### And two that are not levers
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
 | `engine.followRedirects` | `false` | Redirections | reports a redirection rather than following it. It decides what a 3XX answer means rather than turning off something a run could do without, which is why it is off by default and plays no part in an ablation |
+| `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent, as every run did until now. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
 
 ## What leaving each one on costs
 

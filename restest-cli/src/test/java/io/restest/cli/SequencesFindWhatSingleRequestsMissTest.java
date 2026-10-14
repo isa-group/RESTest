@@ -61,6 +61,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class SequencesFindWhatSingleRequestsMissTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String FIFTEEN_HUNDRED_REQUESTS = "schedule.requestsBeforeStopping=1500";
+
     private static final String SPECIFICATION = """
             openapi: 3.0.3
             info: {title: Forgetful widgets, version: "1.0"}
@@ -203,7 +211,7 @@ class SequencesFindWhatSingleRequestsMissTest {
         List<String> arguments = new ArrayList<>(List.of(
                 "run", document.toString(),
                 "--url", api.baseUrl(),
-                "--budget", "3s",
+                "--budget", "30s", "--set", STOP_AFTER_REQUESTS, "--set", FIFTEEN_HUNDRED_REQUESTS,
                 "--seed", "20261005",
                 "--campaign", plan.toString(),
                 "--out", out.toString()));
