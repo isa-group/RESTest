@@ -131,12 +131,15 @@ final class AllOfMerger {
 
         // A half that names no type constrains nothing about the shape itself, so all it can
         // contribute is what it says about the value regardless of type: that it may be null, that
-        // it is one of a fixed set, what it defaults to.
-        if (first instanceof AnySchema) {
-            return withMetadata(second, metadata);
-        }
-        if (second instanceof AnySchema) {
-            return withMetadata(first, metadata);
+        // it is one of a fixed set, what it defaults to. And what it does not say it cannot deny.
+        // A schema that is nothing but its halves is such a half, and says nothing about null, so
+        // whether the value may be null is for the half that names a type to say; only two halves
+        // that both name a type have to agree on it. Without this, every "nullable" written beside
+        // an allOf, or inside one of its halves, was quietly withdrawn.
+        if (first instanceof AnySchema || second instanceof AnySchema) {
+            CanonicalSchema typed = first instanceof AnySchema ? second : first;
+            return withMetadata(typed, metadata.withNullable(
+                    first.metadata().nullable() || second.metadata().nullable()));
         }
 
         // Said explicitly rather than left to the arms below. This is a chain of instanceof
