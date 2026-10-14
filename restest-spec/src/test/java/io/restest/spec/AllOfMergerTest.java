@@ -219,6 +219,20 @@ class AllOfMergerTest {
     }
 
     @Test
+    @DisplayName("a half that names no type, and says nothing about null, does not deny it either")
+    void a_half_without_a_type_does_not_deny_null() {
+        AnySchema silent = new AnySchema(SchemaMetadata.none());
+        StringSchema acceptsNull = new StringSchema(SchemaMetadata.none().withNullable(true),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+
+        assertThat(AllOfMerger.merge(silent, acceptsNull).metadata().nullable())
+                .describedAs("the half that names the type is the one that says whether null is "
+                        + "accepted; the other says nothing")
+                .isTrue();
+        assertThat(AllOfMerger.merge(acceptsNull, silent).metadata().nullable()).isTrue();
+    }
+
+    @Test
     @DisplayName("a half nobody could read makes the whole combination unreadable, with its reason")
     void an_unreadable_half_carries_its_reason_outwards() {
         UnsupportedSchema unreadable = UnsupportedSchema.of("a tuple-form array");
