@@ -66,6 +66,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class WholeRunTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
+
     private static WireMockServer api;
 
     @BeforeAll
@@ -112,7 +120,10 @@ class WholeRunTest {
         // --store because this is the test that proves the stored run and the report agree, and a
         // run is not asked to keep anything unless it is told to.
         int answer = run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "20260913", "--out", directory.toString(), "--store");
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260913",
+                "--out",
+                directory.toString(), "--store");
 
         assertThat(answer).describedAs("faults were found, so the answer is 1").isEqualTo(1);
 
@@ -164,11 +175,10 @@ class WholeRunTest {
         Assumptions.assumeTrue(curlIsInstalled(), "curl is not installed on this machine");
         StringWriter screen = new StringWriter();
 
-        // Two seconds rather than a fraction of one: reading the document and warming the parser
-        // up costs about half a second, and that comes out of the budget, so a budget of a few
-        // hundred milliseconds can run out before a single request has gone anywhere.
         run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "2s", "--seed", "1", "--out", directory.toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
+                directory.toString());
 
         String command = screen.toString().lines()
                 .map(String::trim)

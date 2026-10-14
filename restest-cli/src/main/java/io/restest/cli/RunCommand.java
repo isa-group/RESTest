@@ -28,6 +28,7 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.SecurityScheme;
 import io.restest.core.model.SpecificationIssue;
+import io.restest.core.settings.ScheduleSettings;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
@@ -162,27 +163,6 @@ final class RunCommand implements Callable<Integer> {
     private static final List<String> FILES_A_RUN_WRITES = List.of("run.sqlite", "run.sqlite-wal",
             "run.sqlite-shm", "report.json",
             JsonReport.whileBeingWritten(Path.of("report.json")).toString());
-
-    /**
-     * How long a run stopped from outside is given to write what it found, once it has stopped
-     * waiting for its answers, before the program is let end without it.
-     *
-     * <p>Writing takes a fraction of a second: the reports catching up with the last answers, the
-     * report file, the last interactions into the stored run. This is not a pause anybody waits
-     * through. It is how long to wait for writing that has got stuck - a report that stopped making
-     * progress, a disk that stopped answering - before saying so, because the program will be ended
-     * outright soon after whoever stopped it runs out of patience: ten seconds after
-     * {@code docker stop}, with nothing said. With the two seconds a stopped run waits for its
-     * answers by default, and the moment {@link #LOOKING_ALLOWED} takes, this leaves two in hand.
-     */
-    private static final Duration WRITING_ALLOWED = Duration.ofSeconds(5);
-
-    /**
-     * How long a run stopped from outside that ran out of time to write gives its directory to say
-     * what is in it, before saying that it did not answer. A directory answers at once, unless it
-     * is the reason the writing ran out of time.
-     */
-    private static final Duration LOOKING_ALLOWED = Duration.ofSeconds(1);
 
     @Parameters(
             index = "0",
@@ -410,9 +390,9 @@ final class RunCommand implements Callable<Integer> {
         // is still reading the document does not begin; one told while it tests is given the time
         // to leave behind what it found - and no more.
         StopFromOutside stop = new StopFromOutside();
-        Duration grace = settings.schedule().interruptGrace();
+        ScheduleSettings schedule = settings.schedule();
         try (StopsFromOutside.Arrangement heard = stops.whenStopped(
-                () -> stoppedFromOutside(stop, grace, err))) {
+                () -> stoppedFromOutside(stop, schedule, err))) {
             try {
                 int answer = readAndTest(configuration, stop, out, err);
                 // Stopped while it was still reading, a run can go on to find something else to
@@ -523,9 +503,17 @@ final class RunCommand implements Callable<Integer> {
      * the program ends. When it is not done in time, this says what it has not left behind, and
      * the program ends all the same: whoever stopped it is about to end it outright. A run stopped
      * before it began testing is not waited for, and this says it wrote nothing.
+     *
+     * <p>How long the run is waited for is the schedule's: the time it may spend waiting for its
+     * answers, then the time it may spend writing. Writing takes a fraction of a second, so the
+     * second is how long to wait for writing that has got stuck - a report that stopped making
+     * progress, a disk that stopped answering - before saying so. The two, with the moment the
+     * directory is then given to say what is in it, have to fit inside the patience of whoever
+     * stopped the run: ten seconds, when a container is stopped.
      */
-    private void stoppedFromOutside(StopFromOutside stop, Duration grace, PrintWriter err) {
-        Duration atMost = grace.plus(WRITING_ALLOWED);
+    private void stoppedFromOutside(StopFromOutside stop, ScheduleSettings schedule,
+            PrintWriter err) {
+        Duration atMost = schedule.interruptGrace().plus(schedule.interruptWritingGrace());
         switch (stop.askAndWait(atMost)) {
             case DONE -> {
                 return;
@@ -548,7 +536,8 @@ final class RunCommand implements Callable<Integer> {
         Thread.ofVirtual().name("restest-looking").start(look);
         String missing;
         try {
-            List<String> found = look.get(StopFromOutside.nanosIn(LOOKING_ALLOWED),
+            List<String> found = look.get(
+                    StopFromOutside.nanosIn(schedule.interruptLookingGrace()),
                     TimeUnit.NANOSECONDS);
             missing = found.isEmpty() ? "" : ": " + String.join("; ", found);
         } catch (TimeoutException notAnswering) {
@@ -676,6 +665,9 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().workAheadFactor() * settings.engine()
                                     .maxConcurrency(),
                             settings.schedule().announcementsAllowedToPileUp(),
+                            settings.schedule().stopAfterRequests()
+                                    ? settings.schedule().requestsBeforeStopping()
+                                    : Long.MAX_VALUE,
                             settings.howLongToWaitForStragglers(),
                             settings.schedule().interruptGrace(), stop, sending, drained);
                 } finally {

@@ -59,6 +59,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class RestestTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
+
     private static WireMockServer api;
 
     private final StringWriter screen = new StringWriter();
@@ -91,12 +99,15 @@ class RestestTest {
     @DisplayName("a run that finds something wrong says so, and answers 1")
     void faults_found_answer_one(@TempDir Path directory) throws Exception {
         int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "20260914", "--out", directory.toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260914",
+                "--out",
+                directory.toString());
 
         assertThat(answer).isEqualTo(1);
         assertThat(screen.toString())
                 .contains("RESTest testing Pet Shelter at " + api.baseUrl())
-                .contains("4 of 4 operations can be tested, seed 20260914, budget 1s")
+                .contains("4 of 4 operations can be tested, seed 20260914, budget 30s")
                 .contains("F100")
                 .contains("listPets - GET " + api.baseUrl() + "/pets")
                 .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle");
@@ -142,7 +153,10 @@ class RestestTest {
                 .withBody("[{\"id\": 7, \"name\": \"Rex\"}]")));
 
         int answer = run("run", "pet-shelter-under-a-directory.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "20260918", "--out", directory.toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260918",
+                "--out",
+                directory.toString());
 
         assertThat(answer)
                 .describedAs("nothing here is broken - though this says only that the run finished, "
@@ -158,7 +172,8 @@ class RestestTest {
     @Test
     @DisplayName("a run keeps nothing unless asked to, and says so rather than leaving you to look")
     void a_run_keeps_nothing_unless_asked(@TempDir Path directory) {
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260914", "--out", directory.toString());
 
         assertThat(directory.resolve("run.sqlite"))
@@ -175,7 +190,8 @@ class RestestTest {
     @Test
     @DisplayName("a run asked to keep itself does, and says where and how big")
     void a_run_asked_to_keep_itself_does(@TempDir Path directory) {
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260914", "--out", directory.toString(), "--store");
 
         assertThat(directory.resolve("run.sqlite")).exists();
@@ -189,14 +205,17 @@ class RestestTest {
     @Test
     @DisplayName("a second run replaces a kept run rather than leaving two runs in one directory")
     void a_second_run_replaces_a_kept_run(@TempDir Path directory) {
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "1", "--out", directory.toString(), "--store");
         assertThat(directory.resolve("run.sqlite")).exists();
 
         StringWriter second = new StringWriter();
         PrintWriter out = new PrintWriter(second);
         Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
-            "--budget", "1s", "--seed", "2", "--out", directory.toString()},
+            "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "2", "--out",
+                    directory.toString()},
                 out, new PrintWriter(problems));
         out.flush();
 
@@ -213,7 +232,8 @@ class RestestTest {
         Path somebodysWork = directory.resolve("notes.txt");
         Files.writeString(somebodysWork, "not ours");
 
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260914", "--out", directory.toString())).isEqualTo(1);
 
         assertThat(somebodysWork)
@@ -227,7 +247,9 @@ class RestestTest {
     @DisplayName("a run that finds nothing wrong says so, and answers 0")
     void a_clean_run_answers_zero(@TempDir Path directory) throws Exception {
         int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl() + "/shelters-only",
-                "--budget", "1s", "--seed", "1", "--out", directory.toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
+                directory.toString());
 
         // Nothing is stubbed under that prefix, so every reply is a 404 - which no oracle in this
         // version complains about, because a document that does not describe 404 has not been
@@ -291,7 +313,8 @@ class RestestTest {
         Path nothingThere = directory.resolve("not-a-document.yaml");
         Files.writeString(nothingThere, "this file is not an API description\n");
 
-        assertThat(run("run", nothingThere.toString(), "--url", api.baseUrl(), "--budget", "1s"))
+        assertThat(run("run", nothingThere.toString(), "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS))
                 .isEqualTo(3);
         assertThat(problems.toString()).contains("no operation that could be tested");
     }
@@ -299,7 +322,8 @@ class RestestTest {
     @Test
     @DisplayName("a document with nowhere to send requests asks for --url, and answers 3")
     void nowhere_to_send_answers_three() {
-        assertThat(run("run", "pet-shelter.yaml", "--budget", "1s")).isEqualTo(3);
+        assertThat(run("run", "pet-shelter.yaml", "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS)).isEqualTo(3);
         assertThat(problems.toString())
                 .contains("there is nowhere to send the requests")
                 .contains("--url");
@@ -324,7 +348,9 @@ class RestestTest {
     void a_get_insisting_on_a_body_is_named_rather_than_blamed_on_the_address(
             @TempDir Path directory) {
         int answer = run("run", "pet-search-with-a-body.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--out", directory.toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out",
+                directory.toString());
 
         assertThat(answer).isEqualTo(3);
         assertThat(problems.toString())
@@ -349,7 +375,10 @@ class RestestTest {
                 .withBody("[]")));
 
         int answer = run("run", "pet-search-with-an-optional-body.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "20260923", "--out", directory.toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260923",
+                "--out",
+                directory.toString());
 
         assertThat(answer).isZero();
         assertThat(screen.toString())
@@ -377,14 +406,15 @@ class RestestTest {
                         + "is not assembled yet");
 
         int answer = run("run", "pet-shop-with-operations-it-cannot-try.yaml",
-                "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
+                "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260923",
                 "--out", directory.toString());
 
         assertThat(answer).describedAs("an operation that had to be skipped is not an error").isZero();
         List<String> lines = screen.toString().lines().toList();
         assertThat(lines.subList(0, 3)).containsExactly(
                 "RESTest testing Pet Shop at " + api.baseUrl(), "",
-                "1 of 4 operations can be tested, seed 20260923, budget 1s");
+                "1 of 4 operations can be tested, seed 20260923, budget 30s");
         int verdict = lines.indexOf("no faults found");
         assertThat(verdict).describedAs("the verdict is there").isNotNegative();
         assertThat(lines.subList(verdict + 1, lines.size()))
@@ -412,13 +442,14 @@ class RestestTest {
                 + "greater than maxProperties (2), so no value can satisfy both (paths./pets.get)";
 
         int answer = run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
-                "--url", api.baseUrl(), "--budget", "1s", "--seed", "20260923",
+                "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260923",
                 "--out", directory.toString());
 
         assertThat(answer).isZero();
         assertThat(screen.toString())
                 .describedAs("the document describes two operations, whether or not both could be read")
-                .contains("1 of 2 operations can be tested, seed 20260923, budget 1s");
+                .contains("1 of 2 operations can be tested, seed 20260923, budget 30s");
         List<String> lines = screen.toString().lines().toList();
         int verdict = lines.indexOf("no faults found");
         assertThat(verdict).describedAs("the verdict is there").isNotNegative();
@@ -450,7 +481,8 @@ class RestestTest {
                       responses: {'200': {description: the pets that match}}
                 """);
 
-        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--out", directory.resolve("out").toString());
 
         assertThat(answer).isEqualTo(3);
@@ -486,7 +518,8 @@ class RestestTest {
                       responses: {'200': {description: every pet}}
                 """);
 
-        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--out", directory.resolve("out").toString());
 
         assertThat(answer).isEqualTo(3);
@@ -525,7 +558,8 @@ class RestestTest {
         // which the awkward values include, makes the stub itself answer 500.
         api.stubFor(any(anyUrl()).atPriority(10).willReturn(aResponse().withStatus(404)));
 
-        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "1s",
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260924", "--out", directory.resolve("out").toString());
 
         assertThat(answer).isZero();
@@ -560,7 +594,9 @@ class RestestTest {
 
         try {
             int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                    "--budget", "1s", "--out", directory.toString());
+                    "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out",
+                    directory.toString());
 
             assertThat(answer)
                     .describedAs("nowhere to write the results is one of the ways a run cannot "
@@ -599,7 +635,8 @@ class RestestTest {
         // program with the number Java gives any program that crashes, which is 1.
         int answer = run(anEnvironmentThatBreaks(() -> {
             throw new StackOverflowError("a shape too deep to walk");
-        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--out", directory.toString());
 
         assertThat(answer)
@@ -618,7 +655,8 @@ class RestestTest {
     void an_exception_in_a_run_answers_four(@TempDir Path directory) {
         int answer = run(anEnvironmentThatBreaks(() -> {
             throw new IllegalStateException("something RESTest did not expect");
-        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        }), "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--out", directory.toString());
 
         assertThat(answer).isEqualTo(4);
@@ -685,7 +723,8 @@ class RestestTest {
         assertThat(threadsNamed("restest-events"))
                 .describedAs("the thread that delivered the run's events ended with it")
                 .isSubsetOf(deliveringBefore);
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260914", "--out", directory.resolve("again").toString()))
                 .describedAs("and the same program runs another, which finds what it always finds")
                 .isEqualTo(1);
@@ -697,7 +736,9 @@ class RestestTest {
         // A program that has run out of memory may not have enough left to write a stack trace.
         // Somewhere to write problems that breaks when it is written to stands in for that.
         int answer = Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
-            "--budget", "1s", "--out", directory.toString()},
+            "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--out",
+                    directory.toString()},
                 new PrintWriter(screen), aScreenThatBreaks(),
                 anEnvironmentThatBreaks(() -> {
                     throw new StackOverflowError("a shape too deep to walk");

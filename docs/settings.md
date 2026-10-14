@@ -120,6 +120,14 @@ schedule:
   openingLap: true            # default
   # how long each step of that opening lap waits for the answers to the one before
   openingLapPatience: "2s"    # default
+  # whether a run stops once it has sent a set number of requests, before its budget is spent
+  stopAfterRequests: false    # default
+  # how many requests that is
+  requestsBeforeStopping: 1000 # default
+  # how long a run stopped from outside is then given to write what it found
+  interruptWritingGrace: "5s" # default
+  # how long it then gives its directory to say what was written, when writing did not finish
+  interruptLookingGrace: "1s" # default
 
 generation:
   # below this depth, only what the description insists on is built
@@ -366,6 +374,10 @@ spelling `--budget` takes.
 | `interruptGrace` | `2s` | how long a run stopped from outside waits for answers already asked for |
 | `openingLap` | `true` | whether a run starts by sending every operation once, the request likeliest to work |
 | `openingLapPatience` | `2s` | how long each step of that opening lap waits for the answers to the one before |
+| `stopAfterRequests` | `false` | whether a run stops once it has sent a set number of requests, before its budget is spent |
+| `requestsBeforeStopping` | `1000` | how many requests that is |
+| `interruptWritingGrace` | `5s` | how long a run stopped from outside is then given to write what it found |
+| `interruptLookingGrace` | `1s` | how long it then gives its directory to say what was written, when writing did not finish |
 
 ### `generation.*`
 
