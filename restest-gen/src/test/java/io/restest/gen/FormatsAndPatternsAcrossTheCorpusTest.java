@@ -29,7 +29,6 @@ import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.settings.GenerationSettings;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -411,7 +410,7 @@ class FormatsAndPatternsAcrossTheCorpusTest {
     private static void forEachDocument(java.util.function.BiConsumer<String, ApiModel> check) {
         for (Path document : corpus()) {
             check.accept(document.getParent().getFileName().toString(),
-                    new SwaggerSpecificationParser().parse(document.toString()));
+                    TheCorpus.parse(document));
         }
     }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /**
- * A miniature of the nine-module package layout, used only to prove that the rules in
+ * A miniature of the modules' package layout, used only to prove that the rules in
  * {@code ArchitectureRules} report the violations they claim to.
  *
  * <p>Every class below breaks a rule on purpose. Nothing here is production code, nothing depends on

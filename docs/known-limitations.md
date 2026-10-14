@@ -36,6 +36,10 @@ of its own. Whether you may test an API at all is not something any tool can che
 
 ## What a run sends
 
+- **Dependencies between parameters are not read.** RESTest 1.x read them in IDL - "if `from` is
+  given, `to` must be too" - and built requests that honoured them. This version reads no IDL yet,
+  whether in the document or beside it, so a request may break such a rule and be refused for it;
+  the refusal is counted like any other.
 - **Optional parameters and optional bodies share one number.** With
   `generation.optionalParametersBySize` off, each optional parameter is decided on a coin weighted by
   `generation.optionalBodyChance`, the same number that decides whether a request sends a body it
@@ -78,3 +82,8 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **The settings file has no JSON Schema.** A dictionary and a plan have one ([the JSON
   Schemas](schemas.md)); a file of settings is checked only by RESTest, as it starts. Start one from
   what `restest run --print-settings` writes, which RESTest reads back as it is.
+- **A file is read up to three million characters and fifty levels deep.** A dictionary, a plan or
+  a file of settings longer or deeper than that is refused by name, before the run starts. A
+  dictionary a program writes for a large API is tens of thousands of characters and three levels
+  deep, so neither limit is one a file somebody meant reaches. A list or a map that contains itself,
+  through a YAML alias to something it is inside of, is refused the same way.

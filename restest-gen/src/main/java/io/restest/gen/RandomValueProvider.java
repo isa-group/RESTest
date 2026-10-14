@@ -594,11 +594,14 @@ public final class RandomValueProvider implements ValueProvider {
     }
 
     private Optional<JsonValue> list(ValueRequest request, ArraySchema schema, int depth) {
-        int lowest = schema.minItems().orElse(depth >= settings.optionalNestingDepth() ? 0 : 1);
+        int stated = schema.maxItems().orElse(Integer.MAX_VALUE);
+        // One item unless the specification says otherwise, but never more than it allows: a list
+        // that must be empty is empty, as a word that must be empty is.
+        int lowest = Math.min(
+                schema.minItems().orElse(depth >= settings.optionalNestingDepth() ? 0 : 1), stated);
         if (lowest > settings.mostItems()) {
             return Optional.empty();
         }
-        int stated = schema.maxItems().orElse(Integer.MAX_VALUE);
         int highest = Math.min(stated, Math.max(lowest, settings.usualMostItems()));
         int wanted = depth >= settings.optionalNestingDepth() || lowest == highest
                 ? lowest

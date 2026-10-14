@@ -114,7 +114,6 @@ restest-core      domain model + interfaces. No network, no OpenAPI parser, no h
                   the two third-party libraries it carries are the streaming JSON reader and writer
                   and the YAML reader, both behind `io.restest.core.json`.
 restest-spec      the only module allowed to reference io.swagger.
-restest-idl       IDL language, constraints, solver interface.
 restest-gen       generation phases, value providers, scheduler.
 restest-exec      HTTP engine.
 restest-store     interaction store.
@@ -123,9 +122,11 @@ restest-report    event listeners producing output.
 restest-cli       command line. The only module allowed to terminate the process.
 ```
 
-Dependencies point inwards, towards `restest-core`. Architecture tests enforce this.
+Dependencies point inwards, towards `restest-core`. Architecture tests enforce this. A module for the
+language of dependencies between parameters, IDL, joins them with the first code that reads it; the
+architecture rules already have a place for it.
 
-A tenth module, `restest-arch-tests`, holds those tests. It has no `src/main`, depends on all nine
+A ninth module, `restest-arch-tests`, holds those tests. It has no `src/main`, depends on all eight
 at test scope and is never published — ArchUnit reads bytecode, so the rules can only run somewhere
 that sees every module at once. See `docs/ci.md`.
 

@@ -80,6 +80,8 @@ final class ArchitectureRules {
                 .consideringOnlyDependenciesInLayers()
                 .layer("Core").definedBy(root + ".core..")
                 .layer("Spec").definedBy(root + ".spec..")
+                // Kept although no module holds it yet: the language of dependencies between
+                // parameters will live here, and the rule is ready for it the day it does.
                 .layer("Idl").definedBy(root + ".idl..")
                 .layer("Gen").definedBy(root + ".gen..")
                 .layer("Exec").definedBy(root + ".exec..")
