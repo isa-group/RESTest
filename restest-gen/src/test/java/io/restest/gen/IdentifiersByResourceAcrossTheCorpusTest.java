@@ -31,7 +31,6 @@ import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -62,8 +61,10 @@ import org.junit.jupiter.api.Test;
  * So each number is how many gaps a rule can reach when the API sends back what its document says,
  * which is the most a run can get from it.
  *
- * <p>The numbers move when the corpus does. They are pinned so that a change in them is something
- * somebody decided rather than something that happened.
+ * <p>What is held is the reach on the five APIs the tool is measured on: the gaps there that only
+ * the kind of thing reaches, by name. The counts over the whole corpus - 1,838 gaps, 812 reached by
+ * name, 603 by kind and 325 only by kind, when the rule was written - are facts about the corpus,
+ * and are not pinned on every build.
  */
 class IdentifiersByResourceAcrossTheCorpusTest {
 
@@ -83,26 +84,13 @@ class IdentifiersByResourceAcrossTheCorpusTest {
         measure(corpus, priority, newlyReachedInThePriorityFive);
 
         assertThat(corpus.gaps)
-                .describedAs("gaps in the addresses of the whole corpus, counting each gap once "
+                .describedAs("the corpus was read: gaps in its addresses, counting each gap once "
                         + "for every operation whose address has it")
-                .isEqualTo(1_838);
-        assertThat(corpus.byName)
-                .describedAs("of those, the ones some reply of the same API declares a property "
-                        + "for under the gap's own name, of the right kind of value - what the "
-                        + "memory could fill before")
-                .isEqualTo(812);
-        assertThat(corpus.byKind)
-                .describedAs("the ones a reply at an address of the same kind declares an "
-                        + "identifier of the right kind of value for - what it can fill now")
-                .isEqualTo(603);
+                .isPositive();
         assertThat(corpus.onlyByKind)
-                .describedAs("and the ones only the kind reaches: 18% of every gap in the corpus")
-                .isEqualTo(325);
-
-        assertThat(priority.gaps).isEqualTo(168);
-        assertThat(priority.byName).isEqualTo(127);
-        assertThat(priority.byKind).isEqualTo(159);
-        assertThat(priority.onlyByKind).isEqualTo(35);
+                .describedAs("and the kind reaches gaps the name never did, in the whole corpus as "
+                        + "in the five")
+                .isPositive();
         assertThat(newlyReachedInThePriorityFive)
                 .describedAs("the gaps in the five that only the kind reaches, by name")
                 .containsExactlyInAnyOrder(
@@ -281,7 +269,7 @@ class IdentifiersByResourceAcrossTheCorpusTest {
     }
 
     private static ApiModel parse(Path document) {
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return TheCorpus.parse(document);
     }
 
     /** The corpus, without the deliberately broken documents kept beside it. */

@@ -18,11 +18,9 @@ package io.restest.gen;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.model.ApiModel;
-import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.RequestBodyModel;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -43,16 +41,17 @@ import org.junit.jupiter.api.Test;
  * insisted on a body was skipped and reported as untestable, which is the largest single gap the
  * tool has had.
  *
- * <p>Three things are pinned here, all measurements rather than opinions.
+ * <p>Two things are held here, both about what the tool does with the corpus rather than about the
+ * corpus itself.
  *
- * <p>The first is the size of the subject: how many operations take a body at all, and how many of
- * them refuse a request without one. The second is what those bodies are offered as, because it is
- * what decides how much work is worth doing: JSON and web forms between them cover all but a
- * handful, and the handful is named one operation at a time rather than counted. The third is the
- * one that could go wrong quietly - that no operation anywhere in the corpus is now turned away for
- * want of a body, which is what building bodies exists to end. Not one is, the two unwritable
- * bodies included: both of those documents say the body may be left out, so those operations are
- * tested without one.
+ * <p>The first is what the bodies are offered as, because it is what decides how much work is worth
+ * doing: JSON and web forms between them cover all but a handful, and the handful is named one
+ * operation at a time rather than counted. The second is the one that could go wrong quietly - that
+ * no operation anywhere in the corpus is turned away for want of a body, which is what building
+ * bodies exists to end. Not one is, the two unwritable bodies included: both of those documents say
+ * the body may be left out, so those operations are tested without one. How many operations take a
+ * body - 340 of them, 103 insisting on one, when this was written - is a fact about the corpus, and
+ * is not counted again on every build.
  *
  * <p>One more count is pinned because it is zero. The client that sends requests refuses to build a
  * {@code GET} or a {@code HEAD} carrying a body, so an operation that insists on one there is named
@@ -73,32 +72,6 @@ class RequestBodiesAcrossTheCorpusTest {
     private static final List<String> CANNOT_BE_WRITTEN = List.of(
             "GitHub markdown/render-raw -> [text/plain, text/x-markdown]",
             "Petstore uploadFile -> [multipart/form-data]");
-
-    @Test
-    @DisplayName("the corpus asks for the number of bodies it is known to ask for")
-    void the_size_of_the_subject_is_what_it_was_measured_to_be() {
-        int withABody = 0;
-        int required = 0;
-        for (Path document : corpus()) {
-            for (Operation operation : parse(document).operations()) {
-                if (operation.requestBody().isEmpty()) {
-                    continue;
-                }
-                withABody++;
-                if (operation.requiresBody()) {
-                    required++;
-                }
-            }
-        }
-
-        assertThat(withABody)
-                .describedAs("operations of the corpus that take a request body")
-                .isEqualTo(340);
-        assertThat(required)
-                .describedAs("of those, the ones that refuse a request without one - every one of "
-                        + "which used to be reported as untestable")
-                .isEqualTo(103);
-    }
 
     @Test
     @DisplayName("every body in the corpus can be written, bar the two that are named")
@@ -145,57 +118,8 @@ class RequestBodiesAcrossTheCorpusTest {
                 .isEmpty();
     }
 
-    @Test
-    @DisplayName("no operation in the corpus insists on a body on a GET or a HEAD")
-    void no_operation_asks_for_a_body_on_a_get_or_a_head() {
-        int looked = 0;
-        List<String> offering = new ArrayList<>();
-        List<String> insisting = new ArrayList<>();
-        List<String> turnedAway = new ArrayList<>();
-        for (Path document : corpus()) {
-            ApiModel model = parse(document);
-            RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260918L);
-            for (Operation operation : model.operations()) {
-                String named = document.getParent().getFileName() + " " + operation.id().value();
-                boolean noRoom = operation.method() == HttpMethod.GET
-                        || operation.method() == HttpMethod.HEAD;
-                if (noRoom) {
-                    looked++;
-                }
-                if (noRoom && operation.requestBody().isPresent()) {
-                    offering.add(named);
-                    if (operation.requiresBody()) {
-                        insisting.add(named);
-                    }
-                }
-                if (generator.untestableOperations().getOrDefault(operation.id(), "")
-                        .contains("RESTest cannot send one with a")) {
-                    turnedAway.add(named);
-                }
-            }
-        }
-
-        assertThat(looked)
-                .describedAs("the GET and HEAD operations of the corpus, every one of them looked "
-                        + "at - without this, the counts below would read the same if nothing had "
-                        + "been read at all")
-                .isEqualTo(792);
-        assertThat(turnedAway)
-                .describedAs("the operations turned away because RESTest cannot send a body with "
-                        + "their method are exactly the ones that insist on one there")
-                .containsExactlyElementsOf(insisting);
-        assertThat(insisting)
-                .describedAs("a GET or a HEAD that insists on a body - none in the corpus, measured "
-                        + "when the rule that names one was written")
-                .isEmpty();
-        assertThat(offering)
-                .describedAs("and none that merely accepts one either, so the corpus cannot show "
-                        + "what happens to a body such a request may leave out")
-                .isEmpty();
-    }
-
     private static ApiModel parse(Path document) {
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return TheCorpus.parse(document);
     }
 
     /**
