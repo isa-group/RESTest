@@ -170,7 +170,8 @@ class YamlTextTest {
         @Test
         @DisplayName("a value deeper inside others than is read")
         void a_value_too_deep() {
-            String tooDeep = "a: " + "[".repeat(YamlText.DEEPEST + 1) + "]".repeat(YamlText.DEEPEST + 1);
+            int deeper = YamlText.DEEPEST + 1;
+            String tooDeep = "a: " + "[".repeat(deeper) + "]".repeat(deeper);
 
             assertThatThrownBy(() -> YamlText.read(tooDeep, "my file"))
                     .isInstanceOf(JsonException.class)
