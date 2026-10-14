@@ -99,9 +99,6 @@ import java.util.Set;
  */
 public final class JsonReport implements RunListener {
 
-    /** How many exact status codes are listed beside the families, commonest first. */
-    private static final int STATUS_CODES_LISTED = 10;
-
     /** One kind of fault, and the class of status code the API answered with when it happened. */
     private record ByStatus(int code, String statusClass) {
     }
@@ -606,7 +603,7 @@ public final class JsonReport implements RunListener {
         replies.put("byClass", JsonValue.object(byClass));
         replies.put("commonest", JsonValue.array(repliesByStatus.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
-                .limit(STATUS_CODES_LISTED)
+                .limit(limits.commonestStatusCodesListed())
                 .map(entry -> {
                     Map<String, JsonValue> row = new LinkedHashMap<>();
                     row.put("status", JsonValue.of(entry.getKey()));

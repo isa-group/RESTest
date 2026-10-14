@@ -28,6 +28,7 @@ import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
+import io.restest.core.settings.GenerationSettings;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -196,7 +197,7 @@ class FormatsAndPatternsAcrossTheCorpusTest {
                 Optional<MatchingStrings> spellings = MatchingStrings.reading(rule.get(),
                         new MatchLength(shortest, longest),
                         new MatchLength(Math.max(1, shortest), Math.max(shortest,
-                                Math.min(longest, 64))), random);
+                                Math.min(longest, 64))), GenerationSettings.defaults(), random);
                 if (spellings.isEmpty()) {
                     unreadable.add(document + " " + place.where() + ": " + rule.get());
                     continue;

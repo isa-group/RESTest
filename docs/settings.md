@@ -174,6 +174,10 @@ generation:
   freshWhereMade: true        # default
   # how often it happens, between 0 and 1, decided once for each body
   freshWhereMadeChance: 0.3   # default
+  # how many times a fresh value is asked for, to change one value in a thing the API returned
+  changedValueAttempts: 4     # default
+  # how many times an open-ended repetition runs in a word built to a pattern, unless the length demanded needs more
+  usualRepetitions: 8         # default
 
 mutation:
   # whether accepted requests are changed in ways the description forbids
@@ -274,6 +278,10 @@ report:
   faultsShownOnTheConsole: 50 # default
   # how many operations that could not be tested are named on the screen
   skippedOperationsShownOnTheConsole: 5 # default
+  # how many of a fault's particulars are printed under it on the screen
+  detailsShownPerFault: 10    # default
+  # how many of the status codes answered most the report lists
+  commonestStatusCodesListed: 10 # default
 ```
 
 ## What a settings file looks like
@@ -405,6 +413,8 @@ spelling `--budget` takes.
 | `omitHalProperties` | `true` | whether _links and _embedded, which HAL keeps for what a server writes, are taken out of every body before it is sent |
 | `freshWhereMade` | `true` | whether, in the body of a POST, a property the API has shown values for is sometimes invented afresh, so that what is made is not a copy of something that exists; identifiers never are |
 | `freshWhereMadeChance` | `0.3` | how often it happens, between 0 and 1, decided once for each body |
+| `changedValueAttempts` | `4` | how many times a fresh value is asked for, to change one value in a thing the API returned |
+| `usualRepetitions` | `8` | how many times an open-ended repetition runs in a word built to a pattern, unless the length demanded needs more |
 
 ### `mutation.*`
 
@@ -501,6 +511,8 @@ faults](faults.md#switching-a-check-off) says what switching one off changes, an
 | `mostBodyBytesKept` | `24576` | how much of any one body the report quotes |
 | `faultsShownOnTheConsole` | `50` | how many faults are printed in full before the screen stops being the place |
 | `skippedOperationsShownOnTheConsole` | `5` | how many operations that could not be tested are named on the screen |
+| `detailsShownPerFault` | `10` | how many of a fault's particulars are printed under it on the screen |
+| `commonestStatusCodesListed` | `10` | how many of the status codes answered most the report lists |
 
 ## Four things worth knowing
 

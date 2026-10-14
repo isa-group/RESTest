@@ -45,7 +45,7 @@ class ConsoleReportTest {
     void how_many_faults_reach_the_screen_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new io.restest.core.settings.ReportSettings(5, 1_000, 24L * 1024, 2, 5));
+                new ReportSettings(5, 1_000, 24L * 1024, 2, 5, 10, 10));
 
         for (int found = 0; found < 6; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
@@ -207,6 +207,21 @@ class ConsoleReportTest {
                 .contains("/field9: ")
                 .doesNotContain("/field10: ")
                 .contains("... and 15 more");
+    }
+
+    @Test
+    @DisplayName("how many particulars are printed under a fault is a setting")
+    void how_many_details_are_printed_is_a_setting() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen,
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 5, 2, 10));
+
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(25)));
+
+        assertThat(screen.toString())
+                .contains("/field1: ")
+                .doesNotContain("/field2: ")
+                .contains("... and 23 more");
     }
 
     @Test
@@ -381,7 +396,7 @@ class ConsoleReportTest {
     void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 2));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 2, 10, 10));
         for (String operation : List.of("addPet", "getPet", "updatePet", "deletePet", "listPets")) {
             report.on(skipped(operation, "the reason " + operation + " could not be tested"));
         }
@@ -403,7 +418,7 @@ class ConsoleReportTest {
     void told_to_name_none_the_count_and_the_report_are_still_given() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 0));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 0, 10, 10));
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 

@@ -66,9 +66,6 @@ import java.util.Set;
  */
 public final class ConsoleReport implements RunListener {
 
-    /** How many particular disagreements to print under one fault before saying how many remain. */
-    private static final int DETAILS_SHOWN = 10;
-
     private final Appendable out;
     private final Map<FaultCategory, Integer> counts = new LinkedHashMap<>();
 
@@ -115,6 +112,9 @@ public final class ConsoleReport implements RunListener {
     /** How many of those to name before only counting the rest. */
     private final int skippedShown;
 
+    /** How many particulars are printed under one fault before the rest are counted. */
+    private final int detailsShown;
+
     /** What the command running this says before the run begins, printed under the first line. */
     private final String introduction;
 
@@ -123,6 +123,7 @@ public final class ConsoleReport implements RunListener {
         this.introduction = Objects.requireNonNull(introduction, "introduction");
         this.faultsShown = settings.faultsShownOnTheConsole();
         this.skippedShown = settings.skippedOperationsShownOnTheConsole();
+        this.detailsShown = settings.detailsShownPerFault();
     }
 
     /** A report that writes wherever you tell it to. */
@@ -281,11 +282,11 @@ public final class ConsoleReport implements RunListener {
                 + "  ->  " + answerTo(finding.interaction()));
         write("      " + finding.summary());
         List<String> details = finding.details();
-        for (String detail : details.subList(0, Math.min(details.size(), DETAILS_SHOWN))) {
+        for (String detail : details.subList(0, Math.min(details.size(), detailsShown))) {
             write("        " + detail);
         }
-        if (details.size() > DETAILS_SHOWN) {
-            write("        ... and " + (details.size() - DETAILS_SHOWN) + " more");
+        if (details.size() > detailsShown) {
+            write("        ... and " + (details.size() - detailsShown) + " more");
         }
         // A step of a series may only fail because of the steps before it - a thing read after it
         // was deleted - and the command below sends this one alone, so say so rather than hand

@@ -301,7 +301,8 @@ class FreshWhereMadeTest {
                 d.optionalParameterContinueChance(), d.optionalParametersBySize(),
                 d.nullInOneIn(), d.uniqueAttempts(), d.sendableAttempts(),
                 d.writableBodyAttempts(), d.impliedFormats(), d.impliedFormatChance(),
-                d.omitHalProperties(), on, chance);
+                d.omitHalProperties(), on, chance, d.changedValueAttempts(),
+                d.usualRepetitions());
     }
 
     /** Properties in the order written, so that they are invented in that order on every run. */

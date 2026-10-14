@@ -24,6 +24,8 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import io.restest.core.settings.ReportSettings;
+import io.restest.core.settings.Settings;
+import io.restest.core.settings.SettingsInEffect;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -33,6 +35,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -593,6 +596,30 @@ class JsonReportTest {
         assertThat(report.asText().orElseThrow().length())
                 .describedAs("one enormous reply no longer decides the size of the file")
                 .isLessThan(sent);
+    }
+
+    @Test
+    @DisplayName("the status codes answered most are listed commonest first, as many as the "
+            + "setting allows")
+    void the_commonest_status_codes_are_listed_as_far_as_the_setting_allows() {
+        JsonReport report = JsonReport.inMemory(fixedClock(), SettingsInEffect.of(
+                Settings.from(Map.of("report.commonestStatusCodesListed", "2"))));
+        for (int status : new int[] {404, 200, 404, 500, 404, 200}) {
+            report.on(new RunEvent.InteractionCompleted(WHEN,
+                    Runs.attempt("GET /pets", "/pets", status)));
+        }
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject replies =
+                object((JsonValue.JsonObject) report.document().orElseThrow(), "replies");
+
+        List<JsonValue> commonest = array(replies, "commonest").elements();
+        assertThat(commonest).hasSize(2);
+        assertThat(number((JsonValue.JsonObject) commonest.get(0), "status")).isEqualTo(404);
+        assertThat(number((JsonValue.JsonObject) commonest.get(0), "count")).isEqualTo(3);
+        assertThat(number((JsonValue.JsonObject) commonest.get(1), "status")).isEqualTo(200);
+        assertThat(number(object(replies, "byClass"), "5xx"))
+                .describedAs("a status left off the list is still counted by its class")
+                .isEqualTo(1);
     }
 
     @Test

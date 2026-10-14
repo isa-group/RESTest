@@ -203,7 +203,11 @@ public record Settings(
                 typed.yesOrNo("generation.freshWhereMade", DEFAULTS.generation.freshWhereMade()),
                 typed.number("generation.freshWhereMadeChance",
                         BigDecimal.valueOf(DEFAULTS.generation.freshWhereMadeChance()))
-                        .doubleValue()));
+                        .doubleValue(),
+                typed.wholeNumber("generation.changedValueAttempts",
+                        DEFAULTS.generation.changedValueAttempts()),
+                typed.wholeNumber("generation.usualRepetitions",
+                        DEFAULTS.generation.usualRepetitions())));
         MutationSettings mutation = group("mutation", () -> new MutationSettings(
                 typed.yesOrNo("mutation.violations", DEFAULTS.mutation.violations()),
                 typed.yesOrNo("mutation.dropRequired", DEFAULTS.mutation.dropRequired()),
@@ -266,7 +270,11 @@ public record Settings(
                 typed.wholeNumber("report.faultsShownOnTheConsole",
                         DEFAULTS.report.faultsShownOnTheConsole()),
                 typed.wholeNumber("report.skippedOperationsShownOnTheConsole",
-                        DEFAULTS.report.skippedOperationsShownOnTheConsole())));
+                        DEFAULTS.report.skippedOperationsShownOnTheConsole()),
+                typed.wholeNumber("report.detailsShownPerFault",
+                        DEFAULTS.report.detailsShownPerFault()),
+                typed.wholeNumber("report.commonestStatusCodesListed",
+                        DEFAULTS.report.commonestStatusCodesListed())));
         return new Settings(engine, schedule, generation, mutation, sequences, memory, document,
                 checks, report);
     }
@@ -404,6 +412,9 @@ public record Settings(
             case "generation.omitHalProperties" -> String.valueOf(generation.omitHalProperties());
             case "generation.freshWhereMade" -> String.valueOf(generation.freshWhereMade());
             case "generation.freshWhereMadeChance" -> written(generation.freshWhereMadeChance());
+            case "generation.changedValueAttempts" ->
+                    String.valueOf(generation.changedValueAttempts());
+            case "generation.usualRepetitions" -> String.valueOf(generation.usualRepetitions());
 
             case "mutation.violations" -> String.valueOf(mutation.violations());
             case "mutation.dropRequired" -> String.valueOf(mutation.dropRequired());
@@ -460,6 +471,9 @@ public record Settings(
                     String.valueOf(report.faultsShownOnTheConsole());
             case "report.skippedOperationsShownOnTheConsole" ->
                     String.valueOf(report.skippedOperationsShownOnTheConsole());
+            case "report.detailsShownPerFault" -> String.valueOf(report.detailsShownPerFault());
+            case "report.commonestStatusCodesListed" ->
+                    String.valueOf(report.commonestStatusCodesListed());
 
             // Unreachable while every key in the catalogue is answered above, which a test in this
             // module checks by asking for every one of them. It is here so that adding a key and
