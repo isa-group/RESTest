@@ -17,10 +17,13 @@ package io.restest.core.json;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -51,6 +54,20 @@ import org.yaml.snakeyaml.resolver.Resolver;
  */
 public final class YamlText {
 
+    /**
+     * The most characters a file is read up to: three million, which is the YAML reader's own
+     * limit, named here so that the refusal is in RESTest's words. A dictionary a program writes
+     * for a large API is tens of thousands of characters; a file past this limit is a mistake,
+     * not a dictionary.
+     */
+    static final int MOST_CHARACTERS = 3 * 1024 * 1024;
+
+    /**
+     * How deep one value may be inside another: fifty levels, which is the YAML reader's own
+     * limit. A dictionary goes three deep and a plan four.
+     */
+    static final int DEEPEST = 50;
+
     private YamlText() {
     }
 
@@ -70,12 +87,20 @@ public final class YamlText {
     public static JsonValue read(String text, String describedAs) {
         Objects.requireNonNull(text, "text");
         Objects.requireNonNull(describedAs, "describedAs");
+        long characters = text.codePointCount(0, text.length());
+        if (characters > MOST_CHARACTERS) {
+            throw new JsonException(describedAs + " is " + characters + " characters long, and "
+                    + "at most " + MOST_CHARACTERS + " are read");
+        }
         LoaderOptions options = new LoaderOptions();
         options.setAllowDuplicateKeys(false);
+        options.setCodePointLimit(MOST_CHARACTERS);
+        options.setNestingDepthLimit(DEEPEST);
         try {
             DumperOptions writing = new DumperOptions();
             return asValue(new Yaml(new AsWritten(options, describedAs), new Representer(writing),
-                    writing, options, new OnlyWhatJsonHas()).load(text), describedAs);
+                    writing, options, new OnlyWhatJsonHas()).load(text), describedAs,
+                    Collections.newSetFromMap(new IdentityHashMap<>()));
         } catch (YAMLException notYaml) {
             throw new JsonException(describedAs + " could not be read: " + notYaml.getMessage());
         }
@@ -141,8 +166,15 @@ public final class YamlText {
         }
     }
 
-    /** One thing the reader handed back, as the value model the rest of RESTest speaks in. */
-    private static JsonValue asValue(Object read, String describedAs) {
+    /**
+     * One thing the reader handed back, as the value model the rest of RESTest speaks in.
+     *
+     * <p>YAML lets a list or a map hold itself, through an alias that names what it is inside of,
+     * and the reader hands such a thing back as it is: a list that contains itself. Walked as it
+     * is, that never ends, so each list and map on the way down is remembered until the way back
+     * up, and meeting one again is refused in the file's name.
+     */
+    private static JsonValue asValue(Object read, String describedAs, Set<Object> onTheWayDown) {
         return switch (read) {
             case null -> JsonValue.NULL;
             case Boolean yesOrNo -> JsonValue.of(yesOrNo);
@@ -152,14 +184,18 @@ public final class YamlText {
             case BigDecimal exact -> JsonValue.of(exact);
             case String text -> JsonValue.of(text);
             case List<?> list -> {
+                enter(list, describedAs, onTheWayDown);
                 List<JsonValue> elements = new ArrayList<>();
-                list.forEach(element -> elements.add(asValue(element, describedAs)));
+                list.forEach(element -> elements.add(asValue(element, describedAs, onTheWayDown)));
+                onTheWayDown.remove(list);
                 yield JsonValue.array(elements);
             }
             case Map<?, ?> map -> {
+                enter(map, describedAs, onTheWayDown);
                 Map<String, JsonValue> members = new LinkedHashMap<>();
                 map.forEach((key, held) ->
-                        members.put(String.valueOf(key), asValue(held, describedAs)));
+                        members.put(String.valueOf(key), asValue(held, describedAs, onTheWayDown)));
+                onTheWayDown.remove(map);
                 yield JsonValue.object(members);
             }
             // A date, a set, a binary blob: YAML has kinds JSON does not, and a value RESTest could
@@ -167,6 +203,15 @@ public final class YamlText {
             default -> throw new JsonException(describedAs + " holds a "
                     + read.getClass().getSimpleName() + ", which is not something that can be sent");
         };
+    }
+
+    /** Notes a list or a map being walked into, refusing one that is inside itself. */
+    private static void enter(Object container, String describedAs, Set<Object> onTheWayDown) {
+        if (!onTheWayDown.add(container)) {
+            throw new JsonException(describedAs + " holds a list or a map that contains itself, "
+                    + "through an alias to something it is inside of, which is not something that "
+                    + "can be sent");
+        }
     }
 
     /** The object a value is, or a refusal naming what was there instead. */
