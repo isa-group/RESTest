@@ -25,7 +25,6 @@ import io.restest.core.model.Operation;
 import io.restest.core.settings.ScheduleSettings;
 import io.restest.core.settings.SequenceSettings;
 import io.restest.core.settings.Settings;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -86,7 +85,8 @@ class RunOrderTest {
         ApiModel model = petClinic();
         RandomTestCaseGenerator generator = withoutSeries(model);
         ScheduleSettings noFirstRound = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
-                Duration.ofSeconds(2), false, Duration.ofSeconds(2));
+                Duration.ofSeconds(2), false, Duration.ofSeconds(2), false, 1_000,
+                Duration.ofSeconds(5), Duration.ofSeconds(1));
         Instant now = Instant.parse("2026-09-23T10:00:00Z");
         Scheduler scheduler = new Scheduler(generator, noFirstRound, now.plusSeconds(60),
                 InstantSource.fixed(now), announced -> { });
@@ -187,7 +187,7 @@ class RunOrderTest {
                 .resolve("pet-clinic")
                 .resolve("openapi.yaml");
         assertThat(document).exists();
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return TheCorpus.parse(document);
     }
 
     /** The checkout, found by walking up from wherever the tests are being run. */

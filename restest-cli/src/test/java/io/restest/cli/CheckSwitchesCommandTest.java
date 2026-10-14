@@ -48,6 +48,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class CheckSwitchesCommandTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
+
     private static final String DOCUMENT = """
             openapi: 3.0.3
             info:
@@ -143,7 +151,8 @@ class CheckSwitchesCommandTest {
             throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), DOCUMENT);
         List<String> arguments = new ArrayList<>(List.of("run", document.toString(),
-                "--url", api.baseUrl(), "--budget", "1s", "--seed", "1",
+                "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
                 "--out", directory.resolve("out").toString()));
         arguments.addAll(List.of(settings));
         PrintWriter out = new PrintWriter(screen);

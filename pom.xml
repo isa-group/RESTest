@@ -48,14 +48,13 @@
     <modules>
         <module>restest-core</module>
         <module>restest-spec</module>
-        <module>restest-idl</module>
         <module>restest-gen</module>
         <module>restest-exec</module>
         <module>restest-store</module>
         <module>restest-oracles</module>
         <module>restest-report</module>
         <module>restest-cli</module>
-        <!-- Verification only: not published, depends on all nine. See ADR-0004. -->
+        <!-- Verification only: not published, depends on all eight. See ADR-0004. -->
         <module>restest-arch-tests</module>
     </modules>
 

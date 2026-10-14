@@ -105,7 +105,11 @@ class RunLoopTest {
     private static final ScheduleSettings WITHOUT_A_FIRST_ROUND = new ScheduleSettings(
             WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
             WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), false,
-            WITH_A_FIRST_ROUND.openingLapPatience());
+            WITH_A_FIRST_ROUND.openingLapPatience(), false, 1_000,
+            WITH_A_FIRST_ROUND.interruptWritingGrace(), WITH_A_FIRST_ROUND.interruptLookingGrace());
+
+    /** No limit on how many requests a run here may send: its budget alone ends it. */
+    private static final long NO_CAP = Long.MAX_VALUE;
 
     private final ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
     private final ApiEngine engine = new ApiEngine();
@@ -132,6 +136,31 @@ class RunLoopTest {
         assertThat(outcome.answered())
                 .describedAs("and every one of them was an answer: %s", outcome)
                 .isEqualTo(outcome.sent());
+    }
+
+    @Test
+    @DisplayName("told its size, a run stops once it has sent that many requests, having waited "
+            + "for their answers")
+    void a_run_of_a_known_size_stops_after_that_many_requests() {
+        engine.takes(request -> Duration.ofMillis(1));
+        long began = System.nanoTime();
+
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                12, WITH_A_FIRST_ROUND, new StopFromOutside(), listening -> { });
+
+        assertThat(outcome.sent())
+                .describedAs("the first round's requests count towards the size: %s", outcome)
+                .isEqualTo(12);
+        assertThat(outcome.answered()).isEqualTo(12);
+        assertThat(outcome.stillOwed())
+                .describedAs("the answers to the last requests were waited for: %s", outcome)
+                .isZero();
+        assertThat(outcome.cutShort())
+                .describedAs("a run that ends at its size ended as it was meant to")
+                .isFalse();
+        assertThat(Duration.ofNanos(System.nanoTime() - began))
+                .describedAs("and it ended long before its budget of thirty seconds")
+                .isLessThan(Duration.ofSeconds(10));
     }
 
     @Test
@@ -322,7 +351,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE, new StopFromOutside(), engine, events);
+                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, new StopFromOutside(), engine,
+                    events);
         }
 
         assertThat(outcome.lost()).describedAs("list reads were sent and lost: %s", outcome)
@@ -459,7 +489,7 @@ class RunLoopTest {
             // Three seconds: the whole first round has to fit, on the slowest machine CI has.
             Scheduler scheduler = new Scheduler(generator, WITH_A_FIRST_ROUND,
                     Instant.now().plusSeconds(3), InstantSource.system(), events::publish);
-            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
                     PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
 
@@ -508,7 +538,7 @@ class RunLoopTest {
             deadline = System.nanoTime() + BUDGET.toNanos();
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
-            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+            RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
                     PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
 
@@ -553,7 +583,8 @@ class RunLoopTest {
         ScheduleSettings patientForAFifth = new ScheduleSettings(
                 WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
                 WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), true,
-                Duration.ofMillis(200));
+                Duration.ofMillis(200), false, 1_000, WITH_A_FIRST_ROUND.interruptWritingGrace(),
+                WITH_A_FIRST_ROUND.interruptLookingGrace());
 
         long began = System.nanoTime();
         RunLoop.Outcome outcome = run(Duration.ofMillis(2500), patientForAFifth, listening -> { });
@@ -650,7 +681,9 @@ class RunLoopTest {
         engine.takes(request -> Duration.ofSeconds(20));
         ScheduleSettings patient = new ScheduleSettings(WITH_A_FIRST_ROUND.workAheadFactor(),
                 ANNOUNCEMENTS_ALLOWED, WITH_A_FIRST_ROUND.stragglerGrace(),
-                WITH_A_FIRST_ROUND.interruptGrace(), true, Duration.ofSeconds(10));
+                WITH_A_FIRST_ROUND.interruptGrace(), true, Duration.ofSeconds(10), false, 1_000,
+                WITH_A_FIRST_ROUND.interruptWritingGrace(),
+                WITH_A_FIRST_ROUND.interruptLookingGrace());
         List<RunEvent.PhaseFinished> ended = new CopyOnWriteArrayList<>();
         StopFromOutside stop = stoppedAfter(Duration.ofMillis(400));
 
@@ -685,7 +718,7 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE, stop, engine, events);
+                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, stop, engine, events);
             Thread.sleep(1500);
             events.awaitDelivery(PATIENT);
         }
@@ -711,7 +744,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
             org.assertj.core.api.Assertions.assertThatThrownBy(() -> RunLoop.run(scheduler,
-                    "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT, GRACE,
+                    "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT,
+                    GRACE,
                     new StopFromOutside(), engine, events))
                     .isInstanceOf(IllegalStateException.class);
             Thread.sleep(1200);
@@ -733,7 +767,7 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
                     Instant.now().plusMillis(300), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, Duration.ofMillis(Long.MAX_VALUE),
+                    ANNOUNCEMENTS_ALLOWED, NO_CAP, Duration.ofMillis(Long.MAX_VALUE),
                     Duration.ofMillis(Long.MAX_VALUE), new StopFromOutside(), engine, events);
         }
 
@@ -768,12 +802,19 @@ class RunLoopTest {
     private RunLoop.Outcome run(Duration budget, int workAhead, int announcementsAllowed,
             ScheduleSettings schedule, StopFromOutside stop,
             java.util.function.Consumer<EventStream> setUp) {
+        return run(budget, workAhead, announcementsAllowed, NO_CAP, schedule, stop, setUp);
+    }
+
+    /** The same, stopping once this many requests have been sent. */
+    private RunLoop.Outcome run(Duration budget, int workAhead, int announcementsAllowed,
+            long mostRequests, ScheduleSettings schedule, StopFromOutside stop,
+            java.util.function.Consumer<EventStream> setUp) {
         try (EventStream events = new EventStream()) {
             setUp.accept(events);
             Scheduler scheduler = new Scheduler(generator(), schedule, Instant.now().plus(budget),
                     InstantSource.system(), events::publish);
             return RunLoop.run(scheduler, "https://api.example", workAhead, announcementsAllowed,
-                    PATIENT, GRACE, stop, engine, events);
+                    mostRequests, PATIENT, GRACE, stop, engine, events);
         }
     }
 
@@ -796,8 +837,8 @@ class RunLoopTest {
         try (EventStream events = new EventStream()) {
             Scheduler scheduler = new Scheduler(generator(), schedule,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
-            return RunLoop.run(scheduler, baseUrl, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, PATIENT,
-                    GRACE, new StopFromOutside(), engine, events);
+            return RunLoop.run(scheduler, baseUrl, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
+                    PATIENT, GRACE, new StopFromOutside(), engine, events);
         }
     }
 

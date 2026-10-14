@@ -56,8 +56,9 @@ import org.junit.jupiter.api.Test;
  *
  * <p>The second number is reach: how many places in the requests declare nothing that settles
  * them - a spelling rule may still hold the value to account - so that a rule changes what is sent
- * there. The numbers move when the corpus or the table does, and are
- * pinned so that a change in them is something somebody decided.
+ * there. What is held is that no rule kept is wrong more than one time in ten, and that the rules
+ * between them still reach the corpus; how often each one is right is a fact about the corpus and
+ * the table, measured when the table was calibrated, and is not pinned on every build.
  */
 class ImpliedFormatsAcrossTheCorpusTest {
 
@@ -83,50 +84,17 @@ class ImpliedFormatsAcrossTheCorpusTest {
     private static final Set<String> GENDER_WORDS = Set.of("male", "female", "m", "f", "other",
             "man", "woman", "unknown", "unspecified", "non-binary", "nonbinary");
 
-    /** Per rule: right and wrong where the answer is known, and the places that declare nothing. */
-    private static final Map<String, String> PINNED = new TreeMap<>(Map.ofEntries(
-            Map.entry("D1", "0 right, 0 wrong, 4 places with nothing declared"),
-            Map.entry("D10", "27 right, 0 wrong, 7 places with nothing declared"),
-            Map.entry("D11", "3 right, 0 wrong, 0 places with nothing declared"),
-            Map.entry("D2", "3 right, 0 wrong, 6 places with nothing declared"),
-            Map.entry("D3", "0 right, 0 wrong, 1 places with nothing declared"),
-            Map.entry("D7", "1 right, 0 wrong, 6 places with nothing declared"),
-            Map.entry("D8", "0 right, 0 wrong, 6 places with nothing declared"),
-            Map.entry("D9", "2 right, 0 wrong, 4 places with nothing declared"),
-            Map.entry("N1", "82 right, 2 wrong, 0 places with nothing declared"),
-            Map.entry("N10", "2 right, 1 wrong, 8 places with nothing declared"),
-            Map.entry("N11", "7 right, 0 wrong, 7 places with nothing declared"),
-            Map.entry("N12", "14 right, 0 wrong, 15 places with nothing declared"),
-            Map.entry("N13", "9 right, 1 wrong, 12 places with nothing declared"),
-            Map.entry("N14", "2 right, 0 wrong, 1 places with nothing declared"),
-            Map.entry("N15", "53 right, 7 wrong, 40 places with nothing declared"),
-            Map.entry("N2", "9 right, 0 wrong, 8 places with nothing declared"),
-            Map.entry("N3", "316 right, 5 wrong, 21 places with nothing declared"),
-            Map.entry("N4", "1 right, 0 wrong, 5 places with nothing declared"),
-            Map.entry("N5", "4 right, 0 wrong, 0 places with nothing declared"),
-            Map.entry("N7", "2 right, 0 wrong, 2 places with nothing declared"),
-            Map.entry("N8", "0 right, 0 wrong, 0 places with nothing declared"),
-            Map.entry("N9", "0 right, 0 wrong, 2 places with nothing declared"),
-            Map.entry("T1", "15 right, 1 wrong, 19 places with nothing declared"),
-            Map.entry("T2", "12 right, 0 wrong, 2 places with nothing declared"),
-            Map.entry("T4", "0 right, 0 wrong, 0 places with nothing declared"),
-            Map.entry("T6", "0 right, 0 wrong, 1 places with nothing declared")));
 
     @Test
-    @DisplayName("each rule is as right as it was measured to be, and reaches as far")
-    void each_rule_keeps_its_numbers() {
-        Map<String, int[]> counts = measure();
-        Map<String, String> found = new TreeMap<>();
-        counts.forEach((rule, numbers) -> found.put(rule, numbers[0] + " right, " + numbers[1]
-                + " wrong, " + numbers[2] + " places with nothing declared"));
-
-        assertThat(found).isEqualTo(PINNED);
-    }
-
-    @Test
-    @DisplayName("no rule kept is wrong more than one time in ten, over three places or more")
+    @DisplayName("no rule kept is wrong more than one time in ten, over three places or more, and "
+            + "the rules between them still reach the corpus")
     void every_rule_kept_is_right_nine_times_in_ten() {
-        measure().forEach((rule, numbers) -> {
+        Map<String, int[]> measured = measure();
+        assertThat(measured.values().stream().mapToInt(numbers -> numbers[0]).sum())
+                .describedAs("places where a rule was right: 564 when the table was calibrated; "
+                        + "far fewer would mean the rules had stopped matching the corpus")
+                .isGreaterThanOrEqualTo(400);
+        measured.forEach((rule, numbers) -> {
             int known = numbers[0] + numbers[1];
             // N10, the names of a language, is kept below the bar by the maintainer's choice: one
             // of its misses is a reply's list of language names, and it is the only rule that

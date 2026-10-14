@@ -95,7 +95,7 @@ enforcement is listed under [Quality gates](#quality-gates).
 
 ## Architecture
 
-Nine production modules, each with a `module-info.java`, plus one unpublished verification module.
+Eight production modules, each with a `module-info.java`, plus one unpublished verification module.
 Dependencies point inwards, towards `restest-core`, and [ADR-0004](adr/0004-module-structure.md)
 explains why that is compiled rather than conventional.
 
@@ -103,7 +103,6 @@ explains why that is compiled rather than conventional.
 restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy
                   dependencies beyond a streaming JSON reader and writer and a YAML reader.
 restest-spec      the only module allowed to reference the third-party OAS parser.
-restest-idl       IDL language, constraints, solver interface. Empty so far.
 restest-gen       generation phases, value providers, scheduler.
 restest-exec      HTTP engine.
 restest-store     interaction store.

@@ -167,7 +167,7 @@ the reactor was not built, and says so. `./mvnw verify` says:
 ```
 
 Second, `ArchitectureRulesSelfTest` proves the rules independently of whether production code
-exists. Every rule is pointed at `io.restest.arch.fixtures.mirror`, a miniature of the nine-module
+exists. Every rule is pointed at `io.restest.arch.fixtures.mirror`, a miniature of the modules'
 layout whose classes break the rules on purpose, and asserted to fail *and name the offender*. Where
 a rule permits something — `restest-cli` may call `System.exit`, and reaping a child process is not
 terminating our own — that is asserted too, so each rule stays a boundary rather than becoming a
@@ -248,7 +248,7 @@ dist/assemble.sh target/dist --archives
 .github/scripts/check-restest.sh "$version" --checkout ./restest
 ```
 
-There is no shortcut worth having here: `restest-arch-tests` depends on all nine modules, so `-am`
+There is no shortcut worth having here: `restest-arch-tests` depends on all eight modules, so `-am`
 builds the whole reactor anyway. On this project the full build takes a few seconds; just run
 `./mvnw verify`.
 

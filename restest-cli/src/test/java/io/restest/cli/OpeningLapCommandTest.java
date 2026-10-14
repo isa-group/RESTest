@@ -53,6 +53,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class OpeningLapCommandTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
+
     private static WireMockServer api;
 
     @BeforeAll
@@ -79,9 +87,10 @@ class OpeningLapCommandTest {
     void a_run_begins_with_every_operation_once(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        // Five seconds, not two: the budget starts with the command, before the document is read,
-        // and a cold machine must still see the whole round through before the time is up.
-        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "5s",
+        // Sixty requests see the whole round through, however cold the machine: the round's own
+        // requests are the first of them.
+        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260923", "--out", directory.toString(), "--store");
 
         // In the order they went out. Within a step the requests are sent together, so the two
@@ -106,7 +115,8 @@ class OpeningLapCommandTest {
     void switched_off_there_is_no_first_round(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--seed", "20260923", "--out", directory.toString(), "--store",
                 "--set", "schedule.openingLap=false");
 
@@ -135,7 +145,9 @@ class OpeningLapCommandTest {
                 """);
 
         run(new StringWriter(), "run", document.toString(), "--url", api.baseUrl(),
-                "--budget", "2s", "--seed", "1", "--out", directory.resolve("out").toString());
+                "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
+                directory.resolve("out").toString());
 
         List<LoggedRequest> pinged = api.findAll(getRequestedFor(urlEqualTo("/ping")));
         assertThat(pinged).isNotEmpty();
