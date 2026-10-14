@@ -36,6 +36,10 @@ of its own. Whether you may test an API at all is not something any tool can che
 
 ## What a run sends
 
+- **Dependencies between parameters are not read.** RESTest 1.x read them in IDL - "if `from` is
+  given, `to` must be too" - and built requests that honoured them. This version reads no IDL yet,
+  whether in the document or beside it, so a request may break such a rule and be refused for it;
+  the refusal is counted like any other.
 - **Optional parameters and optional bodies share one number.** With
   `generation.optionalParametersBySize` off, each optional parameter is decided on a coin weighted by
   `generation.optionalBodyChance`, the same number that decides whether a request sends a body it

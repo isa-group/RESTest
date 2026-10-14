@@ -1,6 +1,6 @@
 # ADR-0010: IDL — relicensed assets, an ANTLR4 parser, and the solver behind an interface
 
-**Status:** Accepted
+**Status:** Accepted, not yet built (14 October 2026)
 **Date:** 2026-09-11
 
 ## Context
@@ -57,3 +57,11 @@ The licence obstacle has since been removed: the author of the IDL parser can re
   harder to verify and to maintain than the port.
 - **Drop IDL and use a simpler internal constraint model.** Rejected: it is the differentiator, and
   the 2026 result was bad partly *because* IDL could not be deployed, not because it does not work.
+
+## Amendment (14 October 2026): accepted, not yet built
+
+**Date:** 2026-10-14
+
+Nothing of this decision is built yet. The empty `restest-idl` module that stood for it left the
+build on 14 October 2026 ([ADR-0004](0004-module-structure.md)'s amendment of that date), and comes
+back with the first code that reads IDL. The decision itself is unchanged.

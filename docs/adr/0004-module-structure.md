@@ -1,6 +1,6 @@
 # ADR-0004: Multi-module structure with dependencies pointing inwards
 
-**Status:** Accepted
+**Status:** Accepted, amended at M0.2 and on 14 October 2026
 **Date:** 2026-09-11
 
 ## Context
@@ -86,3 +86,24 @@ checks at all while appearing to pass.
   sources. The exemption is named in `SourceTreeRulesTest` rather than implied.
 - The module produces an empty jar, and Maven says so on every build. Suppressing it with
   `skipIfEmpty` would leave `mvn install` without an artifact to install, so the warning stays.
+
+## Amendment (14 October 2026): `restest-idl` leaves the build until it holds code
+
+**Date:** 2026-10-14
+
+`restest-idl` held a `module-info.java` and nothing else. It was compiled, packaged as an empty jar,
+copied into every release archive and image, depended on by `restest-gen` and `restest-cli`, and
+listed in `AGENTS.md` as the home of "IDL language, constraints, solver interface" while nothing
+reads IDL. A reader of the repository took the module for a feature; a user of 1.x, for whom
+dependencies between parameters were the point, could find no word saying they are not read.
+
+The module leaves the reactor, and the two dependencies on it go. Eight production modules, plus
+the verification module. What does not change is the architecture: the layered rule keeps its
+`Idl` layer, which `withOptionalLayers` already allowed to be empty, so the day a module holding
+IDL comes back - with the first code that reads it, milestone M5 of the plan of 10 October 2026 -
+its place in the dependency graph is the one decided above, enforced from its first class.
+[ADR-0010](0010-idl-strategy.md) is accepted and not yet built, and says so; the known limitations
+say dependencies between parameters are not read.
+
+Considered and not taken: keeping the empty module. It costs a jar in every release and a line in
+every list of modules, and it says something about the tool that is not true yet.
