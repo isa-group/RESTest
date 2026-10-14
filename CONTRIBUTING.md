@@ -82,8 +82,8 @@ you disagree with is answered in "Decisions taken", not ignored.
 
 They are in [`AGENTS.md`](AGENTS.md#hard-rules), and none is negotiable in a pull request. The build
 enforces some of them: the module boundaries, the evaluation platform's name, the Java 21 bytecode,
-and the coverage floors of `restest-core` and `restest-oracles`. The mutation threshold is run on
-demand, not in the build, and review checks everything else ([`docs/ci.md`](docs/ci.md) lists each
+and the coverage floors of `restest-core` and `restest-oracles`. One row of continuous integration
+also holds `restest-oracles` to its mutation threshold, and review checks everything else ([`docs/ci.md`](docs/ci.md) lists each
 gate). If a rule is wrong, change it deliberately, in its own pull request, with the reasoning.
 
 ## Decisions
