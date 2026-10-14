@@ -560,6 +560,70 @@ class SchemaConverterTest {
         return schema;
     }
 
+    @Test
+    @DisplayName("OAS 3.0: nullable written beside an allOf of one reference, the usual way of "
+            + "saying a named shape may be null, is kept")
+    void nullable_beside_an_all_of_of_a_reference_is_kept() {
+        Schema<Object> pet = new Schema<>();
+        pet.setType("object");
+        pet.setProperties(Map.of("name", stringSchema()));
+        Schema<Object> reference = new Schema<>();
+        reference.set$ref("#/components/schemas/Pet");
+        Schema<Object> maybeAPet = new Schema<>();
+        maybeAPet.setNullable(true);
+        maybeAPet.setAllOf(List.of(reference));
+
+        CanonicalSchema converted = SchemaConverter.convert(maybeAPet,
+                componentsDeclaring("Pet", pet));
+
+        assertThat(converted).isInstanceOf(ObjectSchema.class);
+        assertThat(converted.metadata().nullable()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a half of an allOf that may be null keeps that, in either spelling of it")
+    void a_nullable_half_of_an_all_of_stays_nullable() {
+        Schema<Object> nullableIn30 = new Schema<>();
+        nullableIn30.setType("string");
+        nullableIn30.setNullable(true);
+        Schema<Object> nullableIn31 = new Schema<>();
+        nullableIn31.setTypes(Set.of("string", "null"));
+
+        for (Schema<Object> half : List.of(nullableIn30, nullableIn31)) {
+            Schema<Object> combined = new Schema<>();
+            combined.setAllOf(List.of(half));
+
+            CanonicalSchema converted = convert(combined);
+
+            assertThat(converted).isInstanceOf(StringSchema.class);
+            assertThat(converted.metadata().nullable())
+                    .describedAs("a schema that is nothing but its halves says nothing about null, "
+                            + "and so cannot take it away from the half that allows it")
+                    .isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("an alternative of a choice that may be null keeps that, and the others do not gain it")
+    void a_nullable_alternative_of_a_choice_stays_nullable() {
+        Schema<Object> word = new Schema<>();
+        word.setType("string");
+        word.setNullable(true);
+        Schema<Object> number = new Schema<>();
+        number.setType("integer");
+        Schema<Object> choice = new Schema<>();
+        choice.setOneOf(List.of(word, number));
+
+        assertThat(convert(choice)).asInstanceOf(type(ChoiceSchema.class))
+                .extracting(ChoiceSchema::alternatives).asInstanceOf(LIST)
+                .satisfies(shapes -> {
+                    assertThat(shapes.get(0)).asInstanceOf(type(CanonicalSchema.class))
+                            .extracting(shape -> shape.metadata().nullable()).isEqualTo(true);
+                    assertThat(shapes.get(1)).asInstanceOf(type(CanonicalSchema.class))
+                            .extracting(shape -> shape.metadata().nullable()).isEqualTo(false);
+                });
+    }
+
     private static Components componentsDeclaring(String name, Schema<?> schema) {
         Components components = new Components();
         components.setSchemas(new LinkedHashMap<>(Map.of(name, schema)));
