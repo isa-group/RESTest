@@ -668,8 +668,7 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().stopAfterRequests()
                                     ? settings.schedule().requestsBeforeStopping()
                                     : Long.MAX_VALUE,
-                            settings.engine().readTimeout()
-                                    .plus(settings.schedule().stragglerGrace()),
+                            settings.howLongToWaitForStragglers(),
                             settings.schedule().interruptGrace(), stop, sending, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without

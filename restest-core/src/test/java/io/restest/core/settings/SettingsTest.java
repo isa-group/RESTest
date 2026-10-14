@@ -99,6 +99,26 @@ class SettingsTest {
     }
 
     @Nested
+    @DisplayName("what the settings say together")
+    class Together {
+
+        @Test
+        @DisplayName("the wait for stragglers outlasts the engine's own timeout for one request, "
+                + "so a reply the engine would still turn into an answer is not left behind")
+        void the_wait_for_stragglers_outlasts_the_call_timeout() {
+            assertThat(Settings.defaults().howLongToWaitForStragglers())
+                    .describedAs("a minute for the engine, plus the grace")
+                    .isEqualTo(Duration.ofSeconds(70));
+
+            Settings shorter = Settings.from(Map.of(
+                    "engine.callTimeout", "5s",
+                    "schedule.stragglerGrace", "1s"));
+
+            assertThat(shorter.howLongToWaitForStragglers()).isEqualTo(Duration.ofSeconds(6));
+        }
+    }
+
+    @Nested
     @DisplayName("the list of settings and the settings themselves agree")
     class NothingIsUnreachable {
 

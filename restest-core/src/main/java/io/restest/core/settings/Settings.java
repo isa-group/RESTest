@@ -475,6 +475,17 @@ public record Settings(
                 checks, report);
     }
 
+    /**
+     * How long a run goes on waiting, once its time is up, for the answers to requests that had
+     * already gone out: the longest the engine itself lets one request take, and the schedule's
+     * grace on top of that. The engine gives up on a request by itself at that timeout, so a reply
+     * still trickling in then is answered as a failure of transport rather than left behind; the
+     * grace is for what is still on its way back after that.
+     */
+    public Duration howLongToWaitForStragglers() {
+        return engine.callTimeout().plus(schedule.stragglerGrace());
+    }
+
     /** These settings with the schedule's changed. */
     public Settings withSchedule(ScheduleSettings value) {
         return new Settings(engine, value, generation, mutation, sequences, memory, document,

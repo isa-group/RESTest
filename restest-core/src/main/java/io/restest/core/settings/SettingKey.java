@@ -191,7 +191,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("schedule", "announcementsAllowedToPileUp", SettingKind.WHOLE_NUMBER,
                     "how many announcements may await the reports before the run pauses"),
             key("schedule", "stragglerGrace", SettingKind.LENGTH_OF_TIME,
-                    "how long past the deadline to wait for answers already asked for"),
+                    "how long past the engine's own timeout, once the time is up, to wait for "
+                            + "answers already asked for"),
             key("schedule", "interruptGrace", SettingKind.LENGTH_OF_TIME,
                     "how long a run stopped from outside waits for answers already asked for"),
             key("schedule", "openingLap", SettingKind.YES_OR_NO,
