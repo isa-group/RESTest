@@ -270,6 +270,18 @@ class RandomValueProviderTest {
                 .allSatisfy(element -> assertThat(element).isInstanceOf(JsonValue.JsonNumber.class));
     }
 
+    @RepeatedTest(5)
+    @DisplayName("a list that must be empty is empty, rather than no list at all")
+    void a_list_that_must_be_empty_is_empty() {
+        // No minItems: the one item a list is usually given would be one more than is allowed,
+        // and asking for a number of items between one and none used to fail, quietly, which
+        // left the list - and anything that insisted on it - with no value.
+        ArraySchema schema = new ArraySchema(SchemaMetadata.none(), BooleanSchema.of(),
+                Optional.empty(), Optional.of(0), false);
+
+        assertThat(invent(schema)).isEqualTo(JsonValue.array(List.of()));
+    }
+
     @RepeatedTest(20)
     @DisplayName("a list whose items must all differ has no repeats")
     void a_list_of_unique_items_has_no_repeats() {

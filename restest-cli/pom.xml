@@ -43,11 +43,6 @@
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
-            <artifactId>restest-idl</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.restest</groupId>
             <artifactId>restest-gen</artifactId>
             <version>${project.version}</version>
         </dependency>

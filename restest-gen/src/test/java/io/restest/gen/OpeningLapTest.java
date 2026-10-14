@@ -23,7 +23,6 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.StringSchema;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -152,7 +151,7 @@ class OpeningLapTest {
                 .resolve(api.trim())
                 .resolve("openapi.yaml");
         assertThat(document).exists();
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return TheCorpus.parse(document);
     }
 
     /** The checkout, found by walking up from wherever the tests are being run. */

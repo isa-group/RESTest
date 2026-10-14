@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -36,38 +35,13 @@ import org.junit.jupiter.api.Test;
  * The first round of a run, over every document in the corpus rather than the five the tool is
  * measured on.
  *
- * <p>A first round that skipped an operation, or sent one twice, would say it had sent every
- * operation once when it had not. And a request that is supposed to be the one an API is most likely
- * to accept is no use if it cannot even be put together into something that could be sent. The
- * forty-six documents of the corpus that can be read, written by other people, are where both of
- * those would show.
+ * <p>A request that is supposed to be the one an API is most likely to accept is no use if it
+ * cannot even be put together into something that could be sent, or if it leaves out something the
+ * API requires. The documents of the corpus, written by other people, are where that would show.
+ * That the round holds every operation exactly once is a property of how the round is built, and is
+ * held where it is built, by the test of {@link OpeningLap}.
  */
 class OpeningLapAcrossTheCorpusTest {
-
-    @Test
-    @DisplayName("in every document, the first round sends every operation that can be attempted "
-            + "exactly once")
-    void every_operation_is_in_the_round_exactly_once() {
-        int documents = 0;
-        int operations = 0;
-        for (Path document : corpus()) {
-            RandomTestCaseGenerator generator =
-                    new RandomTestCaseGenerator(parse(document), 20260923L);
-            List<Operation> testable = generator.testableOperations();
-            List<Operation> inTheRound = OpeningLap.steps(testable).stream()
-                    .flatMap(List::stream).toList();
-
-            assertThat(inTheRound)
-                    .describedAs("%s", document)
-                    .containsExactlyInAnyOrderElementsOf(testable)
-                    .doesNotHaveDuplicates();
-            documents++;
-            operations += testable.size();
-        }
-
-        assertThat(documents).describedAs("documents read").isEqualTo(46);
-        assertThat(operations).describedAs("operations that can be attempted").isPositive();
-    }
 
     @Test
     @DisplayName("in every document, the request each operation is most likely to accept can be "
@@ -127,7 +101,7 @@ class OpeningLapAcrossTheCorpusTest {
     }
 
     private static ApiModel parse(Path document) {
-        return new SwaggerSpecificationParser().parse(document.toString());
+        return TheCorpus.parse(document);
     }
 
     /** The corpus, without the deliberately broken documents kept beside it. */

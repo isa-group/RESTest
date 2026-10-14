@@ -26,7 +26,6 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.SchemaReference;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -77,7 +76,7 @@ class DeclaredSamplesAcrossTheCorpusTest {
     void the_documents_that_offer_samples_are_the_ones_measured() {
         Map<String, Integer> found = new LinkedHashMap<>();
         for (Path document : corpus()) {
-            ApiModel model = new SwaggerSpecificationParser().parse(document.toString());
+            ApiModel model = TheCorpus.parse(document);
             long here = parametersOf(model).filter(p -> !samplesFor(model, p).isEmpty()).count();
             if (here > 0) {
                 found.put(document.getParent().getFileName().toString(), (int) here);
@@ -95,7 +94,7 @@ class DeclaredSamplesAcrossTheCorpusTest {
         List<String> refused = new ArrayList<>();
         ExampleValueProvider samples = new ExampleValueProvider(Schemas.fixedRandom());
         for (Path document : corpus()) {
-            ApiModel model = new SwaggerSpecificationParser().parse(document.toString());
+            ApiModel model = TheCorpus.parse(document);
             for (Operation operation : model.operations()) {
                 for (Parameter parameter : operation.parameters()) {
                     CanonicalSchema shape = resolved(model, parameter.schema());
@@ -224,8 +223,7 @@ class DeclaredSamplesAcrossTheCorpusTest {
     }
 
     private static ApiModel petClinic() {
-        return new SwaggerSpecificationParser().parse(specifications()
-                .resolve("restleague-2027/pet-clinic/openapi.yaml").toString());
+        return TheCorpus.priority("pet-clinic");
     }
 
     private static List<Path> corpus() {

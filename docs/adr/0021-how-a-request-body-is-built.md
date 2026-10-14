@@ -316,7 +316,9 @@ the 1,886**, 3%, and 2 of the 223 in the priority corpus. Of the 57, **47 agree 
 value** and differ only in a declared form — `uri` beside plain text, `int32` beside `int64`,
 `date-time` beside plain text. The remaining **10 disagree about the kind**, and those are refused
 already, because a value is only offered where its kind matches what is being asked for. So the
-format takes no sixth keying, and `ObservedValuesAcrossTheCorpusTest` holds the numbers.
+format takes no sixth keying. The numbers are the measurement above, taken on the corpus as it
+was. The test that counted them again on every build, `ObservedValuesAcrossTheCorpusTest`, was
+retired on 14 October 2026: it called nothing of RESTest's, and broke on any change to the corpus.
 
 One thing the measurement taught that nobody asked: **a reply is JSON by what it announces, not by
 what the document spells.** flight-search declares every one of its responses under `*/*`, and

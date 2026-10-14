@@ -21,11 +21,6 @@
             <artifactId>restest-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.restest</groupId>
-            <artifactId>restest-idl</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!--
             Builds a string that matches a regular expression. A specification states the characters

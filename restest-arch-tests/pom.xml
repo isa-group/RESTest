@@ -17,7 +17,7 @@
         Verification only. Holds the ArchUnit rules that enforce ADR-0004, and the source-tree
         rules that enforce invariants no bytecode can express.
 
-        This module has no src/main. It depends on all nine production modules because ArchUnit
+        This module has no src/main. It depends on all eight production modules because ArchUnit
         reads bytecode: a rule such as "io.swagger appears only in restest-spec" can only run
         somewhere whose classpath holds every module's classes at once. Nothing depends on this
         module in turn, so it is a leaf of the dependency graph and cannot distort the
@@ -48,7 +48,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- All nine production modules, so their classes are on the test classpath. -->
+        <!-- All eight production modules, so their classes are on the test classpath. -->
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-core</artifactId>
@@ -58,12 +58,6 @@
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-spec</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.restest</groupId>
-            <artifactId>restest-idl</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

@@ -25,7 +25,6 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
 import io.restest.core.schema.CanonicalSchema;
-import io.restest.spec.SwaggerSpecificationParser;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -179,7 +178,7 @@ class GoldenCorpusGenerationTest {
                 .resolve("restest-spec/src/test/resources/specifications/community/GitHub")
                 .resolve("openapi.yaml");
         assertThat(document).exists();
-        ApiModel model = new SwaggerSpecificationParser().parse(document.toString());
+        ApiModel model = TheCorpus.parse(document);
         RandomTestCaseGenerator generator = nominalOnly(model, 20260917L);
 
         assertThat(generator.untestableOperations()).isEmpty();
@@ -202,7 +201,7 @@ class GoldenCorpusGenerationTest {
                 .resolve(api.trim())
                 .resolve("openapi.yaml");
         assertThat(document).exists();
-        ApiModel model = new SwaggerSpecificationParser().parse(document.toString());
+        ApiModel model = TheCorpus.parse(document);
         assertThat(model.operations()).isNotEmpty();
         return model;
     }

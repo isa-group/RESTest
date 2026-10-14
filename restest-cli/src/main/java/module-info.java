@@ -28,7 +28,6 @@ module io.restest.cli {
     requires info.picocli;
     requires io.restest.core;
     requires io.restest.spec;
-    requires io.restest.idl;
     requires io.restest.gen;
     requires io.restest.exec;
     requires io.restest.store;
