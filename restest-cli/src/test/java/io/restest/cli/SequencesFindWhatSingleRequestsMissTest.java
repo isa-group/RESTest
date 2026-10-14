@@ -19,6 +19,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.FIFTEEN_HUNDRED_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -60,14 +62,6 @@ import org.junit.jupiter.api.io.TempDir;
  * stand-in send.
  */
 class SequencesFindWhatSingleRequestsMissTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String FIFTEEN_HUNDRED_REQUESTS = "schedule.requestsBeforeStopping=1500";
 
     private static final String SPECIFICATION = """
             openapi: 3.0.3

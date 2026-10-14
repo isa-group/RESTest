@@ -19,10 +19,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.SIXTY_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
+import static io.restest.cli.ARun.codesIn;
+import static io.restest.cli.ARun.report;
+import static io.restest.cli.ARun.settingsIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -47,14 +51,6 @@ import org.junit.jupiter.api.io.TempDir;
  * the run records which were off.
  */
 class CheckSwitchesCommandTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
 
     private static final String DOCUMENT = """
             openapi: 3.0.3
@@ -100,9 +96,9 @@ class CheckSwitchesCommandTest {
 
         int answer = run(directory, screen);
 
-        JsonValue.JsonObject report = report(directory);
+        JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
-        assertThat(codesFound(report)).containsExactlyInAnyOrder(100, 200);
+        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 200);
     }
 
     @Test
@@ -113,9 +109,9 @@ class CheckSwitchesCommandTest {
 
         int answer = run(directory, screen, "--set", "checks.replyOffSchema=false");
 
-        JsonValue.JsonObject report = report(directory);
+        JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
-        assertThat(codesFound(report)).containsExactly(100);
+        assertThat(codesIn(report)).containsExactly(100);
         assertThat(settingsIn(report)).contains(
                 "checks.internalServerError true default",
                 "checks.replyOffSchema false command line");
@@ -130,12 +126,12 @@ class CheckSwitchesCommandTest {
         int answer = run(directory, screen, "--set", "checks.replyOffSchema=false",
                 "--set", "checks.internalServerError=false");
 
-        JsonValue.JsonObject report = report(directory);
+        JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer)
                 .describedAs("a run ends 1 for a fault reported, and with every check off none "
                         + "is; the run said:%n%s", screen)
                 .isZero();
-        assertThat(codesFound(report)).isEmpty();
+        assertThat(codesIn(report)).isEmpty();
         JsonValue.JsonObject serverErrors =
                 (JsonValue.JsonObject) report.member("serverErrors").orElseThrow();
         assertThat(serverErrors.member("operationsAnswering500"))
@@ -161,34 +157,5 @@ class CheckSwitchesCommandTest {
         } finally {
             out.flush();
         }
-    }
-
-    private static JsonValue.JsonObject report(Path directory) throws IOException {
-        return (JsonValue.JsonObject) JsonText.read(
-                Files.readString(directory.resolve("out").resolve("report.json")));
-    }
-
-    /** The catalogue numbers of every kind of fault the run reported. */
-    private static List<Integer> codesFound(JsonValue.JsonObject report) {
-        JsonValue.JsonArray kinds =
-                (JsonValue.JsonArray) report.member("faultsByCategory").orElseThrow();
-        return kinds.elements().stream()
-                .map(kind -> ((JsonValue.JsonObject) kind).member("code").orElseThrow())
-                .map(code -> ((JsonValue.JsonNumber) code).value().intValueExact())
-                .toList();
-    }
-
-    /** Every setting the report states, as "name value source", for reading in a test. */
-    private static List<String> settingsIn(JsonValue.JsonObject report) {
-        JsonValue.JsonArray rows = (JsonValue.JsonArray) report.member("settings").orElseThrow();
-        return rows.elements().stream()
-                .map(JsonValue.JsonObject.class::cast)
-                .map(row -> text(row, "key") + " " + text(row, "value") + " "
-                        + text(row, "source"))
-                .toList();
-    }
-
-    private static String text(JsonValue.JsonObject row, String member) {
-        return ((JsonValue.JsonString) row.member(member).orElseThrow()).value();
     }
 }

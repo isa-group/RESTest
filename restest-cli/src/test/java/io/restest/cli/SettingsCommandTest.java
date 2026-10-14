@@ -19,6 +19,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.SIXTY_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
+import static io.restest.cli.ARun.report;
+import static io.restest.cli.ARun.settingsIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -48,14 +52,6 @@ import org.junit.jupiter.api.io.TempDir;
  * put.
  */
 class SettingsCommandTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
 
     private static WireMockServer api;
 
@@ -286,7 +282,7 @@ class SettingsCommandTest {
                     "--set", "engine.maxConcurrency=1", "--out", out.toString()))
                     .isBetween(0, 1);
 
-            assertThat(settingsIn(out.resolve("report.json")))
+            assertThat(settingsIn(report(out)))
                     .describedAs("and the report says so, for whoever reads the results later")
                     .contains("engine.maxConcurrency 1 command line");
         }
@@ -306,7 +302,7 @@ class SettingsCommandTest {
                     "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                     "--settings", file.toString(), "--out", out.toString());
 
-            List<String> written = settingsIn(out.resolve("report.json"));
+            List<String> written = settingsIn(report(out));
             assertThat(written).hasSameSizeAs(SettingKey.all());
             assertThat(written).contains("report.writeUpsInTotal 7 file");
             assertThat(written).contains("engine.maxConcurrency 16 default");
@@ -395,22 +391,8 @@ class SettingsCommandTest {
                 .value().intValueExact();
     }
 
-    /** Every setting the report states, as "name value source", for reading in a test. */
-    private static List<String> settingsIn(Path report) throws Exception {
-        JsonValue written = JsonText.read(Files.readString(report));
-        JsonValue.JsonArray settings = (JsonValue.JsonArray) member(written, "settings");
-        return settings.elements().stream()
-                .map(row -> text(member(row, "key")) + " " + text(member(row, "value")) + " "
-                        + text(member(row, "source")))
-                .toList();
-    }
-
     private static JsonValue member(JsonValue held, String name) {
         return ((JsonValue.JsonObject) held).members().get(name);
-    }
-
-    private static String text(JsonValue value) {
-        return ((JsonValue.JsonString) value).value();
     }
 
     private int run(String... arguments) {

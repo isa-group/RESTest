@@ -23,15 +23,15 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.SIXTY_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
+import static io.restest.cli.ARun.stored;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restest.core.auth.AuthGiven;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
-import io.restest.core.store.InteractionQuery;
-import io.restest.core.store.InteractionStore;
-import io.restest.store.SqliteInteractionStore;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -59,14 +59,6 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class RestestTest {
 
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
-
     private static WireMockServer api;
 
     private final StringWriter screen = new StringWriter();
@@ -93,27 +85,6 @@ class RestestTest {
     @AfterAll
     static void stopTheApi() {
         api.stop();
-    }
-
-    @Test
-    @DisplayName("a run that finds something wrong says so, and answers 1")
-    void faults_found_answer_one(@TempDir Path directory) throws Exception {
-        int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "30s",
-                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "20260914",
-                "--out",
-                directory.toString());
-
-        assertThat(answer).isEqualTo(1);
-        assertThat(screen.toString())
-                .contains("RESTest testing Pet Shelter at " + api.baseUrl())
-                .contains("4 of 4 operations can be tested, seed 20260914, budget 30s")
-                .contains("F100")
-                .contains("listPets - GET " + api.baseUrl() + "/pets")
-                .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle");
-        assertThat(directory.resolve("report.json")).exists();
-        assertThat(screen.toString())
-                .contains("report written to " + directory.resolve("report.json"));
     }
 
     @Test
@@ -899,11 +870,5 @@ class RestestTest {
         return Thread.getAllStackTraces().keySet().stream()
                 .filter(thread -> thread.getName().equals(name) && thread.isAlive())
                 .toList();
-    }
-
-    private static long stored(Path runFile) {
-        try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
-            return store.count(InteractionQuery.all());
-        }
     }
 }

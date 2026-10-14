@@ -22,6 +22,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.json;
+import static io.restest.cli.ARun.report;
+import static io.restest.cli.ARun.stored;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -31,12 +34,8 @@ import io.restest.core.exec.HttpEngine;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
-import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
-import io.restest.core.store.InteractionQuery;
-import io.restest.core.store.InteractionStore;
 import io.restest.exec.OkHttpEngine;
-import io.restest.store.SqliteInteractionStore;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -124,7 +123,7 @@ class ARunCutShortTest {
         long requests = ((JsonValue.JsonNumber) ((JsonValue.JsonObject) report.member("totals")
                 .orElseThrow()).member("requests").orElseThrow()).value().longValueExact();
         assertThat(requests).isGreaterThanOrEqualTo(40);
-        assertThat(stored(directory))
+        assertThat(stored(directory.resolve("run.sqlite")))
                 .describedAs("the report and the stored run hold the same requests")
                 .isEqualTo(requests);
     }
@@ -258,12 +257,6 @@ class ARunCutShortTest {
                 .withFixedDelay((int) sheltersTake.toMillis())));
     }
 
-    private static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder json(
-            String body) {
-        return aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                .withBody(body);
-    }
-
     /** How many requests the stand-in API has been asked, answered or not. */
     private int asked() {
         return api.countRequestsMatching(anyRequestedFor(anyUrl()).build()).getCount();
@@ -278,21 +271,6 @@ class ARunCutShortTest {
         } finally {
             out.flush();
             err.flush();
-        }
-    }
-
-    private static JsonValue.JsonObject report(Path directory) {
-        try {
-            return (JsonValue.JsonObject) JsonText.read(
-                    Files.readString(directory.resolve("report.json")));
-        } catch (IOException cannotRead) {
-            throw new AssertionError("the report could not be read", cannotRead);
-        }
-    }
-
-    private static long stored(Path directory) {
-        try (InteractionStore store = SqliteInteractionStore.at(directory.resolve("run.sqlite"))) {
-            return store.count(InteractionQuery.all());
         }
     }
 

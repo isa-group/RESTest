@@ -22,6 +22,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.SIXTY_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
+import static io.restest.cli.ARun.json;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -52,14 +55,6 @@ import org.junit.jupiter.api.io.TempDir;
  * requests went out in and what the run said about it, not what it found.
  */
 class OpeningLapCommandTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
 
     private static WireMockServer api;
 
@@ -170,12 +165,6 @@ class OpeningLapCommandTest {
         JsonValue.JsonObject report = (JsonValue.JsonObject)
                 JsonText.read(Files.readString(directory.resolve("report.json")));
         return (JsonValue.JsonArray) report.member("phases").orElseThrow();
-    }
-
-    private static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder json(
-            int status, String body) {
-        return aResponse().withStatus(status).withHeader("Content-Type", "application/json")
-                .withBody(body);
     }
 
     private static int run(StringWriter screen, String... arguments) {
