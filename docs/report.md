@@ -278,7 +278,7 @@ ways and most replies are wrong in none.
 | `total` | number | Requests that ended, one way or another |
 | `withNothingWrong` | number | Requests no rule found anything wrong with |
 | `byClass` | object | Requests by the first digit of their status code — `"2xx": 186`, `"4xx": 242` — and `noReply` for those that got no reply, in that order |
-| `commonest` | list | The ten exact status codes answered most, commonest first |
+| `commonest` | list | The exact status codes answered most, commonest first: as many as `report.commonestStatusCodesListed` says, ten unless set otherwise |
 
 ### `replies.commonest[]`
 

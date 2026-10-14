@@ -17,7 +17,10 @@ package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.settings.GenerationSettings;
+import io.restest.core.settings.Settings;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.SplittableRandom;
 import java.util.regex.Pattern;
@@ -296,9 +299,25 @@ class MatchingStringsTest {
         }
     }
 
+    @Test
+    @DisplayName("a rule demanding more than the longest word the settings allow is not attempted")
+    void a_rule_longer_than_the_settings_allow_is_declined() {
+        GenerationSettings shortWords = Settings.from(Map.of(
+                "generation.usualLongestString", "8",
+                "generation.longestString", "10")).generation();
+        MatchLength anyLength = new MatchLength(0, Long.MAX_VALUE);
+
+        assertThat(MatchingStrings.reading("[a-z]{20}", anyLength, anyLength, shortWords, RANDOM))
+                .describedAs("twenty letters are demanded and ten are the most allowed")
+                .isEmpty();
+        assertThat(MatchingStrings.reading("[a-z]{5}", anyLength, anyLength, shortWords, RANDOM))
+                .isPresent();
+    }
+
     /** Asked with no preference of its own, so what comes back is whatever the rule allows. */
     private static Optional<MatchingStrings> reading(String rule, long shortest, long longest) {
         MatchLength lengths = new MatchLength(shortest, longest);
-        return MatchingStrings.reading(rule, lengths, lengths, RANDOM);
+        return MatchingStrings.reading(rule, lengths, lengths, GenerationSettings.defaults(),
+                RANDOM);
     }
 }

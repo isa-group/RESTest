@@ -680,3 +680,43 @@ ten: the test took eight seconds and failed on a slow Windows machine whose dire
 answer within the second it was given; it now takes one and does not depend on the machine.
 
 Eighty-seven settings in nine groups.
+
+## Amendment (14 October 2026): six numbers that were decisions, moved
+
+**Date:** 2026-10-14
+
+An audit of the code on 13 October 2026 found a dozen tuning numbers kept as constants in files
+that had been touched since §5 said such numbers move to the settings when the code around them is
+next touched. Six move here.
+
+Two were second copies of a setting that already existed. The source that offers what the API
+returned searched a value for something to change as deep as six, a constant, while
+`memory.asDeepAsAReplyIsRead` says how deep a reply is read, six by default: raise the setting to
+ten and what the memory kept at depth seven to ten was thrown away by the source that offers it.
+That source now reads the setting. The builder of words to a pattern declined any pattern whose
+shortest match passed ten thousand characters, a constant, while `generation.longestString` says how
+long a word may be, ten thousand by default, and the inventor of words honours it; the builder is
+now handed the setting.
+
+Four become settings, each with the value the constant had, so that no run changes:
+
+- `generation.changedValueAttempts` (4): how many times a fresh value is asked for, to change one
+  value in a thing the API returned, beside the three other counts of attempts in that group;
+- `generation.usualRepetitions` (8): how far a repetition with no stated end runs in a word built to
+  a pattern, beside `usualLongestString` and `usualMostItems`;
+- `report.detailsShownPerFault` (10) and `report.commonestStatusCodesListed` (10): how many of a
+  fault's particulars the console prints under it, and how many status codes `report.json` lists
+  as the commonest, beside `faultsShownOnTheConsole` and `skippedOperationsShownOnTheConsole`,
+  which were made settings when they were written.
+
+What stays, and why. The builder of words to a pattern keeps five numbers that bound the work it
+hands a library - how many candidates it draws, how many characters it builds before giving up -
+which are safeguards against a pattern that would otherwise run for ever, not choices about what is
+sent. The rest are in files this change does not touch, and move with the next change to each: the
+weight of one answer in the engine's running average, the page size and the batch of the stored run
+(which takes no settings at all), the half-minute the event stream waits for the reports at the end
+of a run, the depth to which the schema oracle follows references, the depth and budget of the
+schema converter's combinations, and the lengths of the passwords, user names and names a name
+implies.
+
+Ninety-one settings in nine groups.

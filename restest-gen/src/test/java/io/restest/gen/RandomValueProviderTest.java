@@ -960,7 +960,8 @@ class RandomValueProviderTest {
                     d.optionalParameterContinueChance(), d.optionalParametersBySize(),
                     d.nullInOneIn(), d.uniqueAttempts(), d.sendableAttempts(),
                     d.writableBodyAttempts(), on, chance, d.omitHalProperties(),
-                    d.freshWhereMade(), d.freshWhereMadeChance());
+                    d.freshWhereMade(), d.freshWhereMadeChance(), d.changedValueAttempts(),
+                    d.usualRepetitions());
         }
     }
 

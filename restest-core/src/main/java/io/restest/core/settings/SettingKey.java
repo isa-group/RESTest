@@ -264,6 +264,12 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                             + "something that exists; identifiers never are"),
             key("generation", "freshWhereMadeChance", SettingKind.NUMBER,
                     "how often it happens, between 0 and 1, decided once for each body"),
+            key("generation", "changedValueAttempts", SettingKind.WHOLE_NUMBER,
+                    "how many times a fresh value is asked for, to change one value in a thing "
+                            + "the API returned"),
+            key("generation", "usualRepetitions", SettingKind.WHOLE_NUMBER,
+                    "how many times an open-ended repetition runs in a word built to a pattern, "
+                            + "unless the length demanded needs more"),
 
             key("mutation", "violations", SettingKind.YES_OR_NO,
                     "whether accepted requests are changed in ways the description forbids"),
@@ -373,7 +379,11 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("report", "faultsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
                     "how many faults are printed in full before the screen stops being the place"),
             key("report", "skippedOperationsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
-                    "how many operations that could not be tested are named on the screen"));
+                    "how many operations that could not be tested are named on the screen"),
+            key("report", "detailsShownPerFault", SettingKind.WHOLE_NUMBER,
+                    "how many of a fault's particulars are printed under it on the screen"),
+            key("report", "commonestStatusCodesListed", SettingKind.WHOLE_NUMBER,
+                    "how many of the status codes answered most the report lists"));
 
     private static final Map<String, SettingKey> BY_NAME = byName();
 

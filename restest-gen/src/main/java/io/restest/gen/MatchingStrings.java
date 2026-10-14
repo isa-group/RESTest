@@ -18,6 +18,7 @@ package io.restest.gen;
 import com.github.curiousoddman.rgxgen.RgxGen;
 import com.github.curiousoddman.rgxgen.config.RgxGenOption;
 import com.github.curiousoddman.rgxgen.config.RgxGenProperties;
+import io.restest.core.settings.GenerationSettings;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
@@ -57,19 +58,6 @@ import java.util.regex.Pattern;
  * wrong one.
  */
 final class MatchingStrings {
-
-    /**
-     * How far a repetition with no stated end - "one or more letters" - is allowed to run.
-     *
-     * <p>Small, and much smaller than the longest value the tool will send, because repetitions
-     * <em>multiply</em>: a rule of four nested "one or more" groups produces this number raised to
-     * the fourth power. Eight of those is a few thousand characters, which is survivable; the
-     * library's own default of a hundred is a hundred million, which is not.
-     */
-    private static final int USUAL_REPETITIONS = 8;
-
-    /** Beyond this, a length the shape demands is not attempted at all. */
-    private static final int LONGEST = 10_000;
 
     /**
      * How many candidates are drawn before giving up on the length the shape demands.
@@ -140,6 +128,8 @@ final class MatchingStrings {
      * @param preferred the lengths worth having: not too long to read, and not the empty string
      *     where anything else would do. Only a preference - a value outside it is taken when
      *     nothing inside it exists, because no value at all is worse than an awkward one
+     * @param settings how long a word may ever be - beyond that, a length the rule demands is not
+     *     attempted at all - and how far a repetition with no stated end runs
      * @param random where the trial values come from while the rule is being judged
      * @return a way of drawing strings, or nothing at all when there is nothing here to read - in
      *     which case the caller should build a value as though no rule had been stated. Lengths
@@ -147,15 +137,16 @@ final class MatchingStrings {
      *     works them out from one shape and cannot produce a pair that does
      */
     static Optional<MatchingStrings> reading(String expression, MatchLength allowed,
-            MatchLength preferred, RandomGenerator random) {
+            MatchLength preferred, GenerationSettings settings, RandomGenerator random) {
         Objects.requireNonNull(expression, "expression");
+        Objects.requireNonNull(settings, "settings");
         Objects.requireNonNull(random, "random");
         long shortest = allowed.shortest();
-        long ceiling = Math.min(allowed.longest(), LONGEST);
+        long ceiling = Math.min(allowed.longest(), settings.longestString());
         if (shortest > ceiling) {
             return Optional.empty();
         }
-        int repetitions = repetitionLimit(shortest, ceiling);
+        int repetitions = repetitionLimit(shortest, ceiling, settings.usualRepetitions());
         // Asked before a single character is built, because the answer decides whether building is
         // safe at all. A rule may legally demand nine hundred million characters, or reach the same
         // number by repeating a repetition, and neither of the two readings below would object: a
@@ -341,8 +332,8 @@ final class MatchingStrings {
      * short. Its upper length caps both, so a rule never sets out to build something the shape would
      * refuse.
      */
-    private static int repetitionLimit(long shortest, long longest) {
-        long wanted = Math.min(Math.max(shortest, USUAL_REPETITIONS), Math.min(longest, LONGEST));
+    private static int repetitionLimit(long shortest, long longest, int usual) {
+        long wanted = Math.min(Math.max(shortest, usual), longest);
         return (int) Math.max(1, wanted);
     }
 

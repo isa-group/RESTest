@@ -31,6 +31,7 @@ import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.StringSchema;
+import io.restest.core.settings.GenerationSettings;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,22 +77,11 @@ import java.util.random.RandomGenerator;
  */
 public final class ObservedValueProvider implements ValueProvider {
 
-    /** How far into a value the search for something to change goes. */
-    private static final int AS_DEEP_AS_A_CHANGE_REACHES = 6;
-
-    /**
-     * How many times one value is asked for a replacement before the next one is tried.
-     *
-     * <p>More than one because what answers is usually choosing among several sources, and among
-     * several values within one of them, so an answer equal to what is already there on the first
-     * ask is often not the only answer available.
-     */
-    private static final int ATTEMPTS_AT_A_DIFFERENT_VALUE = 4;
-
     private final ApiModel model;
     private final ObservedValues seen;
     private final RandomGenerator random;
     private final ValueProvider fillsTheChangedValue;
+    private final int changedValueAttempts;
 
     /**
      * A source drawing on what this run has seen.
@@ -106,10 +96,32 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     public ObservedValueProvider(ApiModel model, ObservedValues seen, RandomGenerator random,
             ValueProvider fillsTheChangedValue) {
+        this(model, seen, random, fillsTheChangedValue,
+                GenerationSettings.defaults().changedValueAttempts());
+    }
+
+    /**
+     * A source drawing on what this run has seen, asking for a fresh value as many times as told.
+     *
+     * @param model the API being tested, which is what says what shape anything has
+     * @param seen the memory of what the API has sent back and accepted
+     * @param random where the choice among several remembered values comes from
+     * @param fillsTheChangedValue what supplies the one fresh value put into a remembered thing, or
+     *     {@code null} where there is nothing to supply it
+     * @param changedValueAttempts how many times a fresh value is asked for, for one value in a
+     *     remembered thing, before the next value in it is tried
+     */
+    public ObservedValueProvider(ApiModel model, ObservedValues seen, RandomGenerator random,
+            ValueProvider fillsTheChangedValue, int changedValueAttempts) {
         this.model = Objects.requireNonNull(model, "model");
         this.seen = Objects.requireNonNull(seen, "seen");
         this.random = Objects.requireNonNull(random, "random");
         this.fillsTheChangedValue = fillsTheChangedValue;
+        if (changedValueAttempts < 1) {
+            throw new IllegalArgumentException("a fresh value has to be asked for at least once: "
+                    + changedValueAttempts);
+        }
+        this.changedValueAttempts = changedValueAttempts;
     }
 
     @Override
@@ -440,7 +452,7 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     private Optional<JsonValue.JsonObject> keptOf(JsonValue.JsonObject thing, ObjectSchema wanted,
             int depth) {
-        if (depth > AS_DEEP_AS_A_CHANGE_REACHES) {
+        if (depth > asDeepAsAChangeReaches()) {
             return Optional.empty();
         }
         Map<String, JsonValue> kept = new LinkedHashMap<>();
@@ -487,7 +499,7 @@ public final class ObservedValueProvider implements ValueProvider {
 
     /** What is left of one value once the parts the shape does not accept are taken out. */
     private Optional<JsonValue> keptOf(JsonValue was, CanonicalSchema wanted, int depth) {
-        if (depth > AS_DEEP_AS_A_CHANGE_REACHES) {
+        if (depth > asDeepAsAChangeReaches()) {
             return Optional.empty();
         }
         if (wanted instanceof ObjectSchema object && was instanceof JsonValue.JsonObject thing) {
@@ -550,7 +562,7 @@ public final class ObservedValueProvider implements ValueProvider {
         String thing = "a " + request.shape().orElseThrow() + " the API returned";
         if (fillsTheChangedValue != null) {
             for (Value value : inside) {
-                for (int attempt = 0; attempt < ATTEMPTS_AT_A_DIFFERENT_VALUE; attempt++) {
+                for (int attempt = 0; attempt < changedValueAttempts; attempt++) {
                     Optional<JsonValue> fresh = fillsTheChangedValue.offer(value.asked())
                             .map(GeneratedValue::value)
                             .filter(offered -> !offered.equals(value.was()));
@@ -594,7 +606,7 @@ public final class ObservedValueProvider implements ValueProvider {
      */
     private void valuesInside(JsonValue value, CanonicalSchema declared, ValueRequest asked,
             List<Object> steps, List<Value> into, int depth) {
-        if (depth > AS_DEEP_AS_A_CHANGE_REACHES) {
+        if (depth > asDeepAsAChangeReaches()) {
             return;
         }
         if (value instanceof JsonValue.JsonObject thing && declared instanceof ObjectSchema object) {
@@ -627,9 +639,17 @@ public final class ObservedValueProvider implements ValueProvider {
         }
     }
 
+    /**
+     * How far into a value the search for something to change goes: as far as a reply is read, so
+     * that nothing the memory kept is out of reach of what offers it.
+     */
+    private int asDeepAsAChangeReaches() {
+        return seen.settings().asDeepAsAReplyIsRead();
+    }
+
     /** A property the document says the API sends and never receives. */
     private boolean onlyEverReturned(CanonicalSchema property) {
-        return Shapes.onlyEverReturned(model, property, AS_DEEP_AS_A_CHANGE_REACHES);
+        return Shapes.onlyEverReturned(model, property, asDeepAsAChangeReaches());
     }
 
     /**
@@ -664,7 +684,7 @@ public final class ObservedValueProvider implements ValueProvider {
      * seen.
      */
     private boolean couldSatisfy(JsonValue value, CanonicalSchema wanted) {
-        return Shapes.couldSatisfy(model, value, wanted, AS_DEEP_AS_A_CHANGE_REACHES);
+        return Shapes.couldSatisfy(model, value, wanted, asDeepAsAChangeReaches());
     }
 
     /**
@@ -684,6 +704,6 @@ public final class ObservedValueProvider implements ValueProvider {
 
     /** The shape itself, where the document referred to one it declared elsewhere by name. */
     private CanonicalSchema resolved(CanonicalSchema schema) {
-        return Shapes.resolved(model, schema, AS_DEEP_AS_A_CHANGE_REACHES);
+        return Shapes.resolved(model, schema, asDeepAsAChangeReaches());
     }
 }

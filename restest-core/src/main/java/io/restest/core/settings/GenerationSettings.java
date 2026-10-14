@@ -89,6 +89,17 @@ import java.util.Objects;
  *     are still given what the API returned, because they name the existing thing the new one
  *     belongs to. Off, every property is filled as it always was
  * @param freshWhereMadeChance how often it does, between 0 and 1, decided once for each body
+ * @param changedValueAttempts how many times a fresh value is asked for, to change one value in a
+ *     thing the API returned, before the next value in it is tried. More than one, because what
+ *     answers is usually choosing among several sources, and among several values within one of
+ *     them, so an answer equal to what is already there on the first ask is often not the only
+ *     answer there is
+ * @param usualRepetitions how many times a repetition with no stated end - "one or more letters" -
+ *     runs in a word built to a pattern, unless the length the description demands needs more.
+ *     Small, and much smaller than the longest word, because repetitions multiply: a pattern of
+ *     four nested "one or more" groups builds this number raised to the fourth power. Eight of
+ *     them is a few thousand characters; the hundred the pattern library would otherwise use is a
+ *     hundred million
  */
 public record GenerationSettings(
         int optionalNestingDepth,
@@ -112,11 +123,13 @@ public record GenerationSettings(
         double impliedFormatChance,
         boolean omitHalProperties,
         boolean freshWhereMade,
-        double freshWhereMadeChance) {
+        double freshWhereMadeChance,
+        int changedValueAttempts,
+        int usualRepetitions) {
 
     private static final GenerationSettings DEFAULTS = new GenerationSettings(
             4, 8, 64, 10_000, BigDecimal.ZERO, BigDecimal.valueOf(1000), 2, 4, 100,
-            0.8, 0.9, 0.5, true, 8, 8, 8, 8, true, 0.5, true, true, 0.3);
+            0.8, 0.9, 0.5, true, 8, 8, 8, 8, true, 0.5, true, true, 0.3, 4, 8);
 
     public GenerationSettings {
         Objects.requireNonNull(lowestNumber, "lowestNumber");
@@ -138,6 +151,8 @@ public record GenerationSettings(
         atLeastOne(uniqueAttempts, "uniqueAttempts");
         atLeastOne(sendableAttempts, "sendableAttempts");
         atLeastOne(writableBodyAttempts, "writableBodyAttempts");
+        atLeastOne(changedValueAttempts, "changedValueAttempts");
+        atLeastOne(usualRepetitions, "usualRepetitions");
         aShare(optionalPropertyChance, "optionalPropertyChance");
         aShare(optionalBodyChance, "optionalBodyChance");
         aShare(optionalParameterContinueChance, "optionalParameterContinueChance");

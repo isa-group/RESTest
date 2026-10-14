@@ -40,22 +40,31 @@ package io.restest.core.settings;
  * @param skippedOperationsShownOnTheConsole how many of the operations a run could not test are
  *     named on the screen, each with its reason, before the rest are only counted. The report file
  *     names every one of them, however many that is
+ * @param detailsShownPerFault how many of a fault's particulars - each place where a reply
+ *     disagreed with its shape, say - are printed under it on the screen before the rest are only
+ *     counted
+ * @param commonestStatusCodesListed how many of the status codes answered most the report lists,
+ *     commonest first. Every reply is still counted by the class of its status
  */
 public record ReportSettings(
         int writeUpsPerOperationAndKind,
         int writeUpsInTotal,
         long mostBodyBytesKept,
         int faultsShownOnTheConsole,
-        int skippedOperationsShownOnTheConsole) {
+        int skippedOperationsShownOnTheConsole,
+        int detailsShownPerFault,
+        int commonestStatusCodesListed) {
 
     private static final ReportSettings DEFAULTS =
-            new ReportSettings(5, 1_000, 24L * 1024, 50, 5);
+            new ReportSettings(5, 1_000, 24L * 1024, 50, 5, 10, 10);
 
     public ReportSettings {
         atLeastNone(writeUpsPerOperationAndKind, "writeUpsPerOperationAndKind");
         atLeastNone(writeUpsInTotal, "writeUpsInTotal");
         atLeastNone(faultsShownOnTheConsole, "faultsShownOnTheConsole");
         atLeastNone(skippedOperationsShownOnTheConsole, "skippedOperationsShownOnTheConsole");
+        atLeastNone(detailsShownPerFault, "detailsShownPerFault");
+        atLeastNone(commonestStatusCodesListed, "commonestStatusCodesListed");
         if (mostBodyBytesKept < 0) {
             throw new IllegalArgumentException("mostBodyBytesKept cannot be negative; zero quotes "
                     + "no bodies at all, which is the least this can do: " + mostBodyBytesKept);

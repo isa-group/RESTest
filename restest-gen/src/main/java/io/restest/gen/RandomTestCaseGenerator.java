@@ -1066,10 +1066,11 @@ public final class RandomTestCaseGenerator {
     private static ValueProvider valuesFor(Campaign.PlannedStrategy planned,
             List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
             ObservedValues observed, GenerationSettings inventing) {
-        ValueProvider knownValues = asPlanned(planned, dictionaries, model, random, observed, null);
+        ValueProvider knownValues = asPlanned(planned, dictionaries, model, random, observed,
+                inventing, null);
         ValueProvider invention =
                 new RandomValueProvider(model, random, knownValues, inventing);
-        return asPlanned(planned, dictionaries, model, random, observed,
+        return asPlanned(planned, dictionaries, model, random, observed, inventing,
                 new Assembled(invention, ValueProviderChain.of(knownValues, invention)));
     }
 
@@ -1094,16 +1095,17 @@ public final class RandomTestCaseGenerator {
      */
     private static ValueProvider asPlanned(Campaign.PlannedStrategy planned,
             List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
-            ObservedValues observed, Assembled assembled) {
+            ObservedValues observed, GenerationSettings inventing, Assembled assembled) {
         List<ValueProvider> asked = new ArrayList<>();
         for (Campaign.Entry entry : planned.sources()) {
             switch (entry) {
                 case Campaign.Entry.Single single -> built(single.source(), dictionaries, model,
-                        random, observed, assembled).ifPresent(asked::add);
+                        random, observed, inventing, assembled).ifPresent(asked::add);
                 case Campaign.Entry.Group group -> {
                     List<WeightedGroup.Weighted> among = new ArrayList<>();
                     for (Campaign.Share share : group.among()) {
-                        built(share.source(), dictionaries, model, random, observed, assembled)
+                        built(share.source(), dictionaries, model, random, observed, inventing,
+                                assembled)
                                 .ifPresent(source -> among.add(
                                         new WeightedGroup.Weighted(source, share.weight())));
                     }
@@ -1134,7 +1136,7 @@ public final class RandomTestCaseGenerator {
      */
     private static Optional<ValueProvider> built(Campaign.Source source,
             List<Dictionary> dictionaries, ApiModel model, RandomGenerator random,
-            ObservedValues observed, Assembled assembled) {
+            ObservedValues observed, GenerationSettings inventing, Assembled assembled) {
         return switch (source) {
             case Campaign.Source.Builtin builtin -> switch (builtin.which()) {
                 case ENUM -> Optional.of(DeclaredValueProvider.onlyTheAcceptedList(random));
@@ -1142,7 +1144,8 @@ public final class RandomTestCaseGenerator {
                 case DEFAULT -> Optional.of(DeclaredValueProvider.onlyTheStatedDefault(random));
                 case OBSERVED -> Optional.ofNullable(observed).map(memory ->
                         new ObservedValueProvider(model, memory, random, assembled == null
-                                ? null : assembled.everythingThisStrategyKnows()));
+                                ? null : assembled.everythingThisStrategyKnows(),
+                                inventing.changedValueAttempts()));
                 case RANDOM -> Optional.ofNullable(assembled).map(Assembled::invention);
             };
             case Campaign.Source.OneList list -> asOne(dictionaries.stream()

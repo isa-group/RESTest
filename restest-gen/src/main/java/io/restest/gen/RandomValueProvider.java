@@ -439,7 +439,8 @@ public final class RandomValueProvider implements ValueProvider {
     private Optional<MatchingStrings> spellingsFor(String rule, MatchLength allowed,
             MatchLength preferred) {
         return spellings.computeIfAbsent(new Spelling(rule, allowed, preferred), asked ->
-                MatchingStrings.reading(asked.rule(), asked.allowed(), asked.preferred(), random));
+                MatchingStrings.reading(asked.rule(), asked.allowed(), asked.preferred(),
+                        settings, random));
     }
 
     /**
