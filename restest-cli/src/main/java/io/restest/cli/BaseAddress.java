@@ -80,6 +80,15 @@ final class BaseAddress {
                     + "up to its path, such as http://localhost:8080/api/v3, and a key the API asks "
                     + "for in the query with --auth query:<name>=<key>");
         }
+        if (carriesAUserNameOrAPassword(address)) {
+            // Not repeated either: what stands before the @ is a password as often as not, and an
+            // address is printed by the run, written into its report and put in front of every
+            // curl command it quotes.
+            throw new IllegalArgumentException("the address given with --url carries a user name "
+                    + "or a password before its host, which is not repeated here. Give the address "
+                    + "without them, such as http://localhost:8080/api/v3, and a key the API asks "
+                    + "for with --auth");
+        }
         if (!isUsable(address)) {
             // Not repeated when it reads as an option: an address left out makes whatever was typed
             // next the address, and that may be --auth with a key stuck to it.
@@ -366,6 +375,15 @@ final class BaseAddress {
      * address produces. And it must carry neither a query string nor a fragment, because every
      * request adds its own and two query strings on one address is not an address.
      */
+    /** Whether the address has something before an {@code @} in front of its host. */
+    private static boolean carriesAUserNameOrAPassword(String address) {
+        try {
+            return new URI(address).getRawUserInfo() != null;
+        } catch (URISyntaxException notAnAddress) {
+            return false;
+        }
+    }
+
     private static boolean isUsable(String address) {
         URI parsed;
         try {

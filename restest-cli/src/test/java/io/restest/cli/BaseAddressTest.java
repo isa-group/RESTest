@@ -129,6 +129,18 @@ class BaseAddressTest {
     }
 
     @Test
+    @DisplayName("an address typed with a user name and a password is refused without repeating them")
+    void an_address_with_a_user_name_and_a_password_is_refused_without_repeating_them() {
+        assertThatThrownBy(() -> BaseAddress.resolve("http://alice:s3cr3t-value@api.example/v2",
+                NO_SERVERS))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("user name or a password")
+                .hasMessageContaining("--auth")
+                .hasMessageNotContaining("s3cr3t")
+                .hasMessageNotContaining("alice");
+    }
+
+    @Test
     @DisplayName("a blank --url is the same as not saying anything")
     void blank_is_the_same_as_silence() {
         assertThat(BaseAddress.resolve("   ", declaring(Server.at("https://api.example/v2"))))
