@@ -132,11 +132,13 @@ class FuzzingFindsWhatNominalMissesTest {
 
         // The changes made to accepted requests switched off in both runs, so that the list of
         // awkward values is the only thing that differs between them.
-        // Longer than the other runs here: the empty search term is one of the many awkward values
-        // a run holds, drawn by chance, and two seconds on a slow build machine may not reach it.
-        String withAwkwardValues = runFor("5s", directory.resolve("with"), document,
+        // Larger than the other runs here: the empty search term is one of the many awkward values
+        // a run holds, drawn by chance, and a run of a few hundred requests may not reach it. With
+        // the seed the run draws for itself, what is reached differs from run to run; the size is
+        // what makes the draw reach it every time.
+        String withAwkwardValues = runOf(1_200, directory.resolve("with"), document,
                 "--set", "mutation.violations=false");
-        String withoutThem = runFor("5s", directory.resolve("without"), document,
+        String withoutThem = runOf(1_200, directory.resolve("without"), document,
                 "--campaign", plan(directory, NEVER_PUSHES).toString(),
                 "--set", "mutation.violations=false");
 
@@ -321,14 +323,20 @@ class FuzzingFindsWhatNominalMissesTest {
     }
 
     private static String run(Path out, Path document, String... extra) {
-        return runFor("2s", out, document, extra);
+        return runOf(300, out, document, extra);
     }
 
-    private static String runFor(String budget, Path out, Path document, String... extra) {
+    /**
+     * A run of this many requests. A size rather than a length of time, so that what the run sends
+     * does not depend on how fast the machine is; the budget is only a ceiling.
+     */
+    private static String runOf(int requests, Path out, Path document, String... extra) {
         java.util.List<String> arguments = new java.util.ArrayList<>(java.util.List.of(
                 "run", document.toString(),
                 "--url", api.baseUrl(),
-                "--budget", budget,
+                "--budget", "30s",
+                "--set", "schedule.stopAfterRequests=true",
+                "--set", "schedule.requestsBeforeStopping=" + requests,
                 "--out", out.toString()));
         arguments.addAll(java.util.List.of(extra));
         StringWriter screen = new StringWriter();

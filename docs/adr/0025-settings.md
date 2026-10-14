@@ -656,3 +656,27 @@ place asked before lists written for a whole kind of value, is gone: since
 [ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) every list handed over is
 written for places of one API, and the lists are asked in the order they were handed over. Two are
 left, and the page of switches says so.
+
+## Amendment (13 October 2026): a run of a known size, and how long a stopped run may write
+
+**Date:** 2026-10-13
+
+Four settings join the `schedule` group. `stopAfterRequests` (off) and `requestsBeforeStopping`
+(1000) let a run be given a size rather than only a length: on, it stops asking for more once it has
+sent that many requests, waits for their answers as it does at a deadline, and ends. A run of a
+known size sends the same requests on a slow machine as on a fast one, which is what RESTest's own
+tests of the command line need: two in three of them ran for a second or two of the clock, and the
+slowest machines continuous integration runs on spent that second starting up and answered `3`,
+"nothing was tested". A pair rather than one number with zero for "off", by the rule given with the
+switches: a number set to zero says nothing about switching.
+
+`interruptWritingGrace` (5 s) and `interruptLookingGrace` (1 s) were two constants in the command:
+how long a run stopped from outside may spend writing what it found once it has stopped waiting for
+its answers, and how long it then gives its directory to say what was written. They are decisions,
+not facts - the sum, with `interruptGrace`, has to fit inside the ten seconds a stopped container
+is given - and §5 says such constants move when the code around them is next touched. It was, so
+that a test of a run that cannot finish writing could set the first to a second and the second to
+ten: the test took eight seconds and failed on a slow Windows machine whose directory did not
+answer within the second it was given; it now takes one and does not depend on the machine.
+
+Eighty-seven settings in nine groups.

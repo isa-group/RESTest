@@ -44,6 +44,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class CampaignCommandTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
+
     private static WireMockServer api;
 
     private final StringWriter screen = new StringWriter();
@@ -105,7 +113,8 @@ class CampaignCommandTest {
         Path saved = directory.resolve("mine.yaml");
         Files.writeString(saved, screen.toString());
 
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", saved.toString(), "--out", directory.resolve("out").toString()))
                 .isBetween(0, 1);
         assertThat(problems.toString()).doesNotContain("could not be read");
@@ -120,7 +129,8 @@ class CampaignCommandTest {
                   methods: [GET, HEAD, OPTIONS, TRACE]
                 """);
 
-        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", plan.toString(), "--out", directory.resolve("out").toString());
 
         assertThat(screen.toString())
@@ -138,7 +148,8 @@ class CampaignCommandTest {
                   only: [thereIsNoSuchOperation]
                 """);
 
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
                 .isEqualTo(3);
         assertThat(problems.toString())
@@ -168,7 +179,8 @@ class CampaignCommandTest {
                       - source: random
                 """);
 
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
                 .isBetween(0, 1);
 
@@ -200,7 +212,8 @@ class CampaignCommandTest {
                   methods: [GET]
                 """);
 
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", plan.toString(), "--out", directory.resolve("out").toString()))
                 .isEqualTo(2);
         assertThat(problems.toString()).contains("does not recognise (sourses)");
@@ -212,7 +225,8 @@ class CampaignCommandTest {
     @Test
     @DisplayName("nor does a plan named that is not there, or one with a mistake inside a group")
     void the_other_two_ways_a_plan_is_refused(@TempDir Path directory) throws Exception {
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", directory.resolve("nope.yaml").toString(),
                 "--out", directory.resolve("out").toString()))
                 .isEqualTo(2);
@@ -228,7 +242,8 @@ class CampaignCommandTest {
                     sources:
                       - weighted: {random: 100, example: 0}
                 """);
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--campaign", zero.toString(), "--out", directory.resolve("out2").toString()))
                 .describedAs("a person's typo answers 2, not the 4 that means RESTest broke")
                 .isEqualTo(2);
@@ -239,7 +254,8 @@ class CampaignCommandTest {
     @DisplayName("how much of a run pushes at the API is said in a plan: --fuzzing is not an "
             + "option, and answers the way any option that does not exist answers")
     void a_share_of_pushing_is_said_in_a_plan(@TempDir Path directory) throws Exception {
-        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+        assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                 "--fuzzing", "10", "--out", directory.resolve("out").toString()))
                 .isEqualTo(2);
         assertThat(problems.toString()).contains("Unknown option: --fuzzing");
@@ -259,7 +275,9 @@ class CampaignCommandTest {
                 """);
 
         assertThat(run("run", "pet-shop-with-an-operation-it-cannot-read.yaml",
-                "--url", api.baseUrl(), "--budget", "1s", "--campaign", plan.toString(),
+                "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--campaign",
+                plan.toString(),
                 "--out", directory.resolve("out").toString()))
                 .isEqualTo(3);
         assertThat(problems.toString())

@@ -49,6 +49,14 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class SettingsCommandTest {
 
+    /**
+     * The runs here are given a size rather than a length: the same requests on a slow build
+     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
+     * The budget they are also given is only the ceiling a run that went wrong could not get past.
+     */
+    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
+    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
+
     private static WireMockServer api;
 
     private final StringWriter screen = new StringWriter();
@@ -194,7 +202,8 @@ class SettingsCommandTest {
         @Test
         @DisplayName("a setting that does not exist answers 2, naming the one it looks like")
         void a_misspelt_setting(@TempDir Path directory) {
-            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                     "--set", "engine.maxConcurrancy=8",
                     "--out", directory.resolve("out").toString()))
                     .isEqualTo(ExitCode.BAD_COMMAND_LINE);
@@ -207,7 +216,8 @@ class SettingsCommandTest {
         @Test
         @DisplayName("a value the setting cannot take answers 2, saying what it wanted")
         void a_value_of_the_wrong_kind(@TempDir Path directory) {
-            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                     "--set", "engine.maxConcurrency=lots",
                     "--out", directory.resolve("out").toString()))
                     .isEqualTo(ExitCode.BAD_COMMAND_LINE);
@@ -251,7 +261,8 @@ class SettingsCommandTest {
         @Test
         @DisplayName("a settings file that cannot be read answers 2, and nothing is sent")
         void a_file_that_cannot_be_read(@TempDir Path directory) {
-            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                     "--settings", directory.resolve("nowhere.yaml").toString(),
                     "--out", directory.resolve("out").toString()))
                     .isEqualTo(ExitCode.BAD_COMMAND_LINE);
@@ -270,7 +281,8 @@ class SettingsCommandTest {
         void one_request_at_a_time(@TempDir Path directory) throws Exception {
             Path out = directory.resolve("out");
 
-            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            assertThat(run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                     "--set", "engine.maxConcurrency=1", "--out", out.toString()))
                     .isBetween(0, 1);
 
@@ -290,7 +302,8 @@ class SettingsCommandTest {
                       writeUpsInTotal: 7
                     """);
 
-            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                    "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                     "--settings", file.toString(), "--out", out.toString());
 
             List<String> written = settingsIn(out.resolve("report.json"));
@@ -303,7 +316,9 @@ class SettingsCommandTest {
         @DisplayName("the run says on the screen that it was configured, because an environment "
                 + "variable is invisible in the command somebody typed")
         void the_run_says_it_was_configured(@TempDir Path directory) {
-            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            // What this is about is printed before anything is sent, so the run is given no time
+            // to send anything, rather than a size, which would be two more settings changed.
+            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1ms",
                     "--set", "engine.maxConcurrency=8",
                     "--out", directory.resolve("out").toString());
 
@@ -315,7 +330,8 @@ class SettingsCommandTest {
         @Test
         @DisplayName("and says nothing about settings when nobody changed any")
         void a_plain_run_says_nothing(@TempDir Path directory) {
-            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+            // A plain run changes no setting, a size included.
+            run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1ms",
                     "--out", directory.resolve("out").toString());
 
             assertThat(screen.toString()).doesNotContain("not what RESTest does by default");
@@ -335,9 +351,11 @@ class SettingsCommandTest {
                     .withHeader("Content-Type", "application/json")
                     .withBody("\"not the shape the document promised\"")));
             try {
-                run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                         "--seed", "5", "--out", usual.toString());
-                run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "2s",
+                run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS,
                         "--seed", "5", "--set", "report.writeUpsInTotal=0",
                         "--out", quiet.toString());
             } finally {

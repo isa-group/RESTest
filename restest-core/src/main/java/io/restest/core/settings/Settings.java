@@ -151,7 +151,15 @@ public record Settings(
                         DEFAULTS.schedule.interruptGrace()),
                 typed.yesOrNo("schedule.openingLap", DEFAULTS.schedule.openingLap()),
                 typed.lengthOfTime("schedule.openingLapPatience",
-                        DEFAULTS.schedule.openingLapPatience())));
+                        DEFAULTS.schedule.openingLapPatience()),
+                typed.yesOrNo("schedule.stopAfterRequests",
+                        DEFAULTS.schedule.stopAfterRequests()),
+                typed.wholeNumber("schedule.requestsBeforeStopping",
+                        DEFAULTS.schedule.requestsBeforeStopping()),
+                typed.lengthOfTime("schedule.interruptWritingGrace",
+                        DEFAULTS.schedule.interruptWritingGrace()),
+                typed.lengthOfTime("schedule.interruptLookingGrace",
+                        DEFAULTS.schedule.interruptLookingGrace())));
         GenerationSettings generation = group("generation", () -> new GenerationSettings(
                 typed.wholeNumber("generation.optionalNestingDepth",
                         DEFAULTS.generation.optionalNestingDepth()),
@@ -360,6 +368,13 @@ public record Settings(
             case "schedule.openingLap" -> String.valueOf(schedule.openingLap());
             case "schedule.openingLapPatience" ->
                     LengthOfTime.written(schedule.openingLapPatience());
+            case "schedule.stopAfterRequests" -> String.valueOf(schedule.stopAfterRequests());
+            case "schedule.requestsBeforeStopping" ->
+                    String.valueOf(schedule.requestsBeforeStopping());
+            case "schedule.interruptWritingGrace" ->
+                    LengthOfTime.written(schedule.interruptWritingGrace());
+            case "schedule.interruptLookingGrace" ->
+                    LengthOfTime.written(schedule.interruptLookingGrace());
 
             case "generation.optionalNestingDepth" ->
                     String.valueOf(generation.optionalNestingDepth());
