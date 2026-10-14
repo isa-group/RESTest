@@ -17,14 +17,13 @@ package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.auth.CredentialPlan;
 import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.settings.Settings;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,20 +36,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * The requests RESTest sends to the APIs whose documents declare a key, or carry one, when it is
- * given none - pinned, so that reading what a document says about keys can be shown to change
- * nothing else.
+ * The requests RESTest sends to an API whose document declares a key, or carries one, when it is
+ * given none: exactly the requests it would send if the document said nothing about keys at all.
  *
  * <p>An API may ask for a key: a document names it, says whether it travels in a header, in the
  * address or in a cookie, and says which operations want it. Reading all of that is only safe if a
- * run that was handed no key goes on sending exactly what it sent before, request for request. This
- * is where that is held, for every document of the corpus that declares a key and for the one that
- * carries a key as an ordinary parameter instead: each operation's likeliest request, then two
- * rounds of ordinary ones, written out as they would go over the wire.
+ * run that was handed no key goes on sending what it would send had none of it been written,
+ * request for request. This is where that is held, for every document of the corpus that declares
+ * a key and for the one that carries a key as an ordinary parameter instead.
  *
- * <p>The file this compares against was written by the tool as it was before it learned anything
- * about keys. When the two disagree, what this run produced is written beside the build's other
- * output, so a change somebody meant can be looked at line by line and copied over.
+ * <p>Each document is read twice: as it is, and with everything it says about keys taken out. A
+ * generator is built from each the way a run builds one when it is handed no key, from the same
+ * number, and the two are asked for the same things - each operation's likeliest request, then two
+ * rounds of ordinary ones - written out as they would go over the wire. Whatever else changes in
+ * how requests are built, the two must agree, so nothing here has to be written again when it does.
  */
 class RequestsWithoutAKeyTest {
 
@@ -62,15 +61,6 @@ class RequestsWithoutAKeyTest {
 
     /** Where the requests are pretended to go. Nothing is sent: this only decides the addresses. */
     private static final String BASE = "http://localhost:8080";
-
-    private static final String PINNED = "requests-without-a-key.txt";
-
-    /**
-     * The shares the plan RESTest carries gave its four strategies when the file was written, which
-     * decide which of them builds each request.
-     */
-    private static final Map<String, Integer> SHARES_THEN =
-            Map.of("nominal", 45, "sequences", 10, "mutation", 20, "fuzzing", 25);
 
     /**
      * The eight documents of the corpus that declare a key - two of which, BigOven's and Tumblr's,
@@ -89,55 +79,77 @@ class RequestsWithoutAKeyTest {
             "community/Tumblr/openapi.yaml");
 
     @Test
-    @DisplayName("an API that asks for a key, given none, is sent what it was always sent")
-    void a_document_that_asks_for_a_key_is_sent_what_it_always_was() throws IOException {
-        List<String> lines = new ArrayList<>();
+    @DisplayName("an API that asks for a key, given none, is sent what it would be sent if its "
+            + "document said nothing about keys")
+    void a_document_that_asks_for_a_key_is_sent_what_a_silent_one_would_be() {
+        int declaringAKey = 0;
+        int compared = 0;
         for (String document : DOCUMENTS) {
-            lines.add("# " + document);
             ApiModel model = TheCorpus.parse(specifications().resolve(document));
-            RandomTestCaseGenerator generator = asARunBuildsIt(model);
-            List<Operation> operations = generator.testableOperations();
-            for (Operation operation : operations) {
-                lines.add(written(operation, generator.likeliestRequest(operation)));
+            if (!model.securitySchemes().isEmpty()) {
+                declaringAKey++;
             }
-            for (int round = 0; round < ROUNDS; round++) {
-                for (Operation operation : operations) {
-                    lines.add(written(operation, generator.generate(operation)));
-                }
-            }
+            CredentialPlan.Found noKey = CredentialPlan.gather(List.of(), model, false);
+            assertThat(noKey.refusals()).describedAs("%s", document).isEmpty();
+
+            List<String> asWritten = requests(noKey.plan().modelToFillIn(model));
+            List<String> saysNothing = requests(withoutKeys(model));
+
+            assertThat(asWritten)
+                    .describedAs("%s, read with what it says about keys and without it", document)
+                    .isEqualTo(saysNothing);
+            compared += asWritten.size();
         }
 
-        assertThat(String.join("\n", lines) + "\n").isEqualTo(pinned(lines));
+        assertThat(declaringAKey)
+                .describedAs("the premise: the documents compared do say something about keys, so "
+                        + "the two readings of each are not the same reading twice")
+                .isEqualTo(8);
+        assertThat(compared).describedAs("requests compared").isPositive();
+    }
+
+    /** The same API, with everything its document says about keys taken out. */
+    private static ApiModel withoutKeys(ApiModel model) {
+        List<Operation> operations = model.operations().stream()
+                .map(operation -> new Operation(operation.id(), operation.method(),
+                        operation.path(), operation.servers(), operation.parameters(),
+                        operation.requestBody(), operation.responses(), operation.tags(),
+                        operation.summary(), operation.description(), operation.deprecated(),
+                        Optional.empty()))
+                .toList();
+        return new ApiModel(model.title(), model.version(), model.servers(), operations,
+                model.schemas(), model.issues(), model.document(), Map.of(), Optional.empty());
+    }
+
+    /**
+     * What a run handed nothing but this API sends it: each operation's likeliest request, then the
+     * ordinary rounds, one line each.
+     */
+    private static List<String> requests(ApiModel model) {
+        RandomTestCaseGenerator generator = asARunBuildsIt(model);
+        List<String> lines = new ArrayList<>();
+        List<Operation> operations = generator.testableOperations();
+        for (Operation operation : operations) {
+            lines.add(written(operation, generator.likeliestRequest(operation)));
+        }
+        for (int round = 0; round < ROUNDS; round++) {
+            for (Operation operation : operations) {
+                lines.add(written(operation, generator.generate(operation)));
+            }
+        }
+        return lines;
     }
 
     /**
      * The generator a run builds when it is handed nothing but the document: the lists of values
-     * RESTest carries, the plan it carries, and the settings it has when nobody has changed one -
-     * but for the kinds a name implies, for what goes in a body and for the plan's shares, which are
-     * set back for the reason given where it is built.
+     * RESTest carries, the plan it carries, and the settings it has when nobody has changed one.
      */
     private static RandomTestCaseGenerator asARunBuildsIt(ApiModel model) {
         Dictionaries.Found found = Dictionaries.gather(List.of(), model);
         Campaigns.Found plan = Campaigns.gather(Optional.empty(), model,
                 found.dictionaries().stream().map(Dictionary::name).collect(Collectors.toSet()));
-        // With the kinds a name implies left out, and bodies decided as they were before a body
-        // that makes something could be filled afresh - optional properties and optional bodies at
-        // a half, as they then were - because all of these came later and change what is invented:
-        // the file holds what the tool sent before it read anything about keys, and this test is
-        // about keys alone. What the later changes send is held by tests of their own. That the
-        // file still matches, number for number, is also what shows that a run with them set back
-        // draws exactly what it drew before they existed. The plan's shares are set back for the
-        // same reason: they decide which strategy builds each request, and they changed later too.
-        Campaign sharesThen = new Campaign(plan.campaign().strategies().stream()
-                .map(way -> new Campaign.PlannedStrategy(way.name(), SHARES_THEN.get(way.name()),
-                        way.sources(), way.mutatesAccepted(), way.sendsSequences()))
-                .toList(), plan.campaign().operations());
-        return new RandomTestCaseGenerator(model, SEED, found.dictionaries(), sharesThen,
-                Settings.from(Map.of(
-                        "generation.impliedFormats", "false",
-                        "generation.freshWhereMade", "false",
-                        "generation.optionalPropertyChance", "0.5",
-                        "generation.optionalBodyChance", "0.5")));
+        return new RandomTestCaseGenerator(model, SEED, found.dictionaries(), plan.campaign(),
+                Settings.defaults());
     }
 
     /** One request as one line: what would go over the wire, headers and body included. */
@@ -160,28 +172,6 @@ class RequestsWithoutAKeyTest {
         request.body().ifPresent(body -> line.append(" | body ")
                 .append(new String(body.content(), StandardCharsets.UTF_8)));
         return line.toString();
-    }
-
-    /**
-     * What the runs are expected to produce, or a failure saying where what they did produce was
-     * left.
-     *
-     * @param actual what these runs produced, written out when it does not match
-     */
-    private static String pinned(List<String> actual) throws IOException {
-        String produced = String.join("\n", actual) + "\n";
-        try (InputStream in = RequestsWithoutAKeyTest.class.getResourceAsStream(PINNED)) {
-            String expected = in == null
-                    ? null : new String(in.readAllBytes(), StandardCharsets.UTF_8)
-                    .replace("\r\n", "\n");
-            if (!produced.equals(expected)) {
-                Path written = Path.of("target", PINNED);
-                Files.createDirectories(written.getParent());
-                Files.writeString(written, produced, StandardCharsets.UTF_8);
-            }
-            return expected == null ? "(no pinned file; this run's is in " + Path.of("target",
-                    PINNED).toAbsolutePath() + ")" : expected;
-        }
     }
 
     /** The corpus, found by walking up from wherever the tests are being run. */
