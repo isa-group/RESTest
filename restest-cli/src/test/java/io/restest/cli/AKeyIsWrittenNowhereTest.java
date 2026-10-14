@@ -23,6 +23,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
+import static io.restest.cli.ARun.THREE_HUNDRED_REQUESTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -68,14 +70,6 @@ import org.junit.jupiter.api.io.TempDir;
  * holds the text that stands in for each.
  */
 class AKeyIsWrittenNowhereTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String THREE_HUNDRED_REQUESTS = "schedule.requestsBeforeStopping=300";
 
     private static final String IN_A_HEADER = "Zk9-leakprobe-4f+q/Rw==";
     private static final String IN_THE_QUERY = "Qm7-leakprobe-8x+z/Pt==";

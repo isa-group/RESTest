@@ -15,14 +15,13 @@
  */
 package io.restest.cli;
 
+import static io.restest.cli.ARun.stored;
+import static io.restest.cli.ARun.totalIn;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
-import io.restest.core.store.InteractionQuery;
-import io.restest.core.store.InteractionStore;
-import io.restest.store.SqliteInteractionStore;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -224,20 +223,9 @@ class SmokeRunTest {
         return "http://" + container.getHost() + ":" + container.getMappedPort(INSIDE);
     }
 
-    private static long totalIn(JsonValue.JsonObject report, String what) {
-        JsonValue.JsonObject totals = (JsonValue.JsonObject) report.member("totals").orElseThrow();
-        return ((JsonValue.JsonNumber) totals.member(what).orElseThrow()).value().longValueExact();
-    }
-
     private static double idleFractionIn(JsonValue.JsonObject report) {
         JsonValue.JsonObject engine = (JsonValue.JsonObject) report.member("engine").orElseThrow();
         return ((JsonValue.JsonNumber) engine.member("idleFraction").orElseThrow())
                 .value().doubleValue();
-    }
-
-    private static long stored(Path runFile) {
-        try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
-            return store.count(InteractionQuery.all());
-        }
     }
 }

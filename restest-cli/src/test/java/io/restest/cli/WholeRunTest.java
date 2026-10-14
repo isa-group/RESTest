@@ -22,14 +22,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.SIXTY_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
+import static io.restest.cli.ARun.codesIn;
+import static io.restest.cli.ARun.stored;
+import static io.restest.cli.ARun.totalIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
-import io.restest.core.store.InteractionQuery;
-import io.restest.core.store.InteractionStore;
-import io.restest.store.SqliteInteractionStore;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -65,14 +67,6 @@ import org.junit.jupiter.api.io.TempDir;
  * request said it would accept back, and the property the document insists on.
  */
 class WholeRunTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
 
     private static WireMockServer api;
 
@@ -128,6 +122,12 @@ class WholeRunTest {
         assertThat(answer).describedAs("faults were found, so the answer is 1").isEqualTo(1);
 
         String printed = screen.toString();
+        assertThat(printed)
+                .describedAs("the run says what it is testing, how much of it, and how it went")
+                .contains("RESTest testing Pet Shelter at " + api.baseUrl())
+                .contains("4 of 4 operations can be tested, seed 20260913, budget 30s")
+                .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle")
+                .contains("report written to " + directory.resolve("report.json"));
         assertThat(printed)
                 .describedAs("the API that fell over is reported by its catalogue number")
                 .contains("F100")
@@ -208,28 +208,6 @@ class WholeRunTest {
         } finally {
             out.flush();
             err.flush();
-        }
-    }
-
-    private static List<Integer> codesIn(JsonValue.JsonObject report) {
-        JsonValue.JsonArray categories =
-                (JsonValue.JsonArray) report.member("faultsByCategory").orElseThrow();
-        return categories.elements().stream()
-                .map(JsonValue.JsonObject.class::cast)
-                .map(category -> (JsonValue.JsonNumber) category.member("code").orElseThrow())
-                .map(code -> code.value().intValueExact())
-                .distinct()
-                .toList();
-    }
-
-    private static long totalIn(JsonValue.JsonObject report, String what) {
-        JsonValue.JsonObject totals = (JsonValue.JsonObject) report.member("totals").orElseThrow();
-        return ((JsonValue.JsonNumber) totals.member(what).orElseThrow()).value().longValueExact();
-    }
-
-    private static long stored(Path runFile) {
-        try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
-            return store.count(InteractionQuery.all());
         }
     }
 

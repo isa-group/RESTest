@@ -19,6 +19,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.SIXTY_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -36,7 +38,6 @@ import io.restest.core.model.ParameterLocation;
 import io.restest.exec.OkHttpEngine;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -72,14 +73,10 @@ import org.junit.jupiter.api.io.TempDir;
 class ABrokenRunAnswersFourTest {
 
     /**
-     * The runs here are given a size, sixty requests, rather than a length: a run that sends
-     * nothing answers 3, which is not what these runs are about, and on the slowest machines the
-     * build runs on a second or two of the clock was spent starting up. The budget is only the
-     * ceiling a run that went wrong could not get past.
+     * The ceiling a run here could not get past. The runs are given a size, sixty requests, rather
+     * than a length: a run that sends nothing answers 3, which is not what these runs are about.
      */
     private static final String BUDGET = "30s";
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String SIXTY_REQUESTS = "schedule.requestsBeforeStopping=60";
 
     private static WireMockServer api;
 

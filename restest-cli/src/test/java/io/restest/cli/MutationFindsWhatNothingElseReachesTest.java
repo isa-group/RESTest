@@ -15,11 +15,13 @@
  */
 package io.restest.cli;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.absent;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.FIFTEEN_HUNDRED_REQUESTS;
+import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -51,14 +53,6 @@ import org.junit.jupiter.api.io.TempDir;
  * start from, finds the server error with the changes switched on and misses it with them off.
  */
 class MutationFindsWhatNothingElseReachesTest {
-
-    /**
-     * The runs here are given a size rather than a length: the same requests on a slow build
-     * machine as on a fast one, and no second of the clock spent waiting for a budget to run out.
-     * The budget they are also given is only the ceiling a run that went wrong could not get past.
-     */
-    private static final String STOP_AFTER_REQUESTS = "schedule.stopAfterRequests=true";
-    private static final String FIFTEEN_HUNDRED_REQUESTS = "schedule.requestsBeforeStopping=1500";
 
     private static final String SPECIFICATION = """
             openapi: 3.0.3

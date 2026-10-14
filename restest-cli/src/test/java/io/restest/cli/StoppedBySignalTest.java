@@ -15,12 +15,12 @@
  */
 package io.restest.cli;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.restest.cli.ARun.json;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -209,11 +209,5 @@ class StoppedBySignalTest {
         } catch (IOException cannotRead) {
             return "(what it printed could not be read: " + cannotRead + ")";
         }
-    }
-
-    private static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder json(
-            String body) {
-        return aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                .withBody(body);
     }
 }
