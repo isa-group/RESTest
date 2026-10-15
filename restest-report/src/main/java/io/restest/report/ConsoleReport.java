@@ -20,6 +20,7 @@ import io.restest.core.event.RunListener;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionOutcome;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
@@ -302,7 +303,7 @@ public final class ConsoleReport implements RunListener {
 
     /** Whether the API answered with a success. */
     private static boolean theApiAccepted(Interaction interaction) {
-        return interaction.statusCode().filter(code -> code >= 200 && code < 300).isPresent();
+        return interaction.statusCode().filter(StatusCodes::isSuccess).isPresent();
     }
 
     /**

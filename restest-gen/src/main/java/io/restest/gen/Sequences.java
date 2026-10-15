@@ -23,6 +23,7 @@ import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.SequenceStep;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.TestCaseId;
 import io.restest.core.execution.ValueOrigin;
@@ -269,7 +270,7 @@ final class Sequences {
         Optional<Integer> status = answer.flatMap(Interaction::statusCode);
         answer.ifPresent(heard -> open.exchanges.put(number, heard.id()));
         status.ifPresent(code -> open.statuses.put(number, code));
-        boolean succeeded = status.filter(code -> code >= 200 && code < 300).isPresent();
+        boolean succeeded = status.filter(StatusCodes::isSuccess).isPresent();
         if (number == 1) {
             if (!succeeded) {
                 return end(open);

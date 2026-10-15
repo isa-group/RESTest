@@ -15,7 +15,9 @@
  */
 package io.restest.oracles;
 
+import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.model.ApiModel;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
@@ -48,9 +50,6 @@ public final class OtherServerErrorOracle implements Oracle {
     /** The first code this reports on: 500 and 501 are the two the catalogue keeps apart. */
     private static final int FIRST = 502;
 
-    /** The last code in the 500s. */
-    private static final int LAST = 599;
-
     @Override
     public String name() {
         return "other-server-error";
@@ -64,12 +63,12 @@ public final class OtherServerErrorOracle implements Oracle {
     @Override
     public List<Finding> judge(Interaction interaction, ApiModel api) {
         return interaction.response()
-                .filter(response -> response.statusCode() >= FIRST
-                        && response.statusCode() <= LAST)
-                .map(response -> List.of(Finding.of(WfcFault.HTTP_OTHER_STATUS_5XX, interaction,
-                        "the API answered " + response.statusCode() + ", a server error other "
-                                + "than 500: something in it, or in front of it, failed while "
-                                + "handling this request")))
+                .map(HttpResponseRecord::statusCode)
+                .filter(code -> StatusCodes.isServerError(code) && code >= FIRST)
+                .map(code -> List.of(Finding.of(WfcFault.HTTP_OTHER_STATUS_5XX, interaction,
+                        "the API answered " + code + ", a server error other than 500: "
+                                + "something in it, or in front of it, failed while handling "
+                                + "this request")))
                 .orElseGet(List::of);
     }
 }

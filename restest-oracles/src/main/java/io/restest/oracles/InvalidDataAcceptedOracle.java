@@ -15,9 +15,11 @@
  */
 package io.restest.oracles;
 
+import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.Mutation;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.core.oracle.Finding;
@@ -68,9 +70,9 @@ public final class InvalidDataAcceptedOracle implements Oracle {
     public List<Finding> judge(Interaction interaction, ApiModel api) {
         return brokenOnPurpose(interaction.testCase())
                 .flatMap(change -> interaction.response()
-                        .filter(response -> response.statusCode() >= 200
-                                && response.statusCode() < 300)
-                        .map(response -> List.of(Finding.of(WfcFault.SCHEMA_VALIDATION_BYPASS,
+                        .map(HttpResponseRecord::statusCode)
+                        .filter(StatusCodes::isSuccess)
+                        .map(code -> List.of(Finding.of(WfcFault.SCHEMA_VALIDATION_BYPASS,
                                 interaction, "the API accepted a request it should have refused: "
                                         + change.description()))))
                 .orElseGet(List::of);
