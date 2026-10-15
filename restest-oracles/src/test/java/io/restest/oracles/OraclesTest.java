@@ -25,31 +25,51 @@ import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
 import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.CheckSettings;
+import io.restest.core.settings.Settings;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class OraclesTest {
 
+    /** The rules RESTest ships with, by name, in the order of the catalogue's numbers. */
+    private static final List<String> SHIPPED = List.of("server-error", "other-server-error",
+            "response-schema", "invalid-data-accepted");
+
     @Test
-    @DisplayName("the rules RESTest ships with are the two this release reports on")
-    void the_standard_rules_are_the_two_this_release_has() {
+    @DisplayName("the rules RESTest ships with are the four this release reports on, in the order "
+            + "of the catalogue's numbers")
+    void the_standard_rules_are_the_four_this_release_has() {
         assertThat(Oracles.standard(CheckSettings.defaults())).extracting(Oracle::name)
-                .containsExactly("server-error", "response-schema");
+                .containsExactlyElementsOf(SHIPPED);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "checks.internalServerError, server-error",
+            "checks.otherServerError, other-server-error",
+            "checks.replyOffSchema, response-schema",
+            "checks.invalidDataAccepted, invalid-data-accepted"})
+    @DisplayName("a check switched off is left out, and the others stay where they were")
+    void a_check_switched_off_is_left_out(String check, String rule) {
+        assertThat(Oracles.standard(Settings.from(Map.of(check, "false")).checks()))
+                .extracting(Oracle::name)
+                .containsExactlyElementsOf(SHIPPED.stream()
+                        .filter(name -> !name.equals(rule))
+                        .toList());
     }
 
     @Test
-    @DisplayName("a check switched off is left out, and the other stays where it was")
-    void a_check_switched_off_is_left_out() {
-        assertThat(Oracles.standard(new CheckSettings(false, true))).extracting(Oracle::name)
-                .containsExactly("response-schema");
-        assertThat(Oracles.standard(new CheckSettings(true, false))).extracting(Oracle::name)
-                .containsExactly("server-error");
-        assertThat(Oracles.standard(new CheckSettings(false, false)))
+    @DisplayName("every check off is a run that judges nothing")
+    void every_check_off_judges_nothing() {
+        assertThat(Oracles.standard(new CheckSettings(false, false, false, false)))
                 .describedAs("every check off is a run that judges nothing, which an experiment "
                         + "measuring what judging costs may want")
                 .isEmpty();
@@ -59,19 +79,20 @@ class OraclesTest {
     @DisplayName("the tool finds its own rules by looking, not by a list somebody keeps up to date")
     void the_rules_are_found_by_looking() {
         assertThat(Oracles.discovered()).extracting(Oracle::name)
-                .containsExactly("response-schema", "server-error");
+                .containsExactly("invalid-data-accepted", "other-server-error", "response-schema",
+                        "server-error");
     }
 
     @Test
     @DisplayName("a run's listener judges with the checks its settings leave on")
     void the_listener_judges_with_the_checks_left_on() {
         try (EventStream events = new EventStream()) {
-            assertThat(OracleListener.standard(Specifications.pets(), new CheckSettings(false, true),
-                    events).oracles())
-                    .describedAs("with the check for a 500 off, a reply off its schema is still "
-                            + "reported")
+            assertThat(OracleListener.standard(Specifications.pets(),
+                    new CheckSettings(false, true, true, true), events).oracles())
+                    .describedAs("with the check for a 500 off, the other checks are still made")
                     .extracting(Oracle::name)
-                    .containsExactly("response-schema");
+                    .containsExactly("other-server-error", "response-schema",
+                            "invalid-data-accepted");
         }
     }
 
@@ -148,7 +169,7 @@ class OraclesTest {
 
             events.publish(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Attempts.BASE));
 
-            assertThat(listener.oracles()).hasSize(2);
+            assertThat(listener.oracles()).hasSize(4);
         }
 
         assertThat(announced)

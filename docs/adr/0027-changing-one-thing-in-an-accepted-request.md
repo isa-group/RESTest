@@ -540,3 +540,75 @@ pushing strategy, goes with it, since such a list can no longer exist.
 
 Since [ADR-0034](0034-version-2-of-the-plans-format.md), a plan says `kind: mutation` where §1 says
 `mutates: accepted`. Its sources are what it falls back on, as before.
+
+## Amendment (15 October 2026): the rule that reads the intent
+
+**Date:** 2026-10-15
+
+The Consequences left a rule waiting: *negative data must be refused*. It exists now. It reports
+`F206`, *Received Success Response When Sending Wrong Data*, from the catalogue
+[ADR-0016](0016-how-a-fault-is-presented.md) adopts, with a switch of its own,
+`checks.invalidDataAccepted`, on by default.
+
+**What it reads.** A request whose intent is `REFUSAL_EXPECTED` and that carries a `Mutation`,
+answered with a well-formed 2xx. The intent is read, not worked out again: whatever the generator
+records as expecting a refusal is held to it, which is why §3 insisted that every recorded intent be
+true. A step of a series also expects a refusal — reading again a thing the API said it had deleted —
+and is left out: a success there says that deleting did not work, which the catalogue numbers
+`F113`, a kind and a rule of its own. Any refusal passes, and a server error is the rules for those
+to report.
+
+**Every kind of change counts**, the two that break only a `format` included, decided by the
+maintainer on 15 October 2026. [ADR-0014](0014-response-conformance.md) does not hold a reply to its
+`format`, since in JSON Schema a format is a note for the reader, and it would have been consistent
+not to hold a request to it either. But the amendment of 10.6 gave a broken format
+`REFUSAL_EXPECTED`, and a rule that second-guessed the intent would make two places say what a change
+expects; a list of the names left out would also be a decision kept as a constant, and would leak,
+since `sendEmpty` too goes where only a format rules the empty word out. If a change that breaks only
+a format should not expect a refusal, it is the generator's intent that changes. Every tool checked
+that has this rule and breaks formats counts them: Schemathesis 4.30.1, for the formats its JSON
+Schema draft checks, with `int32` and `int64` read as bounds; CATS 14.0.0, which sends `2021-02-30`
+itself; RESTest 1.x. RestTestGen has the rule and never breaks a format; EvoMaster lists it as not
+done.
+
+**It reports what an API's libraries accept as well as what its code does.** Measured on fifteen
+APIs of the Web Fuzzing Dataset run locally, a minute each, at the commit before the rule, by reading
+the stored runs: 24,726 of the 225,006 requests changed to expect a refusal were accepted, 11%, on 70
+of the 316 operations tested and on twelve of the fifteen APIs.
+
+| Kind of change | Accepted | Sent |
+|---|---:|---:|
+| `beyondItsWidth` | 10,496 | 76,224 |
+| `wrongType` | 7,050 | 78,664 |
+| `sendEmpty` | 2,735 | 8,857 |
+| `sendNull` | 2,324 | 7,736 |
+| `breakAnEnumeration` | 638 | 5,047 |
+| `notJson` | 637 | 8,001 |
+| `breakAFormat` | 530 | 1,744 |
+| `wrongRoot` | 202 | 7,933 |
+| `wrongContentType` | 57 | 7,128 |
+| `dropRequired` | 46 | 6,620 |
+| `outsideABound` | 8 | 5,453 |
+| `wrongLocation` | 3 | 3,065 |
+| `emptyBody` | 0 | 5,620 |
+| `oversize` | 0 | 2,541 |
+| `breakAPattern` | 0 | 373 |
+
+Some are a check the API lacks: a required member left out, a value off a closed list stored, a
+maximum of 100 passed by 101, the words `this is not JSON` answered `201`. Of the rest, once the two
+kinds that break only a format are set aside, at least 45% is the library that reads the requests
+being more lenient than the document: Jackson turning a number or `true` into a word, or reading a
+body up to the end of its JSON and ignoring what follows; Spring trimming spaces around a number and
+reading `0x1A` as 26; an empty or `null` optional value read as absent. On four of the APIs every
+one is of that kind. The maintainer chose on 15 October 2026 to ship the rule on all the same, as
+every tool checked that has it does — Schemathesis as a failure, CATS as an error (its type coercion
+behind `--strictTypes`, strict by default), RestTestGen as a failure like a 5xx, Tcases and RESTest
+1.x as a failed test — and to let the measurement of noise owed before 2.2.0 is tagged, and the
+severities still to come, decide whether part of it becomes a warning. None of the fifteen APIs
+changed its exit code, since every one that accepted a broken request had also answered 500; what
+changes is how many faults a run counts and prints. [The faults](../faults.md#f206-a-broken-request-accepted)
+list the common leniencies, so that a reader recognises them.
+
+Not done, and recorded: CATS expects a success for `null` or an empty value sent to an optional
+member or parameter. Doing the same would need the rule to read the document at the changed place,
+a second copy of what the generator already knows.

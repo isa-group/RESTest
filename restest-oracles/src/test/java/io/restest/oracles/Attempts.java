@@ -18,12 +18,17 @@ package io.restest.oracles;
 import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
+import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.Mutation;
 import io.restest.core.execution.Payload;
+import io.restest.core.execution.SequenceStep;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.ParameterLocation;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -72,14 +77,60 @@ final class Attempts {
 
     /** A reply that named no kind at all. */
     static Interaction answeredWithoutContentType(OperationId operation, String url, int status) {
-        return Interaction.answered(testCase(operation), request(url),
-                HttpResponseRecord.of(status), Instant.EPOCH, Duration.ofMillis(11));
+        return answered(testCase(operation), url, status);
     }
 
     /** A request that never got an answer. */
     static Interaction neverAnswered(OperationId operation, String url) {
-        return Interaction.transportFailure(testCase(operation), request(url),
+        return neverAnswered(testCase(operation), url);
+    }
+
+    /** This test case, sent, and never answered. */
+    static Interaction neverAnswered(TestCase testCase, String url) {
+        return Interaction.transportFailure(testCase, request(url),
                 "the connection was refused", Instant.EPOCH, Duration.ofMillis(11));
+    }
+
+    /** This test case, sent, and answered with this status and no body. */
+    static Interaction answered(TestCase testCase, String url, int status) {
+        return Interaction.answered(testCase, request(url), HttpResponseRecord.of(status),
+                Instant.EPOCH, Duration.ofMillis(11));
+    }
+
+    /** A reply that broke off after its status line. */
+    static Interaction brokenOff(OperationId operation, String url, int status) {
+        return brokenOff(testCase(operation), url, status);
+    }
+
+    /** This test case, sent, and answered with this status before the reply broke off. */
+    static Interaction brokenOff(TestCase testCase, String url, int status) {
+        return Interaction.malformedResponse(testCase, request(url),
+                "the reply stopped after 3 bytes", Optional.of(StatusLine.of(status)), List.of(),
+                Optional.empty(), Instant.EPOCH, Duration.ofMillis(11));
+    }
+
+    /**
+     * A request made by changing one thing in a request the API had accepted, saying what was
+     * expected of it.
+     *
+     * @param operator the kind of change, by the name of its switch, such as {@code dropRequired}
+     * @param description the change in words
+     */
+    static TestCase changed(OperationId operation, Intent intent, String operator,
+            String description) {
+        return TestCase.changed(operation, List.of(), Optional.empty(), intent,
+                new Mutation(InteractionId.generate(), operator, ParameterLocation.BODY,
+                        "body.name", description));
+    }
+
+    /**
+     * A later step of a series, reading again what the step before it deleted, which expects to be
+     * refused.
+     */
+    static TestCase readAfterDelete(OperationId operation) {
+        return TestCase.stepOf(operation, List.of(), Optional.empty(), Intent.REFUSAL_EXPECTED,
+                new SequenceStep("readAfterDelete", 4, List.of(InteractionId.generate()),
+                        "read it again: the API said it deleted it, so it should be gone"));
     }
 
     private static TestCase testCase(OperationId operation) {

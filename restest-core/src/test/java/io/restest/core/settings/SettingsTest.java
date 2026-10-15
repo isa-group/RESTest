@@ -29,6 +29,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -67,7 +68,8 @@ class SettingsTest {
         @Test
         @DisplayName("every check is made unless somebody switches it off")
         void every_check_is_on_by_default() {
-            assertThat(Settings.defaults().checks()).isEqualTo(new CheckSettings(true, true));
+            assertThat(Settings.defaults().checks())
+                    .isEqualTo(new CheckSettings(true, true, true, true));
         }
 
         @Test
@@ -354,14 +356,20 @@ class SettingsTest {
     @DisplayName("a check switched off")
     class ChecksGiven {
 
-        @Test
-        @DisplayName("is switched off in one line, and the other check stays on")
-        void one_check_is_switched_off_alone() {
-            Settings changed = Settings.from(Map.of("checks.replyOffSchema", "false"));
+        @ParameterizedTest
+        @CsvSource({
+                "checks.internalServerError, false, true, true, true",
+                "checks.otherServerError, true, false, true, true",
+                "checks.replyOffSchema, true, true, false, true",
+                "checks.invalidDataAccepted, true, true, true, false"})
+        @DisplayName("is switched off in one line, and the other checks stay on")
+        void one_check_is_switched_off_alone(String key, boolean internalServerError,
+                boolean otherServerError, boolean replyOffSchema, boolean invalidDataAccepted) {
+            Settings changed = Settings.from(Map.of(key, "false"));
 
-            assertThat(changed.checks()).isEqualTo(new CheckSettings(true, false));
-            assertThat(changed.written(SettingKey.named("checks.replyOffSchema").orElseThrow()))
-                    .isEqualTo("false");
+            assertThat(changed.checks()).isEqualTo(new CheckSettings(internalServerError,
+                    otherServerError, replyOffSchema, invalidDataAccepted));
+            assertThat(changed.written(SettingKey.named(key).orElseThrow())).isEqualTo("false");
         }
     }
 

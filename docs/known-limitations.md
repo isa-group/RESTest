@@ -10,7 +10,9 @@ current release: an entry leaves it in the release that lifts it, and that relea
   an ordinary answer: the header is not read and nothing pauses. A 429 is usually a quick answer, and
   the engine's limiter judges only how long answers take, so a stream of 429s reads to it as room to
   send more. Against an API that limits its callers, lower `engine.maxConcurrency`
-  ([the settings](settings.md)) before you start.
+  ([the settings](settings.md)) before you start. A 503 the run's own pace provoked is reported as a
+  fault, `F121`, like any other; `checks.otherServerError=false` stops that
+  ([the faults](faults.md#f121-a-server-error-other-than-500)).
 - **There is no ceiling on requests per second.** What bounds a run is the number of requests in
   flight, sixteen at most by default (`engine.maxConcurrency`). The limiter halves it whenever a
   request goes unanswered and sends fewer as answers slow down, but no setting promises an API's

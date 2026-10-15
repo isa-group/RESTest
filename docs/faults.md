@@ -1,9 +1,10 @@
 # The faults RESTest reports
 
-A **fault** is a reply RESTest has a reason to call wrong: the API fell over, or it answered with
-something its own document says it would never send. Every fault is named by a number from a
-catalogue several testing tools share, described in a sentence of RESTest's own, and printed with a
-`curl` command that sends the same request again.
+A **fault** is a reply RESTest has a reason to call wrong: the API fell over, it answered with
+something its own document says it would never send, or it accepted a request its document says it
+must refuse. Every fault is named by a number from a catalogue several testing tools share,
+described in a sentence of RESTest's own, and printed with a `curl` command that sends the same
+request again.
 
 This page lists the kinds of fault this version reports, says what each one means and when it is
 reported, how to switch off the check that reports it, and shows how a fault looks on the screen and
@@ -25,7 +26,7 @@ kinds once, and under its version 0.7.0 `F101` meant what `F200` means now. Sinc
 the catalogue also gives every kind a key — `HTTP_STATUS_500` for `F100` — which it says is meant
 never to change, and would change only in a new major version. `report.json` writes that key beside
 every number. Within one version, the number is what tells two kinds apart; to match a count with one
-made under another version from 0.9.0 on, match on the key. A report of RESTest 2.0 to 2.2, written
+made under another version from 0.9.0 on, match on the key. A report of RESTest 2.0 or 2.1, written
 under version 0.8.0, has no key: there `F100` and `F200` have the same numbers and names as under
 0.9.0, so their counts compare by number.
 
@@ -34,10 +35,13 @@ under version 0.8.0, has no key: there `F100` and `F200` have the same numbers a
 | Code | The catalogue's name | What it means |
 |---|---|---|
 | `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code |
+| `F121` | HTTP Status 5xx Other Than 500 And 501 | The API answered a server error other than 500 and 501, most often `502`, `503` or `504`: something in it, or in front of it, failed while handling the request |
 | `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
+| `F206` | Received Success Response When Sending Wrong Data | The API accepted a request RESTest broke on purpose, with one thing in it the document forbids: a required value left out, a word where a number goes, a value off a closed list |
 
-The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
-after it was deleted, security problems — and this version reports none of them. A run that finds
+The catalogue has more kinds than these — wrong uses of HTTP status codes, a request that got no
+reply in time, a resource still there after it was deleted, security problems — and this version
+reports none of them. A run that finds
 nothing wrong has found none of the kinds above whose check was on, and says nothing about the rest.
 
 ### `F100`, a reply of 500
@@ -45,15 +49,32 @@ nothing wrong has found none of the kinds above whose check was on, and says not
 Reported for every reply whose status code is exactly 500, whatever was sent to get it — an ordinary
 request, a value nobody sensible would send, a request with one thing changed.
 
-- **Only 500.** 502, 503 and 504 are what a gateway or a load balancer says when something in front
-  of the API is unwell, and are often nothing anybody can fix in the API's code. 501, *not
-  implemented*, is about what the document promises rather than a crash. The catalogue has a kind of
-  its own for a 5xx other than 500 and 501, `F121`, and one for a request that got no reply in time,
-  `F312`; this version reports neither. The other 5xx codes are counted under `serverErrors` in
-  `report.json` and in the summary's line about 5xx, and requests that got no reply under `noReply` in
-  `replies.byClass`.
+- **Only 500.** A server error other than 500 and 501 is a kind of its own, `F121`, below. 501, *not
+  implemented*, is about what the document promises rather than a crash, and no check reports it.
+  The catalogue also has a kind for a request that got no reply in time, `F312`, which this version
+  does not report: requests that got no reply are counted under `noReply` in `replies.byClass`.
 - **It is a reason to look, not a verdict.** An API can answer 500 because its database is down or
   because another service it calls is not answering, neither of which is a bug in the API itself.
+
+### `F121`, a server error other than 500
+
+Reported for every reply whose status code is from 502 to 599 — most often 502, 503 or 504 —
+whatever was sent to get it, and whether or not the document declares that status code: a 503 the
+document promises is still an API that could not serve the request, as a 500 it promises is still
+one that fell over.
+
+- **It is weaker evidence of a bug than a 500.** 502 and 504 are what a gateway or a load balancer in
+  front of the API says when what it passed the request on to answered nonsense or nothing in time,
+  and 503 what an API says when it cannot serve requests just now, often because a database or
+  another service it calls is down. Often the thing to fix is the API's surroundings rather than its
+  code. It is reported anyway: an operation that answers 503 is worth knowing about, and until this
+  check existed such replies were only counted, under `serverErrors`. Where the surroundings are
+  known to be unwell, switch the check off in one line (`checks.otherServerError`).
+- **A 503 that asks the run to wait is reported too.** An API that cannot keep up may answer 503
+  with a `Retry-After` header; RESTest does not wait yet ([known
+  limitations](known-limitations.md#pointed-at-somebody-elses-api)), so each such reply is a fault.
+- **501 is left alone**, as for `F100`, and so is a code of 600 or more, which is no server error
+  whatever its first digit.
 
 ### `F200`, a reply of the wrong shape
 
@@ -81,6 +102,47 @@ One thing a document can say is never checked: `format`. Saying a piece of text 
 `email` is, in the standard, a note to the reader rather than a rule, and tools disagree about which
 ones to enforce.
 
+### `F206`, a broken request accepted
+
+Reported when the API accepts — answers 2xx to — a request RESTest broke on purpose. A strategy of
+kind `mutation` takes a request the API has just accepted and sends it again with one thing changed
+so that the document forbids it: a required value left out, a word where a number is declared, a
+value off a closed list, one past a limit, a body that is not JSON, a date that does not exist
+([the switches](switches.md#breaking-things-in-more-ways) list every kind of change). Such a request
+records that a refusal was expected and what was changed, and the fault says which change was
+accepted:
+
+```
+F206  Received Success Response When Sending Wrong Data
+      createRoleUsingPOST - POST http://127.0.0.1:57518/users/rbac/roles  ->  201
+      the API accepted a request it should have refused: sent the words 'this is not JSON' as the body, which is not JSON
+      curl -i -X POST 'http://127.0.0.1:57518/users/rbac/roles' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary 'this is not JSON'
+```
+
+Every kind of change counts, one that breaks only the `format` the document names included — a
+`date` of `2021-02-30`, a number past what an `int32` holds — since the document forbids it like any
+other. Only a success counts: any refusal was expected, and a server error is reported by the checks
+above.
+
+- **It is not always a bug in the API's own code.** The library an API reads its requests with often
+  accepts more than the document allows, and the API then accepts it too. In Java services, Jackson
+  and Spring commonly:
+  - turn a number or `true` sent where a word is declared into the word, so that
+    `{"name": -2147483648}` creates something called `-2147483648`;
+  - read a body up to the end of its JSON and ignore whatever follows;
+  - trim spaces around a number in an address, and read `0x1A` as 26;
+  - read an empty value of an optional parameter, or `null` for an optional member, as though it had
+    not been sent;
+  - read a `date-time` with no time zone as a local time.
+
+  Each is still a disagreement between the API and its document, which is what the fault says, and
+  the change it names tells these apart from a check the API is missing altogether: a required member
+  left out and accepted, a value off a closed list stored, `this is not JSON` answered `201`. Either
+  way the fix is to make the API stricter or its document looser.
+- **A step of a series is not judged here.** Reading again a thing the API said, a moment before,
+  that it had deleted also expects a refusal; a success there says something about deleting, a kind
+  of fault this version does not report.
+
 ## Switching a check off
 
 Each kind of fault is reported by one check, and each check can be switched off for a whole run, in
@@ -98,13 +160,14 @@ that check off:
 ```
   1 setting(s) are not what RESTest does by default; --print-settings lists them with where each came from
 ...
-15835 faults:
-  15835 x F100  HTTP Status 500
+16492 faults:
+  16201 x F100  HTTP Status 500
+  291 x F206  Received Success Response When Sending Wrong Data
 ```
 
 Each switch is named for what is wrong with a reply its check reports, and [the
 switches](switches.md#judging-what-came-back) lists them all, with the kind of fault each turns off
-and a file for each, ready to hand over. Both are on unless somebody says otherwise; like every
+and a file for each, ready to hand over. All four are on unless somebody says otherwise; like every
 setting, they can also be given in a file of settings or in the environment ([the
 settings](settings.md#checks)).
 

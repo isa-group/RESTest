@@ -13,25 +13,29 @@ document and the replies are all it has. That has two consequences worth knowing
 - **It works with any API**, whatever language it is written in and wherever it runs, as long as
   RESTest can reach it over HTTP and has a document describing it. The document can be OpenAPI 2.0,
   3.0 or 3.1, as a file or at an address.
-- **What it can judge is limited to what it can see.** It can tell that a reply was a crash, or was
-  the wrong shape. It cannot tell that a reply was the wrong answer — that an order total was
-  miscalculated, say — because nothing in a document says what the right answer is.
+- **What it can judge is limited to what it can see.** It can tell that a reply was a crash, was the
+  wrong shape, or was a success where the document called for a refusal. It cannot tell that a reply
+  was the wrong answer — that an order total was miscalculated, say — because nothing in a document
+  says what the right answer is.
 
 ## What it finds
 
-A run reports two kinds of fault:
+A run reports four kinds of fault:
 
 | Code | What happened |
 |---|---|
 | `F100` | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect |
+| `F121` | The API answered another server error, such as `503`: something in it, or in front of it, failed |
 | `F200` | The API answered with a body that is not the shape its document gives for that reply |
+| `F206` | The API accepted a request RESTest broke on purpose, which its document says it must refuse |
 
 Each fault comes with the request that caused it, what the API answered, and a `curl` command that
 sends the same request again, so that whoever fixes the API can see the fault for themselves.
 
 A fault is **a reason to look, not a verdict**. A 500 can come from a database that was down rather
-than from a bug, and a reply of the wrong shape can be a mistake in the document rather than in the
-API. Either way, somebody who knows the API should look at it.
+than from a bug, a reply of the wrong shape can be a mistake in the document rather than in the API,
+and a broken request accepted can be the library the API reads its requests with, more lenient than
+its document. Either way, somebody who knows the API should look at it.
 
 ## How it goes about it
 

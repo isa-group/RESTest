@@ -264,8 +264,12 @@ document:
 checks:
   # report a reply of 500, which says the API fell over while handling the request (F100)
   internalServerError: true   # default
+  # report a reply of a server error other than 500 and 501, such as 503 (F121)
+  otherServerError: true      # default
   # report a reply whose body is not the shape the document gives for its status code and media type (F200)
   replyOffSchema: true        # default
+  # report a request broken on purpose, with one thing the document forbids, that the API accepted (F206)
+  invalidDataAccepted: true   # default
 
 report:
   # how many faults of one kind, on one operation, are written out whole
@@ -324,6 +328,15 @@ numbers would answer a question nobody put, so RESTest stops before it sends any
   millisecond or longer than milliseconds can count, a number too large for the machine to hold, a
   number that would take more than a thousand characters to write out. Every setting has to survive
   being printed and recorded, or `--print-settings` and `report.json` would break on it later.
+
+To check a file of settings without testing anything, hand it over with `--print-settings`:
+`restest run --settings <file> --print-settings` needs no document and no address. It answers `0`
+and prints every setting, each with where its value came from, or `2` and what is wrong in the file,
+as a run would. A file with a setting misspelt:
+
+```
+restest: there is no setting called 'checks.invalidDataAcepted'. Did you mean 'checks.invalidDataAccepted'?
+```
 
 ## Where a run says how it was configured
 
@@ -500,7 +513,9 @@ faults](faults.md#switching-a-check-off) says what switching one off changes, an
 | Setting | Default | What it does |
 |---|---|---|
 | `internalServerError` | `true` | report a reply of 500, which says the API fell over while handling the request (F100) |
+| `otherServerError` | `true` | report a reply of a server error other than 500 and 501, such as 503 (F121) |
 | `replyOffSchema` | `true` | report a reply whose body is not the shape the document gives for its status code and media type (F200) |
+| `invalidDataAccepted` | `true` | report a request broken on purpose, with one thing the document forbids, that the API accepted (F206) |
 
 ### `report.*`
 

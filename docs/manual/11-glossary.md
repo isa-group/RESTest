@@ -12,8 +12,8 @@ never its code. RESTest tests only this way.
 whole of it is used, reading the document included.
 
 **Catalogue.** The numbered list of kinds of fault that several API testing tools share, the [Web
-Fuzzing Commons](https://github.com/WebFuzzing/Commons) fault catalogue. `F100` and `F200` come from
-it.
+Fuzzing Commons](https://github.com/WebFuzzing/Commons) fault catalogue. `F100`, `F121`, `F200`
+and `F206` come from it.
 
 **Cut short.** Said of a run stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget
 ran out. What it reports is what it found until then.
@@ -24,8 +24,9 @@ ran out. What it reports is what it found until then.
 **Exit code.** The number a run ends with: `0` nothing wrong, `1` a fault found, other numbers when
 the run could not do its job. See [chapter 9](09-exit-codes-and-ci.md).
 
-**Fault.** A reply RESTest has a reason to call wrong: a reply of 500 (`F100`), or one whose body is
-not the shape the document gives it (`F200`). A reason to look, not a verdict.
+**Fault.** A reply RESTest has a reason to call wrong: a reply of 500 (`F100`), another server error
+(`F121`), one whose body is not the shape the document gives it (`F200`), or a success in answer to
+a request broken on purpose (`F206`). A reason to look, not a verdict.
 
 **Idle.** The share of a run during which RESTest had no request in flight. Reported on every run,
 and kept as close to nothing as possible.
