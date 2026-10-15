@@ -16,6 +16,7 @@
 package io.restest.report;
 
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.model.OperationId;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -47,9 +48,6 @@ final class ServerErrors {
      */
     private static final int FELL_OVER = 500;
 
-    private static final int LOWEST_5XX = 500;
-    private static final int HIGHEST_5XX = 599;
-
     private final Set<OperationId> fellOver = new LinkedHashSet<>();
     private final Set<OperationId> refusedOrFellOver = new LinkedHashSet<>();
 
@@ -60,13 +58,12 @@ final class ServerErrors {
      * the status is the first thing an API sends and is complete long before the body it precedes,
      * so "the reply broke off halfway" and "we never learned what it said" are different facts.
      *
-     * <p>The upper end of the range is not decoration. Nothing in the model stops an API answering
-     * 999, real ones do it, and the catalogue carries a fault for exactly that. A code above the
-     * family is not a server error and must not be counted as one.
+     * <p>A code above the family, such as 999, is not a server error and is not counted as one; the
+     * catalogue carries a fault of its own for it.
      */
     void note(Interaction interaction) {
         interaction.statusCode()
-                .filter(status -> status >= LOWEST_5XX && status <= HIGHEST_5XX)
+                .filter(StatusCodes::isServerError)
                 .ifPresent(status -> {
                     refusedOrFellOver.add(interaction.testCase().operation());
                     if (status == FELL_OVER) {

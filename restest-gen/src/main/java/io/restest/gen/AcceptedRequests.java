@@ -20,6 +20,7 @@ import io.restest.core.event.RunListener;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
@@ -134,9 +135,7 @@ final class AcceptedRequests implements RunListener {
      */
     static boolean worthLearningFrom(ApiModel model, Interaction interaction) {
         TestCase testCase = interaction.testCase();
-        boolean accepted = interaction.statusCode()
-                .filter(code -> code >= 200 && code < 300)
-                .isPresent();
+        boolean accepted = interaction.statusCode().filter(StatusCodes::isSuccess).isPresent();
         return accepted
                 && testCase.mutation().isEmpty()
                 && testCase.sequence().isEmpty()

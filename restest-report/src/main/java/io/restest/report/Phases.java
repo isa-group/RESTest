@@ -17,6 +17,7 @@ package io.restest.report;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.execution.TestCaseId;
 import io.restest.core.model.OperationId;
 import java.time.Duration;
@@ -50,9 +51,6 @@ import java.util.TreeMap;
  * out.
  */
 final class Phases {
-
-    private static final int LOWEST_SUCCESS = 200;
-    private static final int HIGHEST_SUCCESS = 299;
 
     private final List<Phase> phases = new ArrayList<>();
     private final Map<TestCaseId, Phase> waitingForAnAnswer = new HashMap<>();
@@ -150,7 +148,7 @@ final class Phases {
         private void answered(Interaction interaction) {
             interaction.statusCode().ifPresentOrElse(status -> {
                 repliesByClass.merge((status / 100) + "xx", 1, Integer::sum);
-                if (status >= LOWEST_SUCCESS && status <= HIGHEST_SUCCESS) {
+                if (StatusCodes.isSuccess(status)) {
                     answeredWithASuccess.add(interaction.testCase().operation());
                 }
             }, () -> noReply++);

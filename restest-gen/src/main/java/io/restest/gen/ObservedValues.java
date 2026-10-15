@@ -24,6 +24,7 @@ import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.Payload;
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.execution.TestCase;
 import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonException;
@@ -211,7 +212,7 @@ public final class ObservedValues implements RunListener {
             return;
         }
         HttpResponseRecord response = interaction.response().orElse(null);
-        if (response == null || !theApiWasHappy(response.statusCode())) {
+        if (response == null || !StatusCodes.isSuccess(response.statusCode())) {
             return;
         }
         if (settings.rememberAcceptedRequests()
@@ -638,11 +639,6 @@ public final class ObservedValues implements RunListener {
             // rule reports. Here it is simply nothing worth keeping.
             return Optional.empty();
         }
-    }
-
-    /** Whether what came back is what an API sends when it is content with the request. */
-    private static boolean theApiWasHappy(int statusCode) {
-        return statusCode >= 200 && statusCode < 300;
     }
 
     /**
