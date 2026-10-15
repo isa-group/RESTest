@@ -12,6 +12,13 @@ tools that guide a language model all read.
 A schema is help, never a requirement. RESTest reads a file that names no schema, and checks every
 file it reads itself.
 
+The third file a run can be handed, a file of [settings](settings.md), has no schema. RESTest
+checks one exactly without testing anything — `restest run --settings <file> --print-settings`
+answers `0` and prints every setting with where its value came from, or `2` with what is wrong in
+the file — and a schema would check
+less: a setting may be written as a number or as text, a length of time as `2m` or `PT2M`, and one
+setting is checked against another, which a schema cannot say.
+
 ## Where they are
 
 | Where | The dictionary's | The plan's |

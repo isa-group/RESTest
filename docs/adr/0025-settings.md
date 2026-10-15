@@ -720,3 +720,14 @@ schema converter's combinations, and the lengths of the passwords, user names an
 implies.
 
 Ninety-one settings in nine groups.
+
+## Amendment (15 October 2026): two more checks
+
+**Date:** 2026-10-15
+
+`checks.otherServerError` turns off the check that reports a server error other than 500 and 501
+(`F121`), and `checks.invalidDataAccepted` the check that reports a request broken on purpose that
+the API accepted (`F206`). Both are on by default and named, as the 12 October amendment asks, for
+what is wrong with a reply each reports; `otherServerError` reads beside `internalServerError`, which
+was named so that it would not seem to cover the other 5xx. The group lists its checks in the order
+of the catalogue's numbers. Ninety-three settings in nine groups.

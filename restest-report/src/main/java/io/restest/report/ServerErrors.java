@@ -31,7 +31,7 @@ import java.util.Set;
  * which rules run changes between releases and a reply nobody judged still happened.
  *
  * <p>Two numbers rather than one. The shared fault catalogue names the status 500 as a fault of its
- * own, and the rest of the 5xx family as nothing in particular: a 503 is an API saying it will not
+ * own, and the rest of the 5xx family, but for 501, as another: a 503 is an API saying it will not
  * serve you now, which is not the same as an API falling over while trying. Both are worth knowing
  * and they are not the same claim.
  *

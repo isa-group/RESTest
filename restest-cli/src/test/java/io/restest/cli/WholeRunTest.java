@@ -16,7 +16,10 @@
 package io.restest.cli;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -30,6 +33,8 @@ import static io.restest.cli.ARun.totalIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.matching.MatchResult;
+import io.restest.core.json.JsonException;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import java.io.IOException;
@@ -81,24 +86,52 @@ class WholeRunTest {
                 .withHeader("Content-Type", "application/json")
                 .withBody("{\"error\": \"could not reach the database\"}")));
 
-        // Answers, but not with what it said it would: the document promises a whole number.
-        api.stubFor(get(urlMatching("/pets/[0-9]+")).willReturn(aResponse()
+        // Answers, but not with what it said it would: the document promises a whole number. A pet
+        // the document says cannot exist - outside 1 to 9, or not a number - is not found, so that
+        // a request broken on purpose is refused rather than accepted.
+        api.stubFor(get(urlMatching("/pets/[1-9]")).willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody("{\"id\": \"seven\", \"name\": \"Rex\"}")));
 
-        // Takes in a pet, and says what it took in. Behaves perfectly, and is the one operation
+        // Takes in a pet, and says what it took in. Behaves perfectly - a body that is not the new
+        // pet the document describes, or not sent as JSON, is refused - and is the one operation
         // here that cannot be attempted at all without a request body.
-        api.stubFor(post(urlMatching("/pets")).willReturn(aResponse()
-                .withStatus(201)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"id\": 7, \"name\": \"Rex\"}")));
+        api.stubFor(post(urlMatching("/pets"))
+                .withHeader("Content-Type", matching("application/json(;.*)?"))
+                .andMatching(request -> MatchResult.of(isANewPet(request.getBodyAsString())))
+                .willReturn(aResponse()
+                        .withStatus(201)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"id\": 7, \"name\": \"Rex\"}")));
+        api.stubFor(post(urlMatching("/pets")).atPriority(9).willReturn(aResponse()
+                .withStatus(400)));
+
+        // Everything else a plain 404. Left to itself the stub server describes a request it has no
+        // answer for by writing the address into a format string, and an address holding '%n',
+        // which the awkward values include, makes the stub itself answer 500.
+        api.stubFor(any(anyUrl()).atPriority(10).willReturn(aResponse().withStatus(404)));
 
         // Behaves perfectly.
         api.stubFor(get(urlMatching("/shelters")).willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody("{\"total\": 3}")));
+    }
+
+    /**
+     * Whether a body is the new pet the document this test reads describes: an object whose name is
+     * a word, and whose tag, if it has one, is a word too.
+     */
+    private static boolean isANewPet(String body) {
+        try {
+            return JsonText.read(body) instanceof JsonValue.JsonObject pet
+                    && pet.members().get("name") instanceof JsonValue.JsonString
+                    && (!pet.members().containsKey("tag")
+                            || pet.members().get("tag") instanceof JsonValue.JsonString);
+        } catch (JsonException notJson) {
+            return false;
+        }
     }
 
     @AfterAll

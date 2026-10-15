@@ -26,8 +26,8 @@ F100  HTTP Status 500
 - The last is a `curl` command that sends exactly the same request again. Paste it into a terminal
   and the clinic falls over the same way, which is what whoever fixes it will want to see.
 
-A fault of the other kind says more, because a reply of the wrong shape can be wrong in several
-places at once:
+A fault of the wrong shape, `F200`, says more, because a reply can be wrong in several places at
+once:
 
 ```
 F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema

@@ -91,7 +91,9 @@ catalogue [the faults](faults.md) describes.
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
 | `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`) |
+| `checks.otherServerError` | `true` | Another server error | never reports a reply of a server error other than 500 and 501, such as 502, 503 or 504, as a fault (`F121`) |
 | `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
+| `checks.invalidDataAccepted` | `true` | A broken request accepted | never reports a request broken on purpose, with one thing in it the document forbids, that the API accepted (`F206`) |
 
 No check decides what a run sends: switching one off changes which replies are called faults, and
 so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
@@ -121,7 +123,9 @@ it does not.
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same share, and the seed |
 | Series | The share given to the strategy that sends series, fifteen in a hundred of the run, which builds an ordinary request whenever what it drew is not a creation; a series' later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
 | A reply of 500 | One look at the status code of each reply |
+| Another server error | One look at the status code of each reply |
 | A reply off its schema | Checking the body of every JSON reply against the shape the document gives it, which can leave fewer requests sent within the budget ([the faults](faults.md#switching-a-check-off) says why) |
+| A broken request accepted | One look at what each request expected, and, for one broken on purpose, at the status code of its reply |
 
 What each was measured to be worth while the rewrite was first built is kept with the rest of that
 record, on the
@@ -257,11 +261,25 @@ checks:
   internalServerError: false
 ```
 
+**Another server error** — `F121`
+
+```yaml
+checks:
+  otherServerError: false
+```
+
 **A reply off its schema** — `F200`
 
 ```yaml
 checks:
   replyOffSchema: false
+```
+
+**A broken request accepted** — `F206`
+
+```yaml
+checks:
+  invalidDataAccepted: false
 ```
 
 ## Switching off a whole family

@@ -366,9 +366,14 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("checks", "internalServerError", SettingKind.YES_OR_NO,
                     "report a reply of 500, which says the API fell over while handling the "
                             + "request (F100)"),
+            key("checks", "otherServerError", SettingKind.YES_OR_NO,
+                    "report a reply of a server error other than 500 and 501, such as 503 (F121)"),
             key("checks", "replyOffSchema", SettingKind.YES_OR_NO,
                     "report a reply whose body is not the shape the document gives for its status "
                             + "code and media type (F200)"),
+            key("checks", "invalidDataAccepted", SettingKind.YES_OR_NO,
+                    "report a request broken on purpose, with one thing the document forbids, "
+                            + "that the API accepted (F206)"),
 
             key("report", "writeUpsPerOperationAndKind", SettingKind.WHOLE_NUMBER,
                     "how many faults of one kind, on one operation, are written out whole"),

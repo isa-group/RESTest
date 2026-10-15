@@ -261,7 +261,10 @@ public record Settings(
                 typed.wholeNumber("document.mostBytesRead", DEFAULTS.document.mostBytesRead())));
         CheckSettings checks = group("checks", () -> new CheckSettings(
                 typed.yesOrNo("checks.internalServerError", DEFAULTS.checks.internalServerError()),
-                typed.yesOrNo("checks.replyOffSchema", DEFAULTS.checks.replyOffSchema())));
+                typed.yesOrNo("checks.otherServerError", DEFAULTS.checks.otherServerError()),
+                typed.yesOrNo("checks.replyOffSchema", DEFAULTS.checks.replyOffSchema()),
+                typed.yesOrNo("checks.invalidDataAccepted",
+                        DEFAULTS.checks.invalidDataAccepted())));
         ReportSettings report = group("report", () -> new ReportSettings(
                 typed.wholeNumber("report.writeUpsPerOperationAndKind",
                         DEFAULTS.report.writeUpsPerOperationAndKind()),
@@ -461,7 +464,9 @@ public record Settings(
             case "document.mostBytesRead" -> String.valueOf(document.mostBytesRead());
 
             case "checks.internalServerError" -> String.valueOf(checks.internalServerError());
+            case "checks.otherServerError" -> String.valueOf(checks.otherServerError());
             case "checks.replyOffSchema" -> String.valueOf(checks.replyOffSchema());
+            case "checks.invalidDataAccepted" -> String.valueOf(checks.invalidDataAccepted());
 
             case "report.writeUpsPerOperationAndKind" ->
                     String.valueOf(report.writeUpsPerOperationAndKind());

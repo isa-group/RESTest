@@ -1,6 +1,6 @@
 # ADR-0016: A fault is identified by its catalogue number, described in our own words, and classified twice
 
-**Status:** Accepted, amended at M1.10 and on 10 and 12 October 2026
+**Status:** Accepted, amended at M1.10 and on 10, 12 and 15 October 2026
 **Date:** 2026-09-15
 
 ## Context
@@ -251,3 +251,42 @@ gone, as the amendment of 10 October said. The first still holds: a fault is the
 that can be switched off, a 5xx is something the API did. `serverErrors` keeps counting operations
 that answered 500 and any 5xx whichever rules run, and a rule that reports `F121` would add faults
 beside it, not replace it.
+
+## Amendment (15 October 2026): a server error other than 500, and a broken request accepted
+
+**Date:** 2026-10-15
+
+**`F121` is reported, beside `serverErrors` and not instead of it.** A rule reports *HTTP Status 5xx
+Other Than 500 And 501* for every reply from 502 to 599, with a switch of its own,
+`checks.otherServerError`, on by default. The 12 October amendment said such a rule would add faults
+beside the count of server errors rather than replace it, and that is what it does: `serverErrors`
+still counts every operation that answered any 5xx, whichever rules run. 500 stays `F100`'s, so no
+reply is both; 501 is left unreported, as the catalogue's name keeps it apart, and a code of 600 or
+more is no server error whatever its first digit.
+
+The codes are the ones Schemathesis 4.30.1 writes in its export to the catalogue's report format —
+500 as `F100`, 501 as `F205`, the other 5xx as `F121` — whose maintainer added `F121` to the
+catalogue. CATS, RESTler, RestTestGen, AutoRestTest and RESTest 1.x report the other 5xx too, all
+but RESTler under the same name as 500; EvoMaster reports only 500. Checked in each tool's code on
+15 October 2026.
+
+What the M1.10 amendment says about 502, 503 and 504 still holds: they are often what a gateway or a
+load balancer says, or what an API says when a service it calls is down. The rule's sentence says
+so, and [the faults](../faults.md#f121-a-server-error-other-than-500) call it weaker evidence than a
+500. A 503 that carries `Retry-After`, asking the run to wait, is reported like any other, decided by
+the maintainer on 15 October 2026: no tool checked exempts it, and until RESTest waits when it is
+told to, [the known limitations](../known-limitations.md) say that a 503 the run's own pace provoked
+is reported too. On fifteen APIs of the Web Fuzzing Dataset run locally, a minute each, none answered
+a 5xx other than 500 and 501, and one answered 501 16,743 times; that is the catalogue's `F205`,
+which no rule reports yet.
+
+**`F206` names in its sentence the change that was accepted.** A request broken on purpose and
+answered with a success is reported as *Received Success Response When Sending Wrong Data*, and the
+sentence under it is the change, as the request recorded it: *the API accepted a request it should
+have refused: left out the required body.photoUrls*. No word is written in a fault's `context` for
+it: the change is already in every fault `report.json` writes out, under the request, and nothing
+yet reads a context. [ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s amendment of the
+same day says which requests the rule judges.
+
+**A correction to the 12 October amendment.** Its "a report of RESTest 2.0 to 2.2 has none" means
+2.0 and 2.1: Faults 0.9.0 came after 2.1.0, so 2.2.0 is the first release whose reports write the key.

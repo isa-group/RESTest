@@ -523,7 +523,9 @@ class RestestTest {
                         - {name: vetId, in: path, required: true, schema: {type: integer}}
                       responses: {'200': {description: one vet}}
                 """);
-        api.stubFor(get(urlMatching("/vets/[0-9]+")).willReturn(aResponse().withStatus(200)));
+        // Only the vets the document says can exist, 1 to 9, so that a request broken on purpose -
+        // one past a limit, a word for the number - is refused as a well-behaved API refuses it.
+        api.stubFor(get(urlMatching("/vets/[1-9]")).willReturn(aResponse().withStatus(200)));
         // Everything else a plain 404. Left to itself the stub server describes a request it has no
         // answer for by writing the address into a format string, and an address holding '%n',
         // which the awkward values include, makes the stub itself answer 500.

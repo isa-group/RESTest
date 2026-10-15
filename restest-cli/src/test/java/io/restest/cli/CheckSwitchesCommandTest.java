@@ -18,16 +18,19 @@ package io.restest.cli;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.restest.cli.ARun.SIXTY_REQUESTS;
 import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static io.restest.cli.ARun.codesIn;
+import static io.restest.cli.ARun.json;
 import static io.restest.cli.ARun.report;
 import static io.restest.cli.ARun.settingsIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restest.core.json.JsonValue;
+import io.restest.core.settings.SettingKey;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -35,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -44,11 +48,14 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * The switches that turn off one check on what an API sends back, seen from the command line.
  *
- * <p>The API is a stand-in with one operation, and every answer it gives is wrong in two ways at
- * once: a 500, whose body is not the shape the document gives a 500. With every check on, a run
- * reports both. What is checked here is that each switch reaches the run, that the other check
- * carries on without it, that what the API did is still counted whichever checks are made, and that
- * the run records which were off.
+ * <p>The API is a stand-in, read through one of two documents. The first names one operation, and
+ * every answer it gives is wrong in two ways at once: a 500, whose body is not the shape the document
+ * gives a 500. With every check on, a run reports both. The second names two more, and is wrong in
+ * every way a check looks for: one answers 503, and one takes a required number and answers 200
+ * whatever it is sent, so that a request broken on purpose - the number left out, or a word in its
+ * place - is accepted. What is checked here is that each switch reaches the run, that the other
+ * checks carry on without it, that what the API did is still counted whichever checks are made, and
+ * that the run records which were off.
  */
 class CheckSwitchesCommandTest {
 
@@ -74,14 +81,45 @@ class CheckSwitchesCommandTest {
                                 type: string
             """;
 
+    /** The first document's operation, and two more that are wrong in the other ways. */
+    private static final String WRONG_IN_EVERY_WAY = DOCUMENT + """
+              /shelters:
+                get:
+                  operationId: listShelters
+                  responses:
+                    "200":
+                      description: every shelter
+                    "503":
+                      description: closed for the night
+              /owners:
+                get:
+                  operationId: findOwners
+                  parameters:
+                    - name: limit
+                      in: query
+                      required: true
+                      schema:
+                        type: integer
+                        minimum: 1
+                        maximum: 10
+                  responses:
+                    "200":
+                      description: the owners
+                    "400":
+                      description: the limit is missing or not a number from 1 to 10
+            """;
+
     private static WireMockServer api;
 
     @BeforeAll
     static void startTheApi() {
         api = new WireMockServer(options().dynamicPort());
         api.start();
-        api.stubFor(get(urlEqualTo("/pets")).willReturn(aResponse().withStatus(500)
-                .withHeader("Content-Type", "application/json").withBody("{\"code\": 1}")));
+        api.stubFor(get(urlEqualTo("/pets")).willReturn(json(500, "{\"code\": 1}")));
+        // Only the second document names these two.
+        api.stubFor(get(urlEqualTo("/shelters")).willReturn(aResponse().withStatus(503)));
+        // Accepts whatever it is sent, so a request with the limit broken on purpose is accepted.
+        api.stubFor(get(urlPathEqualTo("/owners")).willReturn(aResponse().withStatus(200)));
     }
 
     @AfterAll
@@ -94,7 +132,7 @@ class CheckSwitchesCommandTest {
     void every_check_on(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(directory, screen);
+        int answer = run(DOCUMENT, directory, screen);
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
@@ -107,7 +145,7 @@ class CheckSwitchesCommandTest {
     void one_check_off(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(directory, screen, "--set", "checks.replyOffSchema=false");
+        int answer = run(DOCUMENT, directory, screen, "--set", "checks.replyOffSchema=false");
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
@@ -118,13 +156,18 @@ class CheckSwitchesCommandTest {
     }
 
     @Test
-    @DisplayName("with both off, nothing is reported and the run ends 0, while the 500s are still "
-            + "counted as something the API did")
+    @DisplayName("with every check off, nothing is reported and the run ends 0, while the 500s are "
+            + "still counted as something the API did")
     void every_check_off(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
+        List<String> everyCheck = SettingKey.all().stream()
+                .filter(key -> key.group().equals("checks"))
+                .map(key -> key.group() + "." + key.name())
+                .toList();
 
-        int answer = run(directory, screen, "--set", "checks.replyOffSchema=false",
-                "--set", "checks.internalServerError=false");
+        int answer = run(DOCUMENT, directory, screen, everyCheck.stream()
+                .flatMap(check -> Stream.of("--set", check + "=false"))
+                .toArray(String[]::new));
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer)
@@ -137,15 +180,53 @@ class CheckSwitchesCommandTest {
         assertThat(serverErrors.member("operationsAnswering500"))
                 .describedAs("what the API answered is counted whichever checks are made")
                 .contains(JsonValue.of(1));
-        assertThat(settingsIn(report)).contains(
-                "checks.internalServerError false command line",
-                "checks.replyOffSchema false command line");
+        assertThat(settingsIn(report)).containsAll(everyCheck.stream()
+                .map(check -> check + " false command line")
+                .toList());
     }
 
-    /** A short run against the stand-in, with these settings, and the code it ended with. */
-    private static int run(Path directory, StringWriter screen, String... settings)
-            throws IOException {
-        Path document = Files.writeString(directory.resolve("openapi.yaml"), DOCUMENT);
+    @Test
+    @DisplayName("an API wrong in every way a check looks for is reported in four kinds of fault")
+    void every_kind_of_fault(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen);
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 121, 200, 206);
+    }
+
+    @Test
+    @DisplayName("with the checks for another server error and for a broken request accepted off, "
+            + "the other two still report, the 503 is still counted, and the run records both")
+    void the_two_newer_checks_off(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen,
+                "--set", "checks.otherServerError=false",
+                "--set", "checks.invalidDataAccepted=false");
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 200);
+        JsonValue.JsonObject serverErrors =
+                (JsonValue.JsonObject) report.member("serverErrors").orElseThrow();
+        assertThat(serverErrors.member("operationsAnsweringAny5xx"))
+                .describedAs("the 503 is counted as something the API did, whichever checks are "
+                        + "made")
+                .contains(JsonValue.of(2));
+        assertThat(settingsIn(report)).contains(
+                "checks.internalServerError true default",
+                "checks.otherServerError false command line",
+                "checks.replyOffSchema true default",
+                "checks.invalidDataAccepted false command line");
+    }
+
+    /** A short run against the stand-in read through this document, and the code it ended with. */
+    private static int run(String described, Path directory, StringWriter screen,
+            String... settings) throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), described);
         List<String> arguments = new ArrayList<>(List.of("run", document.toString(),
                 "--url", api.baseUrl(), "--budget", "30s",
                 "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",

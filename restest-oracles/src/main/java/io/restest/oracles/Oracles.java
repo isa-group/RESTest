@@ -43,7 +43,7 @@ public final class Oracles {
 
     /**
      * The rules RESTest ships with that these settings leave switched on, in a fixed order so that
-     * two runs report in the same order.
+     * two runs report in the same order: the order of the catalogue's numbers for what they report.
      *
      * <p>Each switch belongs to one rule, and that rule reports only the kind of fault the switch
      * is named for, so that turning one off never silences another kind with it. A rule switched
@@ -58,8 +58,14 @@ public final class Oracles {
         if (switches.internalServerError()) {
             on.add(new ServerErrorOracle());
         }
+        if (switches.otherServerError()) {
+            on.add(new OtherServerErrorOracle());
+        }
         if (switches.replyOffSchema()) {
             on.add(new ResponseSchemaOracle());
+        }
+        if (switches.invalidDataAccepted()) {
+            on.add(new InvalidDataAcceptedOracle());
         }
         return List.copyOf(on);
     }

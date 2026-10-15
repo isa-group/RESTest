@@ -35,12 +35,13 @@ import java.util.List;
  * fault is named from says as much, and so does every report RESTest writes: a 500 is worth a
  * person's attention, not an automatic verdict.
  *
- * <p>Only 500 is reported here, not the other codes in the 500s. 502, 503 and 504 are what a
- * gateway or a load balancer says when something in front of the API is unwell, and counting those
- * as faults of the API would inflate the count with things nobody can fix in the code. 501, "not
- * implemented", is about what the document promises rather than about a crash, and belongs with the
- * oracle that checks the status code against the document. Counting exactly what other tools count
- * is also what makes a RESTest fault count comparable with theirs.
+ * <p>Only 500 is reported here, not the other codes in the 500s. 502, 503 and 504 are often what a
+ * gateway or a load balancer says when something in front of the API is unwell, which is weaker
+ * evidence of a bug in the API's code, so they are a kind of fault of their own, reported by {@link
+ * OtherServerErrorOracle} and switched off apart from this one. 501, "not implemented", is about
+ * what the document promises rather than about a crash, and belongs with the oracle that checks the
+ * status code against the document. Keeping each kind to the number the catalogue gives it is also
+ * what makes a RESTest fault count comparable with other tools'.
  */
 public final class ServerErrorOracle implements Oracle {
 
