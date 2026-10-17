@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 /**
  * Checks that an attempt written down and read back is the same attempt.
@@ -90,6 +92,57 @@ class InteractionDocumentTest {
 
         assertThat(read).isEqualTo(original);
         assertThat(read.outcome()).isInstanceOf(InteractionOutcome.TransportFailure.class);
+        assertThat(outcomeOf(InteractionDocument.of(original)).member("timedOutWaitingFor"))
+                .describedAs("a failure that was no time limit says nothing about one, as it "
+                        + "did before there was anything to say")
+                .isEmpty();
+    }
+
+    @ParameterizedTest
+    @EnumSource(InteractionOutcome.TransportFailure.Wait.class)
+    @DisplayName("a request time ran out on survives, with what was being waited for")
+    void a_timeout_survives_the_round_trip(InteractionOutcome.TransportFailure.Wait wait) {
+        Interaction original = Interaction.transportFailure(testCase(), request(),
+                "SocketTimeoutException: timeout", Optional.of(wait), Instant.EPOCH,
+                Duration.ofSeconds(30));
+
+        JsonValue written = InteractionDocument.of(original);
+
+        assertThat(InteractionDocument.toInteraction(written)).isEqualTo(original);
+        assertThat(outcomeOf(written).member("timedOutWaitingFor"))
+                .contains(JsonValue.of(wait == InteractionOutcome.TransportFailure.Wait.REPLY
+                        ? "reply" : "connection"));
+    }
+
+    @Test
+    @DisplayName("a failure written before time limits were told apart reads as no timeout")
+    void a_failure_written_by_an_earlier_version_reads_as_no_timeout() {
+        JsonValue written = InteractionDocument.of(Interaction.transportFailure(testCase(),
+                request(), "SocketTimeoutException: timeout", Instant.EPOCH,
+                Duration.ofSeconds(30)));
+
+        Interaction read = InteractionDocument.toInteraction(written);
+
+        assertThat(((InteractionOutcome.TransportFailure) read.outcome()).timedOutWaitingFor())
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a wait this version does not know is refused rather than guessed at")
+    void an_unknown_wait_is_refused() {
+        String written = JsonText.write(InteractionDocument.of(Interaction.transportFailure(
+                testCase(), request(), "timeout",
+                Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY), Instant.EPOCH,
+                Duration.ofSeconds(30)))).replace("\"reply\"", "\"request\"");
+
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> InteractionDocument.toInteraction(JsonText.read(written)))
+                .withMessageContaining("'request'");
+    }
+
+    private static JsonValue.JsonObject outcomeOf(JsonValue document) {
+        return (JsonValue.JsonObject) ((JsonValue.JsonObject) document).member("outcome")
+                .orElseThrow();
     }
 
     @Test

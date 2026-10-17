@@ -91,11 +91,22 @@ public record Interaction(
                 sentAt, elapsed);
     }
 
-    /** A fresh interaction that received no response at all. */
+    /** A fresh interaction that received no response at all, and not because time ran out. */
     public static Interaction transportFailure(TestCase testCase, HttpRequestRecord request,
             String reason, Instant sentAt, Duration elapsed) {
+        return transportFailure(testCase, request, reason, Optional.empty(), sentAt, elapsed);
+    }
+
+    /**
+     * A fresh interaction that received no response at all, saying what RESTest was still waiting
+     * for if it stopped because one of its time limits ran out.
+     */
+    public static Interaction transportFailure(TestCase testCase, HttpRequestRecord request,
+            String reason, Optional<InteractionOutcome.TransportFailure.Wait> timedOutWaitingFor,
+            Instant sentAt, Duration elapsed) {
         return new Interaction(InteractionId.generate(), testCase, request,
-                new InteractionOutcome.TransportFailure(reason), sentAt, elapsed);
+                new InteractionOutcome.TransportFailure(reason, timedOutWaitingFor), sentAt,
+                elapsed);
     }
 
     /** The response received, if the attempt got a well-formed one. */

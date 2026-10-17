@@ -32,12 +32,17 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restest.core.auth.AuthGiven;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -310,7 +315,58 @@ class RestestTest {
                 .describedAs("an empty report that exits successfully would read as 'this API is "
                         + "fine', which is the one thing this run has no evidence for")
                 .isEqualTo(3);
-        assertThat(problems.toString()).contains("answered any of the").contains("Check the address");
+        assertThat(problems.toString()).contains("answered any of the").contains("Check the address")
+                .doesNotContain("fault(s) above");
+    }
+
+    /**
+     * Something at the address takes every connection and never says a word, as a service that
+     * does not speak HTTP may. Each request is a fault - a request sent on an open connection that
+     * got no reply - and the run still says nothing was tested, naming those faults beside the
+     * address rather than letting either message contradict the other.
+     */
+    @Test
+    @DisplayName("an address that takes connections and never answers answers 3, and says what the "
+            + "faults it reported are")
+    void an_address_that_never_answers_answers_three(@TempDir Path directory) throws Exception {
+        try (ServerSocket silent = new ServerSocket(0)) {
+            Thread server = Thread.ofVirtual().start(() -> takeEveryConnection(silent));
+            int answer = run("run", "pet-shelter.yaml",
+                    "--url", "http://127.0.0.1:" + silent.getLocalPort(),
+                    "--budget", "30s", "--seed", "3", "--set", "engine.readTimeout=500ms",
+                    // A few requests are enough: each costs the wait, and once the engine is
+                    // down to one request in flight they are sent one after the other.
+                    "--set", STOP_AFTER_REQUESTS, "--set", "schedule.requestsBeforeStopping=6",
+                    "--out", directory.toString());
+            silent.close();
+            server.join(Duration.ofSeconds(5));
+
+            assertThat(answer).isEqualTo(3);
+            assertThat(problems.toString()).contains("answered any of the")
+                    .contains("fault(s) above are requests sent on an open connection that never "
+                            + "got a reply")
+                    .contains("Check the address");
+        }
+    }
+
+    /** Takes every connection and never writes a byte, until the socket is closed. */
+    private static void takeEveryConnection(ServerSocket socket) {
+        List<Socket> held = new ArrayList<>();
+        try {
+            while (true) {
+                held.add(socket.accept());
+            }
+        } catch (IOException closed) {
+            // Closing the socket is how this ends.
+        } finally {
+            for (Socket connection : held) {
+                try {
+                    connection.close();
+                } catch (IOException ignored) {
+                    // Nothing left to do with it.
+                }
+            }
+        }
     }
 
     @Test

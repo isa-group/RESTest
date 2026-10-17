@@ -449,7 +449,9 @@ public final class Secrets {
             case InteractionOutcome.TransportFailure failure -> {
                 String reason = hidden(failure.reason());
                 yield reason.equals(failure.reason())
-                        ? outcome : new InteractionOutcome.TransportFailure(reason);
+                        ? outcome
+                        : new InteractionOutcome.TransportFailure(reason,
+                                failure.timedOutWaitingFor());
             }
         };
     }
@@ -610,8 +612,9 @@ public final class Secrets {
                     new InteractionOutcome.MalformedResponse(why,
                             malformed.statusLine().map(line -> StatusLine.of(line.statusCode())),
                             everyValueHidden(malformed.headers()), Optional.empty());
-            case InteractionOutcome.TransportFailure ignored ->
-                    new InteractionOutcome.TransportFailure(why);
+            // What it was waiting for when time ran out holds no key, and is kept.
+            case InteractionOutcome.TransportFailure failure ->
+                    new InteractionOutcome.TransportFailure(why, failure.timedOutWaitingFor());
         };
         return new Interaction(interaction.id(), testCase, request, outcome, interaction.sentAt(),
                 interaction.elapsed());

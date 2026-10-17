@@ -18,14 +18,15 @@ package io.restest.core.settings;
 /**
  * Which checks a run makes on what the API sends back.
  *
- * <p>Every reply is put to a few checks, and each one that finds something wrong reports a fault: a
- * reply of 500, which says the API fell over; a reply of another server error, such as 503; a reply
- * whose body is not the shape the API's own document says it would be; and a success in answer to a
- * request RESTest broke on purpose, which the API should have turned away. A check can be wrong about
- * one API - a document that describes its error replies badly makes every one of them look broken -
- * and a person whose build goes red for that reason needs to turn the one check off without turning
- * the tool off. So each check has a switch here, named for what is wrong with a reply it reports,
- * and on unless somebody says otherwise.
+ * <p>Every attempt is put to a few checks, and each one that finds something wrong reports a fault:
+ * a reply of 500, which says the API fell over; a reply of another server error, such as 503; a
+ * reply whose body is not the shape the API's own document says it would be; a success in answer to
+ * a request RESTest broke on purpose, which the API should have turned away; and a request the API
+ * had on an open connection and never answered before RESTest stopped waiting. A check can be wrong
+ * about one API - a document that describes its error replies badly makes every one of them look
+ * broken - and a person whose build goes red for that reason needs to turn the one check off without
+ * turning the tool off. So each check has a switch here, named for what is wrong with what came back,
+ * or did not, and on unless somebody says otherwise.
  *
  * <p>A check switched off is not made at all. No check decides what a run sends: switching one off
  * changes which replies are called faults, and so whether the run ends saying it found any.
@@ -41,11 +42,13 @@ package io.restest.core.settings;
  *     code and media type
  * @param invalidDataAccepted report a request broken on purpose, with one thing in it that the
  *     document forbids, which the API accepted
+ * @param noReplyInTime report a request that got no reply, on a connection open to the API, before
+ *     RESTest stopped waiting
  */
 public record CheckSettings(boolean internalServerError, boolean otherServerError,
-        boolean replyOffSchema, boolean invalidDataAccepted) {
+        boolean replyOffSchema, boolean invalidDataAccepted, boolean noReplyInTime) {
 
-    private static final CheckSettings DEFAULTS = new CheckSettings(true, true, true, true);
+    private static final CheckSettings DEFAULTS = new CheckSettings(true, true, true, true, true);
 
     /** What a run does when nobody has said otherwise: every check is made. */
     public static CheckSettings defaults() {

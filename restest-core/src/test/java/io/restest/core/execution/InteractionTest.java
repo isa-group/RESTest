@@ -156,6 +156,31 @@ class InteractionTest {
     }
 
     @Test
+    @DisplayName("a transport failure says nothing of a time limit unless it was one")
+    void a_transport_failure_is_no_timeout_unless_said() {
+        Interaction refused = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "connection refused", Instant.now(), Duration.ZERO);
+        Interaction satOn = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "SocketTimeoutException: timeout",
+                Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY), Instant.now(),
+                Duration.ofSeconds(30));
+
+        assertThat(((InteractionOutcome.TransportFailure) refused.outcome()).timedOutWaitingFor())
+                .isEmpty();
+        assertThat(new InteractionOutcome.TransportFailure("cut").timedOutWaitingFor()).isEmpty();
+        assertThat(((InteractionOutcome.TransportFailure) satOn.outcome()).timedOutWaitingFor())
+                .contains(InteractionOutcome.TransportFailure.Wait.REPLY);
+        assertThat(satOn.statusCode()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("what a transport failure was waiting for cannot be null")
+    void a_transport_failure_wait_cannot_be_null() {
+        assertThatNullPointerException().isThrownBy(
+                () -> new InteractionOutcome.TransportFailure("timed out", null));
+    }
+
+    @Test
     @DisplayName("elapsed time cannot be negative")
     void elapsed_time_cannot_be_negative() {
         assertThatIllegalArgumentException().isThrownBy(() -> Interaction.answered(TEST_CASE,

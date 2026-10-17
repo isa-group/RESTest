@@ -30,8 +30,10 @@ import java.util.Optional;
  * shorter than the length it declared - is also the API's fault, but a different and more serious
  * one, deserving its own report rather than being confused with a connection that simply dropped -
  * see {@link MalformedResponse}. Getting no response at all - refused, timed out, a broken
- * connection - is a fact about the attempt itself, not about the API, and is the one case with
- * nothing to actually check - see {@link TransportFailure}.
+ * connection - is the one case with no reply to check - see {@link TransportFailure}. Mostly it is a
+ * fact about the attempt rather than about the API: nothing was listening, or the connection broke.
+ * One kind is not: a request the API took on an open connection and then never answered before
+ * RESTest stopped waiting, which says the API sat on it.
  *
  * <p>These are the only three possibilities, which the compiler enforces: code meant to handle one
  * outcome must handle all three, rather than silently doing nothing useful if a fourth is ever
@@ -101,16 +103,51 @@ public sealed interface InteractionOutcome {
     /**
      * No response came back at all.
      *
+     * <p>When the attempt ended because RESTest stopped waiting - one of its time limits ran out -
+     * this says what it was still waiting for, since the two cases mean different things. With no
+     * connection open, the request never reached the API, and an address that answers nothing looks
+     * exactly the same. With a connection open and nothing back, the API had the request and sat on
+     * it. Everything else that ends an attempt with no reply - a connection refused or cut, an
+     * address that could not be found, a request never sent - says nothing of the kind.
+     *
      * @param reason what went wrong, in a form fit to print in a report - "connection refused",
      *     "read timed out after 30s" - not a stack trace
+     * @param timedOutWaitingFor what RESTest was still waiting for when one of its time limits ran
+     *     out, when that is how the attempt ended; empty when it ended any other way
      */
-    record TransportFailure(String reason) implements InteractionOutcome {
+    record TransportFailure(String reason, Optional<Wait> timedOutWaitingFor)
+            implements InteractionOutcome {
         public TransportFailure {
             Objects.requireNonNull(reason, "reason");
+            Objects.requireNonNull(timedOutWaitingFor, "timedOutWaitingFor");
             if (reason.isBlank()) {
                 throw new IllegalArgumentException(
                         "a transport failure must say what went wrong");
             }
+        }
+
+        /** A failure that was not a time limit running out: refused, cut, never sent. */
+        public TransportFailure(String reason) {
+            this(reason, Optional.empty());
+        }
+
+        /** What RESTest was still waiting for when one of its time limits ran out. */
+        public enum Wait {
+
+            /**
+             * A connection to the API: none was open yet, because connecting or agreeing on
+             * encryption took longer than RESTest waits. The request never reached the API.
+             */
+            CONNECTION,
+
+            /**
+             * The reply: a connection to the API was open, and no status line had come back, whether
+             * the request was still being sent or had been sent in full. The two cannot be told
+             * apart, and a request still being sent is rare: the bodies RESTest sends are far
+             * smaller than what the computer holds back for a connection, so sending stalls only when
+             * the API stops reading a connection it keeps open.
+             */
+            REPLY
         }
     }
 }

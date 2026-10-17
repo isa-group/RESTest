@@ -264,7 +264,8 @@ public record Settings(
                 typed.yesOrNo("checks.otherServerError", DEFAULTS.checks.otherServerError()),
                 typed.yesOrNo("checks.replyOffSchema", DEFAULTS.checks.replyOffSchema()),
                 typed.yesOrNo("checks.invalidDataAccepted",
-                        DEFAULTS.checks.invalidDataAccepted())));
+                        DEFAULTS.checks.invalidDataAccepted()),
+                typed.yesOrNo("checks.noReplyInTime", DEFAULTS.checks.noReplyInTime())));
         ReportSettings report = group("report", () -> new ReportSettings(
                 typed.wholeNumber("report.writeUpsPerOperationAndKind",
                         DEFAULTS.report.writeUpsPerOperationAndKind()),
@@ -467,6 +468,7 @@ public record Settings(
             case "checks.otherServerError" -> String.valueOf(checks.otherServerError());
             case "checks.replyOffSchema" -> String.valueOf(checks.replyOffSchema());
             case "checks.invalidDataAccepted" -> String.valueOf(checks.invalidDataAccepted());
+            case "checks.noReplyInTime" -> String.valueOf(checks.noReplyInTime());
 
             case "report.writeUpsPerOperationAndKind" ->
                     String.valueOf(report.writeUpsPerOperationAndKind());

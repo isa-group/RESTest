@@ -686,6 +686,21 @@ class JsonReportTest {
         assertThat(text(finding, "statusClass")).isEqualTo("5xx");
     }
 
+    @Test
+    @DisplayName("a request that got no reply in time says, where it is written out, what RESTest "
+            + "was still waiting for")
+    void a_request_with_no_reply_in_time_says_what_was_awaited() {
+        JsonValue.JsonObject written = afterFinding(1, Runs::satOn);
+
+        JsonValue.JsonObject finding =
+                (JsonValue.JsonObject) array(written, "findings").elements().get(0);
+        JsonValue.JsonObject outcome = object(object(finding, "interaction"), "outcome");
+        assertThat(finding.member("status")).isEmpty();
+        assertThat(text(finding, "statusClass")).isEqualTo("noReply");
+        assertThat(text(outcome, "kind")).isEqualTo("failed");
+        assertThat(text(outcome, "timedOutWaitingFor")).isEqualTo("reply");
+    }
+
     /** One run in which the same maker is asked for a fault as many times as given. */
     private static JsonValue.JsonObject afterFinding(
             int howMany, Function<String, Finding> maker) {

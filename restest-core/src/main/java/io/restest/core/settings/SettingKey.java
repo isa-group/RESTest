@@ -374,6 +374,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("checks", "invalidDataAccepted", SettingKind.YES_OR_NO,
                     "report a request broken on purpose, with one thing the document forbids, "
                             + "that the API accepted (F206)"),
+            key("checks", "noReplyInTime", SettingKind.YES_OR_NO,
+                    "report a request that got no reply, on a connection open to the API, before "
+                            + "RESTest stopped waiting (F312)"),
 
             key("report", "writeUpsPerOperationAndKind", SettingKind.WHOLE_NUMBER,
                     "how many faults of one kind, on one operation, are written out whole"),

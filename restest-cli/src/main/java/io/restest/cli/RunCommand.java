@@ -709,7 +709,7 @@ final class RunCommand implements Callable<Integer> {
                 ? stop.askedAt().map(at -> Duration.between(startedAt, at))
                 : Optional.empty();
         explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated, hidden,
-                stoppedAfter, settings.schedule().interruptGrace());
+                stoppedAfter, settings.schedule().interruptGrace(), console.faults());
         return answer;
     }
 
@@ -747,7 +747,7 @@ final class RunCommand implements Callable<Integer> {
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
             String address, Path reportFile, Path runFile, OurOwnFailures ours,
             long repliesThatRepeatedAKey, UnaryOperator<String> hidden,
-            Optional<Duration> stoppedAfter, Duration interruptGrace) {
+            Optional<Duration> stoppedAfter, Duration interruptGrace, int faults) {
         // First, because it says how to read everything else: a run stopped half-way reports half
         // a run, and nothing below is about the budget it was given.
         stoppedAfter.ifPresent(after -> err.println("restest: the run was stopped from outside "
@@ -848,9 +848,16 @@ final class RunCommand implements Callable<Integer> {
                     + "request could be sent - reading the document and starting up takes a moment, "
                     + "and it is paid out of the budget. Give the run more time.");
         } else {
+            // With nothing answered, the only faults there can be are requests sent on a connection
+            // that was open and never got a reply. They are faults of the API if it is one, and
+            // exactly what something listening there that does not speak HTTP would do too, so they
+            // are said beside the address rather than instead of it.
             err.println("restest: nothing at " + address + " answered any of the " + outcome.sent()
-                    + " requests, so the API was never actually tested. Check the address, and that "
-                    + "it is running.");
+                    + " requests, so the API was never actually tested"
+                    + (faults > 0 ? "; the " + faults + " fault(s) above are requests sent on an "
+                            + "open connection that never got a reply, which is also what "
+                            + "something listening there that does not speak HTTP does" : "")
+                    + ". Check the address, and that it is running.");
         }
     }
 
