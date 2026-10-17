@@ -1,8 +1,9 @@
 # The faults RESTest reports
 
 A **fault** is a reply RESTest has a reason to call wrong: the API fell over, it answered with
-something its own document says it would never send, or it accepted a request its document says it
-must refuse. Every fault is named by a number from a catalogue several testing tools share,
+something its own document says it would never send, it accepted a request its document says it
+must refuse, or it took a request and never answered at all. Every fault is named by a number from a
+catalogue several testing tools share,
 described in a sentence of RESTest's own, and printed with a `curl` command that sends the same
 request again.
 
@@ -38,10 +39,10 @@ under version 0.8.0, has no key: there `F100` and `F200` have the same numbers a
 | `F121` | HTTP Status 5xx Other Than 500 And 501 | The API answered a server error other than 500 and 501, most often `502`, `503` or `504`: something in it, or in front of it, failed while handling the request |
 | `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
 | `F206` | Received Success Response When Sending Wrong Data | The API accepted a request RESTest broke on purpose, with one thing in it the document forbids: a required value left out, a word where a number goes, a value off a closed list |
+| `F312` | Call Timeout | The API had a request on an open connection and sent no reply, not even its first line, before RESTest stopped waiting: whatever handles it is waiting on something that does not answer |
 
-The catalogue has more kinds than these — wrong uses of HTTP status codes, a request that got no
-reply in time, a resource still there after it was deleted, security problems — and this version
-reports none of them. A run that finds
+The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
+after it was deleted, security problems — and this version reports none of them. A run that finds
 nothing wrong has found none of the kinds above whose check was on, and says nothing about the rest.
 
 ### `F100`, a reply of 500
@@ -51,8 +52,6 @@ request, a value nobody sensible would send, a request with one thing changed.
 
 - **Only 500.** A server error other than 500 and 501 is a kind of its own, `F121`, below. 501, *not
   implemented*, is about what the document promises rather than a crash, and no check reports it.
-  The catalogue also has a kind for a request that got no reply in time, `F312`, which this version
-  does not report: requests that got no reply are counted under `noReply` in `replies.byClass`.
 - **It is a reason to look, not a verdict.** An API can answer 500 because its database is down or
   because another service it calls is not answering, neither of which is a bug in the API itself.
 
@@ -143,6 +142,46 @@ above.
   that it had deleted also expects a refusal; a success there says something about deleting, a kind
   of fault this version does not report.
 
+### `F312`, no reply in time
+
+Reported for every request sent on a connection open to the API that got no reply — not even the
+first line of one — before RESTest stopped waiting. It waits `engine.readTimeout` for anything to
+arrive, half a minute by default, and `engine.callTimeout` for the whole request, a minute
+([the settings](settings.md#engine)). From a run against an API that calls a service on the internet
+from a machine with no connection to it:
+
+```
+F312  Call Timeout
+      fetchUsingGET - GET http://127.0.0.1:52200/fetch  ->  no reply
+      no reply within 30.0s: a connection to the API was open, and no status line came back before RESTest stopped waiting
+      curl -i -X GET 'http://127.0.0.1:52200/fetch' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+```
+
+- **It is often a real problem.** An operation that sits on a request is usually waiting on
+  something that does not answer — a database, another service, a lock — with no limit of its own.
+  And since what was sent is what made it wait, it may be a way to tie the API up on purpose, which
+  is why the catalogue files it among the security problems.
+- **It may also be the API's surroundings, or the run.** Something the API calls may be slow, or
+  out of reach from where the API runs. The run's own pace may be more than the API can take
+  ([troubleshooting](manual/10-troubleshooting.md#the-api-falls-over-under-the-run)). And a connection
+  kept open between requests can be dropped without a word by something in between, such as a load
+  balancer, so that a request sent on it reaches nobody. An API known to be slow gets longer with
+  `--set engine.readTimeout=2m`, and the check switches off in one line (`checks.noReplyInTime`).
+- **What is not reported.** A reply whose first line arrived, however long the rest of it took: that
+  API answered, and an endpoint that sends a reply bit by bit for as long as somebody listens, as a
+  stream of events does, is doing what it is for. A connection that could not be made in time, since
+  the request never reached the API, and an address that swallows whatever it is sent looks exactly
+  the same. A connection refused, or cut before any reply. Each of these, like every request that
+  got no reply, is still counted under `noReply` in `replies.byClass`.
+- **A request still being sent counts too.** RESTest cannot tell an API that stopped reading a
+  request from one that read it and never answered. It is rare: what RESTest sends is far smaller
+  than what the computer holds back for a connection, so sending stalls only when the API stops
+  reading a connection it keeps open.
+- **The `curl` waits as long as the API does.** It has no limit of its own: add `--max-time 35` to
+  try it without waiting for ever.
+- **In `report.json`**, the request's outcome is `failed`, with `timedOutWaitingFor` set to `reply`
+  ([What a run leaves behind](report.md#findingsinteractionoutcome)).
+
 ## Switching a check off
 
 Each kind of fault is reported by one check, and each check can be switched off for a whole run, in
@@ -165,19 +204,19 @@ that check off:
   291 x F206  Received Success Response When Sending Wrong Data
 ```
 
-Each switch is named for what is wrong with a reply its check reports, and [the
+Each switch is named for what is wrong with what came back, or did not, and [the
 switches](switches.md#judging-what-came-back) lists them all, with the kind of fault each turns off
-and a file for each, ready to hand over. All four are on unless somebody says otherwise; like every
+and a file for each, ready to hand over. All five are on unless somebody says otherwise; like every
 setting, they can also be given in a file of settings or in the environment ([the
 settings](settings.md#checks)).
 
 A check switched off is not made at all. What that changes, and what it does not:
 
-- **No check decides what is sent.** A check only reads replies. But the checks are made while the
-  run goes on sending, on the same thread that hands each reply to the memory of what the API
-  returned, and when they fall behind the run waits for them. So with the check of a reply's shape
-  off, the one that takes time, a run may send more requests in the same budget, and learn from a
-  reply sooner. Two runs of the tool as shipped differ anyway; one that has [its seed
+- **No check decides what is sent.** A check only reads what came back. But the checks are made
+  while the run goes on sending, on the same thread that hands each reply to the memory of what the
+  API returned, and when they fall behind the run waits for them. So with the check of a reply's
+  shape off, the one that takes time, a run may send more requests in the same budget, and learn
+  from a reply sooner. Two runs of the tool as shipped differ anyway; one that has [its seed
   back](switches.md#getting-the-seed-back) builds the same requests whichever checks are made, and
   only how many fit in the budget can change.
 - **What the API did is still counted.** `serverErrors` in `report.json`, and the summary's line
@@ -231,7 +270,7 @@ At the end of the run, the summary counts them by kind:
 
 ## How faults are counted
 
-**Every reply is judged by every check switched on, and each check that objects is one fault.** A
+**Every request is judged by every check switched on, and each check that objects is one fault.** A
 reply of 500 whose body is also not the shape the document gives for a 500 is two faults, one of
 each kind. A broken operation asked six hundred times is six hundred faults. So the total says how
 much went wrong across the run, not how many problems the API has; [What a run leaves
@@ -256,5 +295,8 @@ the same operation are counted as two, however alike they look.
 
 A run that ran to the end and found at least one fault ends with `1`, and one that found none ends
 with `0`, so that a build server can go red when the API is broken. A run stopped from outside ends
-with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found.
+with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found. A run
+in which nothing at the address answered ends with `3`, even when it reported requests that got no
+reply in time: something that takes connections and never speaks HTTP does exactly that, so the run
+says so beside the address.
 [The exit codes](command-line.md#exit-codes) has every number a run can end with.

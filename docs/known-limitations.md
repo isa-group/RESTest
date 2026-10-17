@@ -23,7 +23,10 @@ current release: an entry leaves it in the release that lifts it, and that relea
   status. Try a new key with a short `--budget` first.
 - **A run does not stop when the API stops answering.** The limiter falls to one request in flight
   as unanswered requests pile up, and the run keeps trying until its budget ends. Keep `--budget` to
-  what you are prepared to spend on an API that may go down.
+  what you are prepared to spend on an API that may go down. An API that still takes connections and
+  no longer answers on them has every request from then on reported as a fault, `F312`, though the
+  run's own pace may be what brought it down; `checks.noReplyInTime=false` stops that
+  ([the faults](faults.md#f312-no-reply-in-time)).
 
 Every request names the tool in its `User-Agent` (`engine.userAgent`), so that an API's owner can
 tell RESTest's traffic apart and refuse it, unless the document declares that header as a parameter
@@ -76,6 +79,14 @@ of its own. Whether you may test an API at all is not something any tool can che
     request counts as answered and no report hears of it.
 
   A run that ends with `3` although the API is reachable is worth reading as one of these.
+- **A request on a connection something in between dropped is reported as one the API sat on.** The
+  engine keeps a connection open between requests, for up to five minutes. A load balancer or a
+  firewall that drops one without a word leaves a request sent on it unanswered, and RESTest reports
+  it as `F312` once it stops waiting, although it reached nobody
+  ([the faults](faults.md#f312-no-reply-in-time)).
+- **A reply that comes, but slowly, is not reported.** Only a request that got no reply before
+  RESTest stopped waiting is a fault; one answered in twenty-nine seconds, against the half a minute
+  it waits by default, is not. Nor is a reply whose first line arrived and whose body never finished.
 - **`report.json` does not say that a run broke.** When a run ends with `4`, the file reads like that
   of a finished run. Read the exit code, not only the file.
 

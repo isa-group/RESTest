@@ -475,6 +475,7 @@ What came back, in one of three shapes, told apart by `kind`.
 | `headers` | list | For `answered` and `malformed`: every header of the reply |
 | `body` | object | For `answered` and `malformed`, only when the reply had a body |
 | `reason` | text | For `malformed` and `failed`: what went wrong |
+| `timedOutWaitingFor` | text | For `failed`, only when RESTest stopped waiting because one of its time limits ran out: `reply` when a connection to the API was open and no status line had come back, the kind [`F312`](faults.md#f312-no-reply-in-time) reports; `connection` when no connection could be made in time. Reports and stored runs written by RESTest 2.0 and 2.1 never have it |
 
 ### `findings[].interaction.request.headers[]`, `findings[].interaction.outcome.headers[]`
 

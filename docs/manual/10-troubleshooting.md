@@ -93,7 +93,8 @@ RESTest keeps several requests in flight at once, and slows down by itself when 
 that cannot take that — it answers 503, or stops answering, or its log fills with errors about
 connections — gets one request at a time with `--set engine.maxConcurrency=1`. Each 503 is reported
 as a fault, `F121`, which a run whose pace is to blame can stop with
-`--set checks.otherServerError=false`. An API that is simply slow gets longer to answer with
+`--set checks.otherServerError=false`; each request it stops answering, as `F312`, which
+`--set checks.noReplyInTime=false` stops. An API that is simply slow gets longer to answer with
 `--set engine.readTimeout=2m`. [Chapter 7](07-settings.md) has more.
 
 ## The run left data behind
