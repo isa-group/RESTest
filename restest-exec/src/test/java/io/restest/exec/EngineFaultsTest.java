@@ -33,8 +33,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -123,7 +121,7 @@ class EngineFaultsTest {
             + "request has taken as long as it may")
     void a_status_line_that_never_finishes_is_no_reply() throws Exception {
         try (ServerSocket trickles = new ServerSocket(0)) {
-            Thread server = Thread.ofVirtual().start(() -> trickleAStatusLine(trickles));
+            Thread server = Thread.ofVirtual().start(() -> trickle(trickles, "", "H"));
             Duration wait = Duration.ofMillis(500);
             EngineSettings settings = EngineSettings.defaults().withConnectTimeout(wait)
                     .withReadTimeout(wait).withWriteTimeout(wait)
@@ -142,16 +140,16 @@ class EngineFaultsTest {
     }
 
     /**
-     * An address where something accepts connections and never says a word. Asked for encryption,
-     * the engine waits for the other side's part of agreeing on it, which never comes - so time
-     * runs out before there is a connection to the API to send anything on.
+     * An address where something takes connections and never says a word: a socket listening and
+     * never read, whose connections the operating system completes and leaves waiting. Asked for
+     * encryption, the engine waits for the other side's part of agreeing on it, which never comes -
+     * so time runs out before there is a connection to the API to send anything on.
      */
     @Test
     @DisplayName("a connection that never finishes being made is a wait for a connection, not for "
             + "a reply")
     void a_connection_that_never_finishes_is_not_a_wait_for_a_reply() throws Exception {
         try (ServerSocket silent = new ServerSocket(0)) {
-            Thread server = Thread.ofVirtual().start(() -> acceptAndSayNothing(silent));
             try (OkHttpEngine engine = new OkHttpEngine(
                     EngineSettings.defaults().withReadTimeout(Duration.ofMillis(300)))) {
                 Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/pets"),
@@ -162,8 +160,6 @@ class EngineFaultsTest {
                 assertThat(waitOf(interaction))
                         .contains(InteractionOutcome.TransportFailure.Wait.CONNECTION);
             }
-            silent.close();
-            server.join(Duration.ofSeconds(5));
         }
     }
 
@@ -176,7 +172,6 @@ class EngineFaultsTest {
             + "connection, though the first address answered")
     void a_redirection_nowhere_is_a_wait_for_a_connection() throws Exception {
         try (ServerSocket silent = new ServerSocket(0)) {
-            Thread server = Thread.ofVirtual().start(() -> acceptAndSayNothing(silent));
             api.stubFor(get(urlEqualTo("/moved")).willReturn(aResponse().withStatus(302)
                     .withHeader("Location",
                             "https://127.0.0.1:" + silent.getLocalPort() + "/there")));
@@ -188,8 +183,6 @@ class EngineFaultsTest {
                 assertThat(waitOf(interaction))
                         .contains(InteractionOutcome.TransportFailure.Wait.CONNECTION);
             }
-            silent.close();
-            server.join(Duration.ofSeconds(5));
         }
     }
 
@@ -265,7 +258,10 @@ class EngineFaultsTest {
             + "long as it may, keeping what arrived")
     void a_reply_that_never_ends_is_cut_off() throws Exception {
         try (ServerSocket streams = new ServerSocket(0)) {
-            Thread server = Thread.ofVirtual().start(() -> serveForEver(streams));
+            Thread server = Thread.ofVirtual().start(() -> trickle(streams, "HTTP/1.1 200 OK\r\n"
+                    + "Content-Type: text/event-stream\r\n"
+                    + "Transfer-Encoding: chunked\r\n"
+                    + "\r\n", "1\r\nx\r\n"));
             Duration wait = Duration.ofMillis(500);
             EngineSettings settings = EngineSettings.defaults().withConnectTimeout(wait)
                     .withReadTimeout(wait).withWriteTimeout(wait)
@@ -293,64 +289,22 @@ class EngineFaultsTest {
     }
 
     /**
-     * Answers one request with a reply that sends a byte every tenth of a second, for half a minute
-     * or until the client hangs up.
+     * Answers one request with what it is given to begin with, and then the same few bytes every
+     * tenth of a second, for half a minute or until the client hangs up.
      */
-    private static void serveForEver(ServerSocket socket) {
+    private static void trickle(ServerSocket socket, String beginning, String every) {
         try (Socket connection = socket.accept()) {
             connection.getInputStream().read(new byte[1024]);
             OutputStream out = connection.getOutputStream();
-            out.write(("HTTP/1.1 200 OK\r\n"
-                    + "Content-Type: text/event-stream\r\n"
-                    + "Transfer-Encoding: chunked\r\n"
-                    + "\r\n").getBytes(StandardCharsets.UTF_8));
+            out.write(beginning.getBytes(StandardCharsets.UTF_8));
             long until = System.nanoTime() + Duration.ofSeconds(30).toNanos();
             while (System.nanoTime() < until) {
-                out.write("1\r\nx\r\n".getBytes(StandardCharsets.UTF_8));
+                out.write(every.getBytes(StandardCharsets.UTF_8));
                 out.flush();
                 Thread.sleep(100);
             }
         } catch (IOException | InterruptedException e) {
             // The client hanging up is how this test is meant to end; nothing to do.
-        }
-    }
-
-    /**
-     * Answers one request with the beginning of a status line, a byte every tenth of a second, for
-     * half a minute or until the client hangs up.
-     */
-    private static void trickleAStatusLine(ServerSocket socket) {
-        try (Socket connection = socket.accept()) {
-            connection.getInputStream().read(new byte[1024]);
-            OutputStream out = connection.getOutputStream();
-            long until = System.nanoTime() + Duration.ofSeconds(30).toNanos();
-            while (System.nanoTime() < until) {
-                out.write('H');
-                out.flush();
-                Thread.sleep(100);
-            }
-        } catch (IOException | InterruptedException e) {
-            // The client hanging up is how this test is meant to end; nothing to do.
-        }
-    }
-
-    /** Takes every connection and never writes a byte, until the socket is closed. */
-    private static void acceptAndSayNothing(ServerSocket socket) {
-        List<Socket> held = new ArrayList<>();
-        try {
-            while (true) {
-                held.add(socket.accept());
-            }
-        } catch (IOException closed) {
-            // Closing the socket is how this ends.
-        } finally {
-            for (Socket connection : held) {
-                try {
-                    connection.close();
-                } catch (IOException ignored) {
-                    // Nothing left to do with it.
-                }
-            }
         }
     }
 

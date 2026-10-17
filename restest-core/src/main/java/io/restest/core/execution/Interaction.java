@@ -122,6 +122,19 @@ public record Interaction(
     }
 
     /**
+     * Whether this attempt was sent on a connection open to the API and got no reply before RESTest
+     * stopped waiting: the API had the request and sat on it.
+     *
+     * <p>Here rather than worked out by each part that asks - the rule that reports such a request,
+     * and the run that counts them to say what its address did.
+     */
+    public boolean timedOutWaitingForAReply() {
+        return outcome instanceof InteractionOutcome.TransportFailure failure
+                && failure.timedOutWaitingFor().orElse(null)
+                        == InteractionOutcome.TransportFailure.Wait.REPLY;
+    }
+
+    /**
      * What the API answered with, if it answered with anything at all.
      *
      * <p>A reply the tool could not finish reading still has a status code, and it counts. The

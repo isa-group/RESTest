@@ -24,6 +24,8 @@ import static io.restest.cli.ARun.SIXTY_REQUESTS;
 import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static io.restest.cli.ARun.codesIn;
 import static io.restest.cli.ARun.json;
+import static io.restest.cli.ARun.operationsWith;
+import static io.restest.cli.ARun.repliesOfClass;
 import static io.restest.cli.ARun.report;
 import static io.restest.cli.ARun.settingsIn;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,8 +55,8 @@ import org.junit.jupiter.api.io.TempDir;
  * gives a 500. With every check on, a run reports both. The second names three more, and is wrong in
  * every way a check looks for: one answers 503; one takes a required number and answers 200
  * whatever it is sent, so that a request broken on purpose - the number left out, or a word in its
- * place - is accepted; and one answers only after four seconds, long after the second these runs
- * wait for a reply. What is checked here is that each switch reaches the run, that the other checks
+ * place - is accepted; and one answers only after two seconds, long after the half second these
+ * runs wait for a reply. What is checked here is that each switch reaches the run, that the other checks
  * carry on without it, that what the API did is still counted whichever checks are made, and that
  * the run records which were off.
  */
@@ -117,8 +119,8 @@ class CheckSwitchesCommandTest {
             """;
 
     /** How long these runs wait for a reply, and how long the slow operation takes to give one. */
-    private static final String ONE_SECOND_FOR_A_REPLY = "engine.readTimeout=1s";
-    private static final int SLOWER_THAN_THAT_MILLIS = 4000;
+    private static final String HALF_A_SECOND_FOR_A_REPLY = "engine.readTimeout=500ms";
+    private static final int SLOWER_THAN_THAT_MILLIS = 2000;
 
     private static WireMockServer api;
 
@@ -226,12 +228,9 @@ class CheckSwitchesCommandTest {
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
         assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 121, 200, 206);
-        JsonValue.JsonObject replies = (JsonValue.JsonObject) report.member("replies").orElseThrow();
-        JsonValue.JsonObject byClass = (JsonValue.JsonObject) replies.member("byClass").orElseThrow();
-        assertThat(byClass.member("noReply"))
+        assertThat(repliesOfClass(report, "noReply"))
                 .describedAs("a request that got no reply is counted whichever checks are made")
-                .hasValueSatisfying(count -> assertThat(
-                        ((JsonValue.JsonNumber) count).value().intValueExact()).isPositive());
+                .isPositive();
         assertThat(settingsIn(report)).contains("checks.noReplyInTime false command line");
     }
 
@@ -262,19 +261,6 @@ class CheckSwitchesCommandTest {
                 "checks.noReplyInTime true default");
     }
 
-    /** The operations a report counts faults of this kind on. */
-    private static List<String> operationsWith(int code, JsonValue.JsonObject report) {
-        JsonValue.JsonArray rows =
-                (JsonValue.JsonArray) report.member("faultsByOperation").orElseThrow();
-        return rows.elements().stream()
-                .map(JsonValue.JsonObject.class::cast)
-                .filter(row -> ((JsonValue.JsonNumber) row.member("code").orElseThrow()).value()
-                        .intValueExact() == code)
-                .map(row -> ((JsonValue.JsonString) row.member("operation").orElseThrow()).value())
-                .distinct()
-                .toList();
-    }
-
     /** A short run against the stand-in read through this document, and the code it ended with. */
     private static int run(String described, Path directory, StringWriter screen,
             String... settings) throws IOException {
@@ -282,7 +268,7 @@ class CheckSwitchesCommandTest {
         List<String> arguments = new ArrayList<>(List.of("run", document.toString(),
                 "--url", api.baseUrl(), "--budget", "30s",
                 "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
-                "--set", ONE_SECOND_FOR_A_REPLY, "--out", directory.resolve("out").toString()));
+                "--set", HALF_A_SECOND_FOR_A_REPLY, "--out", directory.resolve("out").toString()));
         arguments.addAll(List.of(settings));
         PrintWriter out = new PrintWriter(screen);
         try {

@@ -345,6 +345,7 @@ judges an outcome every run already records.
 
 **The exit codes are unchanged.** A run in which nothing at the address answered still ends with
 `3`, even when it reported `F312` for every request: something that accepts connections and never
-speaks HTTP does exactly that. Its closing line then says that the faults above are requests sent on
-an open connection that never got a reply, beside the advice to check the address, so that neither
-message contradicts the other.
+speaks HTTP does exactly that. Its closing line then says how many of the requests were sent on an
+open connection that never got a reply, beside the advice to check the address, so that neither
+message contradicts the other. The run counts them itself, as it counts the requests answered, so the
+line says so whether or not the check that reports them was made.

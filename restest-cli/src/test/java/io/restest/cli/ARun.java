@@ -106,6 +106,28 @@ final class ARun {
                 .toList();
     }
 
+    /** The operations a report counts faults of this kind on. */
+    static List<String> operationsWith(int code, JsonValue.JsonObject report) {
+        JsonValue.JsonArray rows =
+                (JsonValue.JsonArray) report.member("faultsByOperation").orElseThrow();
+        return rows.elements().stream()
+                .map(JsonValue.JsonObject.class::cast)
+                .filter(row -> ((JsonValue.JsonNumber) row.member("code").orElseThrow()).value()
+                        .intValueExact() == code)
+                .map(row -> text(row, "operation"))
+                .distinct()
+                .toList();
+    }
+
+    /** How many requests a report counts as having ended this way, such as {@code noReply}. */
+    static long repliesOfClass(JsonValue.JsonObject report, String statusClass) {
+        JsonValue.JsonObject replies = (JsonValue.JsonObject) report.member("replies").orElseThrow();
+        JsonValue.JsonObject byClass = (JsonValue.JsonObject) replies.member("byClass").orElseThrow();
+        return byClass.member(statusClass)
+                .map(count -> ((JsonValue.JsonNumber) count).value().longValueExact())
+                .orElse(0L);
+    }
+
     /** Every setting a report states, as "name value source", for reading in a test. */
     static List<String> settingsIn(JsonValue.JsonObject report) {
         JsonValue.JsonArray rows = (JsonValue.JsonArray) report.member("settings").orElseThrow();

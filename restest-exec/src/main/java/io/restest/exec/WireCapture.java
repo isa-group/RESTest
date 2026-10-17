@@ -71,7 +71,8 @@ final class WireCapture implements Interceptor {
         }
 
         /**
-         * Whether a connection to the API is open and no status line has come back on it yet.
+         * Whether a connection to the API is open and no reply's status line and headers have come
+         * back on it yet.
          *
          * <p>This is what tells "the API had the request and said nothing" from "the API was never
          * reached" when time runs out. It is about the connection in use now, not the first one: a
@@ -87,7 +88,10 @@ final class WireCapture implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Slot slot = request.tag(Slot.class);
-        if (slot != null && slot.sent == null) {
+        if (slot == null) {
+            return chain.proceed(request);
+        }
+        if (slot.sent == null) {
             // Only the first one. When redirections are followed this runs once per hop, and the
             // interaction describes the request that started the chain, not the last hop of it.
             slot.sent = record(request, slot.asked);
@@ -95,13 +99,9 @@ final class WireCapture implements Interceptor {
         // The client comes here only once a connection is open, and again for each address it is
         // sent on to. Cleared only when a reply's status line and headers have arrived: a failure
         // on the way out leaves it set, which is the point.
-        if (slot != null) {
-            slot.awaitingAReply = true;
-        }
+        slot.awaitingAReply = true;
         Response response = chain.proceed(request);
-        if (slot != null) {
-            slot.awaitingAReply = false;
-        }
+        slot.awaitingAReply = false;
         return response;
     }
 

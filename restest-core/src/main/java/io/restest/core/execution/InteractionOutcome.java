@@ -126,11 +126,6 @@ public sealed interface InteractionOutcome {
             }
         }
 
-        /** A failure that was not a time limit running out: refused, cut, never sent. */
-        public TransportFailure(String reason) {
-            this(reason, Optional.empty());
-        }
-
         /** What RESTest was still waiting for when one of its time limits ran out. */
         public enum Wait {
 
@@ -141,11 +136,11 @@ public sealed interface InteractionOutcome {
             CONNECTION,
 
             /**
-             * The reply: a connection to the API was open, and no status line had come back, whether
-             * the request was still being sent or had been sent in full. The two cannot be told
-             * apart, and a request still being sent is rare: the bodies RESTest sends are far
-             * smaller than what the computer holds back for a connection, so sending stalls only when
-             * the API stops reading a connection it keeps open.
+             * The reply: a connection to the API was open, and no reply's status line and headers
+             * had come back, whether the request was still being sent or had been sent in full. The
+             * two cannot be told apart, and a request still being sent is rare: the bodies RESTest
+             * sends are far smaller than what the computer holds back for a connection, so sending
+             * stalls only when the API stops reading a connection it keeps open.
              */
             REPLY
         }

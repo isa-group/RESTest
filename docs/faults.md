@@ -298,5 +298,5 @@ with `0`, so that a build server can go red when the API is broken. A run stoppe
 with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found. A run
 in which nothing at the address answered ends with `3`, even when it reported requests that got no
 reply in time: something that takes connections and never speaks HTTP does exactly that, so the run
-says so beside the address.
+says how many such requests there were beside the address.
 [The exit codes](command-line.md#exit-codes) has every number a run can end with.

@@ -16,7 +16,6 @@
 package io.restest.oracles;
 
 import io.restest.core.execution.Interaction;
-import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.model.ApiModel;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
@@ -62,10 +61,7 @@ public final class NoReplyInTimeOracle implements Oracle {
 
     @Override
     public List<Finding> judge(Interaction interaction, ApiModel api) {
-        if (interaction.outcome() instanceof InteractionOutcome.TransportFailure failure
-                && failure.timedOutWaitingFor()
-                        .filter(InteractionOutcome.TransportFailure.Wait.REPLY::equals)
-                        .isPresent()) {
+        if (interaction.timedOutWaitingForAReply()) {
             return List.of(Finding.of(WfcFault.SECURITY_CALL_TIMEOUT, interaction,
                     "no reply within " + seconds(interaction) + ": a connection to the API was "
                             + "open, and no status line came back before RESTest stopped waiting"));
