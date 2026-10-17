@@ -2,10 +2,10 @@
 
 A **fault** is a reply RESTest has a reason to call wrong: the API fell over, it answered with
 something its own document says it would never send, it accepted a request its document says it
-must refuse, or it took a request and never answered at all. Every fault is named by a number from a
-catalogue several testing tools share,
-described in a sentence of RESTest's own, and printed with a `curl` command that sends the same
-request again.
+must refuse, or it took a request and never answered at all. Every fault is named by a number —
+from a catalogue several testing tools share, or, for the few kinds that catalogue has no number
+for, from the range it leaves to each tool — described in a sentence of RESTest's own, and printed
+with a `curl` command that sends the same request again.
 
 This page lists the kinds of fault this version reports, says what each one means and when it is
 reported, how to switch off the check that reports it, and shows how a fault looks on the screen and
@@ -31,17 +31,29 @@ made under another version from 0.9.0 on, match on the key. A report of RESTest 
 under version 0.8.0, has no key: there `F100` and `F200` have the same numbers and names as under
 0.9.0, so their counts compare by number.
 
+**Two kinds are RESTest's own.** The catalogue has no number for a reply whose status code, or
+whose content type, the document does not declare, and leaves the numbers from 900 to 999 to each
+tool for kinds like these. RESTest numbers them `F920` and `F921`, names them in its own words, and
+gives each a key starting with `RESTEST_` — `RESTEST_UNDECLARED_STATUS_CODE` — so that nobody mistakes
+one for a kind every tool agrees on. Another tool may count the same disagreements otherwise:
+EvoMaster and Schemathesis, for one, count both under `F200`. So a count of `F920` or `F921` compares
+only with a count from RESTest, and to set RESTest's `F200` beside theirs, add the two.
+
 ## The kinds this version reports
 
-| Code | The catalogue's name | What it means |
+| Code | Its name | What it means |
 |---|---|---|
 | `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code |
 | `F121` | HTTP Status 5xx Other Than 500 And 501 | The API answered a server error other than 500 and 501, most often `502`, `503` or `504`: something in it, or in front of it, failed while handling the request |
 | `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
+| `F205` | Schema Violation: no-501-if-implemented | The API answered `501 Not Implemented` to an operation its document declares: the document promises something the API does not do |
 | `F206` | Received Success Response When Sending Wrong Data | The API accepted a request RESTest broke on purpose, with one thing in it the document forbids: a required value left out, a word where a number goes, a value off a closed list |
 | `F312` | Call Timeout | The API had a request on an open connection and sent no reply, not even the status line and headers that begin one, before RESTest stopped waiting: whatever handles it is waiting on something that does not answer |
+| `F920` | A Status Code The Document Does Not Declare | The API answered, below 500, with a status code the document does not declare for that operation: `201` where it promises only `200`, a `400` it never mentions. RESTest's own number |
+| `F921` | A Content Type The Document Does Not Declare | The API sent a body, with a status code below 500 the document declares, under a content type the document does not declare for that status code: `application/problem+json` where it promises `application/json`, an HTML error page, a body with no content type at all. RESTest's own number |
 
-The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
+The names of `F920` and `F921` are RESTest's, since the catalogue has none; every other name is the
+catalogue's. The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
 after it was deleted, security problems — and this version reports none of them. A run that finds
 nothing wrong has found none of the kinds above whose check was on, and says nothing about the rest.
 
@@ -51,7 +63,7 @@ Reported for every reply whose status code is exactly 500, whatever was sent to 
 request, a value nobody sensible would send, a request with one thing changed.
 
 - **Only 500.** A server error other than 500 and 501 is a kind of its own, `F121`, below. 501, *not
-  implemented*, is about what the document promises rather than a crash, and no check reports it.
+  implemented*, is about what the document promises rather than a crash, and is `F205`'s.
 - **It is a reason to look, not a verdict.** An API can answer 500 because its database is down or
   because another service it calls is not answering, neither of which is a bug in the API itself.
 
@@ -72,8 +84,8 @@ one that fell over.
 - **A 503 that asks the run to wait is reported too.** An API that cannot keep up may answer 503
   with a `Retry-After` header; RESTest does not wait yet ([known
   limitations](known-limitations.md#pointed-at-somebody-elses-api)), so each such reply is a fault.
-- **501 is left alone**, as for `F100`, and so is a code of 600 or more, which is no server error
-  whatever its first digit.
+- **501 is `F205`'s**, as for `F100`, and a code of 600 or more is left alone, since it is no server
+  error whatever its first digit.
 
 ### `F200`, a reply of the wrong shape
 
@@ -100,6 +112,30 @@ without it is not wrong for that, even where the document calls it required.
 One thing a document can say is never checked: `format`. Saying a piece of text is a `date` or an
 `email` is, in the standard, a note to the reader rather than a rule, and tools disagree about which
 ones to enforce.
+
+### `F205`, not implemented
+
+Reported for every reply of `501 Not Implemented` to an operation the document declares, whatever was
+sent to get it, and whether or not the document lists 501 among that operation's replies: a document
+that promises an operation, and also says it may not be implemented, has still promised something
+the API does not do.
+
+From a minute's run of an API that answers 501 when it has nothing to return:
+
+```
+F205  Schema Violation: no-501-if-implemented
+      getProblemByCode - GET http://127.0.0.1:63555/api/problem/6HACrYMhxNLbntrqPJwCDiUyltki3RWaR7HwBcToEDWo8GPYlEnXZ5NMv  ->  501
+      the API answered 501, not implemented, to an operation its document declares
+      curl -i -X GET 'http://127.0.0.1:63555/api/problem/6HACrYMhxNLbntrqPJwCDiUyltki3RWaR7HwBcToEDWo8GPYlEnXZ5NMv' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+```
+
+- **The document or the API has something to fix.** Most often the operation was written into the
+  document before it was built, or taken out of the code and left in the document. Or the API uses
+  501 for something else: the API above answers it when it has nothing to return, where `404` is
+  what HTTP means.
+- **A 501 to anything the document does not declare is left alone**: that is an API saying,
+  correctly, that it does not do something nobody said it did. RESTest only sends what the document
+  declares, so today every 501 it meets is one of these faults.
 
 ### `F206`, a broken request accepted
 
@@ -188,6 +224,76 @@ behind](report.md#findingsinteractionoutcome)):
 - **The `curl` waits as long as the API does.** It has no limit of its own: add `--max-time 35` to
   try it without waiting for ever.
 
+### `F920`, a status code the document does not declare
+
+Reported for every reply whose status code the document does not declare for its operation, below
+500. A status code counts as declared when the document names it, names its range — `4XX` — or
+gives a `default` reply, which covers every code it does not name.
+
+From a minute's run of kafka-rest-proxy, whose document lists no `404` for reading a consumer group:
+
+```
+F920  A Status Code The Document Does Not Declare
+      getKafkaConsumerGroup - GET http://127.0.0.1:54253/v3/clusters/5L6g3nShT-eMCtK--X86sw/consumer-groups/consumer-group-1  ->  404
+      the API answered 404, which the document does not declare for this operation; it declares 200, 400, 401, 403, 429, 5XX
+      curl -i -X GET 'http://127.0.0.1:54253/v3/clusters/5L6g3nShT-eMCtK--X86sw/consumer-groups/consumer-group-1' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+```
+
+The sentence lists what the document declares for the operation, in its own order and words, ranges
+and `default` included.
+
+- **It is the noisiest check, and seldom wrong.** Documents often list the replies an operation gives
+  when all goes well and leave out the ways it refuses: a `400` for a body it cannot read, a `404` for
+  something that is not there. Every request that meets one is a fault, so a document that leaves
+  out its refusals gets many. Each is still a place where the document says less than the API does,
+  and the fix is usually a line in the document — or, if the API should not answer that, in the API.
+- **A refusal of a request broken on purpose counts too.** A request RESTest broke on purpose expects
+  a refusal, and a refusal with a status code the document leaves out is still one it leaves out.
+- **What is left alone.**
+  - A server error, 500 and up: `F100`, `F205` and `F121` report those, so no reply is counted
+    twice over its status code.
+  - An operation whose document declares no reply at all, since it has promised none.
+  - An operation RESTest could not read in full: a reply the document declares, and RESTest could
+    not read, would otherwise look undeclared. The run lists what it could not read before it
+    starts.
+  - A reply to a request whose body RESTest sent, on purpose, under a media type the operation does
+    not accept: a document is not expected to describe how an API refuses a body it never promised
+    to take.
+- **Too many to read?** Declare the replies the API really gives, or switch the check off in one line
+  (`checks.undeclaredStatusCode`).
+
+### `F921`, a content type the document does not declare
+
+Reported for every reply with a body, and a status code below 500 the document declares, whose
+`Content-Type` the document does not declare for that status code — or that comes with no
+`Content-Type` at all. The comparison is the one HTTP makes: case and parameters such as `charset`
+do not count, and a range the document declares, `application/*`, covers every type it names.
+
+From a minute's run of pet-clinic, whose document declares its refusals as `application/json`:
+
+```
+F921  A Content Type The Document Does Not Declare
+      updateOwner - PUT http://127.0.0.1:50767/petclinic/api/owners/1  ->  400
+      the API answered 400 as application/problem+json, which the document does not declare for that status; it declares application/json
+      curl -i -X PUT 'http://127.0.0.1:50767/petclinic/api/owners/1' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"firstName":"David","lastName":"","address":"2387 S. Fair Way","city":"Waunakee","telephone":"6085555487"}'
+```
+
+- **A type that only resembles a declared one does not count.** `application/problem+json`, the
+  standard form of an error reply that Spring Boot and others send, is JSON, but it is not
+  `application/json`: a program asking for the one has not been told to expect the other. Declare it
+  in the document where the API sends it.
+- **What is left alone.**
+  - A reply with no body, whatever type it names: an answer to `HEAD`, a `204`.
+  - A status code the document does not declare, which is `F920`'s, and one it declares with no
+    content type at all, even when a body comes: the document described that reply only in words.
+  - A document that declares `*/*`, which promises no type in particular — and is what a Swagger 2.0
+    document that says nothing about types is read as.
+  - A server error, an operation RESTest could not read in full, and a reply to a body sent under a
+    media type the operation does not accept, as for `F920`.
+- **What the API wrote is quoted cut short.** The fault quotes the content type as the API sent it,
+  cut at 100 characters, with anything that would move a terminal's cursor or change its colours
+  replaced by `?`.
+
 ## Switching a check off
 
 Each kind of fault is reported by one check, and each check can be switched off for a whole run, in
@@ -212,7 +318,7 @@ that check off:
 
 Each switch is named for what is wrong with what came back, or did not, and [the
 switches](switches.md#judging-what-came-back) lists them all, with the kind of fault each turns off
-and a file for each, ready to hand over. All five are on unless somebody says otherwise; like every
+and a file for each, ready to hand over. All eight are on unless somebody says otherwise; like every
 setting, they can also be given in a file of settings or in the environment ([the
 settings](settings.md#checks)).
 

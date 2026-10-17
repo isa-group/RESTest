@@ -17,7 +17,8 @@ F100  HTTP Status 500
 ```
 
 - `F100  HTTP Status 500` is the kind of fault: a number from a catalogue several testing tools
-  share, and the catalogue's name for it.
+  share, and the catalogue's name for it. A number from 900 up, such as `F920`, is one of the few
+  kinds the catalogue has no number for, numbered and named by RESTest itself.
 - The second line is the request: the operation, by the name the document gives it, then the method
   and the address, and after the arrow what the API answered. This one asked for a visit by an
   identifier far larger than any number the clinic can hold, and instead of refusing it, the clinic

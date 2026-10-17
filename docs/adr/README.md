@@ -88,3 +88,4 @@ so records written from now on cite none.
 | [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place; RESTest's own list to push with is the one keyed by kind of value | Accepted, amended on 13 October 2026 |
 | [0034](0034-version-2-of-the-plans-format.md) | Version 2 of the plan's format: a strategy says its kind, a source has two forms, a group is a map of weights | Accepted |
 | [0035](0035-json-schemas-of-the-dictionary-and-the-plan.md) | The dictionary and the plan have published JSON Schemas, held to their readers | Accepted |
+| [0036](0036-kinds-of-fault-restest-numbers-itself.md) | Kinds of fault RESTest numbers itself: `F920` and `F921`, in the range the catalogue leaves to tools | Accepted |

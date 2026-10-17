@@ -136,7 +136,7 @@ throughout:
 | Key | Value | What it says |
 |---|---|---|
 | `tool` | object | Which program wrote the file |
-| `faultCatalogue` | object | Which catalogue the fault codes come from, and which version of it |
+| `faultCatalogue` | object | Which catalogue the fault codes come from, and which version of it. A code from 900 to 999 is RESTest's own instead, for a kind the catalogue has no number for |
 | `createdAt` | moment | When the report was written |
 | `api` | object | Which API was tested, and where |
 | `cutShort` | `true` or `false` | `true` when the run was stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget ran out. Every number in the file is then what the run found until it was stopped |
@@ -167,6 +167,10 @@ throughout:
 |---|---|---|
 | `name` | text | `Web Fuzzing Commons` |
 | `version` | text | The version of its fault catalogue the codes were taken from: `0.9.0` |
+
+The catalogue leaves the codes from 900 to 999 to each tool. The two RESTest uses, `920` and `921`,
+are its own: their names are RESTest's, their keys start with `RESTEST_`, and they mean nothing to
+another tool ([the faults](faults.md#the-catalogue)).
 
 ### `api`
 
@@ -312,10 +316,10 @@ In the order the kinds were first found.
 
 | Key | Value | What it says |
 |---|---|---|
-| `code` | number | The catalogue number: `100` for `F100` |
-| `id` | text | The catalogue's key for the kind, `HTTP_STATUS_500` for `F100`, which it says is meant never to change; the key to match on when comparing with a report made under another version of the catalogue from 0.9.0 on. Reports written under 0.8.0, by RESTest 2.0 and 2.1, have none |
-| `descriptiveName` | text | The catalogue's name for the kind |
-| `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it |
+| `code` | number | The catalogue number: `100` for `F100`; or, from 900 to 999, RESTest's own: `920` for `F920` |
+| `id` | text | The catalogue's key for the kind, `HTTP_STATUS_500` for `F100`, which it says is meant never to change; the key to match on when comparing with a report made under another version of the catalogue from 0.9.0 on. Reports written under 0.8.0, by RESTest 2.0 and 2.1, have none. For one of RESTest's own kinds, a key of RESTest's starting with `RESTEST_`: `RESTEST_UNDECLARED_STATUS_CODE` |
+| `descriptiveName` | text | The catalogue's name for the kind, or RESTest's for one of its own |
+| `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it, or RESTest's for one of its own |
 | `label` | text | Number and name in one: `F100:HTTP Status 500` |
 | `count` | number | How many faults of this kind |
 
@@ -326,8 +330,8 @@ many faults came back with an ordinary `2xx`.
 
 | Key | Value | What it says |
 |---|---|---|
-| `code` | number | The catalogue number |
-| `id` | text | The catalogue's key for the kind |
+| `code` | number | The catalogue number, or RESTest's own from 900 to 999 |
+| `id` | text | The catalogue's key for the kind, or RESTest's, starting with `RESTEST_` |
 | `label` | text | Number and name in one |
 | `statusClass` | text | `2xx`, `5xx` and so on, or `noReply` |
 | `count` | number | How many faults |
@@ -339,8 +343,8 @@ One row for each operation and kind of fault. Complete: every pair that went wro
 | Key | Value | What it says |
 |---|---|---|
 | `operation` | text | The operation |
-| `code` | number | The catalogue number |
-| `id` | text | The catalogue's key for the kind |
+| `code` | number | The catalogue number, or RESTest's own from 900 to 999 |
+| `id` | text | The catalogue's key for the kind, or RESTest's, starting with `RESTEST_` |
 | `label` | text | Number and name in one |
 | `count` | number | How many faults of this kind on this operation |
 | `writtenInFull` | number | How many of them are written out under `findings` |
@@ -371,10 +375,10 @@ in a run from having nothing written about it.
 
 | Key | Value | What it says |
 |---|---|---|
-| `code` | number | The catalogue number |
-| `id` | text | The catalogue's key for the kind |
-| `descriptiveName` | text | The catalogue's name for the kind |
-| `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it |
+| `code` | number | The catalogue number, or RESTest's own from 900 to 999 |
+| `id` | text | The catalogue's key for the kind, or RESTest's, starting with `RESTEST_` |
+| `descriptiveName` | text | The catalogue's name for the kind, or RESTest's for one of its own |
+| `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it, or RESTest's for one of its own |
 | `label` | text | Number and name in one |
 
 ### `findings[].interaction`

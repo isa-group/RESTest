@@ -152,11 +152,40 @@ final class Attempts {
                         "read it again: the API said it deleted it, so it should be gone"));
     }
 
-    private static TestCase testCase(OperationId operation) {
+    /**
+     * This test case, sent as this request, and answered with this status, these headers and this
+     * body, or none.
+     */
+    static Interaction replied(TestCase testCase, HttpRequestRecord request, int status,
+            List<Header> headers, Optional<Payload> body) {
+        return Interaction.answered(testCase, request,
+                new HttpResponseRecord(StatusLine.of(status), headers, body),
+                Instant.EPOCH, Duration.ofMillis(11));
+    }
+
+    /** A request with a body, sent under the given media type. */
+    static HttpRequestRecord sentWithBody(HttpMethod method, String url, String mediaType) {
+        return new HttpRequestRecord(method, BASE + url,
+                List.of(Header.of("Content-Type", mediaType)),
+                Optional.of(Payload.text("{\"name\":\"Rex\"}", mediaType)));
+    }
+
+    /** A request with no body. */
+    static HttpRequestRecord sentWithoutBody(HttpMethod method, String url) {
+        return HttpRequestRecord.of(method, BASE + url);
+    }
+
+    /** A body of the given kind, as a reply carries it. */
+    static Optional<Payload> body(String text, String mediaType) {
+        return Optional.of(Payload.text(text, mediaType));
+    }
+
+    /** A request made from nothing, to the given operation. */
+    static TestCase testCase(OperationId operation) {
         return TestCase.of(operation, List.of());
     }
 
     private static HttpRequestRecord request(String url) {
-        return HttpRequestRecord.of(HttpMethod.GET, BASE + url);
+        return sentWithoutBody(HttpMethod.GET, url);
     }
 }

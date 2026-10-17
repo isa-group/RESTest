@@ -93,8 +93,11 @@ in the catalogue [the faults](faults.md) describes.
 | `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`) |
 | `checks.otherServerError` | `true` | Another server error | never reports a reply of a server error other than 500 and 501, such as 502, 503 or 504, as a fault (`F121`) |
 | `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
+| `checks.notImplemented` | `true` | Not implemented | never reports a reply of 501, not implemented, to an operation the document declares, as a fault (`F205`); such replies are still counted under `serverErrors` |
 | `checks.invalidDataAccepted` | `true` | A broken request accepted | never reports a request broken on purpose, with one thing in it the document forbids, that the API accepted (`F206`) |
 | `checks.noReplyInTime` | `true` | No reply in time | never reports a request that got no reply, on a connection open to the API, before RESTest stopped waiting, as a fault (`F312`); such requests are still counted under `noReply` |
+| `checks.undeclaredStatusCode` | `true` | An undeclared status code | never reports a reply whose status code, below 500, the document does not declare for its operation (`F920`) |
+| `checks.undeclaredContentType` | `true` | An undeclared content type | never reports a reply with a body whose content type the document does not declare for its status code, below 500 (`F921`) |
 
 No check decides what a run sends: switching one off changes which replies are called faults, and
 so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
@@ -276,6 +279,13 @@ checks:
   replyOffSchema: false
 ```
 
+**Not implemented** — `F205`
+
+```yaml
+checks:
+  notImplemented: false
+```
+
 **A broken request accepted** — `F206`
 
 ```yaml
@@ -288,6 +298,20 @@ checks:
 ```yaml
 checks:
   noReplyInTime: false
+```
+
+**An undeclared status code** — `F920`
+
+```yaml
+checks:
+  undeclaredStatusCode: false
+```
+
+**An undeclared content type** — `F921`
+
+```yaml
+checks:
+  undeclaredContentType: false
 ```
 
 ## Switching off a whole family

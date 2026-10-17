@@ -28,8 +28,8 @@ package io.restest.core.oracle;
  *
  * <p>This is an interface rather than a plain list for one reason: the catalogue reserves the 900s
  * for codes a tool defines for itself, for the kinds of fault nobody has agreed a shared name for
- * yet. {@link WfcFault} is the published list; anything RESTest adds later takes its place beside
- * it without any of this having to change.
+ * yet. {@link WfcFault} is the published list, and {@link RestestFault} the kinds RESTest numbers
+ * itself, beside it; a report counts and writes both the same way.
  */
 public interface FaultCategory {
 

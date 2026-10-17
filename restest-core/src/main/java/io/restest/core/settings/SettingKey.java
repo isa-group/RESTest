@@ -371,12 +371,21 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("checks", "replyOffSchema", SettingKind.YES_OR_NO,
                     "report a reply whose body is not the shape the document gives for its status "
                             + "code and media type (F200)"),
+            key("checks", "notImplemented", SettingKind.YES_OR_NO,
+                    "report a reply of 501, not implemented, to an operation the document declares "
+                            + "(F205)"),
             key("checks", "invalidDataAccepted", SettingKind.YES_OR_NO,
                     "report a request broken on purpose, with one thing the document forbids, "
                             + "that the API accepted (F206)"),
             key("checks", "noReplyInTime", SettingKind.YES_OR_NO,
                     "report a request that got no reply, on a connection open to the API, before "
                             + "RESTest stopped waiting (F312)"),
+            key("checks", "undeclaredStatusCode", SettingKind.YES_OR_NO,
+                    "report a reply whose status code, below 500, the document does not declare for "
+                            + "the operation (F920)"),
+            key("checks", "undeclaredContentType", SettingKind.YES_OR_NO,
+                    "report a reply with a body whose content type the document does not declare "
+                            + "for its status code, below 500 (F921)"),
 
             key("report", "writeUpsPerOperationAndKind", SettingKind.WHOLE_NUMBER,
                     "how many faults of one kind, on one operation, are written out whole"),

@@ -39,8 +39,8 @@ import java.util.List;
  * gateway or a load balancer says when something in front of the API is unwell, which is weaker
  * evidence of a bug in the API's code, so they are a kind of fault of their own, reported by {@link
  * OtherServerErrorOracle} and switched off apart from this one. 501, "not implemented", is about
- * what the document promises rather than about a crash, and belongs with the oracle that checks the
- * status code against the document. Keeping each kind to the number the catalogue gives it is also
+ * what the document promises rather than about a crash, and {@link NotImplementedOracle} reports it.
+ * Keeping each kind to the number the catalogue gives it is also
  * what makes a RESTest fault count comparable with other tools'.
  */
 public final class ServerErrorOracle implements Oracle {

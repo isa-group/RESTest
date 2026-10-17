@@ -15,6 +15,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Pet'
+        "404":
+          description: there is no shelter here
     post:
       operationId: addPet
       requestBody:
@@ -30,6 +32,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
+        "400":
+          description: what was sent is not a new pet
+        "404":
+          description: there is no shelter here
   /pets/{petId}:
     get:
       operationId: getPet
@@ -48,6 +54,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
+        "404":
+          description: there is no such pet
   /shelters:
     get:
       operationId: listShelters
@@ -62,6 +70,8 @@ paths:
                 properties:
                   total:
                     type: integer
+        "404":
+          description: there is no shelter here
 components:
   schemas:
     NewPet:

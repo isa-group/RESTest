@@ -25,6 +25,8 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import io.restest.cli.Restest;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.oracle.FaultCategory;
+import io.restest.core.oracle.RestestFault;
 import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.SettingKey;
 import java.io.IOException;
@@ -38,10 +40,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -50,7 +52,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -288,20 +289,24 @@ class DocumentedReportTest {
     }
 
     @Test
-    @DisplayName("the faults page lists exactly the kinds of fault RESTest's rules can report, by "
-            + "the catalogue's names")
+    @DisplayName("the faults page lists exactly the kinds of fault RESTest's rules can report, the "
+            + "catalogue's and RESTest's own, by their names")
     void the_faults_page_lists_what_the_rules_report() {
         JavaClasses rules = new ClassFileImporter()
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
                 .importPackages("io.restest.oracles");
-        Set<String> kinds = Arrays.stream(WfcFault.values()).map(Enum::name)
-                .collect(Collectors.toSet());
+        Map<String, FaultCategory> kinds = new HashMap<>();
+        for (WfcFault kind : WfcFault.values()) {
+            kinds.put(WfcFault.class.getName() + "." + kind.name(), kind);
+        }
+        for (RestestFault kind : RestestFault.values()) {
+            kinds.put(RestestFault.class.getName() + "." + kind.name(), kind);
+        }
         Map<Integer, String> reported = new TreeMap<>();
         rules.forEach(rule -> rule.getFieldAccessesFromSelf().stream()
-                .filter(access -> access.getTargetOwner().isEquivalentTo(WfcFault.class))
-                .map(access -> access.getTarget().getName())
-                .filter(kinds::contains)
-                .map(WfcFault::valueOf)
+                .map(access -> kinds.get(access.getTargetOwner().getName() + "."
+                        + access.getTarget().getName()))
+                .filter(Objects::nonNull)
                 .forEach(kind -> reported.put(kind.code(), kind.descriptiveName())));
 
         assertThat(reported)

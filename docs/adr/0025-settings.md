@@ -747,3 +747,18 @@ and not the engine's limit it depends on, which is `engine.readTimeout`, `engine
 `engine.callTimeout`, whichever runs out first. How long the engine waits stays where it was, among the engine's
 settings; this switch only decides whether a wait that ran out is called a fault. The group keeps the
 catalogue's order. Ninety-four settings in nine groups.
+
+## Amendment (17 October 2026): three checks on what the document declares
+
+**Date:** 2026-10-17
+
+`checks.notImplemented` turns off the check that reports a reply of 501 to an operation the document
+declares (`F205`); `checks.undeclaredStatusCode` the check that reports a reply whose status code,
+below 500, the document does not declare for its operation (`F920`); and
+`checks.undeclaredContentType` the check that reports a reply with a body whose content type the
+document does not declare for its status code (`F921`). All three are on by default, decided by the
+maintainer on 17 October 2026, and named for what is wrong with what came back, as the amendment of
+12 October asks. The group keeps the order of the numbers of what its checks report, the catalogue's
+first and then RESTest's own ([ADR-0036](0036-kinds-of-fault-restest-numbers-itself.md)), so
+`notImplemented` sits between `replyOffSchema` and `invalidDataAccepted`. Ninety-seven settings in
+nine groups.

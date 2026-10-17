@@ -355,3 +355,70 @@ speaks HTTP does exactly that. Its closing line then says how many of the reques
 open connection that never got a reply, beside the advice to check the address, so that neither
 message contradicts the other. The run counts them itself, as it counts the requests answered, so the
 line says so whether or not the check that reports them was made.
+
+## Amendment (17 October 2026): a 501, and two kinds RESTest numbers itself
+
+**Date:** 2026-10-17
+
+**Three more kinds are reported, each with a switch of its own and on by default**, decided by the
+maintainer on 17 October 2026:
+
+- **`F205`, *no-501-if-implemented***: a reply of 501 to an operation the document declares, whether
+  or not the document lists 501 among its replies, as EvoMaster reports it and Schemathesis exports
+  it (`checks.notImplemented`). Its sentence: *the API answered 501, not implemented, to an operation
+  its document declares*.
+- **`F920`, a status code the document does not declare**: below 500, for an operation that declares
+  at least one reply, a code counting as declared when the document names it, its range or a
+  `default` (`checks.undeclaredStatusCode`). Its sentence names what the document declares, in its
+  order: *the API answered 404, which the document does not declare for this operation; it declares
+  200, 400, 401, 403, 429, 5XX*.
+- **`F921`, a content type the document does not declare**: a reply with a body, with a status code
+  below 500 the document declares with at least one media type other than `*/*`, whose
+  `Content-Type` is not covered — exact, `type/*` or `*/*`, case and parameters aside — or is missing
+  (`checks.undeclaredContentType`). `application/problem+json` is not `application/json`. The value
+  is quoted cut at 100 characters, with control characters replaced, since the API writes it.
+
+`F920` and `F921` are RESTest's own numbers, in the range the catalogue leaves to tools
+([ADR-0036](0036-kinds-of-fault-restest-numbers-itself.md)); their keys start with `RESTEST_`.
+
+**No reply counts twice over its status code.** Neither new rule judges a 5xx, which `F100`, `F205`
+and `F121` report, so no reply is both a server error and an undeclared status code or content type.
+EvoMaster and Schemathesis do count an undeclared 500 twice. A reply can still be two faults where
+two rules ask different questions: `F100` and `F200`, as before; `F206` and `F920`, a request broken
+on purpose accepted with a success code the document does not declare; `F206` and `F921`. `F920`
+and `F921` never meet, nor `F200` and `F921`: the content type is judged only under a declared
+status code, and the shape only under a declared content type.
+
+**What is left alone, so that nothing uncertain is claimed:** an operation the document does not
+declare; one that declares no reply at all; one RESTest read only in part — any operation a
+`DEGRADED` issue names, since a reply it declares and RESTest could not read would otherwise look
+undeclared; a reply to a request whose body went under a media type the operation does not accept
+([ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s amendment of the same day); and for
+`F921`, a reply with no body. The first is coarser than it needs to be: an operation renamed because
+the document repeats its identifier is `DEGRADED` too, and loses the check with nothing wrong in its
+replies.
+
+**What one minute on each of fifteen APIs of the Web Fuzzing Dataset said**, seed 42, 3,553,050
+requests, each run's counts checked against a replay of the three rules written apart from
+RESTest's code, which agreed on every operation of fourteen APIs and on the fifteenth but for the
+eight operations the coarseness above skipped:
+
+| Kind | Faults | APIs | What there is to fix | Read by hand |
+|---|---|---|---|---|
+| `F920` | 1,443,634 | 13 | 205 pairs of operation and status code: 400 in 93, 404 in 59, 204 in 14, 422 in 9, 201 in 7, 302 in 6, 403 in 6, 406 in 4, 414 in 3, 415 in 3, 409 in 1 | 20 of 20 real: refusals the document leaves out, a 204 where a generated document says 200 |
+| `F921` | 16,933 | 2 | 44 pairs of operation, status code and type: `application/problem+json` for `application/json` in 25, `text/html` error pages in 19 | 20 of 20 real |
+| `F205` | 21,419 | 1 | 1 operation, which answers 501 when it has nothing to return | 5 of 5 real |
+
+One run's exit code changed: bibliothek's only faults are `F920`, 580,699 of them on 14 pairs, so it
+ends with `1` where it ended with `0`. Every other run already ended with `1`. The new kinds are up to
+87% of a run's requests, and the screen writes out the first fifty faults of any kind, so on one API
+the fifty were all `F920` and `F205` and none of its 10,902 replies of 500
+([the known limitations](../known-limitations.md#what-a-run-says) say so).
+
+**What they cost is below what a minute's run can measure.** On bibliothek, where 87.5% of the
+requests met one of the new kinds, three runs with the three checks on and three with them off,
+alternated, a minute each, sent 0.3% more requests on average with them on (pair by pair +1.7%,
+-0.7% and -0.3%), and were idle about 1% of the time either way. The same on swagger-petstore, where
+none was met, moved by -1.5%, -15.4% and -0.5%: a difference of that size is the noise of one-minute
+runs, not the checks. A single run of each of the fifteen APIs with the checks off sent 6.9% more
+requests in all, swagger-petstore again among the largest differences with nothing to report.

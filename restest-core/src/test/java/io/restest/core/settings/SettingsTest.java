@@ -69,7 +69,7 @@ class SettingsTest {
         @DisplayName("every check is made unless somebody switches it off")
         void every_check_is_on_by_default() {
             assertThat(Settings.defaults().checks())
-                    .isEqualTo(new CheckSettings(true, true, true, true, true));
+                    .isEqualTo(new CheckSettings(true, true, true, true, true, true, true, true));
         }
 
         @Test
@@ -358,19 +358,24 @@ class SettingsTest {
 
         @ParameterizedTest
         @CsvSource({
-                "checks.internalServerError, false, true, true, true, true",
-                "checks.otherServerError, true, false, true, true, true",
-                "checks.replyOffSchema, true, true, false, true, true",
-                "checks.invalidDataAccepted, true, true, true, false, true",
-                "checks.noReplyInTime, true, true, true, true, false"})
+                "checks.internalServerError, false, true, true, true, true, true, true, true",
+                "checks.otherServerError, true, false, true, true, true, true, true, true",
+                "checks.replyOffSchema, true, true, false, true, true, true, true, true",
+                "checks.notImplemented, true, true, true, false, true, true, true, true",
+                "checks.invalidDataAccepted, true, true, true, true, false, true, true, true",
+                "checks.noReplyInTime, true, true, true, true, true, false, true, true",
+                "checks.undeclaredStatusCode, true, true, true, true, true, true, false, true",
+                "checks.undeclaredContentType, true, true, true, true, true, true, true, false"})
         @DisplayName("is switched off in one line, and the other checks stay on")
         void one_check_is_switched_off_alone(String key, boolean internalServerError,
-                boolean otherServerError, boolean replyOffSchema, boolean invalidDataAccepted,
-                boolean noReplyInTime) {
+                boolean otherServerError, boolean replyOffSchema, boolean notImplemented,
+                boolean invalidDataAccepted, boolean noReplyInTime, boolean undeclaredStatusCode,
+                boolean undeclaredContentType) {
             Settings changed = Settings.from(Map.of(key, "false"));
 
             assertThat(changed.checks()).isEqualTo(new CheckSettings(internalServerError,
-                    otherServerError, replyOffSchema, invalidDataAccepted, noReplyInTime));
+                    otherServerError, replyOffSchema, notImplemented, invalidDataAccepted,
+                    noReplyInTime, undeclaredStatusCode, undeclaredContentType));
             assertThat(changed.written(SettingKey.named(key).orElseThrow())).isEqualTo("false");
         }
     }

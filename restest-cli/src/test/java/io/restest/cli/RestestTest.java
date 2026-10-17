@@ -223,9 +223,8 @@ class RestestTest {
                 "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1", "--out",
                 directory.toString());
 
-        // Nothing is stubbed under that prefix, so every reply is a 404 - which no oracle in this
-        // version complains about, because a document that does not describe 404 has not been
-        // contradicted by one.
+        // Nothing is stubbed under that prefix, so every reply is a 404, which the document
+        // declares for every operation.
         assertThat(answer).isZero();
         assertThat(screen.toString()).contains("no faults found");
     }
@@ -565,7 +564,7 @@ class RestestTest {
                       operationId: getVet
                       parameters:
                         - {name: vetId, in: path, required: true, schema: {type: integer, minimum: 1, maximum: 9}}
-                      responses: {'200': {description: one vet}}
+                      responses: {'200': {description: one vet}, '404': {description: no such vet}}
                   /clinics/{clinicId}/vets/{vetId}:
                     get:
                       operationId: getVet

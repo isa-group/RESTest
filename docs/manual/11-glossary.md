@@ -13,7 +13,8 @@ whole of it is used, reading the document included.
 
 **Catalogue.** The numbered list of kinds of fault that several API testing tools share, the [Web
 Fuzzing Commons](https://github.com/WebFuzzing/Commons) fault catalogue. `F100`, `F121`, `F200`,
-`F206` and `F312` come from it.
+`F205`, `F206` and `F312` come from it. It leaves the numbers from 900 to 999 to each tool, and
+`F920` and `F921` are RESTest's own, for kinds it has no number for.
 
 **Cut short.** Said of a run stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget
 ran out. What it reports is what it found until then.
@@ -25,9 +26,10 @@ ran out. What it reports is what it found until then.
 the run could not do its job. See [chapter 9](09-exit-codes-and-ci.md).
 
 **Fault.** A reply RESTest has a reason to call wrong: a reply of 500 (`F100`), another server error
-(`F121`), one whose body is not the shape the document gives it (`F200`), a success in answer to a
-request broken on purpose (`F206`), or none at all to a request the API took (`F312`). A reason to
-look, not a verdict.
+(`F121`), one whose body is not the shape the document gives it (`F200`), a 501 to an operation the
+document declares (`F205`), a success in answer to a request broken on purpose (`F206`), none at all
+to a request the API took (`F312`), or a status code (`F920`) or content type (`F921`) the document
+does not declare. A reason to look, not a verdict.
 
 **Idle.** The share of a run during which RESTest had no request in flight. Reported on every run,
 and kept as close to nothing as possible.

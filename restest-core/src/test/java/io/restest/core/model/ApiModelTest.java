@@ -256,6 +256,24 @@ class ApiModelTest {
     }
 
     @Test
+    @DisplayName("an operation is read in part only when something about it was set aside and the "
+            + "operation kept, not when it was skipped whole or the issue was the document's")
+    void an_operation_read_in_part() {
+        OperationId listPets = OperationId.of("listPets");
+        OperationId deletePet = OperationId.of("deletePet");
+        ApiModel api = ApiModel.of("Pets", "1.0", List.of()).withIssues(List.of(
+                SpecificationIssue.degraded("paths./pets.get", listPets,
+                        "the response '404' is a reference that does not resolve"),
+                SpecificationIssue.skipped("paths./pets/{id}.delete", deletePet,
+                        "the schema does not resolve"),
+                SpecificationIssue.document("info", "no version declared")));
+
+        assertThat(api.readInPart(listPets)).isTrue();
+        assertThat(api.readInPart(deletePet)).isFalse();
+        assertThat(api.readInPart(OperationId.of("getPet"))).isFalse();
+    }
+
+    @Test
     @DisplayName("a default that is itself a template does not depend on declaration order")
     void variables_are_substituted_in_one_pass() {
         Map<String, ServerVariable> variables = new java.util.LinkedHashMap<>();
