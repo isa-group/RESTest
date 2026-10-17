@@ -34,6 +34,7 @@ import io.restest.core.settings.SettingKey;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -41,6 +42,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * The switches that turn off one check on what an API sends back, seen from the command line.
@@ -247,6 +250,34 @@ class CheckSwitchesCommandTest {
         assertThat(operationsWith(205, report)).containsExactly("listClinics");
         assertThat(operationsWith(920, report)).containsExactly("listVets");
         assertThat(operationsWith(921, report)).containsExactly("listVisits");
+        assertThat(screen.toString()).contains(
+                " x F205  Schema Violation: no-501-if-implemented",
+                " x F920  A Status Code The Document Does Not Declare",
+                " x F921  A Content Type The Document Does Not Declare");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "checks.notImplemented, 205",
+            "checks.undeclaredStatusCode, 920",
+            "checks.undeclaredContentType, 921"})
+    @DisplayName("each check on what the document declares, switched off alone, takes its own kind "
+            + "off the screen and out of the report, and no other")
+    void each_check_of_what_the_document_declares_off_alone(String check, int code,
+            @TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY,
+                "--set", check + "=false");
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        List<Integer> others = new ArrayList<>(List.of(205, 920, 921));
+        others.remove(Integer.valueOf(code));
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(codesIn(report)).doesNotContain(code).containsAll(others);
+        assertThat(screen.toString()).doesNotContain(" x F" + code + " ");
+        others.forEach(other -> assertThat(screen.toString()).contains(" x F" + other + " "));
+        assertThat(settingsIn(report)).contains(check + " false command line");
     }
 
     @Test

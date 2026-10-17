@@ -34,7 +34,7 @@ import java.util.Optional;
  * command that reproduces it, without having to go and look anything up. Findings are rare next to
  * requests, so keeping the evidence beside the verdict costs little.
  *
- * @param category  which kind of fault this is, by its catalogue number
+ * @param category  which kind of fault this is, by its number
  * @param context  an optional word telling apart two findings of the same kind, where a catalogue
  *                 entry covers more than one way a thing can go wrong. Empty here; the oracles that
  *                 need it arrive later

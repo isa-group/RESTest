@@ -34,8 +34,9 @@ package io.restest.core.oracle;
 public interface FaultCategory {
 
     /**
-     * The catalogue number, for example {@code 100}. Within one version of the catalogue this is
-     * what tells one kind of fault from another, and what a person reads and writes.
+     * The catalogue number, for example {@code 100}, or, from 900 to 999, a number a tool gives a
+     * kind of its own. Within one version of the catalogue this is what tells one kind of fault from
+     * another, and what a person reads and writes.
      */
     int code();
 
@@ -52,14 +53,17 @@ public interface FaultCategory {
         return "RESTEST_" + code();
     }
 
-    /** What the catalogue calls this kind of fault, for example "HTTP Status 500". */
+    /**
+     * What the catalogue calls this kind of fault, for example "HTTP Status 500", or what the tool
+     * calls a kind of its own.
+     */
     String descriptiveName();
 
     /**
      * The name the catalogue suggests for a generated test that reproduces this fault, for example
-     * {@code causes500_internalServerError}. RESTest does not generate test code as its way of
-     * running tests, but it does export it as a report, and the exported name should be the one
-     * other tools use.
+     * {@code causes500_internalServerError}, or the tool's for a kind of its own. RESTest does not
+     * generate test code as its way of running tests, but it does export it as a report, and the
+     * exported name should be the one other tools use.
      */
     String testCaseLabel();
 

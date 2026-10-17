@@ -207,6 +207,9 @@ class UndeclaredContentTypeOracleTest {
                     .doesNotContain("\u001b");
             assertThat(UndeclaredContentTypeOracle.quoted("a\u001b[2Jb\tc"))
                     .isEqualTo("a?[2Jb?c");
+            assertThat(UndeclaredContentTypeOracle.quoted("text/\u202Elmth\u200B"))
+                    .describedAs("what would reverse the text after it, or hide in it, is replaced")
+                    .isEqualTo("text/?lmth?");
             assertThat(UndeclaredContentTypeOracle.quoted("x".repeat(100)))
                     .describedAs("a value as long as what is quoted is quoted whole")
                     .isEqualTo("x".repeat(100));

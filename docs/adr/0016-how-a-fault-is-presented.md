@@ -376,7 +376,8 @@ maintainer on 17 October 2026:
   below 500 the document declares with at least one media type other than `*/*`, whose
   `Content-Type` is not covered — exact, `type/*` or `*/*`, case and parameters aside — or is missing
   (`checks.undeclaredContentType`). `application/problem+json` is not `application/json`. The value
-  is quoted cut at 100 characters, with control characters replaced, since the API writes it.
+  is quoted cut at 100 characters, with control characters and invisible formatting characters
+  replaced, since the API writes it.
 
 `F920` and `F921` are RESTest's own numbers, in the range the catalogue leaves to tools
 ([ADR-0036](0036-kinds-of-fault-restest-numbers-itself.md)); their keys start with `RESTEST_`.
@@ -396,7 +397,8 @@ undeclared; a reply to a request whose body went under a media type the operatio
 ([ADR-0027](0027-changing-one-thing-in-an-accepted-request.md)'s amendment of the same day); and for
 `F921`, a reply with no body. The first is coarser than it needs to be: an operation renamed because
 the document repeats its identifier is `DEGRADED` too, and loses the check with nothing wrong in its
-replies.
+replies. And a reply the parser drops on its own, written as something other than an object, is not
+known to be missing at all, and looks undeclared.
 
 **What one minute on each of fifteen APIs of the Web Fuzzing Dataset said**, seed 42, 3,553,050
 requests, each run's counts checked against a replay of the three rules written apart from

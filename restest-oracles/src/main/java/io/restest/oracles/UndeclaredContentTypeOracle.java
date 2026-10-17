@@ -101,13 +101,15 @@ public final class UndeclaredContentTypeOracle implements Oracle {
 
     /**
      * What the API called its body, as it can safely be written on a screen and in a report:
-     * characters that would move a terminal's cursor or change its colours are replaced, and a value
+     * characters that would move a terminal's cursor or change its colours, and invisible ones that
+     * would change the order or the look of what is shown around them, are replaced, and a value
      * longer than anybody needs to recognise it is cut short.
      */
     static String quoted(String value) {
         StringBuilder written = new StringBuilder();
         value.codePoints().limit(LONGEST_QUOTED).forEach(letter ->
-                written.appendCodePoint(Character.isISOControl(letter) ? '?' : letter));
+                written.appendCodePoint(Character.isISOControl(letter)
+                        || Character.getType(letter) == Character.FORMAT ? '?' : letter));
         if (value.codePointCount(0, value.length()) > LONGEST_QUOTED) {
             written.append("...");
         }

@@ -190,4 +190,6 @@ reason given there: an answer to `HEAD` and a `304` carry no body by the rules o
 
 Neither new rule judges an operation RESTest could not read in full. A reply the document declares
 through a reference that does not resolve is dropped from the canonical model with a warning, and
-would otherwise look undeclared.
+would otherwise look undeclared. A reply the parser drops on its own — written as a word rather than
+an object — leaves only a warning about the document, naming no operation, and does look
+undeclared; [the known limitations](../known-limitations.md#what-a-run-says) say so.

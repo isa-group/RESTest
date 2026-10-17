@@ -65,7 +65,8 @@ catalogue's kinds.
   is comparability: to set RESTest's count of `F200` beside EvoMaster's or Schemathesis's, add
   `F920` and `F921` to it. [The faults](../faults.md#the-catalogue) say so.
 
-**A rule about what a document declares is not a lever, so the convention against counting a 404.**
+**A rule about what a document declares is not a lever, so the convention against counting a 404
+does not apply.**
 RESTest's maintainer asked that no lever which reacts to what an operation answers count a reply that
 depends on the values RESTest made up, such as a `404` to an identifier it guessed. That convention is
 about what a run *sends*: taking budget from an operation for the tool's own mistake. A rule sends

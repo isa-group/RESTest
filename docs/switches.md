@@ -86,7 +86,8 @@ would.
 ### Judging what came back
 
 Each check a run makes on what came back, or did not, reports one kind of fault, named by its number
-in the catalogue [the faults](faults.md) describes.
+in the catalogue [the faults](faults.md) describes, or, for the two kinds the catalogue has no number
+for, by RESTest's own.
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
@@ -129,7 +130,11 @@ it does not.
 | A reply of 500 | One look at the status code of each reply |
 | Another server error | One look at the status code of each reply |
 | A reply off its schema | Checking the body of every JSON reply against the shape the document gives it, which can leave fewer requests sent within the budget ([the faults](faults.md#switching-a-check-off) says why) |
+| Not implemented | One look at the status code of each reply |
 | A broken request accepted | One look at what each request expected, and, for one broken on purpose, at the status code of its reply |
+| No reply in time | One look at how each request that got no reply ended |
+| An undeclared status code | Finding, for each reply below 500, what the document declares for its status code; one minute's runs could not tell it from the noise, even where most replies were reported |
+| An undeclared content type | The same, and a look at the content type of each reply with a body |
 
 What each was measured to be worth while the rewrite was first built is kept with the rest of that
 record, on the

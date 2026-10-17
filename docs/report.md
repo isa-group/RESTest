@@ -186,7 +186,7 @@ another tool ([the faults](faults.md#the-catalogue)).
 | `requests` | number | Requests sent |
 | `operations` | number | Operations at least one request went to |
 | `faults` | number | Faults found, every one |
-| `faultKinds` | number | How many different kinds of fault, by catalogue number |
+| `faultKinds` | number | How many different kinds of fault, by number |
 | `operationsWithFaults` | number | How many operations had at least one fault |
 | `faultsWrittenInFull` | number | How many of the faults are written out whole under `findings` |
 | `faultsCountedOnly` | number | How many are counted and not written out, because their kind on their operation, or the file, had had its share |

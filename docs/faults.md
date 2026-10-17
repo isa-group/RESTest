@@ -37,7 +37,9 @@ tool for kinds like these. RESTest numbers them `F920` and `F921`, names them in
 gives each a key starting with `RESTEST_` — `RESTEST_UNDECLARED_STATUS_CODE` — so that nobody mistakes
 one for a kind every tool agrees on. Another tool may count the same disagreements otherwise:
 EvoMaster and Schemathesis, for one, count both under `F200`. So a count of `F920` or `F921` compares
-only with a count from RESTest, and to set RESTest's `F200` beside theirs, add the two.
+only with a count from RESTest, and to set RESTest's `F200` beside theirs, add the two — roughly,
+since they also count there an undeclared 5xx, which `F920` never judges, and EvoMaster keeps one
+fault per operation where RESTest counts every reply.
 
 ## The kinds this version reports
 
@@ -254,11 +256,17 @@ and `default` included.
     twice over its status code.
   - An operation whose document declares no reply at all, since it has promised none.
   - An operation RESTest could not read in full: a reply the document declares, and RESTest could
-    not read, would otherwise look undeclared. The run lists what it could not read before it
-    starts.
+    not read — one that points at a shape the document never defines, say — would otherwise look
+    undeclared. The run lists what it could not read before it starts. A reply the library RESTest
+    reads documents with drops on its own, such as one written as a word rather than an object, is
+    not known to be missing, and does look undeclared ([known
+    limitations](known-limitations.md#what-a-run-says)).
   - A reply to a request whose body RESTest sent, on purpose, under a media type the operation does
     not accept: a document is not expected to describe how an API refuses a body it never promised
     to take.
+- **A 429 that asks the run to slow down is reported too**, unless the document declares it: RESTest
+  does not wait yet ([known limitations](known-limitations.md#pointed-at-somebody-elses-api)), so each
+  such reply is a fault.
 - **Too many to read?** Declare the replies the API really gives, or switch the check off in one line
   (`checks.undeclaredStatusCode`).
 
@@ -291,8 +299,8 @@ F921  A Content Type The Document Does Not Declare
   - A server error, an operation RESTest could not read in full, and a reply to a body sent under a
     media type the operation does not accept, as for `F920`.
 - **What the API wrote is quoted cut short.** The fault quotes the content type as the API sent it,
-  cut at 100 characters, with anything that would move a terminal's cursor or change its colours
-  replaced by `?`.
+  cut at 100 characters, with anything that would move a terminal's cursor or change its colours,
+  and invisible characters that would reorder or hide what is shown around them, replaced by `?`.
 
 ## Switching a check off
 
@@ -311,9 +319,11 @@ that check off:
 ```
   1 setting(s) are not what RESTest does by default; --print-settings lists them with where each came from
 ...
-16492 faults:
-  16201 x F100  HTTP Status 500
-  291 x F206  Received Success Response When Sending Wrong Data
+59678 faults:
+  31255 x F920  A Status Code The Document Does Not Declare
+  16647 x F100  HTTP Status 500
+  11432 x F921  A Content Type The Document Does Not Declare
+  344 x F206  Received Success Response When Sending Wrong Data
 ```
 
 Each switch is named for what is wrong with what came back, or did not, and [the
@@ -353,7 +363,8 @@ F100  HTTP Status 500
       curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
-1. The catalogue number and the catalogue's name for the kind.
+1. The catalogue number and the catalogue's name for the kind, or, from 900 up, RESTest's own number
+   and name.
 2. The operation, by the name the document gives it (its `operationId`), the method and address the
    request went to, and what the API answered: a status code, `no reply`, or a reply that could not
    be read.

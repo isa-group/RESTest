@@ -64,7 +64,6 @@ final class ARun {
     private ARun() {
     }
 
-    /** A reply of this status whose body is JSON. */
     /**
      * A short run of this document against a stand-in, written to {@code out} in the directory, and
      * the code it ended with; whatever it printed goes to the screen.
@@ -85,6 +84,7 @@ final class ARun {
         }
     }
 
+    /** A reply of this status whose body is JSON. */
     static ResponseDefinitionBuilder json(int status, String body) {
         return aResponse().withStatus(status).withHeader("Content-Type", "application/json")
                 .withBody(body);
