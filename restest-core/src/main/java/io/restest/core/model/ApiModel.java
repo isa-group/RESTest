@@ -175,7 +175,8 @@ public record ApiModel(
      *
      * <p>Such an operation is tested with what could be read. Anything that would judge it by what
      * the document leaves out has to know, since what could not be read may be what it is looking
-     * for.
+     * for. An operation that only had to be given another name, because the document gives its name
+     * to another operation too, was read whole, and is not one of these.
      *
      * @param operation the operation, by its identifier
      * @return whether reading it set something aside

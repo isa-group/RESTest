@@ -61,6 +61,9 @@ import java.util.function.Function;
  * catches and turns into a {@link SpecificationIssue}. Two operations that declare the same
  * {@code operationId} are not skipped - both stay testable, with the second renamed and the renaming
  * reported, because {@link io.restest.core.model.ApiModel} requires every identifier to be unique.
+ * The name is settled before the operation is read, and the first operation in the document keeps
+ * it whether or not it can be read, so that anything said about an operation names the operation it
+ * is about.
  *
  * <p>A parameter, request body, response or header may itself be a {@code $ref} to a reusable
  * definition under {@code components}, and that definition may in turn be a {@code $ref} to another
@@ -88,14 +91,14 @@ final class OperationConverter {
      */
     static Result convert(OpenAPI api, Map<String, CanonicalSchema> schemas) {
         List<Operation> operations = new ArrayList<>();
+        Set<OperationId> taken = new HashSet<>();
         List<SpecificationIssue> issues = new ArrayList<>();
         Paths paths = api.getPaths();
         Components components = api.getComponents();
         if (paths != null) {
-            paths.forEach((path, pathItem) ->
-                    convertPathItem(path, pathItem, components, schemas, operations, issues));
+            paths.forEach((path, pathItem) -> convertPathItem(path, pathItem, components, schemas,
+                    operations, taken, issues));
         }
-        disambiguateOperationIds(operations, issues);
         return new Result(operations, issues);
     }
 
@@ -170,7 +173,7 @@ final class OperationConverter {
 
     private static void convertPathItem(String path, PathItem pathItem, Components components,
             Map<String, CanonicalSchema> schemas, List<Operation> operations,
-            List<SpecificationIssue> issues) {
+            Set<OperationId> taken, List<SpecificationIssue> issues) {
         if (pathItem == null) {
             return;
         }
@@ -191,11 +194,17 @@ final class OperationConverter {
                         "an HTTP method RESTest does not recognise: '" + method.name() + "'"));
                 return;
             }
-            OperationId id = declaredOrSynthesised(swaggerOperation, httpMethod.get(), path);
+            OperationId declared = declaredOrSynthesised(swaggerOperation, httpMethod.get(), path);
+            OperationId id = claimName(declared, httpMethod.get(), path, taken);
             try {
                 Operation operation = buildOperation(httpMethod.get(), path, id, pathParameters,
                         pathServers, swaggerOperation, components, location, issues);
                 operations.add(operation);
+                if (!id.equals(declared)) {
+                    issues.add(SpecificationIssue.renamed(location, id, "the document gives the "
+                            + "identifier '" + declared + "' to an operation before this one too; "
+                            + "renamed '" + id + "' to stay unique"));
+                }
                 if (hasUnsupportedConstruct(operation, schemas)) {
                     issues.add(SpecificationIssue.degraded(location, id, "this operation's data "
                             + "includes a shape RESTest does not fully understand yet"));
@@ -615,31 +624,30 @@ final class OperationConverter {
     }
 
     /**
-     * Two operations sharing one {@code operationId} is a contradiction {@link
-     * io.restest.core.model.ApiModel} refuses to hold; the second (and any further collision) is
-     * renamed to its synthesised, always-unique identifier, and the renaming is reported so a reader
-     * knows why an operation's identifier does not match what the document declared.
+     * The name an operation is read and tested under, kept from every operation after it: the one
+     * the document gives it, unless an operation before it in the document has that name already.
+     *
+     * <p>Two operations under one name is a contradiction {@link io.restest.core.model.ApiModel}
+     * refuses to hold, so a later one is given its method and path instead, {@code GET /bats},
+     * which no other operation can have, and a number after it only when another operation
+     * declares that very text as its name. The first keeps its name whether or not it can be read,
+     * so that what could not be read about it is never said of another.
+     *
+     * @param taken the names given to the operations before this one, which this one's joins
      */
-    private static void disambiguateOperationIds(List<Operation> operations,
-            List<SpecificationIssue> issues) {
-        Set<OperationId> seen = new LinkedHashSet<>();
-        for (int i = 0; i < operations.size(); i++) {
-            Operation operation = operations.get(i);
-            if (seen.add(operation.id())) {
-                continue;
-            }
-            OperationId unique = OperationId.synthesised(operation.method(), operation.path());
-            int suffix = 2;
-            while (!seen.add(unique)) {
-                unique = OperationId.of(operation.method() + " " + operation.path() + " (" + suffix + ")");
-                suffix++;
-            }
-            operations.set(i, operation.withId(unique));
-            String location = "paths." + operation.path() + "."
-                    + operation.method().name().toLowerCase(Locale.ROOT);
-            issues.add(SpecificationIssue.degraded(location, unique, "the document declares this "
-                    + "operation's identifier more than once; renamed to stay unique"));
+    private static OperationId claimName(OperationId declared, HttpMethod method, String path,
+            Set<OperationId> taken) {
+        if (taken.add(declared)) {
+            return declared;
         }
+        OperationId synthesised = OperationId.synthesised(method, path);
+        OperationId name = synthesised;
+        int suffix = 2;
+        while (!taken.add(name)) {
+            name = OperationId.of(synthesised.value() + " (" + suffix + ")");
+            suffix++;
+        }
+        return name;
     }
 
     private static boolean hasUnsupportedConstruct(Operation operation,

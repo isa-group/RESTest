@@ -424,3 +424,20 @@ alternated, a minute each, sent 0.3% more requests on average with them on (pair
 none was met, moved by -1.5%, -15.4% and -0.5%: a difference of that size is the noise of one-minute
 runs, not the checks. A single run of each of the fifteen APIs with the checks off sent 6.9% more
 requests in all, swagger-petstore again among the largest differences with nothing to report.
+
+**A correction the same day: an operation renamed is judged.** Of the two caveats under *what is
+left alone*, the first no longer holds. An operation RESTest renames, because the document gives its
+identifier to an operation before it too, is recorded with an effect of its own and counts as read
+whole, so `F920` and `F921` judge it; and whatever RESTest could not read about one of two
+operations sharing an identifier is said of that one, never of the other
+([ADR-0012](0012-canonical-model.md)'s amendment of the same day). The fifteen APIs run again with
+the change, a minute each, seed 42, 3,760,792 requests: the replay agrees with every run,
+scout-api's included, and no exit code changes. scout-api, the only one of the fifteen that repeats
+identifiers, gets `F920` on the eight operations that had been left alone, four `POST` and four
+`PUT`, on 20 pairs of operation and status code — 400 in 8, 403 in 8, 404 in 4 — 33,726 of its
+65,924 `F920`; run alone, 29,872 in 184,016 requests. Elsewhere the pairs moved only as runs of a
+minute do: market's from 6 to 10, with 67% more requests sent, and pet-clinic's from 27 to 26. In
+all, `F920` came to 1,539,973 faults on 228 pairs; the table above is left as it was measured. On
+scout-api no renamed operation is also one RESTest read in part, so the replay's agreement says the
+two rules judge those eight operations as they are defined to; that what could not be read is said
+of the right operation is shown by RESTest's tests, not by this run.

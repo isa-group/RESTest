@@ -75,11 +75,20 @@ class UndeclaredStatusOracleTest {
     private static final Operation LIST_VETS = Operation.of(HttpMethod.GET, "/vets")
             .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
 
+    /**
+     * Declares 200, and is named by its method and path because the document gives its name to
+     * another operation too; nothing else about it was set aside.
+     */
+    private static final Operation LIST_CLINICS = Operation.of(HttpMethod.GET, "/clinics")
+            .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+
     private static final ApiModel API = ApiModel.of("Pets", "1.0.0", List.of(LIST_PETS, ADD_PET,
-                    ADD_OWNER, LIST_VISITS, LIST_OWNERS, HEALTH, LIST_VETS))
+                    ADD_OWNER, LIST_VISITS, LIST_OWNERS, HEALTH, LIST_VETS, LIST_CLINICS))
             .withIssues(List.of(SpecificationIssue.degraded("paths./vets.get", LIST_VETS.id(),
                     "the response '404' is a reference that does not resolve to anything the "
-                            + "document declares")));
+                            + "document declares"),
+                    SpecificationIssue.renamed("paths./clinics.get", LIST_CLINICS.id(),
+                            "renamed to stay unique")));
 
     private final UndeclaredStatusOracle oracle = new UndeclaredStatusOracle();
 
@@ -190,6 +199,13 @@ class UndeclaredStatusOracleTest {
         void an_operation_read_in_part() {
             assertThat(judge(LIST_VETS, 404)).isEmpty();
             assertThat(judge(LIST_PETS, 400)).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("but not an operation RESTest only had to give another name, because the "
+                + "document gives its name to another operation too: it was read whole")
+        void not_an_operation_only_renamed() {
+            assertThat(judge(LIST_CLINICS, 400)).hasSize(1);
         }
 
         @Test

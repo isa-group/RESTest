@@ -29,8 +29,10 @@ import java.util.Optional;
  *
  * <p>{@link Effect} tells apart "this operation is not being tested at all" from "it is being tested
  * with less information than the document actually contains" - a reader who cannot tell those apart
- * cannot properly judge the run. The operation identifier is kept for the same reason: a report that
- * groups findings by operation can show what could not be read about each one, right next to it.
+ * cannot properly judge the run - and both from "it is being tested with everything the document
+ * says, under a name the document did not give it", which costs a reader only the name. The
+ * operation identifier is kept for the same reason: a report that groups findings by operation can
+ * show what could not be read about each one, right next to it.
  *
  * @param location where in the document the problem is, written the way the document is navigated:
  *     {@code paths./pets.get.parameters[2]}. Precise enough to open the file and look
@@ -44,12 +46,17 @@ public record SpecificationIssue(
         Optional<OperationId> operation,
         SpecificationIssue.Effect effect) {
 
-    /** What an unreadable construct cost. */
+    /** What a part of the document that could not be used as it is written cost. */
     public enum Effect {
         /** The operation is not being tested at all. */
         OPERATION_SKIPPED,
         /** The operation is being tested with less information than the document holds. */
         DEGRADED,
+        /**
+         * The operation is being tested with everything the document says, under a name of
+         * RESTest's own, because the document gives its name to another operation too.
+         */
+        RENAMED,
         /** The problem is the document as a whole, not one operation. */
         DOCUMENT
     }
@@ -68,16 +75,25 @@ public record SpecificationIssue(
     /** An operation that is not being tested at all. */
     public static SpecificationIssue skipped(String location, OperationId operation,
             String message) {
-        return new SpecificationIssue(location, message,
-                Optional.of(Objects.requireNonNull(operation, "operation")),
-                Effect.OPERATION_SKIPPED);
+        return about(location, operation, message, Effect.OPERATION_SKIPPED);
     }
 
     /** An operation being tested with less than the document says. */
     public static SpecificationIssue degraded(String location, OperationId operation,
             String message) {
+        return about(location, operation, message, Effect.DEGRADED);
+    }
+
+    /** An operation being tested with everything the document says, under a name of its own. */
+    public static SpecificationIssue renamed(String location, OperationId operation,
+            String message) {
+        return about(location, operation, message, Effect.RENAMED);
+    }
+
+    private static SpecificationIssue about(String location, OperationId operation, String message,
+            Effect effect) {
         return new SpecificationIssue(location, message,
-                Optional.of(Objects.requireNonNull(operation, "operation")), Effect.DEGRADED);
+                Optional.of(Objects.requireNonNull(operation, "operation")), effect);
     }
 
     /** A problem with the document itself rather than with one operation. */

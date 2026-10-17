@@ -37,11 +37,17 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * A reply the document declares in a way RESTest could not read is not reported as one the
- * document leaves out, from the document to the report.
+ * document leaves out, from the document to the report, and an operation RESTest read whole is held
+ * to its document even when RESTest had to give it another name.
  *
- * <p>The stand-in answers 404 to everything. Its document declares a 404 for one operation by
+ * <p>The stand-in answers 404 to everything. Its first document declares a 404 for one operation by
  * pointing at a reply it never defines, which RESTest cannot read and says so before the run; and
  * it declares no 404 at all for the other. Only the second is a document that leaves the 404 out.
+ *
+ * <p>The second document gives one name to three operations, so RESTest names the second and the
+ * third by their method and path. The second also points at a reply that is never defined: that
+ * is said of it, under its new name, and it is left alone. The first and the third declare no 404,
+ * and both are reported.
  */
 class AReplyUnreadIsNotUndeclaredTest {
 
@@ -65,6 +71,37 @@ class AReplyUnreadIsNotUndeclaredTest {
                   responses:
                     "200":
                       description: every bat
+            components:
+              responses: {}
+            """;
+
+    /** Three operations under one name, the second with a reply RESTest cannot read. */
+    private static final String ONE_NAME_FOR_THREE = """
+            openapi: 3.0.3
+            info:
+              title: Night animals
+              version: "1.0"
+            paths:
+              /owls:
+                get:
+                  operationId: listOwls
+                  responses:
+                    "200":
+                      description: every owl
+              /bats:
+                get:
+                  operationId: listOwls
+                  responses:
+                    "200":
+                      description: every bat
+                    "404":
+                      $ref: '#/components/responses/NoSuchThing'
+              /moths:
+                get:
+                  operationId: listOwls
+                  responses:
+                    "200":
+                      description: every moth
             components:
               responses: {}
             """;
@@ -98,5 +135,29 @@ class AReplyUnreadIsNotUndeclaredTest {
                 .contains("the response '404' is a reference that does not resolve");
         assertThat(codesIn(report)).containsExactly(920);
         assertThat(operationsWith(920, report)).containsExactly("listBats");
+    }
+
+    @Test
+    @DisplayName("an operation renamed because the document repeats its name is held to its "
+            + "document, unless RESTest could not read all of it, which is said of it and not of "
+            + "the operation that kept the name")
+    void a_renamed_operation_is_held_to_its_document(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = ARun.run(ONE_NAME_FOR_THREE, api.baseUrl(), directory, screen);
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(screen.toString())
+                .describedAs("what RESTest could not read, and the new names, are said before the "
+                        + "run")
+                .contains(
+                        "paths./bats.get: the response '404' is a reference that does not resolve",
+                        "paths./bats.get: the document gives the identifier 'listOwls' to an "
+                                + "operation before this one too; renamed 'GET /bats' to stay "
+                                + "unique",
+                        "renamed 'GET /moths' to stay unique");
+        assertThat(codesIn(report)).containsExactly(920);
+        assertThat(operationsWith(920, report)).containsExactlyInAnyOrder("listOwls", "GET /moths");
     }
 }

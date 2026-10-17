@@ -89,9 +89,6 @@ of its own. Whether you may test an API at all is not something any tool can che
   404s are then `F920`, though the document meant to declare them. An operation RESTest knows it read
   only in part, such as one with a reply pointing at a shape the document never defines, is left
   alone.
-- **An operation whose identifier the document repeats is not checked against its status codes and
-  content types.** RESTest renames the second one to keep identifiers unique and counts that as
-  reading it in part, so `F920` and `F921` leave it alone, though its replies were read whole.
 - **A body the document describes only in words is not checked against a type.** A reply with a body
   whose status code the document declares with no content type at all is left alone, whatever type
   it comes as.

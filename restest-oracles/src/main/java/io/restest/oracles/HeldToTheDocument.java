@@ -38,7 +38,9 @@ import java.util.Optional;
  *   <li>Its operation is not one RESTest read from the document.</li>
  *   <li>RESTest could not read everything the document says about that operation - a reply
  *       pointing at a shape that does not exist, say. A reply the document declares and RESTest
- *       could not read would otherwise look undeclared.</li>
+ *       could not read would otherwise look undeclared. An operation RESTest only had to give
+ *       another name, because the document gives its name to another operation too, was read whole
+ *       and is held to it like any other.</li>
  *   <li>RESTest sent its body under a media type the operation does not accept, to see whether the
  *       API turns it away. A document is not expected to describe how an API refuses a body it never
  *       promised to take.</li>
