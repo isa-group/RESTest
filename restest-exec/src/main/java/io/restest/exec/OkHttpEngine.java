@@ -256,13 +256,15 @@ public final class OkHttpEngine implements HttpEngine {
      *
      * <p>The waits on the connection itself - to connect, to send, to receive - end with a
      * {@link SocketTimeoutException}. The limit on the whole request ends with the more general
-     * {@link InterruptedIOException}, which is also what an interrupted thread gets; that one is the
-     * run stopping, not the API being slow, and leaves its thread marked as interrupted, which is how
-     * the two are told apart. Anything else - refused, cut, reset, an address that does not exist -
-     * is not a wait that ran out.
+     * {@link InterruptedIOException}, which is also what a thread gets when something interrupts it.
+     * RESTest does not interrupt the threads that send requests, but a program running it inside
+     * itself may, and that is not the API being slow; such a thread is left marked as interrupted,
+     * which is how the two are told apart. Anything else - refused, cut, reset, an address that does
+     * not exist - is not a wait that ran out.
      *
      * @param failure what ended the attempt
-     * @param awaitingAReply whether a connection to the API was open with no status line back yet
+     * @param awaitingAReply whether a connection to the API was open with no reply's status line and
+     *     headers back yet
      * @return what was being waited for, or nothing if time did not run out
      */
     static Optional<InteractionOutcome.TransportFailure.Wait> timedOutWaitingFor(

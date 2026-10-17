@@ -743,7 +743,7 @@ maintainer on 15 October 2026.
 The 12 October amendment's rule names each switch "for what is wrong with a reply it reports", and
 this check has no reply to judge. The rule is read as naming a switch for what is wrong with what
 came back, or did not: `noReplyInTime` says what the check reports, as `invalidDataAccepted` does,
-and not the engine's limit it depends on, which is `engine.readTimeout` or `engine.callTimeout`
-whichever runs out first. How long the engine waits stays where it was, among the engine's
+and not the engine's limit it depends on, which is `engine.readTimeout`, `engine.writeTimeout` or
+`engine.callTimeout`, whichever runs out first. How long the engine waits stays where it was, among the engine's
 settings; this switch only decides whether a wait that ran out is called a fault. The group keeps the
 catalogue's order. Ninety-four settings in nine groups.

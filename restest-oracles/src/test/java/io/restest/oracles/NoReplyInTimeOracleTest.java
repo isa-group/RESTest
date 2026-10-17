@@ -52,7 +52,8 @@ class NoReplyInTimeOracleTest {
         assertThat(finding.category()).isEqualTo(WfcFault.SECURITY_CALL_TIMEOUT);
         assertThat(finding.operation()).isEqualTo(FETCH);
         assertThat(finding.summary()).isEqualTo("no reply within 30.0s: a connection to the API "
-                + "was open, and no status line came back before RESTest stopped waiting");
+                + "was open, and RESTest stopped waiting before a reply's status line and headers "
+                + "came back");
         assertThat(finding.details()).isEmpty();
     }
 
@@ -79,7 +80,8 @@ class NoReplyInTimeOracleTest {
     }
 
     @Test
-    @DisplayName("a reply whose first line arrived is not reported, however long the rest took")
+    @DisplayName("a reply whose status line and headers arrived is not reported, however long the "
+            + "rest took")
     void a_reply_that_broke_off_is_left_alone() {
         assertThat(oracle.judge(Attempts.brokenOff(FETCH, "/fetch", 200), API)).isEmpty();
     }

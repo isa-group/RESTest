@@ -28,6 +28,7 @@ import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.model.HttpMethod;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -248,6 +249,34 @@ class EngineFaultsTest {
     }
 
     /**
+     * A reply whose status line and headers arrive, and whose body then stops with no word of
+     * goodbye, as an endpoint that streams does between two things it has to say. The read timeout
+     * runs out in the body, after the API has answered.
+     */
+    @Test
+    @DisplayName("a reply whose body stops arriving keeps its status, and is no wait for a reply")
+    void a_reply_whose_body_stalls_is_malformed_and_no_wait() throws Exception {
+        try (ServerSocket stalls = new ServerSocket(0)) {
+            Thread server = Thread.ofVirtual().start(() -> sayThenWait(stalls, "HTTP/1.1 200 OK\r\n"
+                    + "Content-Type: application/json\r\n"
+                    + "Content-Length: 100\r\n"
+                    + "\r\n"
+                    + "{\"par"));
+            try (OkHttpEngine engine = new OkHttpEngine(
+                    EngineSettings.defaults().withReadTimeout(Duration.ofMillis(300)))) {
+                Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/records"),
+                        Requests.get("http://localhost:" + stalls.getLocalPort() + "/records"));
+
+                assertThat(interaction.outcome())
+                        .isInstanceOf(InteractionOutcome.MalformedResponse.class);
+                assertThat(interaction.statusCode()).contains(200);
+                assertThat(interaction.timedOutWaitingForAReply()).isFalse();
+            }
+            server.join(Duration.ofSeconds(5));
+        }
+    }
+
+    /**
      * A reply that never ends: an endpoint that streams, or keeps a connection alive by sending a
      * byte every so often. Each byte arrives long before the read timeout runs out, so only a limit
      * on the whole request ends it - and without one, the request would hold its place among those
@@ -304,6 +333,25 @@ class EngineFaultsTest {
                 Thread.sleep(100);
             }
         } catch (IOException | InterruptedException e) {
+            // The client hanging up is how this test is meant to end; nothing to do.
+        }
+    }
+
+    /**
+     * Answers one request with what it is given, and then says nothing more until the client hangs
+     * up.
+     */
+    private static void sayThenWait(ServerSocket socket, String said) {
+        try (Socket connection = socket.accept()) {
+            InputStream in = connection.getInputStream();
+            in.read(new byte[1024]);
+            OutputStream out = connection.getOutputStream();
+            out.write(said.getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            while (in.read() != -1) {
+                // Nothing the client sends now is answered.
+            }
+        } catch (IOException e) {
             // The client hanging up is how this test is meant to end; nothing to do.
         }
     }

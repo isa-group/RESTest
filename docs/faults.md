@@ -39,7 +39,7 @@ under version 0.8.0, has no key: there `F100` and `F200` have the same numbers a
 | `F121` | HTTP Status 5xx Other Than 500 And 501 | The API answered a server error other than 500 and 501, most often `502`, `503` or `504`: something in it, or in front of it, failed while handling the request |
 | `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
 | `F206` | Received Success Response When Sending Wrong Data | The API accepted a request RESTest broke on purpose, with one thing in it the document forbids: a required value left out, a word where a number goes, a value off a closed list |
-| `F312` | Call Timeout | The API had a request on an open connection and sent no reply, not even its first line, before RESTest stopped waiting: whatever handles it is waiting on something that does not answer |
+| `F312` | Call Timeout | The API had a request on an open connection and sent no reply, not even the status line and headers that begin one, before RESTest stopped waiting: whatever handles it is waiting on something that does not answer |
 
 The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
 after it was deleted, security problems — and this version reports none of them. A run that finds
@@ -145,15 +145,15 @@ above.
 ### `F312`, no reply in time
 
 Reported for every request sent on a connection open to the API that got no reply — not even the
-first line of one — before RESTest stopped waiting. It waits `engine.readTimeout` for anything to
-arrive, half a minute by default, and `engine.callTimeout` for the whole request, a minute
-([the settings](settings.md#engine)). From a minute's run of an API that calls a service on the
-internet, run where it could not reach it:
+status line and headers that begin one — before RESTest stopped waiting. It waits
+`engine.readTimeout` for anything to arrive, half a minute by default, and `engine.callTimeout` for
+the whole request, a minute ([the settings](settings.md#engine)). From a minute's run of an API whose
+`fetch` operation gathers data from GitHub and waits on it:
 
 ```
 F312  Call Timeout
       fetchUsingGET - GET http://127.0.0.1:55811/fetch  ->  no reply
-      no reply within 30.0s: a connection to the API was open, and no status line came back before RESTest stopped waiting
+      no reply within 30.0s: a connection to the API was open, and RESTest stopped waiting before a reply's status line and headers came back
       curl -i -X GET 'http://127.0.0.1:55811/fetch' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
@@ -166,20 +166,21 @@ behind](report.md#findingsinteractionoutcome)):
 
 - **It is often a real problem.** An operation that sits on a request is usually waiting on
   something that does not answer — a database, another service, a lock — with no limit of its own.
-  And since what was sent is what made it wait, it may be a way to tie the API up on purpose, which
-  is why the catalogue files it among the security problems.
+  And if what was sent is what made it wait, it may be a way to tie the API up on purpose, which is
+  why the catalogue files it among the security problems.
 - **It may also be the API's surroundings, or the run.** Something the API calls may be slow, or
   out of reach from where the API runs. The run's own pace may be more than the API can take
   ([troubleshooting](manual/10-troubleshooting.md#the-api-falls-over-under-the-run)). And a connection
   kept open between requests can be dropped without a word by something in between, such as a load
   balancer, so that a request sent on it reaches nobody. An API known to be slow gets longer with
   `--set engine.readTimeout=2m`, and the check switches off in one line (`checks.noReplyInTime`).
-- **What is not reported.** A reply whose first line arrived, however long the rest of it took: that
-  API answered, and an endpoint that sends a reply bit by bit for as long as somebody listens, as a
-  stream of events does, is doing what it is for. A connection that could not be made in time, since
-  the request never reached the API, and an address that swallows whatever it is sent looks exactly
-  the same. A connection refused, or cut before any reply. Each of these, like every request that
-  got no reply, is still counted under `noReply` in `replies.byClass`.
+- **What is not reported.** A reply whose status line and headers arrived, however long the rest of
+  it took: that API answered, and an endpoint that sends a reply bit by bit for as long as somebody
+  listens, as a stream of events does, is doing what it is for; it is counted under its status code,
+  `2xx` for a stream that began with `200`. A connection that could not be made in time, since the
+  request never reached the API, and a wrong or firewalled address, whose packets go nowhere, looks
+  exactly the same. A connection refused, or cut before any reply. These last two, like every
+  request that got no reply, are counted under `noReply` in `replies.byClass`.
 - **A request still being sent counts too.** RESTest cannot tell an API that stopped reading a
   request from one that read it and never answered. It is rare: what RESTest sends is far smaller
   than what the computer holds back for a connection, so sending stalls only when the API stops

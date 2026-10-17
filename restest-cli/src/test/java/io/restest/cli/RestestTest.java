@@ -339,7 +339,27 @@ class RestestTest {
             assertThat(answer).isEqualTo(3);
             assertThat(problems.toString()).contains("answered any of the")
                     .contains("of them were sent on an open connection that never got a reply")
-                    .contains("Check the address");
+                    .contains("Check what is listening at the address")
+                    .contains("--set engine.readTimeout=");
+        }
+    }
+
+    @Test
+    @DisplayName("with the check for a request that got no reply off, an address that never "
+            + "answers still says it took the connections, since that is what it did")
+    void an_address_that_never_answers_says_so_with_the_check_off(@TempDir Path directory)
+            throws Exception {
+        try (ServerSocket silent = new ServerSocket(0)) {
+            int answer = run("run", "pet-shelter.yaml",
+                    "--url", "http://127.0.0.1:" + silent.getLocalPort(),
+                    "--budget", "30s", "--seed", "3", "--set", "engine.readTimeout=200ms",
+                    "--set", STOP_AFTER_REQUESTS, "--set", "schedule.requestsBeforeStopping=3",
+                    "--set", "checks.noReplyInTime=false", "--out", directory.toString());
+
+            assertThat(answer).isEqualTo(3);
+            assertThat(problems.toString())
+                    .describedAs("the run counts these itself, whichever checks are made")
+                    .contains("of them were sent on an open connection that never got a reply");
         }
     }
 

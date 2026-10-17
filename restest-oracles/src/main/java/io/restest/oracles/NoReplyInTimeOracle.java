@@ -30,10 +30,10 @@ import java.util.Locale;
  * <p>RESTest waits a set time for each reply - half a minute unless told otherwise - and then gives
  * up. Most requests that end without a reply say nothing about the API: nothing was listening, or the
  * connection was refused or cut. This one does. The connection was open, the request went out, and
- * not even the first line of a reply came back. Usually it means the code handling the request is
- * waiting on something that does not answer - a database, another service, a lock - with no limit
- * of its own; and since what was sent is what made it wait, it may be a way to tie the API up on
- * purpose, which is why the catalogue files it among the security problems.
+ * not even the status line and headers that begin a reply came back. Usually it means the code
+ * handling the request is waiting on something that does not answer - a database, another service,
+ * a lock - with no limit of its own; and if what was sent is what made it wait, it may be a way to
+ * tie the API up on purpose, which is why the catalogue files it among the security problems.
  *
  * <p>It is weaker evidence than a crash. The API's surroundings can be the slow part rather than its
  * code, the run's own pace can be what it could not keep up with, and a connection kept open between
@@ -41,10 +41,10 @@ import java.util.Locale;
  * reaches nobody. Whoever reads the fault decides which, and a run against an API known to be slow
  * can wait longer, or switch this rule off.
  *
- * <p>A reply whose first line did arrive is not reported, however long the rest of it took: that
- * API answered, and an endpoint that sends a reply bit by bit for as long as it is listened to is
- * doing what it is for. A connection that could not be made in time is not reported either, since
- * the request never reached the API.
+ * <p>A reply whose status line and headers did arrive is not reported, however long the rest of it
+ * took: that API answered, and an endpoint that sends a reply bit by bit for as long as it is
+ * listened to is doing what it is for. A connection that could not be made in time is not reported
+ * either, since the request never reached the API.
  */
 public final class NoReplyInTimeOracle implements Oracle {
 
@@ -64,7 +64,8 @@ public final class NoReplyInTimeOracle implements Oracle {
         if (interaction.timedOutWaitingForAReply()) {
             return List.of(Finding.of(WfcFault.SECURITY_CALL_TIMEOUT, interaction,
                     "no reply within " + seconds(interaction) + ": a connection to the API was "
-                            + "open, and no status line came back before RESTest stopped waiting"));
+                            + "open, and RESTest stopped waiting before a reply's status line and "
+                            + "headers came back"));
         }
         return List.of();
     }

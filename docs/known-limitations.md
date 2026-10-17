@@ -84,9 +84,14 @@ of its own. Whether you may test an API at all is not something any tool can che
   firewall that drops one without a word leaves a request sent on it unanswered, and RESTest reports
   it as `F312` once it stops waiting, although it reached nobody
   ([the faults](faults.md#f312-no-reply-in-time)).
+- **With redirections followed, a request the next address sits on is reported on the operation.**
+  With `engine.followRedirects` on, which it is not by default, an operation that sends the request
+  on to another address that takes it and never answers is reported as `F312`, and the `curl`
+  printed with it shows only the first answer, the redirection.
 - **A reply that comes, but slowly, is not reported.** Only a request that got no reply before
   RESTest stopped waiting is a fault; one answered in twenty-nine seconds, against the half a minute
-  it waits by default, is not. Nor is a reply whose first line arrived and whose body never finished.
+  it waits by default, is not. Nor is a reply whose status line and headers arrived and whose body
+  never finished.
 - **`report.json` does not say that a run broke.** When a run ends with `4`, the file reads like that
   of a finished run. Read the exit code, not only the file.
 

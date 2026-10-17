@@ -849,16 +849,19 @@ final class RunCommand implements Callable<Integer> {
                     + "and it is paid out of the budget. Give the run more time.");
         } else {
             // Requests sent on a connection that was open and never got a reply are what an API that
-            // sits on everything does, and exactly what something listening there that does not
-            // speak HTTP would do too, so they are said beside the address rather than instead of
-            // it - and said whether or not the check that reports them was made.
-            String satOn = outcome.noReplyInTime() == 0 ? ""
-                    : "; " + outcome.noReplyInTime() + " of them were sent on an open connection "
-                            + "that never got a reply, which is also what something listening "
-                            + "there that does not speak HTTP does";
+            // waits on something that does not answer does, and exactly what something listening
+            // there that does not speak HTTP would do too, so they are said beside the address rather
+            // than instead of it - and said whether or not the check that reports them was made.
+            long satOn = outcome.noReplyInTime();
             err.println("restest: nothing at " + address + " answered any of the " + outcome.sent()
-                    + " requests, so the API was never actually tested" + satOn
-                    + ". Check the address, and that it is running.");
+                    + " requests, so the API was never actually tested"
+                    + (satOn == 0 ? ". Check the address, and that it is running."
+                            : "; " + satOn + " of them were sent on an open connection that never "
+                                    + "got a reply, which is what an API does that waits on "
+                                    + "something that does not answer, and also what something "
+                                    + "listening there that does not speak HTTP does. Check what "
+                                    + "is listening at the address; an API that is only slow can "
+                                    + "be given longer with --set engine.readTimeout=2m."));
         }
     }
 

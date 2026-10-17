@@ -105,9 +105,9 @@ public sealed interface InteractionOutcome {
      *
      * <p>When the attempt ended because RESTest stopped waiting - one of its time limits ran out -
      * this says what it was still waiting for, since the two cases mean different things. With no
-     * connection open, the request never reached the API, and an address that answers nothing looks
-     * exactly the same. With a connection open and nothing back, the API had the request and sat on
-     * it. Everything else that ends an attempt with no reply - a connection refused or cut, an
+     * connection open, the request never reached the API, and an address whose packets go nowhere
+     * looks exactly the same. With a connection open and no reply back, the API had the request and
+     * sat on it. Everything else that ends an attempt with no reply - a connection refused or cut, an
      * address that could not be found, a request never sent - says nothing of the kind.
      *
      * @param reason what went wrong, in a form fit to print in a report - "connection refused",

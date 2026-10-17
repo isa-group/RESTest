@@ -55,8 +55,8 @@ import org.junit.jupiter.api.io.TempDir;
  * gives a 500. With every check on, a run reports both. The second names three more, and is wrong in
  * every way a check looks for: one answers 503; one takes a required number and answers 200
  * whatever it is sent, so that a request broken on purpose - the number left out, or a word in its
- * place - is accepted; and one answers only after two seconds, long after the half second these
- * runs wait for a reply. What is checked here is that each switch reaches the run, that the other checks
+ * place - is accepted; and one answers only after four seconds, long after the second the runs of
+ * that document wait for a reply. What is checked here is that each switch reaches the run, that the other checks
  * carry on without it, that what the API did is still counted whichever checks are made, and that
  * the run records which were off.
  */
@@ -118,9 +118,13 @@ class CheckSwitchesCommandTest {
                       description: every kennel, eventually
             """;
 
-    /** How long these runs wait for a reply, and how long the slow operation takes to give one. */
-    private static final String HALF_A_SECOND_FOR_A_REPLY = "engine.readTimeout=500ms";
-    private static final int SLOWER_THAN_THAT_MILLIS = 2000;
+    /**
+     * How long the runs of the second document wait for a reply, and how long its slow operation
+     * takes to give one. Only those runs are given the shorter wait, so that a stand-in slow to
+     * answer on a busy machine cannot turn into a fault in the runs that are not about one.
+     */
+    private static final String ONE_SECOND_FOR_A_REPLY = "engine.readTimeout=1s";
+    private static final int SLOWER_THAN_THAT_MILLIS = 4000;
 
     private static WireMockServer api;
 
@@ -208,7 +212,7 @@ class CheckSwitchesCommandTest {
     void every_kind_of_fault(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(WRONG_IN_EVERY_WAY, directory, screen);
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY);
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
@@ -222,7 +226,7 @@ class CheckSwitchesCommandTest {
     void the_check_for_no_reply_off(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(WRONG_IN_EVERY_WAY, directory, screen,
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY,
                 "--set", "checks.noReplyInTime=false");
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
@@ -240,7 +244,7 @@ class CheckSwitchesCommandTest {
     void the_two_newer_checks_off(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(WRONG_IN_EVERY_WAY, directory, screen,
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY,
                 "--set", "checks.otherServerError=false",
                 "--set", "checks.invalidDataAccepted=false");
 
@@ -268,7 +272,7 @@ class CheckSwitchesCommandTest {
         List<String> arguments = new ArrayList<>(List.of("run", document.toString(),
                 "--url", api.baseUrl(), "--budget", "30s",
                 "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
-                "--set", HALF_A_SECOND_FOR_A_REPLY, "--out", directory.resolve("out").toString()));
+                "--out", directory.resolve("out").toString()));
         arguments.addAll(List.of(settings));
         PrintWriter out = new PrintWriter(screen);
         try {

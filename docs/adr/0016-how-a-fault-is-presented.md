@@ -296,18 +296,21 @@ same day says which requests the rule judges.
 **Date:** 2026-10-17
 
 **`F312`, *Call Timeout*, is reported for a request sent on a connection open to the API that got no
-reply, not even a status line, before RESTest stopped waiting** — a `TransportFailure` whose wait is
+reply, not even its status line and headers, before RESTest stopped waiting** — a `TransportFailure`
+whose wait is
 `REPLY` ([ADR-0005](0005-interpreted-test-model.md)'s amendment of the same date). The rule has a
 switch of its own, `checks.noReplyInTime`, on by default, decided by the maintainer on 15 October
 2026. Its sentence says how long the attempt took: *no reply within 30.0s: a connection to the API
-was open, and no status line came back before RESTest stopped waiting*. A request is one fault, as
+was open, and RESTest stopped waiting before a reply's status line and headers came back*. A request is one fault, as
 for every kind; such a fault has no status code, so its class is `noReply`, which `faultsByStatus`
 already knew, and the screen says `no reply` where the status code goes.
 
 Not reported: a connection that could not be made in time, since the request never reached the API
-and an address that swallows what it is sent looks the same; a reply whose status line arrived and
-whose body never finished, which is what a stream looks like; and a connection refused or cut. Each
-is still counted under `noReply` in `replies.byClass`, as every request with no reply always was.
+and a wrong or firewalled address, whose packets go nowhere, looks the same; a connection refused or
+cut; and a reply whose status line and headers arrived and whose body never finished, which is what a
+stream looks like. The first two are counted under `noReply` in `replies.byClass`, as every request
+with no reply always was; the last is counted under its status code, as every reply that broke off
+always was.
 
 **What the catalogue and the tools say, read in their code on 15 October 2026.** The catalogue says
 `F312` "might point to a denial-of-service vulnerability", that the environment can slow an API too,
@@ -329,14 +332,17 @@ its name says: the call ran out of time. A reply that arrives, slower than a lim
 rule, which RESTest does not have.
 
 **On by default**, as CATS and RESTler report it, because a request an API sits on for half a minute
-is something its developer wants to know, and the plan already counts a reply that never comes among
-what will be called an error rather than a warning. On fifteen APIs of the Web Fuzzing Dataset run
-locally for a minute each, their stored runs read back, two APIs had requests that ran out of time
-with a connection open and no status line: 42 requests on six operations, every one at the 30-second
-read timeout. One API waited on a service on the internet it could not reach from where it ran, the
-other hung on operations about a cluster that does not exist, instead of answering 404. Both also
-answered 500, so neither run changes its exit code; a run whose only fault is one operation that
-hangs now ends with `1` where it ended with `0`.
+is something its developer wants to know. On fifteen APIs of the Web Fuzzing Dataset run locally for
+a minute each, their stored runs read back, two APIs had requests that ran out of time with a
+connection open and no reply: 42 requests on six operations, every one at the 30-second read
+timeout. One API's `fetch` operation gathers data from GitHub and waits on it; the other hung on
+operations about a cluster that does not exist, instead of answering 404. Run again with the rule, a
+minute each, the two reported 30 and 15 `F312` on seven operations: the first on its `fetch`, the
+second on the same five operations and on one that sends a batch of records, which hung before any
+reply in this run. The second's streaming endpoint, which answered 200 and then sent nothing, and its
+connections cut with nothing sent back, were not reported. Both APIs also answered 500, so neither
+run changes its exit code; a run whose only fault is one operation that hangs now ends with `1`
+where it ended with `0`.
 
 **It is not one of the security oracles [`docs/DESIGN.md`](../DESIGN.md#out-of-scope) keeps out of
 scope**, although the catalogue numbers it among its security kinds. Those send requests made to
