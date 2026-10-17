@@ -85,8 +85,8 @@ would.
 
 ### Judging what came back
 
-Each check a run makes on the replies reports one kind of fault, named by its number in the
-catalogue [the faults](faults.md) describes.
+Each check a run makes on what came back, or did not, reports one kind of fault, named by its number
+in the catalogue [the faults](faults.md) describes.
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
@@ -94,6 +94,7 @@ catalogue [the faults](faults.md) describes.
 | `checks.otherServerError` | `true` | Another server error | never reports a reply of a server error other than 500 and 501, such as 502, 503 or 504, as a fault (`F121`) |
 | `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
 | `checks.invalidDataAccepted` | `true` | A broken request accepted | never reports a request broken on purpose, with one thing in it the document forbids, that the API accepted (`F206`) |
+| `checks.noReplyInTime` | `true` | No reply in time | never reports a request that got no reply, on a connection open to the API, before RESTest stopped waiting, as a fault (`F312`); such requests are still counted under `noReply` |
 
 No check decides what a run sends: switching one off changes which replies are called faults, and
 so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
@@ -280,6 +281,13 @@ checks:
 ```yaml
 checks:
   invalidDataAccepted: false
+```
+
+**No reply in time** — `F312`
+
+```yaml
+checks:
+  noReplyInTime: false
 ```
 
 ## Switching off a whole family

@@ -22,12 +22,15 @@ import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -243,9 +246,37 @@ public final class OkHttpEngine implements HttpEngine {
                     new HttpResponseRecord(statusLine, headers, reply.payload()), sentAt,
                     since(startedAt));
         } catch (IOException | RuntimeException e) {
-            return Interaction.transportFailure(testCase, slot.sent(), reason(e), sentAt,
-                    since(startedAt));
+            return Interaction.transportFailure(testCase, slot.sent(), reason(e),
+                    timedOutWaitingFor(e, slot.awaitingAReply()), sentAt, since(startedAt));
         }
+    }
+
+    /**
+     * What the engine was still waiting for, if the failure is one of its time limits running out.
+     *
+     * <p>The waits on the connection itself - to connect, to send, to receive - end with a
+     * {@link SocketTimeoutException}. The limit on the whole request ends with the more general
+     * {@link InterruptedIOException}, which is also what a thread gets when something interrupts it.
+     * RESTest does not interrupt the threads that send requests, but a program running it inside
+     * itself may, and that is not the API being slow; such a thread is left marked as interrupted,
+     * which is how the two are told apart. Anything else - refused, cut, reset, an address that does
+     * not exist - is not a wait that ran out.
+     *
+     * @param failure what ended the attempt
+     * @param awaitingAReply whether a connection to the API was open with no reply's status line and
+     *     headers back yet
+     * @return what was being waited for, or nothing if time did not run out
+     */
+    static Optional<InteractionOutcome.TransportFailure.Wait> timedOutWaitingFor(
+            Exception failure, boolean awaitingAReply) {
+        boolean timedOut = failure instanceof SocketTimeoutException
+                || failure instanceof InterruptedIOException
+                        && !Thread.currentThread().isInterrupted();
+        if (!timedOut) {
+            return Optional.empty();
+        }
+        return Optional.of(awaitingAReply ? InteractionOutcome.TransportFailure.Wait.REPLY
+                : InteractionOutcome.TransportFailure.Wait.CONNECTION);
     }
 
     /**

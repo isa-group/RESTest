@@ -35,6 +35,7 @@ import io.restest.core.json.JsonValue;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -310,7 +311,56 @@ class RestestTest {
                 .describedAs("an empty report that exits successfully would read as 'this API is "
                         + "fine', which is the one thing this run has no evidence for")
                 .isEqualTo(3);
-        assertThat(problems.toString()).contains("answered any of the").contains("Check the address");
+        assertThat(problems.toString()).contains("answered any of the").contains("Check the address")
+                .doesNotContain("open connection");
+    }
+
+    /**
+     * Something at the address takes every connection and never says a word, as a service that
+     * does not speak HTTP may: a socket listening and never read, whose connections the operating
+     * system completes and leaves waiting. Each request is a fault - a request sent on an open
+     * connection that got no reply - and the run still says nothing was tested, saying how many such
+     * requests there were beside the address rather than letting either message contradict the
+     * other.
+     */
+    @Test
+    @DisplayName("an address that takes connections and never answers answers 3, and says how many "
+            + "requests it sat on")
+    void an_address_that_never_answers_answers_three(@TempDir Path directory) throws Exception {
+        try (ServerSocket silent = new ServerSocket(0)) {
+            int answer = run("run", "pet-shelter.yaml",
+                    "--url", "http://127.0.0.1:" + silent.getLocalPort(),
+                    "--budget", "30s", "--seed", "3", "--set", "engine.readTimeout=200ms",
+                    // A few requests are enough: each costs the wait, and once the engine is
+                    // down to one request in flight they are sent one after the other.
+                    "--set", STOP_AFTER_REQUESTS, "--set", "schedule.requestsBeforeStopping=3",
+                    "--out", directory.toString());
+
+            assertThat(answer).isEqualTo(3);
+            assertThat(problems.toString()).contains("answered any of the")
+                    .contains("of them were sent on an open connection that never got a reply")
+                    .contains("Check what is listening at the address")
+                    .contains("--set engine.readTimeout=");
+        }
+    }
+
+    @Test
+    @DisplayName("with the check for a request that got no reply off, an address that never "
+            + "answers still says it took the connections, since that is what it did")
+    void an_address_that_never_answers_says_so_with_the_check_off(@TempDir Path directory)
+            throws Exception {
+        try (ServerSocket silent = new ServerSocket(0)) {
+            int answer = run("run", "pet-shelter.yaml",
+                    "--url", "http://127.0.0.1:" + silent.getLocalPort(),
+                    "--budget", "30s", "--seed", "3", "--set", "engine.readTimeout=200ms",
+                    "--set", STOP_AFTER_REQUESTS, "--set", "schedule.requestsBeforeStopping=3",
+                    "--set", "checks.noReplyInTime=false", "--out", directory.toString());
+
+            assertThat(answer).isEqualTo(3);
+            assertThat(problems.toString())
+                    .describedAs("the run counts these itself, whichever checks are made")
+                    .contains("of them were sent on an open connection that never got a reply");
+        }
     }
 
     @Test

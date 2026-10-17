@@ -91,11 +91,22 @@ public record Interaction(
                 sentAt, elapsed);
     }
 
-    /** A fresh interaction that received no response at all. */
+    /** A fresh interaction that received no response at all, and not because time ran out. */
     public static Interaction transportFailure(TestCase testCase, HttpRequestRecord request,
             String reason, Instant sentAt, Duration elapsed) {
+        return transportFailure(testCase, request, reason, Optional.empty(), sentAt, elapsed);
+    }
+
+    /**
+     * A fresh interaction that received no response at all, saying what RESTest was still waiting
+     * for if it stopped because one of its time limits ran out.
+     */
+    public static Interaction transportFailure(TestCase testCase, HttpRequestRecord request,
+            String reason, Optional<InteractionOutcome.TransportFailure.Wait> timedOutWaitingFor,
+            Instant sentAt, Duration elapsed) {
         return new Interaction(InteractionId.generate(), testCase, request,
-                new InteractionOutcome.TransportFailure(reason), sentAt, elapsed);
+                new InteractionOutcome.TransportFailure(reason, timedOutWaitingFor), sentAt,
+                elapsed);
     }
 
     /** The response received, if the attempt got a well-formed one. */
@@ -108,6 +119,19 @@ public record Interaction(
     /** Whether this attempt received a well-formed response. */
     public boolean isAnswered() {
         return outcome instanceof InteractionOutcome.Answered;
+    }
+
+    /**
+     * Whether this attempt was sent on a connection open to the API and got no reply before RESTest
+     * stopped waiting: the API had the request and sat on it.
+     *
+     * <p>Here rather than worked out by each part that asks - the rule that reports such a request,
+     * and the run that counts them to say what its address did.
+     */
+    public boolean timedOutWaitingForAReply() {
+        return outcome instanceof InteractionOutcome.TransportFailure failure
+                && failure.timedOutWaitingFor().orElse(null)
+                        == InteractionOutcome.TransportFailure.Wait.REPLY;
     }
 
     /**

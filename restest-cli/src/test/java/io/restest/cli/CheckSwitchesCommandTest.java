@@ -24,6 +24,8 @@ import static io.restest.cli.ARun.SIXTY_REQUESTS;
 import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static io.restest.cli.ARun.codesIn;
 import static io.restest.cli.ARun.json;
+import static io.restest.cli.ARun.operationsWith;
+import static io.restest.cli.ARun.repliesOfClass;
 import static io.restest.cli.ARun.report;
 import static io.restest.cli.ARun.settingsIn;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,12 +52,13 @@ import org.junit.jupiter.api.io.TempDir;
  *
  * <p>The API is a stand-in, read through one of two documents. The first names one operation, and
  * every answer it gives is wrong in two ways at once: a 500, whose body is not the shape the document
- * gives a 500. With every check on, a run reports both. The second names two more, and is wrong in
- * every way a check looks for: one answers 503, and one takes a required number and answers 200
+ * gives a 500. With every check on, a run reports both. The second names three more, and is wrong in
+ * every way a check looks for: one answers 503; one takes a required number and answers 200
  * whatever it is sent, so that a request broken on purpose - the number left out, or a word in its
- * place - is accepted. What is checked here is that each switch reaches the run, that the other
- * checks carry on without it, that what the API did is still counted whichever checks are made, and
- * that the run records which were off.
+ * place - is accepted; and one answers only after four seconds, long after the second the runs of
+ * that document wait for a reply. What is checked here is that each switch reaches the run, that the other checks
+ * carry on without it, that what the API did is still counted whichever checks are made, and that
+ * the run records which were off.
  */
 class CheckSwitchesCommandTest {
 
@@ -107,19 +110,37 @@ class CheckSwitchesCommandTest {
                       description: the owners
                     "400":
                       description: the limit is missing or not a number from 1 to 10
+              /kennels:
+                get:
+                  operationId: listKennels
+                  responses:
+                    "200":
+                      description: every kennel, eventually
             """;
+
+    /**
+     * How long the runs of the second document wait for a reply, and how long its slow operation
+     * takes to give one. Only those runs are given the shorter wait, so that a stand-in slow to
+     * answer on a busy machine cannot turn into a fault in the runs that are not about one.
+     */
+    private static final String ONE_SECOND_FOR_A_REPLY = "engine.readTimeout=1s";
+    private static final int SLOWER_THAN_THAT_MILLIS = 4000;
 
     private static WireMockServer api;
 
     @BeforeAll
     static void startTheApi() {
-        api = new WireMockServer(options().dynamicPort());
+        // Threads enough for the slow operation's replies, each held for seconds after the run
+        // stopped waiting for it, not to keep the others from being answered.
+        api = new WireMockServer(options().dynamicPort().containerThreads(64));
         api.start();
         api.stubFor(get(urlEqualTo("/pets")).willReturn(json(500, "{\"code\": 1}")));
         // Only the second document names these two.
         api.stubFor(get(urlEqualTo("/shelters")).willReturn(aResponse().withStatus(503)));
         // Accepts whatever it is sent, so a request with the limit broken on purpose is accepted.
         api.stubFor(get(urlPathEqualTo("/owners")).willReturn(aResponse().withStatus(200)));
+        api.stubFor(get(urlEqualTo("/kennels")).willReturn(aResponse().withStatus(200)
+                .withFixedDelay(SLOWER_THAN_THAT_MILLIS)));
     }
 
     @AfterAll
@@ -186,30 +207,50 @@ class CheckSwitchesCommandTest {
     }
 
     @Test
-    @DisplayName("an API wrong in every way a check looks for is reported in four kinds of fault")
+    @DisplayName("an API wrong in every way a check looks for is reported in five kinds of fault, "
+            + "and only the slow operation as one that never answered")
     void every_kind_of_fault(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(WRONG_IN_EVERY_WAY, directory, screen);
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY);
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 121, 200, 206, 312);
+        assertThat(operationsWith(312, report)).containsExactly("listKennels");
+    }
+
+    @Test
+    @DisplayName("with the check for a request that got no reply off, the others still report, the "
+            + "requests are still counted as unanswered, and the run records the switch")
+    void the_check_for_no_reply_off(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY,
+                "--set", "checks.noReplyInTime=false");
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
         assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 121, 200, 206);
+        assertThat(repliesOfClass(report, "noReply"))
+                .describedAs("a request that got no reply is counted whichever checks are made")
+                .isPositive();
+        assertThat(settingsIn(report)).contains("checks.noReplyInTime false command line");
     }
 
     @Test
     @DisplayName("with the checks for another server error and for a broken request accepted off, "
-            + "the other two still report, the 503 is still counted, and the run records both")
+            + "the others still report, the 503 is still counted, and the run records both")
     void the_two_newer_checks_off(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
-        int answer = run(WRONG_IN_EVERY_WAY, directory, screen,
+        int answer = run(WRONG_IN_EVERY_WAY, directory, screen, "--set", ONE_SECOND_FOR_A_REPLY,
                 "--set", "checks.otherServerError=false",
                 "--set", "checks.invalidDataAccepted=false");
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
-        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 200);
+        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 200, 312);
         JsonValue.JsonObject serverErrors =
                 (JsonValue.JsonObject) report.member("serverErrors").orElseThrow();
         assertThat(serverErrors.member("operationsAnsweringAny5xx"))
@@ -220,7 +261,8 @@ class CheckSwitchesCommandTest {
                 "checks.internalServerError true default",
                 "checks.otherServerError false command line",
                 "checks.replyOffSchema true default",
-                "checks.invalidDataAccepted false command line");
+                "checks.invalidDataAccepted false command line",
+                "checks.noReplyInTime true default");
     }
 
     /** A short run against the stand-in read through this document, and the code it ended with. */

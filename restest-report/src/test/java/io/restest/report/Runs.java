@@ -20,6 +20,7 @@ import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
+import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
@@ -119,6 +120,19 @@ final class Runs {
                         "the connection was closed before anything came back",
                         Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42)),
                 "nothing came back");
+    }
+
+    /** A request the API had on an open connection and never answered before time ran out. */
+    static Finding satOn(String operation) {
+        return Finding.of(WfcFault.SECURITY_CALL_TIMEOUT,
+                Interaction.transportFailure(
+                        TestCase.of(OperationId.of(operation), List.of()),
+                        new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(),
+                                Optional.empty()),
+                        "SocketTimeoutException: timeout",
+                        Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY),
+                        Instant.parse("2026-09-13T10:00:00Z"), Duration.ofSeconds(30)),
+                "no reply within 30.0s");
     }
 
     static EngineStatistics engine() {

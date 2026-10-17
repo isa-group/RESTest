@@ -398,9 +398,32 @@ public final class InteractionDocument {
             case InteractionOutcome.TransportFailure failure -> {
                 document.put("kind", JsonValue.of("failed"));
                 document.put("reason", JsonValue.of(failure.reason()));
+                // Only when time ran out, so that a failure of any other kind reads as it did
+                // before there was anything to say here.
+                failure.timedOutWaitingFor().ifPresent(wait ->
+                        document.put("timedOutWaitingFor", JsonValue.of(written(wait))));
             }
         }
         return JsonValue.object(document);
+    }
+
+    /** How a wait is written, spelled out for the reason {@link #written(Intent)} gives. */
+    private static String written(InteractionOutcome.TransportFailure.Wait wait) {
+        return switch (wait) {
+            case CONNECTION -> "connection";
+            case REPLY -> "reply";
+        };
+    }
+
+    private static InteractionOutcome.TransportFailure.Wait toWait(String written) {
+        for (InteractionOutcome.TransportFailure.Wait wait
+                : InteractionOutcome.TransportFailure.Wait.values()) {
+            if (written(wait).equals(written)) {
+                return wait;
+            }
+        }
+        throw new JsonException("An attempt was recorded as having timed out waiting for '"
+                + written + "', which is not something this version knows");
     }
 
     private static InteractionOutcome toOutcome(JsonValue value) {
@@ -414,7 +437,9 @@ public final class InteractionDocument {
                     toHeaders(document), body));
             case "malformed" -> new InteractionOutcome.MalformedResponse(
                     string(document, "reason"), toStatusLine(document), toHeaders(document), body);
-            case "failed" -> new InteractionOutcome.TransportFailure(string(document, "reason"));
+            case "failed" -> new InteractionOutcome.TransportFailure(string(document, "reason"),
+                    document.member("timedOutWaitingFor")
+                            .map(wait -> toWait(text(wait, "timedOutWaitingFor"))));
             default -> throw new JsonException(
                     "An attempt ended as '" + kind + "', which is not something this version knows");
         };

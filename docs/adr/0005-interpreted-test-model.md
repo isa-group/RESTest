@@ -1,7 +1,8 @@
 # ADR-0005: Test cases are data, executed directly — not generated source code
 
-**Status:** Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 October 2026
-**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18, 2026-09-28, 2026-09-30, 2026-10-10)
+**Status:** Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 and 17 October 2026
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18, 2026-09-28, 2026-09-30, 2026-10-10,
+2026-10-17)
 
 ## Context
 
@@ -315,3 +316,42 @@ for the credentials a run is handed ([ADR-0029](0029-the-key-an-api-asks-for.md)
 
 The decision itself, keeping an answer, a malformed response and no response at all as three cases,
 is unchanged; it does not depend on how any of them is numbered.
+
+## Amendment (17 October 2026): no reply, told apart by what RESTest was waiting for
+
+**Date:** 2026-10-17
+
+**A `TransportFailure` now says, when one of the engine's time limits ended it, what the engine was
+still waiting for**: `timedOutWaitingFor`, empty for every other failure. Two values, decided with the
+maintainer on 15 October 2026:
+
+- `REPLY` — a connection to the API was open and no reply's status line and headers had come back,
+  whether the request was still being sent or had been sent in full. The engine tells this from the
+  rest by where it stands: it notes that a reply is awaited at the last step before the socket, which
+  the HTTP client reaches only once a connection is open, and clears the note when a reply's status
+  line and headers have arrived, so that a redirection whose next address cannot be reached does not
+  count. A redirection to an address that takes the request and never answers does count, on the
+  operation that redirected: the engine does not tell one address from the next, and redirections
+  are followed only when a run asks for it. Sending and waiting are not told
+  apart: the client throws the same exception for both, and the bodies RESTest sends are far smaller
+  than what the operating system buffers for a connection, so sending stalls only when the API stops
+  reading a connection it holds open.
+- `CONNECTION` — no connection was open: connecting, or agreeing on encryption, took longer than the
+  engine waits. The request never reached the API.
+
+Everything else that ends an attempt with no reply — a connection refused, reset or cut, an address
+that does not exist, a request never sent, a thread interrupted — records no wait. A reply whose
+status line and headers arrived stays a `MalformedResponse` whatever limit ran out while its body was
+read, as before: that API answered.
+
+**The 10 October amendment's point is answered this way.** It noted that Faults 0.9.0's `F312`, *Call
+Timeout*, treats a request that got no reply in time as possibly the API's fault, where this record
+had called every connection nobody answered not the API's fault at all. A `REPLY` wait is the API's
+possible fault: it had the request and sat on it, and a rule reports it as `F312`
+([ADR-0016](0016-how-a-fault-is-presented.md)'s amendment of the same date). A `CONNECTION` wait is
+not reported: a wrong or firewalled address, whose packets go nowhere, looks exactly like it. The three outcomes
+stay three; the wait is a component of one of them, not a fourth, because a request with no reply is
+still a request with no reply to judge, and every place that handles the three keeps doing so.
+
+A document written before this amendment has no `timedOutWaitingFor` and reads as no timeout; an
+unknown value is refused, as an unknown `kind` is.

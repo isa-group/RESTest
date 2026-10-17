@@ -39,6 +39,10 @@ import okhttp3.Response;
  * <p>This sits at the last point before the socket, so everything the client adds is already there.
  * Each request carries its own place to write the result into, so two requests in flight at the same
  * time cannot overwrite each other's record.
+ *
+ * <p>Being that last point, it is also where a request is known to be on an open connection to the
+ * API. It notes that a reply is awaited until one starts to arrive, which is how a request the API
+ * sat on is told from one that never reached it when RESTest stops waiting.
  */
 final class WireCapture implements Interceptor {
 
@@ -54,6 +58,7 @@ final class WireCapture implements Interceptor {
 
         private final HttpRequestRecord asked;
         private volatile HttpRequestRecord sent;
+        private volatile boolean awaitingAReply;
 
         Slot(HttpRequestRecord asked) {
             this.asked = Objects.requireNonNull(asked, "asked");
@@ -64,18 +69,40 @@ final class WireCapture implements Interceptor {
             HttpRequestRecord captured = sent;
             return captured == null ? asked : captured;
         }
+
+        /**
+         * Whether a connection to the API is open and no reply's status line and headers have come
+         * back on it yet.
+         *
+         * <p>This is what tells "the API had the request and said nothing" from "the API was never
+         * reached" when time runs out. It is about the connection in use now, not the first one: a
+         * redirection followed to another address is a new connection, and a failure to make that
+         * one is not something the first API did.
+         */
+        boolean awaitingAReply() {
+            return awaitingAReply;
+        }
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Slot slot = request.tag(Slot.class);
-        if (slot != null && slot.sent == null) {
+        if (slot == null) {
+            return chain.proceed(request);
+        }
+        if (slot.sent == null) {
             // Only the first one. When redirections are followed this runs once per hop, and the
             // interaction describes the request that started the chain, not the last hop of it.
             slot.sent = record(request, slot.asked);
         }
-        return chain.proceed(request);
+        // The client comes here only once a connection is open, and again for each address it is
+        // sent on to. Cleared only when a reply's status line and headers have arrived: a failure
+        // on the way out leaves it set, which is the point.
+        slot.awaitingAReply = true;
+        Response response = chain.proceed(request);
+        slot.awaitingAReply = false;
+        return response;
     }
 
     private static HttpRequestRecord record(Request request, HttpRequestRecord asked) {

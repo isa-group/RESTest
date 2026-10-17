@@ -140,16 +140,16 @@ class ExitCodeTest {
     }
 
     private static RunLoop.Outcome outcome(long sent, long answered) {
-        return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, 0, Optional.empty(), false);
+        return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, 0, Optional.empty(), false);
     }
 
     private static RunLoop.Outcome lost(long sent, long answered, long lost) {
-        return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, lost,
+        return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, lost,
                 Optional.of(new StackOverflowError()), false);
     }
 
     private static RunLoop.Outcome cutShort(long sent, long answered, long lost) {
-        return new RunLoop.Outcome(sent, answered, 0, 0, 1, 0, lost,
+        return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, lost,
                 lost > 0 ? Optional.of(new StackOverflowError()) : Optional.empty(), true);
     }
 }

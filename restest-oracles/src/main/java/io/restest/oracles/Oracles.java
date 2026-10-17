@@ -67,6 +67,9 @@ public final class Oracles {
         if (switches.invalidDataAccepted()) {
             on.add(new InvalidDataAcceptedOracle());
         }
+        if (switches.noReplyInTime()) {
+            on.add(new NoReplyInTimeOracle());
+        }
         return List.copyOf(on);
     }
 

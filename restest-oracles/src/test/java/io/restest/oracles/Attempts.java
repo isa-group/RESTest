@@ -21,6 +21,7 @@ import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
+import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.execution.Mutation;
 import io.restest.core.execution.Payload;
 import io.restest.core.execution.SequenceStep;
@@ -89,6 +90,24 @@ final class Attempts {
     static Interaction neverAnswered(TestCase testCase, String url) {
         return Interaction.transportFailure(testCase, request(url),
                 "the connection was refused", Instant.EPOCH, Duration.ofMillis(11));
+    }
+
+    /**
+     * This test case, sent, and never answered because time ran out while waiting for this.
+     *
+     * @param elapsed how long the attempt took before RESTest stopped waiting
+     */
+    static Interaction timedOut(TestCase testCase, String url,
+            InteractionOutcome.TransportFailure.Wait waitingFor, Duration elapsed) {
+        return Interaction.transportFailure(testCase, request(url),
+                "SocketTimeoutException: timeout", Optional.of(waitingFor), Instant.EPOCH,
+                elapsed);
+    }
+
+    /** A request never answered because time ran out while waiting for this. */
+    static Interaction timedOut(OperationId operation, String url,
+            InteractionOutcome.TransportFailure.Wait waitingFor, Duration elapsed) {
+        return timedOut(testCase(operation), url, waitingFor, elapsed);
     }
 
     /** This test case, sent, and answered with this status and no body. */

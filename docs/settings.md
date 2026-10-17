@@ -270,6 +270,8 @@ checks:
   replyOffSchema: true        # default
   # report a request broken on purpose, with one thing the document forbids, that the API accepted (F206)
   invalidDataAccepted: true   # default
+  # report a request that got no reply, on a connection open to the API, before RESTest stopped waiting (F312)
+  noReplyInTime: true         # default
 
 report:
   # how many faults of one kind, on one operation, are written out whole
@@ -507,7 +509,7 @@ switches](switches.md#switching-off-one-idea) has that file.
 
 ### `checks.*`
 
-The checks a run makes on every reply, each of which reports a kind of fault. [The
+The checks a run makes on what came back, or did not, each of which reports a kind of fault. [The
 faults](faults.md#switching-a-check-off) says what switching one off changes, and what it does not.
 
 | Setting | Default | What it does |
@@ -516,6 +518,7 @@ faults](faults.md#switching-a-check-off) says what switching one off changes, an
 | `otherServerError` | `true` | report a reply of a server error other than 500 and 501, such as 503 (F121) |
 | `replyOffSchema` | `true` | report a reply whose body is not the shape the document gives for its status code and media type (F200) |
 | `invalidDataAccepted` | `true` | report a request broken on purpose, with one thing the document forbids, that the API accepted (F206) |
+| `noReplyInTime` | `true` | report a request that got no reply, on a connection open to the API, before RESTest stopped waiting (F312) |
 
 ### `report.*`
 

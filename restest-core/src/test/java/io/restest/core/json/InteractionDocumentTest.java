@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Checks that an attempt written down and read back is the same attempt.
@@ -90,6 +92,44 @@ class InteractionDocumentTest {
 
         assertThat(read).isEqualTo(original);
         assertThat(read.outcome()).isInstanceOf(InteractionOutcome.TransportFailure.class);
+        assertThat(outcomeOf(InteractionDocument.of(original)).member("timedOutWaitingFor"))
+                .describedAs("a failure that was no time limit says nothing about one, as it "
+                        + "did before there was anything to say")
+                .isEmpty();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"CONNECTION, connection", "REPLY, reply"})
+    @DisplayName("a request time ran out on survives, with what was being waited for")
+    void a_timeout_survives_the_round_trip(InteractionOutcome.TransportFailure.Wait wait,
+            String written) {
+        Interaction original = Interaction.transportFailure(testCase(), request(),
+                "SocketTimeoutException: timeout", Optional.of(wait), Instant.EPOCH,
+                Duration.ofSeconds(30));
+
+        JsonValue document = InteractionDocument.of(original);
+
+        assertThat(InteractionDocument.toInteraction(document)).isEqualTo(original);
+        assertThat(outcomeOf(document).member("timedOutWaitingFor"))
+                .contains(JsonValue.of(written));
+    }
+
+    @Test
+    @DisplayName("a wait this version does not know is refused rather than guessed at")
+    void an_unknown_wait_is_refused() {
+        String written = JsonText.write(InteractionDocument.of(Interaction.transportFailure(
+                testCase(), request(), "timeout",
+                Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY), Instant.EPOCH,
+                Duration.ofSeconds(30)))).replace("\"reply\"", "\"request\"");
+
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> InteractionDocument.toInteraction(JsonText.read(written)))
+                .withMessageContaining("'request'");
+    }
+
+    private static JsonValue.JsonObject outcomeOf(JsonValue document) {
+        return (JsonValue.JsonObject) ((JsonValue.JsonObject) document).member("outcome")
+                .orElseThrow();
     }
 
     @Test

@@ -258,6 +258,24 @@ class SecretsTest {
         }
 
         @Test
+        @DisplayName("a request time ran out on says why without the key, and still says what was "
+                + "being waited for")
+        void a_timeout_keeps_its_wait() {
+            Interaction satOn = Interaction.transportFailure(testCaseCarrying("nothing"),
+                    HttpRequestRecord.of(HttpMethod.GET, "http://api/pets"),
+                    "SocketTimeoutException: timeout waiting on " + KEY,
+                    Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY), Instant.now(),
+                    Duration.ofSeconds(30));
+
+            InteractionOutcome.TransportFailure hidden =
+                    (InteractionOutcome.TransportFailure) secrets.hidden(satOn).outcome();
+
+            assertThat(hidden.reason()).doesNotContain(CORE).contains(MASK);
+            assertThat(hidden.timedOutWaitingFor())
+                    .contains(InteractionOutcome.TransportFailure.Wait.REPLY);
+        }
+
+        @Test
         @DisplayName("every value and every description a test case carries is hidden, and its names never")
         void a_test_case_is_hidden() {
             Map<String, JsonValue> members = new LinkedHashMap<>();
@@ -424,6 +442,14 @@ class SecretsTest {
                 HttpRequestRecord.of(HttpMethod.GET, "http://api/" + KEY), KEY, Instant.now(),
                 Duration.ZERO)).toString()).doesNotContain(CORE);
         assertThat(secrets.hiddenWhole()).isZero();
+        Interaction keptTimeout = Secrets.hiddenWhole(Interaction.transportFailure(
+                testCaseCarrying(KEY), HttpRequestRecord.of(HttpMethod.GET, "http://api/" + KEY),
+                KEY, Optional.of(InteractionOutcome.TransportFailure.Wait.CONNECTION),
+                Instant.now(), Duration.ofSeconds(10)));
+        assertThat(((InteractionOutcome.TransportFailure) keptTimeout.outcome())
+                .timedOutWaitingFor())
+                .describedAs("what was being waited for holds no key, and is kept")
+                .contains(InteractionOutcome.TransportFailure.Wait.CONNECTION);
     }
 
     private static TestCase testCaseCarrying(String value) {

@@ -48,7 +48,12 @@ file, check its path.
 **`nothing at … answered any of the … requests`.** The document was read, but nothing answered at
 the address the requests went to. Either the API is not running yet — usual when a script starts the
 API and RESTest together, since RESTest starts quickly — or the address is wrong. The first line of
-the run says which address it used.
+the run says which address it used. When the line goes on to say that some requests `were sent on an
+open connection that never got a reply`, something there takes connections and answers none of
+them: a service that does not speak HTTP, or an API whose every operation waits on something that
+does not answer, such as a database that is down. Each of those requests is also reported as a
+fault, `F312`. Check what is listening at the address; if it is the API and it is only slow, give it
+longer with `--set engine.readTimeout=2m`.
 
 **`the budget of … ran out before a single request could be sent`.** Reading the document and
 starting up take a moment, paid out of the budget. Give the run more time.
@@ -93,7 +98,8 @@ RESTest keeps several requests in flight at once, and slows down by itself when 
 that cannot take that — it answers 503, or stops answering, or its log fills with errors about
 connections — gets one request at a time with `--set engine.maxConcurrency=1`. Each 503 is reported
 as a fault, `F121`, which a run whose pace is to blame can stop with
-`--set checks.otherServerError=false`. An API that is simply slow gets longer to answer with
+`--set checks.otherServerError=false`; each request it stops answering, as `F312`, which
+`--set checks.noReplyInTime=false` stops. An API that is simply slow gets longer to answer with
 `--set engine.readTimeout=2m`. [Chapter 7](07-settings.md) has more.
 
 ## The run left data behind

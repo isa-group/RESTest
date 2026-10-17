@@ -102,6 +102,9 @@ final class RunLoop {
      *
      * @param sent how many requests were sent
      * @param answered how many of them came back with a reply, rather than failing on the way
+     * @param noReplyInTime how many of the others were sent on a connection open to the API and got
+     *     no reply before the engine stopped waiting: what the API, or whatever is listening at its
+     *     address, does with a request it takes and sits on
      * @param notGenerated how many times no test case could be invented for an operation
      * @param notAssembled how many test cases could not be turned into a request that could be sent
      * @param passes how many times the loop went round the whole list of operations, not counting
@@ -117,8 +120,9 @@ final class RunLoop {
      * @param cutShort whether the run was stopped from outside before it had stopped waiting for
      *     its answers: what it did is then what it did until it was stopped
      */
-    record Outcome(long sent, long answered, long notGenerated, long notAssembled, long passes,
-            long stillOwed, long lost, Optional<Throwable> firstLoss, boolean cutShort) {
+    record Outcome(long sent, long answered, long noReplyInTime, long notGenerated,
+            long notAssembled, long passes, long stillOwed, long lost,
+            Optional<Throwable> firstLoss, boolean cutShort) {
 
         Outcome {
             Objects.requireNonNull(firstLoss, "firstLoss");
@@ -303,8 +307,9 @@ final class RunLoop {
         // while the loop was waiting for its answers counts: the wait was cut short with it.
         long settled = answers.stopListening();
         boolean cutShort = stop.asked();
-        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes,
-                sent - settled, answers.lost(), answers.firstLoss(), cutShort);
+        return new Outcome(sent, answers.answered(), answers.noReplyInTime(), notGenerated,
+                notAssembled, passes, sent - settled, answers.lost(), answers.firstLoss(),
+                cutShort);
     }
 
     /**
@@ -525,6 +530,7 @@ final class RunLoop {
 
         private final AtomicLong answered = new AtomicLong();
         private final AtomicLong unanswered = new AtomicLong();
+        private final AtomicLong noReplyInTime = new AtomicLong();
         private final AtomicLong lost = new AtomicLong();
         private final AtomicReference<Throwable> firstLoss = new AtomicReference<>();
 
@@ -569,6 +575,9 @@ final class RunLoop {
                 answered.incrementAndGet();
             } else {
                 unanswered.incrementAndGet();
+                if (interaction.timedOutWaitingForAReply()) {
+                    noReplyInTime.incrementAndGet();
+                }
             }
         }
 
@@ -590,6 +599,10 @@ final class RunLoop {
 
         long answered() {
             return answered.get();
+        }
+
+        long noReplyInTime() {
+            return noReplyInTime.get();
         }
 
         long lost() {

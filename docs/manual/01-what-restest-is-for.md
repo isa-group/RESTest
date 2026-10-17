@@ -20,7 +20,7 @@ document and the replies are all it has. That has two consequences worth knowing
 
 ## What it finds
 
-A run reports four kinds of fault:
+A run reports five kinds of fault:
 
 | Code | What happened |
 |---|---|
@@ -28,14 +28,16 @@ A run reports four kinds of fault:
 | `F121` | The API answered another server error, such as `503`: something in it, or in front of it, failed |
 | `F200` | The API answered with a body that is not the shape its document gives for that reply |
 | `F206` | The API accepted a request RESTest broke on purpose, which its document says it must refuse |
+| `F312` | The API took a request and sent no reply before RESTest stopped waiting: something it waits on does not answer |
 
 Each fault comes with the request that caused it, what the API answered, and a `curl` command that
 sends the same request again, so that whoever fixes the API can see the fault for themselves.
 
 A fault is **a reason to look, not a verdict**. A 500 can come from a database that was down rather
 than from a bug, a reply of the wrong shape can be a mistake in the document rather than in the API,
-and a broken request accepted can be the library the API reads its requests with, more lenient than
-its document. Either way, somebody who knows the API should look at it.
+a broken request accepted can be the library the API reads its requests with, more lenient than its
+document, and a request never answered can be a service the API calls that is down. Either way,
+somebody who knows the API should look at it.
 
 ## How it goes about it
 

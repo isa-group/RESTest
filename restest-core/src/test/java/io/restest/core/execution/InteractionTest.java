@@ -156,6 +156,52 @@ class InteractionTest {
     }
 
     @Test
+    @DisplayName("a transport failure says nothing of a time limit unless it was one")
+    void a_transport_failure_is_no_timeout_unless_said() {
+        Interaction refused = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "connection refused", Instant.now(), Duration.ZERO);
+        Interaction satOn = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "SocketTimeoutException: timeout",
+                Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY), Instant.now(),
+                Duration.ofSeconds(30));
+
+        assertThat(((InteractionOutcome.TransportFailure) refused.outcome()).timedOutWaitingFor())
+                .isEmpty();
+        assertThat(((InteractionOutcome.TransportFailure) satOn.outcome()).timedOutWaitingFor())
+                .contains(InteractionOutcome.TransportFailure.Wait.REPLY);
+        assertThat(satOn.statusCode()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("only a request sent on an open connection that got no reply in time is one the "
+            + "API sat on")
+    void only_a_wait_for_the_reply_is_a_request_sat_on() {
+        Interaction satOn = Interaction.transportFailure(TEST_CASE, REQUEST, "timeout",
+                Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY), Instant.now(),
+                Duration.ofSeconds(30));
+        Interaction neverConnected = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "Connect timed out",
+                Optional.of(InteractionOutcome.TransportFailure.Wait.CONNECTION), Instant.now(),
+                Duration.ofSeconds(10));
+        Interaction refused = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "connection refused", Instant.now(), Duration.ZERO);
+        Interaction answered = Interaction.answered(TEST_CASE, REQUEST,
+                HttpResponseRecord.of(200), Instant.now(), Duration.ofSeconds(29));
+
+        assertThat(satOn.timedOutWaitingForAReply()).isTrue();
+        assertThat(neverConnected.timedOutWaitingForAReply()).isFalse();
+        assertThat(refused.timedOutWaitingForAReply()).isFalse();
+        assertThat(answered.timedOutWaitingForAReply()).isFalse();
+    }
+
+    @Test
+    @DisplayName("what a transport failure was waiting for cannot be null")
+    void a_transport_failure_wait_cannot_be_null() {
+        assertThatNullPointerException().isThrownBy(
+                () -> new InteractionOutcome.TransportFailure("timed out", null));
+    }
+
+    @Test
     @DisplayName("elapsed time cannot be negative")
     void elapsed_time_cannot_be_negative() {
         assertThatIllegalArgumentException().isThrownBy(() -> Interaction.answered(TEST_CASE,
@@ -183,7 +229,8 @@ class InteractionTest {
         InteractionOutcome answered = new InteractionOutcome.Answered(HttpResponseRecord.of(200));
         InteractionOutcome malformed = new InteractionOutcome.MalformedResponse(
                 "bad framing", Optional.empty(), List.of(), Optional.empty());
-        InteractionOutcome failed = new InteractionOutcome.TransportFailure("timed out");
+        InteractionOutcome failed =
+                new InteractionOutcome.TransportFailure("timed out", Optional.empty());
 
         assertThat(describe(answered)).isEqualTo("answered: 200");
         assertThat(describe(malformed)).isEqualTo("malformed: bad framing");
