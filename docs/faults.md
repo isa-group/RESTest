@@ -260,7 +260,9 @@ and `default` included.
     undeclared. The run lists what it could not read before it starts. A reply the library RESTest
     reads documents with drops on its own, such as one written as a word rather than an object, is
     not known to be missing, and does look undeclared ([known
-    limitations](known-limitations.md#what-a-run-says)).
+    limitations](known-limitations.md#what-a-run-says)). An operation RESTest only had to call by
+    its method and path, because the document gives its name to an operation RESTest reads first,
+    is not one of these: the new name costs it nothing else.
   - A reply to a request whose body RESTest sent, on purpose, under a media type the operation does
     not accept: a document is not expected to describe how an API refuses a body it never promised
     to take.
@@ -365,9 +367,10 @@ F100  HTTP Status 500
 
 1. The catalogue number and the catalogue's name for the kind, or, from 900 up, RESTest's own number
    and name.
-2. The operation, by the name the document gives it (its `operationId`), the method and address the
-   request went to, and what the API answered: a status code, `no reply`, or a reply that could not
-   be read.
+2. The operation, by the name the document gives it (its `operationId`) — or by its method and
+   path, `GET /pets/{petId}`, when the document gives it none or gives the same one to an operation
+   RESTest reads first — the method and address the request went to, and what the API answered: a
+   status code, `no reply`, or a reply that could not be read.
 3. What is wrong, in a sentence.
 4. Up to ten lines of details under it, indented further, when there are any — for `F200`, each
    place in the body that disagreed with the document. More than ten end with `... and 4 more`.

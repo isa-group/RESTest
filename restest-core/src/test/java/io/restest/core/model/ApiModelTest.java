@@ -242,34 +242,46 @@ class ApiModelTest {
                 "paths./pets.get.responses.200", OperationId.of("listPets"),
                 "a schema construct we do not read yet; the body shape is unknown");
         SpecificationIssue document = SpecificationIssue.document("info", "no version declared");
+        SpecificationIssue renamed = SpecificationIssue.renamed("paths./cats.get",
+                OperationId.of("GET /cats"), "renamed to stay unique");
 
         assertThat(skipped.skipsAnOperation()).isTrue();
         assertThat(skipped.operation()).contains(deletePet);
         assertThat(degraded.skipsAnOperation()).isFalse();
         assertThat(degraded.effect()).isEqualTo(SpecificationIssue.Effect.DEGRADED);
+        assertThat(renamed.skipsAnOperation()).isFalse();
+        assertThat(renamed.effect()).isEqualTo(SpecificationIssue.Effect.RENAMED);
+        assertThat(renamed.operation()).contains(OperationId.of("GET /cats"));
         assertThat(document.operation()).isEmpty();
         assertThat(document.skipsAnOperation()).isFalse();
         assertThat(ApiModel.of("Pets", "1.0", List.of())
-                .withIssues(List.of(degraded, skipped, document)).unreadableOperations())
+                .withIssues(List.of(degraded, skipped, renamed, document)).unreadableOperations())
                 .describedAs("only what cost a whole operation, in the order it was found")
                 .containsExactly(skipped);
     }
 
     @Test
     @DisplayName("an operation is read in part only when something about it was set aside and the "
-            + "operation kept, not when it was skipped whole or the issue was the document's")
+            + "operation kept, not when it was skipped whole, only given another name because the "
+            + "document gives its name to another operation too, or the issue was the document's")
     void an_operation_read_in_part() {
-        OperationId listPets = OperationId.of("listPets");
+        OperationId listPets = OperationId.of("GET /pets");
         OperationId deletePet = OperationId.of("deletePet");
+        OperationId listCats = OperationId.of("GET /cats");
         ApiModel api = ApiModel.of("Pets", "1.0", List.of()).withIssues(List.of(
+                SpecificationIssue.renamed("paths./pets.get", listPets, "renamed to stay unique"),
                 SpecificationIssue.degraded("paths./pets.get", listPets,
                         "the response '404' is a reference that does not resolve"),
                 SpecificationIssue.skipped("paths./pets/{id}.delete", deletePet,
                         "the schema does not resolve"),
+                SpecificationIssue.renamed("paths./cats.get", listCats, "renamed to stay unique"),
                 SpecificationIssue.document("info", "no version declared")));
 
-        assertThat(api.readInPart(listPets)).isTrue();
+        assertThat(api.readInPart(listPets))
+                .describedAs("a rename does not hide what else was set aside")
+                .isTrue();
         assertThat(api.readInPart(deletePet)).isFalse();
+        assertThat(api.readInPart(listCats)).isFalse();
         assertThat(api.readInPart(OperationId.of("getPet"))).isFalse();
     }
 

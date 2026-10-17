@@ -1,6 +1,6 @@
 # ADR-0012: The canonical model is immutable records and sealed types, and says so when it cannot represent something
 
-**Status:** Accepted, amended at M1.8
+**Status:** Accepted, amended at M1.8, M2.1a and M2.1b, and on 17 October 2026
 **Date:** 2026-09-12
 
 ## Context
@@ -144,6 +144,75 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
   detected somewhere first.
 
 ---
+
+## Amendment (17 October 2026): an operation renamed is not one read in part
+
+**Date:** 2026-10-17
+
+**A `SpecificationIssue` has a fourth effect, `RENAMED`, beside `OPERATION_SKIPPED`, `DEGRADED` and
+`DOCUMENT`.** An operation is renamed when the document gives its `operationId` to another one
+RESTest reads first: the model holds no two operations under one identifier, so the later one is
+called by its method and path, `PUT /v1/users/{id}`. Nothing else about it is lost — its parameters,
+body and replies are read whole — so it is tested with everything the document says, under a name of
+RESTest's own. It used to be recorded as `DEGRADED`, "tested with less than the document holds",
+which it is not; and since [ADR-0016](0016-how-a-fault-is-presented.md)'s amendment of the same day,
+the checks of a status code and of a content type the document does not declare leave alone every
+operation a `DEGRADED` issue names. On scout-api, the only one of the Web Fuzzing Dataset's 52
+documents that repeats identifiers, 22 times, that kept 8 operations whose replies the document does
+not declare away from both checks.
+
+**A fourth value, because the effect is what says what an issue cost**, and a rename costs what none
+of the three say: the name alone. Three other answers were weighed:
+
+- **`DOCUMENT`**, a problem with the document as a whole. One line to change, and the screen, which
+  prints where and what, would look the same. But the issue is about one operation, `DOCUMENT`
+  carries none, and this record keeps the operation so that what could not be used can be shown
+  beside the operation it concerns. swagger-parser already reports each repeat as a document-wide
+  line of its own.
+- **A flag on a `DEGRADED` issue** saying nothing was lost. It contradicts what `DEGRADED` means,
+  changes the constructor of a record `restest-core` publishes, and has two fields say what one
+  issue cost.
+- **No issue, and the declared identifier kept on `Operation`.** A field on a central record for one
+  case, and a rename nobody is told about.
+
+**An operation is read under the name it is tested under.** The name used to be settled after every
+operation had been read, so whatever RESTest could not read about the later of two operations
+sharing an identifier — a reply pointing at a response the document never defines, say — was said
+of the earlier one, which kept the name. The earlier one then counted as read in part, and the later
+one, had only the rename's effect changed, would have been held to replies RESTest could not read.
+The name is now settled first, and the first operation RESTest reads keeps it whether or not it can
+be read; every later one is called by its method and path, read or not. RESTest reads the paths in
+the document's order and, within a path, the methods as `GET`, `PUT`, `POST`, `DELETE`, `PATCH`,
+`HEAD`, `OPTIONS`, `TRACE`, whatever order they are written in, as before. So every issue names the
+operation it is about, in either order: what could not be read about an operation RESTest skipped is
+never said of the one after it, and a run no longer lists as untested a name it tested. Before, an
+operation that could not be read took no name, and the one after it kept the name.
+
+**The method and path, rather than a number after the name.** The rule dates from
+[#289](https://github.com/isa-group/RESTest/pull/289) and was not recorded until now:
+
+- **A number depends on the document's order.** `update_2` becomes another operation when one is
+  added before it or the paths are reordered, and a plan, a list of values written by operation,
+  or a comparison of two runs would follow it there without a word. A method and a path are fixed
+  by the document, which is why an operation the document gives no identifier is called by them
+  too.
+- **Generators already number repeats.** scout-api's document declares `get_1`, `get_2`, `create_1`
+  and `create_2` beside six operations called `get`; a number of RESTest's own would meet one the
+  document uses.
+- **They say which operation it is** without the document open, and a plan already names an
+  operation that way (`only: ["GET /pets/{petId}"]`). OpenAPI gives no two operations one method
+  and path, so a number is added only when another operation declares that very text, `GET /bats`,
+  as its identifier.
+
+**What a person sees changes in names, and in what the two checks report.** The screen still lists
+a rename among the "part(s) of the document could not be read", its line now naming the identifier
+already taken and the new one. An operation that repeats an identifier and cannot be read is named
+by its method and path where the run lists what could not be tested, and in `report.json`'s
+`skippedOperations`. When the first of two such operations is the one that cannot be read, the
+second, which used to keep the identifier, is tested, stored and reported under its method and path,
+and a plan's `only` or a list of values naming the identifier now names the first. And `F920` and
+`F921` judge every renamed operation. A `DEGRADED` or `RENAMED` issue is still nowhere in
+`report.json`, which lists only the operations that could not be tested.
 
 ## Amendment (M2.1b)
 

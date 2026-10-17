@@ -18,6 +18,7 @@ package io.restest.spec;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
@@ -34,6 +35,8 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter.StyleEnum;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -135,20 +138,121 @@ class OperationConverterTest {
         PathItem gadgets = new PathItem();
         gadgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("list"));
 
-        Paths paths = new Paths();
-        paths.addPathItem("/widgets", widgets);
-        paths.addPathItem("/gadgets", gadgets);
-        OpenAPI api = new OpenAPI().paths(paths);
+        OperationConverter.Result result = OperationConverter.convert(
+                apiWithPaths("/widgets", widgets, "/gadgets", gadgets), java.util.Map.of());
 
-        OperationConverter.Result result = OperationConverter.convert(api, java.util.Map.of());
+        assertThat(result.operations()).extracting(Operation::id)
+                .containsExactly(OperationId.of("list"), OperationId.of("GET /gadgets"));
+        assertThat(result.issues()).singleElement().satisfies(issue -> {
+            assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.RENAMED);
+            assertThat(issue.operation()).contains(OperationId.of("GET /gadgets"));
+            assertThat(issue.location()).isEqualTo("paths./gadgets.get");
+            assertThat(issue.message()).isEqualTo(
+                    "another operation is already called 'list'; renamed 'GET /gadgets' to stay "
+                            + "unique");
+        });
+        assertThat(modelOf(result).readInPart(OperationId.of("GET /gadgets")))
+                .describedAs("nothing about the renamed operation was set aside")
+                .isFalse();
+    }
 
-        assertThat(result.operations()).hasSize(2);
-        assertThat(result.operations().stream().map(Operation::id).distinct()).hasSize(2);
-        assertThat(result.operations().stream().map(Operation::id))
-                .contains(OperationId.of("list"));
-        assertThat(result.issues()).hasSize(1);
-        assertThat(result.issues().get(0).effect())
-                .isEqualTo(SpecificationIssue.Effect.DEGRADED);
+    @Test
+    @DisplayName("what could not be read about an operation renamed for a repeated operationId is "
+            + "said of it, under its new name, not of the operation that kept the name")
+    void what_could_not_be_read_is_said_of_the_renamed_operation() {
+        PathItem widgets = new PathItem();
+        widgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("list"));
+        PathItem gadgets = new PathItem();
+        gadgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("list")
+                .responses(new ApiResponses().addApiResponse("404",
+                        new ApiResponse().$ref("#/components/responses/NoSuchThing"))));
+
+        OperationConverter.Result result = OperationConverter.convert(
+                apiWithPaths("/widgets", widgets, "/gadgets", gadgets), java.util.Map.of());
+
+        assertThat(result.issues())
+                .filteredOn(issue -> issue.effect() == SpecificationIssue.Effect.DEGRADED)
+                .singleElement()
+                .satisfies(issue -> assertThat(issue.operation())
+                        .contains(OperationId.of("GET /gadgets")));
+        ApiModel model = modelOf(result);
+        assertThat(model.readInPart(OperationId.of("GET /gadgets"))).isTrue();
+        assertThat(model.readInPart(OperationId.of("list"))).isFalse();
+    }
+
+    @Test
+    @DisplayName("an operation that repeats an operationId and cannot be read at all is skipped "
+            + "under a name of its own, not under the name of the operation that kept it")
+    void an_unreadable_repeat_is_skipped_under_a_name_of_its_own() {
+        PathItem widgets = new PathItem();
+        widgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("get"));
+        PathItem gadget = new PathItem();
+        gadget.setGet(new io.swagger.v3.oas.models.Operation().operationId("get"));
+
+        OperationConverter.Result result = OperationConverter.convert(
+                apiWithPaths("/widgets", widgets, "/gadgets/{gadgetId}", gadget),
+                java.util.Map.of());
+
+        assertThat(result.operations()).extracting(Operation::id)
+                .containsExactly(OperationId.of("get"));
+        assertThat(modelOf(result).unreadableOperations()).singleElement()
+                .satisfies(issue -> assertThat(issue.operation())
+                        .contains(OperationId.of("GET /gadgets/{gadgetId}")));
+    }
+
+    @Test
+    @DisplayName("the first operation read keeps an operationId it shares even when it cannot be "
+            + "read, so what could not be read about it is never said of the one after it")
+    void the_first_keeps_a_shared_name_even_when_it_cannot_be_read() {
+        PathItem widget = new PathItem();
+        widget.setGet(new io.swagger.v3.oas.models.Operation().operationId("list")
+                .responses(new ApiResponses().addApiResponse("404",
+                        new ApiResponse().$ref("#/components/responses/NoSuchThing"))));
+        PathItem gadgets = new PathItem();
+        gadgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("list"));
+
+        OperationConverter.Result result = OperationConverter.convert(
+                apiWithPaths("/widgets/{widgetId}", widget, "/gadgets", gadgets),
+                java.util.Map.of());
+
+        assertThat(result.operations()).extracting(Operation::id)
+                .containsExactly(OperationId.of("GET /gadgets"));
+        assertThat(result.issues())
+                .filteredOn(issue -> issue.effect() == SpecificationIssue.Effect.DEGRADED)
+                .singleElement()
+                .satisfies(issue -> assertThat(issue.operation()).contains(OperationId.of("list")));
+        ApiModel model = modelOf(result);
+        assertThat(model.unreadableOperations()).singleElement()
+                .satisfies(issue -> assertThat(issue.operation()).contains(OperationId.of("list")));
+        assertThat(model.readInPart(OperationId.of("GET /gadgets"))).isFalse();
+    }
+
+    @Test
+    @DisplayName("an operation whose method and path another operation declares as its "
+            + "operationId is numbered, and the issue says the name was taken, not that the "
+            + "document repeats it")
+    void a_method_and_path_taken_as_an_operation_id_is_numbered() {
+        PathItem widgets = new PathItem();
+        widgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("GET /gadgets"));
+        PathItem gadgets = new PathItem();
+        gadgets.setGet(new io.swagger.v3.oas.models.Operation());
+
+        OperationConverter.Result result = OperationConverter.convert(
+                apiWithPaths("/widgets", widgets, "/gadgets", gadgets), java.util.Map.of());
+
+        assertThat(result.operations()).extracting(Operation::id)
+                .containsExactly(OperationId.of("GET /gadgets"),
+                        OperationId.of("GET /gadgets (2)"));
+        assertThat(result.issues()).singleElement().satisfies(issue -> {
+            assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.RENAMED);
+            assertThat(issue.message()).isEqualTo("another operation is already called "
+                    + "'GET /gadgets'; renamed 'GET /gadgets (2)' to stay unique");
+        });
+    }
+
+    /** What the converter read, as the model the rest of RESTest is handed. */
+    private static ApiModel modelOf(OperationConverter.Result result) {
+        return ApiModel.of("Things", "1.0", result.operations()).withIssues(result.issues());
     }
 
     @Test
@@ -475,6 +579,14 @@ class OperationConverterTest {
     private static OpenAPI apiWithPath(String path, PathItem pathItem) {
         Paths paths = new Paths();
         paths.addPathItem(path, pathItem);
+        return new OpenAPI().paths(paths);
+    }
+
+    private static OpenAPI apiWithPaths(String firstPath, PathItem first, String secondPath,
+            PathItem second) {
+        Paths paths = new Paths();
+        paths.addPathItem(firstPath, first);
+        paths.addPathItem(secondPath, second);
         return new OpenAPI().paths(paths);
     }
 

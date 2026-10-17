@@ -554,7 +554,8 @@ class RestestTest {
     void an_unreadable_operation_never_shadows_a_readable_one_of_the_same_name(
             @TempDir Path directory) throws Exception {
         // An operation copied under a deeper path with its name left as it was: the copy's path has
-        // a gap nothing fills, so it cannot be read, and it is called what the original is called.
+        // a gap nothing fills, so it cannot be read, and it is called what the original is called -
+        // so RESTest calls the copy by its method and path, and the name stays the original's.
         Path document = Files.writeString(directory.resolve("copied.yaml"), """
                 openapi: 3.0.3
                 info: {title: Vets, version: '1'}
@@ -589,7 +590,8 @@ class RestestTest {
         List<String> lines = screen.toString().lines().toList();
         assertThat(lines.subList(lines.indexOf("no faults found") + 1, lines.size())).startsWith(
                 "1 operation could not be tested:",
-                "  getVet: the operation could not be represented: the path template "
+                "  GET /clinics/{clinicId}/vets/{vetId}: the operation could not be represented: "
+                        + "the path template "
                         + "'/clinics/{clinicId}/vets/{vetId}' has no parameter to fill 'clinicId', "
                         + "so no request could be assembled (paths./clinics/{clinicId}/vets/{vetId}"
                         + ".get)");

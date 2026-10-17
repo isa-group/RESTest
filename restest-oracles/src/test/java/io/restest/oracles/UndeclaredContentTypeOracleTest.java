@@ -67,10 +67,19 @@ class UndeclaredContentTypeOracleTest {
     private static final Operation LIST_VISITS = Operation.of(HttpMethod.GET, "/visits")
             .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
 
+    /**
+     * Answers JSON for 200, and is named by its method and path because the document gives its name
+     * to another operation too; nothing else about it was set aside.
+     */
+    private static final Operation LIST_CLINICS = Operation.of(HttpMethod.GET, "/clinics")
+            .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+
     private static final ApiModel API = ApiModel.of("Pets", "1.0.0",
-                    List.of(ADD_PET, LIST_OWNERS, LIST_VETS, LIST_VISITS))
+                    List.of(ADD_PET, LIST_OWNERS, LIST_VETS, LIST_VISITS, LIST_CLINICS))
             .withIssues(List.of(SpecificationIssue.degraded("paths./visits.get", LIST_VISITS.id(),
-                    "the response '400' could not be represented")));
+                    "the response '400' could not be represented"),
+                    SpecificationIssue.renamed("paths./clinics.get", LIST_CLINICS.id(),
+                            "renamed to stay unique")));
 
     private final UndeclaredContentTypeOracle oracle = new UndeclaredContentTypeOracle();
 
@@ -281,6 +290,13 @@ class UndeclaredContentTypeOracleTest {
         @DisplayName("an operation RESTest could not read in full")
         void an_operation_read_in_part() {
             assertThat(judge(LIST_VISITS, 200, "text/html")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("but not an operation RESTest only had to give another name, because the "
+                + "document gives its name to another operation too: it was read whole")
+        void not_an_operation_only_renamed() {
+            assertThat(judge(LIST_CLINICS, 200, "text/html")).hasSize(1);
         }
 
         @Test
