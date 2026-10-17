@@ -203,7 +203,7 @@ public record Operation(
                 summary, description, deprecated, security);
     }
 
-    /** The same operation under the given identifier, as the document declared it. */
+    /** The same operation under the given identifier. */
     public Operation withId(OperationId value) {
         return new Operation(Objects.requireNonNull(value, "value"), method, path, servers,
                 parameters, requestBody, responses, tags, summary, description, deprecated,

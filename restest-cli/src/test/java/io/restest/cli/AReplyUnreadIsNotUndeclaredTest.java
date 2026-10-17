@@ -153,9 +153,8 @@ class AReplyUnreadIsNotUndeclaredTest {
                         + "run")
                 .contains(
                         "paths./bats.get: the response '404' is a reference that does not resolve",
-                        "paths./bats.get: the document gives the identifier 'listOwls' to an "
-                                + "operation before this one too; renamed 'GET /bats' to stay "
-                                + "unique",
+                        "paths./bats.get: another operation is already called 'listOwls'; "
+                                + "renamed 'GET /bats' to stay unique",
                         "renamed 'GET /moths' to stay unique");
         assertThat(codesIn(report)).containsExactly(920);
         assertThat(operationsWith(920, report)).containsExactlyInAnyOrder("listOwls", "GET /moths");

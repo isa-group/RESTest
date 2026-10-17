@@ -147,8 +147,9 @@ class OperationConverterTest {
             assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.RENAMED);
             assertThat(issue.operation()).contains(OperationId.of("GET /gadgets"));
             assertThat(issue.location()).isEqualTo("paths./gadgets.get");
-            assertThat(issue.message()).isEqualTo("the document gives the identifier 'list' to an "
-                    + "operation before this one too; renamed 'GET /gadgets' to stay unique");
+            assertThat(issue.message()).isEqualTo(
+                    "another operation is already called 'list'; renamed 'GET /gadgets' to stay "
+                            + "unique");
         });
         assertThat(modelOf(result).readInPart(OperationId.of("GET /gadgets")))
                 .describedAs("nothing about the renamed operation was set aside")
@@ -200,8 +201,8 @@ class OperationConverterTest {
     }
 
     @Test
-    @DisplayName("the first operation in the document keeps an operationId it shares even when it "
-            + "cannot be read, so what could not be read about it is never said of the one after it")
+    @DisplayName("the first operation read keeps an operationId it shares even when it cannot be "
+            + "read, so what could not be read about it is never said of the one after it")
     void the_first_keeps_a_shared_name_even_when_it_cannot_be_read() {
         PathItem widget = new PathItem();
         widget.setGet(new io.swagger.v3.oas.models.Operation().operationId("list")
@@ -224,6 +225,29 @@ class OperationConverterTest {
         assertThat(model.unreadableOperations()).singleElement()
                 .satisfies(issue -> assertThat(issue.operation()).contains(OperationId.of("list")));
         assertThat(model.readInPart(OperationId.of("GET /gadgets"))).isFalse();
+    }
+
+    @Test
+    @DisplayName("an operation whose method and path another operation declares as its "
+            + "operationId is numbered, and the issue says the name was taken, not that the "
+            + "document repeats it")
+    void a_method_and_path_taken_as_an_operation_id_is_numbered() {
+        PathItem widgets = new PathItem();
+        widgets.setGet(new io.swagger.v3.oas.models.Operation().operationId("GET /gadgets"));
+        PathItem gadgets = new PathItem();
+        gadgets.setGet(new io.swagger.v3.oas.models.Operation());
+
+        OperationConverter.Result result = OperationConverter.convert(
+                apiWithPaths("/widgets", widgets, "/gadgets", gadgets), java.util.Map.of());
+
+        assertThat(result.operations()).extracting(Operation::id)
+                .containsExactly(OperationId.of("GET /gadgets"),
+                        OperationId.of("GET /gadgets (2)"));
+        assertThat(result.issues()).singleElement().satisfies(issue -> {
+            assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.RENAMED);
+            assertThat(issue.message()).isEqualTo("another operation is already called "
+                    + "'GET /gadgets'; renamed 'GET /gadgets (2)' to stay unique");
+        });
     }
 
     /** What the converter read, as the model the rest of RESTest is handed. */

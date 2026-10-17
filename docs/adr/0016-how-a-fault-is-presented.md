@@ -427,8 +427,8 @@ requests in all, swagger-petstore again among the largest differences with nothi
 
 **A correction the same day: an operation renamed is judged.** Of the two caveats under *what is
 left alone*, the first no longer holds. An operation RESTest renames, because the document gives its
-identifier to an operation before it too, is recorded with an effect of its own and counts as read
-whole, so `F920` and `F921` judge it; and whatever RESTest could not read about one of two
+identifier to another one RESTest reads first, is recorded with an effect of its own and counts as
+read whole, so `F920` and `F921` judge it; and whatever RESTest could not read about one of two
 operations sharing an identifier is said of that one, never of the other
 ([ADR-0012](0012-canonical-model.md)'s amendment of the same day). The fifteen APIs run again with
 the change, a minute each, seed 42, 3,760,792 requests: the replay agrees with every run,

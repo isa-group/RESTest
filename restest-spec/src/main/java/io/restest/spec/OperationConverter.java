@@ -61,9 +61,8 @@ import java.util.function.Function;
  * catches and turns into a {@link SpecificationIssue}. Two operations that declare the same
  * {@code operationId} are not skipped - both stay testable, with the second renamed and the renaming
  * reported, because {@link io.restest.core.model.ApiModel} requires every identifier to be unique.
- * The name is settled before the operation is read, and the first operation in the document keeps
- * it whether or not it can be read, so that anything said about an operation names the operation it
- * is about.
+ * The name is settled before the operation is read, and the first operation read keeps it whether
+ * or not it can be read, so that anything said about an operation names the operation it is about.
  *
  * <p>A parameter, request body, response or header may itself be a {@code $ref} to a reusable
  * definition under {@code components}, and that definition may in turn be a {@code $ref} to another
@@ -201,9 +200,9 @@ final class OperationConverter {
                         pathServers, swaggerOperation, components, location, issues);
                 operations.add(operation);
                 if (!id.equals(declared)) {
-                    issues.add(SpecificationIssue.renamed(location, id, "the document gives the "
-                            + "identifier '" + declared + "' to an operation before this one too; "
-                            + "renamed '" + id + "' to stay unique"));
+                    issues.add(SpecificationIssue.renamed(location, id, "another operation is "
+                            + "already called '" + declared + "'; renamed '" + id
+                            + "' to stay unique"));
                 }
                 if (hasUnsupportedConstruct(operation, schemas)) {
                     issues.add(SpecificationIssue.degraded(location, id, "this operation's data "
@@ -625,7 +624,9 @@ final class OperationConverter {
 
     /**
      * The name an operation is read and tested under, kept from every operation after it: the one
-     * the document gives it, unless an operation before it in the document has that name already.
+     * the document gives it, unless an operation read before it has that name already. Paths are
+     * read in the document's order, and the methods of one path as GET, PUT, POST, DELETE, PATCH,
+     * HEAD, OPTIONS and TRACE, whatever order they are written in.
      *
      * <p>Two operations under one name is a contradiction {@link io.restest.core.model.ApiModel}
      * refuses to hold, so a later one is given its method and path instead, {@code GET /bats},

@@ -150,16 +150,16 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
 **Date:** 2026-10-17
 
 **A `SpecificationIssue` has a fourth effect, `RENAMED`, beside `OPERATION_SKIPPED`, `DEGRADED` and
-`DOCUMENT`.** An operation is renamed when the document gives its `operationId` to an operation read
-before it too: the model holds no two operations under one identifier, so the later one is called by
-its method and path, `PUT /v1/users/{id}`. Nothing else about it is lost — its parameters, body and
-replies are read whole — so it is tested with everything the document says, under a name of
+`DOCUMENT`.** An operation is renamed when the document gives its `operationId` to another one
+RESTest reads first: the model holds no two operations under one identifier, so the later one is
+called by its method and path, `PUT /v1/users/{id}`. Nothing else about it is lost — its parameters,
+body and replies are read whole — so it is tested with everything the document says, under a name of
 RESTest's own. It used to be recorded as `DEGRADED`, "tested with less than the document holds",
 which it is not; and since [ADR-0016](0016-how-a-fault-is-presented.md)'s amendment of the same day,
 the checks of a status code and of a content type the document does not declare leave alone every
 operation a `DEGRADED` issue names. On scout-api, the only one of the Web Fuzzing Dataset's 52
-documents that repeats identifiers, 22 times, that kept 8 operations whose replies the document
-does not declare away from both checks.
+documents that repeats identifiers, 22 times, that kept 8 operations whose replies the document does
+not declare away from both checks.
 
 **A fourth value, because the effect is what says what an issue cost**, and a rename costs what none
 of the three say: the name alone. Three other answers were weighed:
@@ -180,8 +180,10 @@ operation had been read, so whatever RESTest could not read about the later of t
 sharing an identifier — a reply pointing at a response the document never defines, say — was said
 of the earlier one, which kept the name. The earlier one then counted as read in part, and the later
 one, had only the rename's effect changed, would have been held to replies RESTest could not read.
-The name is now settled first, and the first operation in the document keeps it whether or not it
-can be read; every later one is called by its method and path, read or not. So every issue names the
+The name is now settled first, and the first operation RESTest reads keeps it whether or not it can
+be read; every later one is called by its method and path, read or not. RESTest reads the paths in
+the document's order and, within a path, the methods as `GET`, `PUT`, `POST`, `DELETE`, `PATCH`,
+`HEAD`, `OPTIONS`, `TRACE`, whatever order they are written in, as before. So every issue names the
 operation it is about, in either order: what could not be read about an operation RESTest skipped is
 never said of the one after it, and a run no longer lists as untested a name it tested. Before, an
 operation that could not be read took no name, and the one after it kept the name.
@@ -202,9 +204,15 @@ operation that could not be read took no name, and the one after it kept the nam
   and path, so a number is added only when another operation declares that very text, `GET /bats`,
   as its identifier.
 
-What a person sees is unchanged but for one line: the screen still lists a rename among the "part(s)
-of the document could not be read", now naming both the identifier the document repeats and the new
-name. `report.json` carries no issue of any effect, as before.
+**What a person sees changes in names, and in what the two checks report.** The screen still lists
+a rename among the "part(s) of the document could not be read", its line now naming the identifier
+already taken and the new one. An operation that repeats an identifier and cannot be read is named
+by its method and path where the run lists what could not be tested, and in `report.json`'s
+`skippedOperations`. When the first of two such operations is the one that cannot be read, the
+second, which used to keep the identifier, is tested, stored and reported under its method and path,
+and a plan's `only` or a list of values naming the identifier now names the first. And `F920` and
+`F921` judge every renamed operation. A `DEGRADED` or `RENAMED` issue is still nowhere in
+`report.json`, which lists only the operations that could not be tested.
 
 ## Amendment (M2.1b)
 
