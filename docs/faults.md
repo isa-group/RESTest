@@ -147,14 +147,21 @@ above.
 Reported for every request sent on a connection open to the API that got no reply — not even the
 first line of one — before RESTest stopped waiting. It waits `engine.readTimeout` for anything to
 arrive, half a minute by default, and `engine.callTimeout` for the whole request, a minute
-([the settings](settings.md#engine)). From a run against an API that calls a service on the internet
-from a machine with no connection to it:
+([the settings](settings.md#engine)). From a minute's run of an API that calls a service on the
+internet, run where it could not reach it:
 
 ```
 F312  Call Timeout
-      fetchUsingGET - GET http://127.0.0.1:52200/fetch  ->  no reply
+      fetchUsingGET - GET http://127.0.0.1:55811/fetch  ->  no reply
       no reply within 30.0s: a connection to the API was open, and no status line came back before RESTest stopped waiting
-      curl -i -X GET 'http://127.0.0.1:52200/fetch' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+      curl -i -X GET 'http://127.0.0.1:55811/fetch' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+```
+
+The same request in `report.json` says what RESTest was waiting for ([What a run leaves
+behind](report.md#findingsinteractionoutcome)):
+
+```json
+{"kind": "failed", "reason": "SocketTimeoutException: Read timed out", "timedOutWaitingFor": "reply"}
 ```
 
 - **It is often a real problem.** An operation that sits on a request is usually waiting on
@@ -179,8 +186,6 @@ F312  Call Timeout
   reading a connection it keeps open.
 - **The `curl` waits as long as the API does.** It has no limit of its own: add `--max-time 35` to
   try it without waiting for ever.
-- **In `report.json`**, the request's outcome is `failed`, with `timedOutWaitingFor` set to `reply`
-  ([What a run leaves behind](report.md#findingsinteractionoutcome)).
 
 ## Switching a check off
 
