@@ -21,14 +21,17 @@
  * it, and names each fault by a number from a catalogue several testing tools share, so that a
  * RESTest result can be put beside somebody else's honestly.
  *
- * <p>Five rules live here so far. One reports an API that fell over, with a 500, and one an API
+ * <p>Eight rules live here so far. One reports an API that fell over, with a 500, and one an API
  * that answered with another server error, such as a 503. One checks a reply's body against the
  * shape its own specification promised - using the specification document itself, and an
  * off-the-shelf checker confined to this module, so that nothing is judged by RESTest's reading of a
- * document rather than by the document. One reports an API that accepted a request RESTest broke on
- * purpose, which it should have turned away, and the last a request the API had on an open
- * connection and never answered before RESTest stopped waiting. Each can be switched off for a run,
- * for an API it is wrong about, without switching off the others.
+ * document rather than by the document. One reports an API that answered 501, "not implemented", to
+ * an operation its document declares. One reports an API that accepted a request RESTest broke on
+ * purpose, which it should have turned away, and one a request the API had on an open connection
+ * and never answered before RESTest stopped waiting. The last two report a reply whose status code,
+ * or whose content type, the document does not declare: kinds the catalogue has no number for, which
+ * RESTest numbers itself. Each can be switched off for a run, for an API it is wrong about, without
+ * switching off the others.
  *
  * <p>Anybody's rule is one class and nothing else: this module offers them as a service, and they
  * are found by looking rather than by a list somebody has to remember to update. The rules RESTest
@@ -45,6 +48,9 @@ module io.restest.oracles {
             io.restest.oracles.ServerErrorOracle,
             io.restest.oracles.OtherServerErrorOracle,
             io.restest.oracles.ResponseSchemaOracle,
+            io.restest.oracles.NotImplementedOracle,
             io.restest.oracles.InvalidDataAcceptedOracle,
-            io.restest.oracles.NoReplyInTimeOracle;
+            io.restest.oracles.NoReplyInTimeOracle,
+            io.restest.oracles.UndeclaredStatusOracle,
+            io.restest.oracles.UndeclaredContentTypeOracle;
 }

@@ -80,8 +80,9 @@ path instead of the one the document declares, so for the clinic, whose document
 `--url http://localhost:9966/other` replaces it. Compare the address in a fault's `curl` command with
 one you know works.
 
-**Mostly `400`.** The API refuses the values. The report keeps only faults, and a refusal is not
-one, so run again with `--store` and read a few of the refusals from the stored run:
+**Mostly `400`.** The API refuses the values. The report keeps only faults, and a refusal the
+document declares is not one, so run again with `--store` and read a few of the refusals from the
+stored run:
 
 ```bash
 sqlite3 restest-out/run.sqlite "SELECT operation, json_extract(document, '$.outcome.body.text') FROM interaction WHERE status_code = 400 LIMIT 5"
@@ -91,6 +92,17 @@ What the API objects to is usually in its own words there. Hand over values it a
 dictionary ([chapter 6](06-dictionaries.md)). Remember that some refusals are meant: the
 summary says how many requests pushed at the API on purpose or changed one thing in a request it
 had accepted.
+
+## Most faults are status codes the document does not declare
+
+The summary's count of faults is mostly `F920`, *A Status Code The Document Does Not Declare*, and
+the operations it names answer `400` or `404`. The document lists what each operation answers when
+all goes well and leaves out the ways it refuses, so every request that meets a refusal is a fault.
+Each one is true — the document says less than the API does — and the fix is to declare those
+replies in the document, or `default` for every reply it does not name. Until then
+`--set checks.undeclaredStatusCode=false` leaves the other checks as they are. The same goes for
+`F921` and a document that declares `application/json` for replies the API sends as
+`application/problem+json`, which `--set checks.undeclaredContentType=false` stops.
 
 ## The API falls over under the run
 

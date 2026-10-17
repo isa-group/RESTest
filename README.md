@@ -147,9 +147,10 @@ RESTest reports](docs/faults.md) says what each kind of fault means.
      one of those has a fault whatever was sent
      ([how much of a run pushes](docs/campaign-format.md#how-much-of-a-run-pushes-at-the-api)).
 4. **It judges every reply**: a 500 is a fault, and so are another server error such as 503, a reply
-   whose body is not the shape the document promised, a success in answer to a request it broke on
-   purpose, which the document says the API must refuse, and a request the API took and never
-   answered before RESTest stopped waiting.
+   whose body is not the shape the document promised, a 501 to an operation the document declares, a
+   success in answer to a request it broke on purpose, which the document says the API must refuse,
+   a request the API took and never answered before RESTest stopped waiting, and a reply whose
+   status code or content type the document does not declare.
 
 The whole budget is used, reading the document included. The share of it in which RESTest had
 nothing in flight is reported as *idle*, and kept as close to nothing as possible.

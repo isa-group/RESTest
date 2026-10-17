@@ -169,6 +169,23 @@ public record ApiModel(
                 .toList();
     }
 
+    /**
+     * Whether the document says something about this operation that could not be read, though the
+     * operation itself could: a reply pointing at a shape the document never defines, say.
+     *
+     * <p>Such an operation is tested with what could be read. Anything that would judge it by what
+     * the document leaves out has to know, since what could not be read may be what it is looking
+     * for.
+     *
+     * @param operation the operation, by its identifier
+     * @return whether reading it set something aside
+     */
+    public boolean readInPart(OperationId operation) {
+        Objects.requireNonNull(operation, "operation");
+        return issues.stream().anyMatch(issue -> issue.effect() == SpecificationIssue.Effect.DEGRADED
+                && issue.operation().filter(operation::equals).isPresent());
+    }
+
     /** Every operation using the given method, in document order. */
     public List<Operation> operations(HttpMethod method) {
         Objects.requireNonNull(method, "method");

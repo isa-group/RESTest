@@ -1,5 +1,8 @@
 io.restest.oracles.ServerErrorOracle
 io.restest.oracles.OtherServerErrorOracle
 io.restest.oracles.ResponseSchemaOracle
+io.restest.oracles.NotImplementedOracle
 io.restest.oracles.InvalidDataAcceptedOracle
 io.restest.oracles.NoReplyInTimeOracle
+io.restest.oracles.UndeclaredStatusOracle
+io.restest.oracles.UndeclaredContentTypeOracle

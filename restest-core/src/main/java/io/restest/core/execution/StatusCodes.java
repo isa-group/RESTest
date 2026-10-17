@@ -59,4 +59,17 @@ public final class StatusCodes {
     public static boolean isServerError(int statusCode) {
         return statusCode >= 500 && statusCode <= 599;
     }
+
+    /**
+     * Whether the code is one HTTP defines a meaning for: 100 to 599.
+     *
+     * <p>Below it and above it there is only an API sending a number nobody can read anything into,
+     * which a document cannot declare either.
+     *
+     * @param statusCode the status code the API answered
+     * @return whether HTTP gives it a meaning
+     */
+    public static boolean isHttpStatus(int statusCode) {
+        return statusCode >= 100 && statusCode <= 599;
+    }
 }

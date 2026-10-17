@@ -268,10 +268,16 @@ checks:
   otherServerError: true      # default
   # report a reply whose body is not the shape the document gives for its status code and media type (F200)
   replyOffSchema: true        # default
+  # report a reply of 501, not implemented, to an operation the document declares (F205)
+  notImplemented: true        # default
   # report a request broken on purpose, with one thing the document forbids, that the API accepted (F206)
   invalidDataAccepted: true   # default
   # report a request that got no reply, on a connection open to the API, before RESTest stopped waiting (F312)
   noReplyInTime: true         # default
+  # report a reply whose status code, below 500, the document does not declare for the operation (F920)
+  undeclaredStatusCode: true  # default
+  # report a reply with a body whose content type the document does not declare for its status code, below 500 (F921)
+  undeclaredContentType: true # default
 
 report:
   # how many faults of one kind, on one operation, are written out whole
@@ -517,8 +523,11 @@ faults](faults.md#switching-a-check-off) says what switching one off changes, an
 | `internalServerError` | `true` | report a reply of 500, which says the API fell over while handling the request (F100) |
 | `otherServerError` | `true` | report a reply of a server error other than 500 and 501, such as 503 (F121) |
 | `replyOffSchema` | `true` | report a reply whose body is not the shape the document gives for its status code and media type (F200) |
+| `notImplemented` | `true` | report a reply of 501, not implemented, to an operation the document declares (F205) |
 | `invalidDataAccepted` | `true` | report a request broken on purpose, with one thing the document forbids, that the API accepted (F206) |
 | `noReplyInTime` | `true` | report a request that got no reply, on a connection open to the API, before RESTest stopped waiting (F312) |
+| `undeclaredStatusCode` | `true` | report a reply whose status code, below 500, the document does not declare for the operation (F920) |
+| `undeclaredContentType` | `true` | report a reply with a body whose content type the document does not declare for its status code, below 500 (F921) |
 
 ### `report.*`
 

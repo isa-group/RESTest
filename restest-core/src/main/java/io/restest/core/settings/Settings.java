@@ -263,9 +263,14 @@ public record Settings(
                 typed.yesOrNo("checks.internalServerError", DEFAULTS.checks.internalServerError()),
                 typed.yesOrNo("checks.otherServerError", DEFAULTS.checks.otherServerError()),
                 typed.yesOrNo("checks.replyOffSchema", DEFAULTS.checks.replyOffSchema()),
+                typed.yesOrNo("checks.notImplemented", DEFAULTS.checks.notImplemented()),
                 typed.yesOrNo("checks.invalidDataAccepted",
                         DEFAULTS.checks.invalidDataAccepted()),
-                typed.yesOrNo("checks.noReplyInTime", DEFAULTS.checks.noReplyInTime())));
+                typed.yesOrNo("checks.noReplyInTime", DEFAULTS.checks.noReplyInTime()),
+                typed.yesOrNo("checks.undeclaredStatusCode",
+                        DEFAULTS.checks.undeclaredStatusCode()),
+                typed.yesOrNo("checks.undeclaredContentType",
+                        DEFAULTS.checks.undeclaredContentType())));
         ReportSettings report = group("report", () -> new ReportSettings(
                 typed.wholeNumber("report.writeUpsPerOperationAndKind",
                         DEFAULTS.report.writeUpsPerOperationAndKind()),
@@ -467,8 +472,11 @@ public record Settings(
             case "checks.internalServerError" -> String.valueOf(checks.internalServerError());
             case "checks.otherServerError" -> String.valueOf(checks.otherServerError());
             case "checks.replyOffSchema" -> String.valueOf(checks.replyOffSchema());
+            case "checks.notImplemented" -> String.valueOf(checks.notImplemented());
             case "checks.invalidDataAccepted" -> String.valueOf(checks.invalidDataAccepted());
             case "checks.noReplyInTime" -> String.valueOf(checks.noReplyInTime());
+            case "checks.undeclaredStatusCode" -> String.valueOf(checks.undeclaredStatusCode());
+            case "checks.undeclaredContentType" -> String.valueOf(checks.undeclaredContentType());
 
             case "report.writeUpsPerOperationAndKind" ->
                     String.valueOf(report.writeUpsPerOperationAndKind());

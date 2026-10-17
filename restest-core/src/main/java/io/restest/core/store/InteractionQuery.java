@@ -15,6 +15,7 @@
  */
 package io.restest.core.store;
 
+import io.restest.core.execution.StatusCodes;
 import io.restest.core.model.OperationId;
 import java.util.Objects;
 import java.util.Optional;
@@ -70,7 +71,7 @@ public record InteractionQuery(
         Objects.requireNonNull(outcome, "outcome");
         Objects.requireNonNull(limit, "limit");
         statusCode.ifPresent(code -> {
-            if (code < 100 || code > 599) {
+            if (!StatusCodes.isHttpStatus(code)) {
                 throw new IllegalArgumentException(
                         "an HTTP status code is between 100 and 599: " + code);
             }

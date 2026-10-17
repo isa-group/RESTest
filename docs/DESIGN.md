@@ -24,11 +24,12 @@ then, until the budget runs out, builds requests from a plan of weighted sources
 document states, what the API has already returned, values invented to fit what the document says,
 lists of values a person hands over — while part of the run pushes at the API with values nobody
 sensible would send, changes accepted requests one thing at a time, and sends short series around the
-things it creates. Every request is judged by five rules — a reply of 500, a reply of another server
-error, a reply whose body is not the shape the document promised, a request broken on purpose that
-the API accepted, and a request the API took on an open connection and never answered — and what
-they find is reported on the screen and in `report.json` with a `curl` command that repeats it; each
-rule can be switched off. What a user sees of all this is in
+things it creates. Every request is judged by eight rules — a reply of 500, a reply of another server
+error, a reply whose body is not the shape the document promised, a 501 to an operation the document
+declares, a request broken on purpose that the API accepted, a request the API took on an open
+connection and never answered, and a reply whose status code, or whose content type, the document
+does not declare — and what they find is reported on the screen and in `report.json` with a `curl`
+command that repeats it; each rule can be switched off. What a user sees of all this is in
 [`docs/`](README.md); how it is built is the rest of this page.
 
 From version 2.0 on, RESTest is a rewrite rather than a refactor of RESTest 1.x. The reasoning is
@@ -142,7 +143,7 @@ database inside the request loop. The store is for looking back; the event strea
 These are architectural requirements rather than features, and they are the whole of what
 "extensible" means here. A seam is known to be real rather than assumed when something is built on
 it. So far two are: the non-blocking engine, with its idle-time accounting, and `Oracle`, with the
-five rules a run judges requests by. The other four are design constraints the rest of the code keeps
+eight rules a run judges requests by. The other four are design constraints the rest of the code keeps
 room for, and RESTest has no code for them yet; the items under [Out of
 scope](#out-of-scope) name which of them each would use.
 

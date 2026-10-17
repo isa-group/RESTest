@@ -20,9 +20,11 @@ package io.restest.core.settings;
  *
  * <p>Every attempt is put to a few checks, and each one that finds something wrong reports a fault:
  * a reply of 500, which says the API fell over; a reply of another server error, such as 503; a
- * reply whose body is not the shape the API's own document says it would be; a success in answer to
- * a request RESTest broke on purpose, which the API should have turned away; and a request the API
- * had on an open connection and never answered before RESTest stopped waiting. A check can be wrong
+ * reply whose body is not the shape the API's own document says it would be; a reply of 501, "not
+ * implemented", to an operation the document declares; a success in answer to a request RESTest
+ * broke on purpose, which the API should have turned away; a request the API had on an open
+ * connection and never answered before RESTest stopped waiting; and a reply whose status code, or
+ * whose content type, the document does not declare for that operation. A check can be wrong
  * about one API - a document that describes its error replies badly makes every one of them look
  * broken - and a person whose build goes red for that reason needs to turn the one check off without
  * turning the tool off. So each check has a switch here, named for what is wrong with what came back,
@@ -40,15 +42,23 @@ package io.restest.core.settings;
  *     or 504
  * @param replyOffSchema report a reply whose body is not the shape the document gives for its status
  *     code and media type
+ * @param notImplemented report a reply of 501, "not implemented", to an operation the document
+ *     declares
  * @param invalidDataAccepted report a request broken on purpose, with one thing in it that the
  *     document forbids, which the API accepted
  * @param noReplyInTime report a request that got no reply, on a connection open to the API, before
  *     RESTest stopped waiting
+ * @param undeclaredStatusCode report a reply whose status code, below 500, the document does not
+ *     declare for the operation
+ * @param undeclaredContentType report a reply with a body, and a status code below 500 the document
+ *     declares, whose content type the document does not declare for that status code
  */
 public record CheckSettings(boolean internalServerError, boolean otherServerError,
-        boolean replyOffSchema, boolean invalidDataAccepted, boolean noReplyInTime) {
+        boolean replyOffSchema, boolean notImplemented, boolean invalidDataAccepted,
+        boolean noReplyInTime, boolean undeclaredStatusCode, boolean undeclaredContentType) {
 
-    private static final CheckSettings DEFAULTS = new CheckSettings(true, true, true, true, true);
+    private static final CheckSettings DEFAULTS =
+            new CheckSettings(true, true, true, true, true, true, true, true);
 
     /** What a run does when nobody has said otherwise: every check is made. */
     public static CheckSettings defaults() {

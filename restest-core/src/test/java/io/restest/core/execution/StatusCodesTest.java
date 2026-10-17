@@ -42,4 +42,11 @@ class StatusCodesTest {
     void server_errors(int statusCode, boolean serverError) {
         assertThat(StatusCodes.isServerError(statusCode)).isEqualTo(serverError);
     }
+
+    @ParameterizedTest
+    @CsvSource({"99, false", "100, true", "404, true", "599, true", "600, false"})
+    @DisplayName("a status code HTTP gives a meaning to is one from 100 to 599")
+    void http_statuses(int statusCode, boolean meaningful) {
+        assertThat(StatusCodes.isHttpStatus(statusCode)).isEqualTo(meaningful);
+    }
 }

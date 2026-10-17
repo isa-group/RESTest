@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
  */
 class FaultCategoryTest {
 
-    /** A kind nobody has agreed a shared name for, as RESTest might one day define. */
+    /** A kind nobody has agreed a shared name for, which gives itself no key in words. */
     private static final FaultCategory OWN_KIND = new FaultCategory() {
         @Override
         public int code() {

@@ -24,9 +24,12 @@ import io.restest.core.store.InteractionQuery;
 import io.restest.core.store.InteractionStore;
 import io.restest.store.SqliteInteractionStore;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,6 +62,26 @@ final class ARun {
     static final String FIFTEEN_HUNDRED_REQUESTS = "schedule.requestsBeforeStopping=1500";
 
     private ARun() {
+    }
+
+    /**
+     * A short run of this document against a stand-in, written to {@code out} in the directory, and
+     * the code it ended with; whatever it printed goes to the screen.
+     */
+    static int run(String described, String baseUrl, Path directory, StringWriter screen,
+            String... settings) throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), described);
+        List<String> arguments = new ArrayList<>(List.of("run", document.toString(),
+                "--url", baseUrl, "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
+                "--out", directory.resolve("out").toString()));
+        arguments.addAll(List.of(settings));
+        PrintWriter out = new PrintWriter(screen);
+        try {
+            return Restest.run(arguments.toArray(String[]::new), out, out);
+        } finally {
+            out.flush();
+        }
     }
 
     /** A reply of this status whose body is JSON. */

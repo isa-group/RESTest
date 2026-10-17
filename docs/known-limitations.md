@@ -18,9 +18,9 @@ current release: an entry leaves it in the release that lifts it, and that relea
   request goes unanswered and sends fewer as answers slow down, but no setting promises an API's
   owner a rate. Lowering `engine.maxConcurrency` is the nearest thing.
 - **A run does not stop when every request is refused.** If the API answers 401 or 403 to
-  everything, because a key is wrong or was revoked, the run goes on until its budget ends, and a 401
-  is not a fault, so nothing is printed while it runs; the summary at the end counts the replies by
-  status. Try a new key with a short `--budget` first.
+  everything, because a key is wrong or was revoked, the run goes on until its budget ends. A 401 the
+  document declares is not a fault, and one it leaves out is reported, `F920`, on every request; the
+  summary at the end counts the replies by status. Try a new key with a short `--budget` first.
 - **A run does not stop when the API stops answering.** The limiter falls to one request in flight
   as unanswered requests pile up, and the run keeps trying until its budget ends. Keep `--budget` to
   what you are prepared to spend on an API that may go down. An API that still takes connections and
@@ -67,6 +67,34 @@ of its own. Whether you may test an API at all is not something any tool can che
   `checks.replyOffSchema` off because one operation's error replies are not the shape its document
   gives hides every other reply off its schema too, on every operation
   ([the faults](faults.md#switching-a-check-off)).
+- **A document that leaves out its refusals makes many faults, and a build fail.** Every reply whose
+  status code the document does not declare is a fault, `F920`, and so is every reply sent as a
+  content type it does not declare, `F921`; a document that lists only what goes well can make most
+  of a run's replies faults, and turn a run that ended with `0` into one that ends with `1`. Each is
+  true, and RESTest does not yet tell a fault the API should fix from one its document should: fix
+  the document, or switch the check off for the run (`checks.undeclaredStatusCode`,
+  `checks.undeclaredContentType`; [the faults](faults.md#f920-a-status-code-the-document-does-not-declare)).
+- **The faults written out on the screen are the first of any kind.** The screen writes out the
+  first 50 faults whole (`report.faultsShownOnTheConsole`) and counts the rest. A document that
+  leaves out its refusals fills those places with `F920` from the first requests, so a 500 found
+  later is only counted there: in a minute's run of an API with both, the 50 were all `F920` and
+  `F205`, and none of its 10,902 replies of 500. Read the counts under the faults, and `report.json`,
+  which writes out the first five of each kind on each operation; or switch `F920` off for the run.
+- **A type that only resembles a declared one is reported.** `application/problem+json`, where the
+  document declares `application/json`, is `F921`, though both are JSON
+  ([the faults](faults.md#f921-a-content-type-the-document-does-not-declare)).
+- **A reply the document declares in a form RESTest cannot read is reported as undeclared.** The
+  library RESTest reads documents with drops a reply written as something other than an object —
+  `"404": "not found"` — and says so before the run, without naming the operation. That operation's
+  404s are then `F920`, though the document meant to declare them. An operation RESTest knows it read
+  only in part, such as one with a reply pointing at a shape the document never defines, is left
+  alone.
+- **An operation whose identifier the document repeats is not checked against its status codes and
+  content types.** RESTest renames the second one to keep identifiers unique and counts that as
+  reading it in part, so `F920` and `F921` leave it alone, though its replies were read whole.
+- **A body the document describes only in words is not checked against a type.** A reply with a body
+  whose status code the document declares with no content type at all is left alone, whatever type
+  it comes as.
 - **Not every failure of RESTest's own ends in `4`.** Exit code `4` means RESTest itself broke
   ([the exit codes](command-line.md#exit-codes)), but three such failures still read as something the
   API did ([ADR-0015](adr/0015-command-line-contract.md)):
@@ -87,7 +115,9 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **With redirections followed, a request the next address sits on is reported on the operation.**
   With `engine.followRedirects` on, which it is not by default, an operation that sends the request
   on to another address that takes it and never answers is reported as `F312`, and the `curl`
-  printed with it shows only the first answer, the redirection.
+  printed with it shows only the first answer, the redirection. The same goes for the reply at the
+  end of the redirections, which is judged against what the document declares for the operation
+  that was asked: a login page answered with `200` as `text/html` is `F921` there.
 - **A reply that comes, but slowly, is not reported.** Only a request that got no reply before
   RESTest stopped waiting is a fault; one answered in twenty-nine seconds, against the half a minute
   it waits by default, is not. Nor is a reply whose status line and headers arrived and whose body

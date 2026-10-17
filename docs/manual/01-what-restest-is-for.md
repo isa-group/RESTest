@@ -20,15 +20,18 @@ document and the replies are all it has. That has two consequences worth knowing
 
 ## What it finds
 
-A run reports five kinds of fault:
+A run reports eight kinds of fault:
 
 | Code | What happened |
 |---|---|
 | `F100` | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect |
 | `F121` | The API answered another server error, such as `503`: something in it, or in front of it, failed |
 | `F200` | The API answered with a body that is not the shape its document gives for that reply |
+| `F205` | The API answered `501 Not Implemented` to an operation its document declares |
 | `F206` | The API accepted a request RESTest broke on purpose, which its document says it must refuse |
 | `F312` | The API took a request and sent no reply before RESTest stopped waiting: something it waits on does not answer |
+| `F920` | The API answered with a status code its document does not declare for that operation, such as `201` where it promises `200` |
+| `F921` | The API sent a body under a content type its document does not declare for that reply, such as `application/problem+json` where it promises `application/json` |
 
 Each fault comes with the request that caused it, what the API answered, and a `curl` command that
 sends the same request again, so that whoever fixes the API can see the fault for themselves.
@@ -36,8 +39,9 @@ sends the same request again, so that whoever fixes the API can see the fault fo
 A fault is **a reason to look, not a verdict**. A 500 can come from a database that was down rather
 than from a bug, a reply of the wrong shape can be a mistake in the document rather than in the API,
 a broken request accepted can be the library the API reads its requests with, more lenient than its
-document, and a request never answered can be a service the API calls that is down. Either way,
-somebody who knows the API should look at it.
+document, a request never answered can be a service the API calls that is down, and a status code
+or a content type the document does not declare is more often a line missing from the document
+than a fault in the API. Either way, somebody who knows the API should look at it.
 
 ## How it goes about it
 

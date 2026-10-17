@@ -1,6 +1,6 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
-**Status:** Accepted, amended at M1.8 and on 10 October 2026
+**Status:** Accepted, amended at M1.8 and on 10 and 17 October 2026
 **Date:** 2026-09-13
 
 ## Context
@@ -172,3 +172,24 @@ has to answer the neighbouring question of which checks were deliberately switch
 the catalogue: a reply whose structure does not match its schema became `F200`, and `101` now means a
 non-standard status code. RESTest reports it as `F200`; the table in ADR-0016's M1.10 amendment shows
 the renumbering.
+
+## Amendment (17 October 2026): the status code and the content type have rules of their own
+
+**The check of a reply's shape still ends quietly when no reply is declared for its status code, or
+no shape for its media type; two other rules now say so.** A reply whose status code the document
+does not declare for the operation, below 500, is `F920`, and a reply with a body whose content type
+the document does not declare for its status code, below 500, is `F921`
+([ADR-0036](0036-kinds-of-fault-restest-numbers-itself.md)). They decide what is declared with the
+same matching rules this record keeps in one place, in the canonical model: exact status, then
+`2XX`, then `default`; exact media type, then `type/*`, then `*/*`. The rule of shape is unchanged:
+it reports only a body it can judge, and stays silent about the rest.
+
+The empty-body case above said whether a reply was allowed to be empty "belongs with the oracles
+that judge" status codes. `F921` leaves a reply with no body alone, whatever type it names, for the
+reason given there: an answer to `HEAD` and a `304` carry no body by the rules of HTTP.
+
+Neither new rule judges an operation RESTest could not read in full. A reply the document declares
+through a reference that does not resolve is dropped from the canonical model with a warning, and
+would otherwise look undeclared. A reply the parser drops on its own — written as a word rather than
+an object — leaves only a warning about the document, naming no operation, and does look
+undeclared; [the known limitations](../known-limitations.md#what-a-run-says) say so.

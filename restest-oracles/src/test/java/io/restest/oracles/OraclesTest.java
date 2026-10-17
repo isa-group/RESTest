@@ -39,14 +39,15 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class OraclesTest {
 
-    /** The rules RESTest ships with, by name, in the order of the catalogue's numbers. */
+    /** The rules RESTest ships with, by name, in the order of the numbers of what they report. */
     private static final List<String> SHIPPED = List.of("server-error", "other-server-error",
-            "response-schema", "invalid-data-accepted", "no-reply-in-time");
+            "response-schema", "not-implemented", "invalid-data-accepted", "no-reply-in-time",
+            "undeclared-status-code", "undeclared-content-type");
 
     @Test
-    @DisplayName("the rules RESTest ships with are the five this release reports on, in the order "
-            + "of the catalogue's numbers")
-    void the_standard_rules_are_the_five_this_release_has() {
+    @DisplayName("the rules RESTest ships with are the eight this release reports on, in the order "
+            + "of the numbers of what they report")
+    void the_standard_rules_are_the_eight_this_release_has() {
         assertThat(Oracles.standard(CheckSettings.defaults())).extracting(Oracle::name)
                 .containsExactlyElementsOf(SHIPPED);
     }
@@ -56,8 +57,11 @@ class OraclesTest {
             "checks.internalServerError, server-error",
             "checks.otherServerError, other-server-error",
             "checks.replyOffSchema, response-schema",
+            "checks.notImplemented, not-implemented",
             "checks.invalidDataAccepted, invalid-data-accepted",
-            "checks.noReplyInTime, no-reply-in-time"})
+            "checks.noReplyInTime, no-reply-in-time",
+            "checks.undeclaredStatusCode, undeclared-status-code",
+            "checks.undeclaredContentType, undeclared-content-type"})
     @DisplayName("a check switched off is left out, and the others stay where they were")
     void a_check_switched_off_is_left_out(String check, String rule) {
         assertThat(Oracles.standard(Settings.from(Map.of(check, "false")).checks()))
@@ -70,7 +74,8 @@ class OraclesTest {
     @Test
     @DisplayName("every check off is a run that judges nothing")
     void every_check_off_judges_nothing() {
-        assertThat(Oracles.standard(new CheckSettings(false, false, false, false, false)))
+        assertThat(Oracles.standard(new CheckSettings(false, false, false, false, false, false,
+                false, false)))
                 .describedAs("every check off is a run that judges nothing, which an experiment "
                         + "measuring what judging costs may want")
                 .isEmpty();
@@ -80,8 +85,9 @@ class OraclesTest {
     @DisplayName("the tool finds its own rules by looking, not by a list somebody keeps up to date")
     void the_rules_are_found_by_looking() {
         assertThat(Oracles.discovered()).extracting(Oracle::name)
-                .containsExactly("invalid-data-accepted", "no-reply-in-time",
-                        "other-server-error", "response-schema", "server-error");
+                .containsExactly("invalid-data-accepted", "no-reply-in-time", "not-implemented",
+                        "other-server-error", "response-schema", "server-error",
+                        "undeclared-content-type", "undeclared-status-code");
     }
 
     @Test
@@ -89,11 +95,11 @@ class OraclesTest {
     void the_listener_judges_with_the_checks_left_on() {
         try (EventStream events = new EventStream()) {
             assertThat(OracleListener.standard(Specifications.pets(),
-                    new CheckSettings(false, true, true, true, true), events).oracles())
+                    Settings.from(Map.of("checks.internalServerError", "false")).checks(), events)
+                    .oracles())
                     .describedAs("with the check for a 500 off, the other checks are still made")
                     .extracting(Oracle::name)
-                    .containsExactly("other-server-error", "response-schema",
-                            "invalid-data-accepted", "no-reply-in-time");
+                    .containsExactlyElementsOf(SHIPPED.subList(1, SHIPPED.size()));
         }
     }
 

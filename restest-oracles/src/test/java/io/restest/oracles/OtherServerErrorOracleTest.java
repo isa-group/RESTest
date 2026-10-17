@@ -59,7 +59,8 @@ class OtherServerErrorOracleTest {
     }
 
     @Test
-    @DisplayName("501 is about what the document promises, not a failure, and is left alone")
+    @DisplayName("501 is about what the document promises, not a failure, and is left to its own "
+            + "rule")
     void a_501_is_left_alone() {
         assertThat(oracle.judge(
                 Attempts.answered(LIST_PETS, "/pets", 501, "application/json", "{}"), API))

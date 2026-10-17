@@ -612,3 +612,15 @@ list the common leniencies, so that a reader recognises them.
 Not done, and recorded: CATS expects a success for `null` or an empty value sent to an optional
 member or parameter. Doing the same would need the rule to read the document at the changed place,
 a second copy of what the generator already knows.
+
+## Amendment (17 October 2026): a body sent as a type the operation does not take
+
+**The reply to a request whose body went under a media type the operation does not accept — what
+`wrongContentType` sends — is not judged against the status codes and content types the document
+declares** (`F920`, `F921`; [ADR-0036](0036-kinds-of-fault-restest-numbers-itself.md)). A document is
+not expected to say how an API refuses a body it never promised to take, and Schemathesis exempts
+its own requests of this kind from the same two checks. The rule decides by what went over the wire,
+the request's `Content-Type` against the media types the operation's body accepts — exact, `type/*`
+or `*/*` — as `wrongContentType` chooses what to send, rather than by the operator's name: it covers
+any request that carries a type the operation does not take, and needs nothing from the record of
+the change. `F206` still judges such a request, since accepting it is accepting wrong data.

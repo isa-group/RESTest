@@ -201,7 +201,7 @@ public final class ResponseSchemaOracle implements Oracle {
      * API for doing what it is supposed to do. Whether a reply was allowed to be empty at all is a
      * question about status codes, and belongs with the rules that judge those.
      */
-    private static boolean hasBody(HttpResponseRecord response) {
+    static boolean hasBody(HttpResponseRecord response) {
         return response.body().map(payload -> payload.size() > 0).orElse(false);
     }
 

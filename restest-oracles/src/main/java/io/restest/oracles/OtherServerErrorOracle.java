@@ -40,10 +40,10 @@ import java.util.List;
  * to decide whether it is the API's code or its surroundings, and a run that tests an API whose
  * surroundings are known to be unwell can switch this rule off without losing the 500s.
  *
- * <p>501, "not implemented", is left alone: it is about what the document promises rather than a
- * failure, and the catalogue has another kind for an API that answers it to an operation its
- * document declares. Codes of 600 and above are not server errors at all, whatever their first
- * digit.
+ * <p>501, "not implemented", is left to {@link NotImplementedOracle}: it is about what the document
+ * promises rather than a failure, and the catalogue has another kind for an API that answers it to
+ * an operation its document declares. Codes of 600 and above are not server errors at all, whatever
+ * their first digit.
  */
 public final class OtherServerErrorOracle implements Oracle {
 
