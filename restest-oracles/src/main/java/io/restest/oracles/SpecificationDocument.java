@@ -119,53 +119,78 @@ final class SpecificationDocument {
     }
 
     /**
+     * Where the shape of a reply's body is written in the document, or why there is none to follow.
+     *
+     * <p>Two ways of finding none are told apart, because a run counts them under different reasons.
+     * The document can declare the reply and its media type and give no shape for the body, which
+     * is what the document says. Or the shape cannot be reached at all: the reply points at another
+     * file, at something the document does not define, or round in a circle; or the document lacks
+     * something RESTest's own reading of it found - the path, the method, the status, the body or
+     * the media type.
+     */
+    sealed interface Shape {
+
+        /** The shape is written at the end of this trail. */
+        record At(String trail) implements Shape {
+        }
+
+        /** There is no shape to follow, and which of the two reasons it is. */
+        enum Missing implements Shape {
+            /** The document declares the reply and its media type, and gives no shape. */
+            NONE_GIVEN,
+            /** The shape cannot be reached in the document. */
+            OUT_OF_REACH
+        }
+    }
+
+    /**
      * Where in the document the shape of this reply's body is written, if it is written at all.
      *
      * @param operation   the operation that was called
      * @param response    the reply the document declares for the status that came back
      * @param contentType which of that reply's declared media types applies
      */
-    Optional<String> pointerToSchema(Operation operation, ResponseModel response,
-            String contentType) {
+    Shape pointerToSchema(Operation operation, ResponseModel response, String contentType) {
         String method = operation.method().name().toLowerCase(Locale.ROOT);
         Optional<JsonValue.JsonObject> responses = member(root, "paths")
                 .flatMap(paths -> member(paths, operation.path()))
                 .flatMap(path -> member(path, method))
                 .flatMap(declared -> member(declared, "responses"));
         if (responses.isEmpty()) {
-            return Optional.empty();
+            return Shape.Missing.OUT_OF_REACH;
         }
         Optional<String> statusKey = keyMatching(responses.get(),
                 candidate -> candidate.trim().equalsIgnoreCase(response.status()));
         if (statusKey.isEmpty()) {
-            return Optional.empty();
+            return Shape.Missing.OUT_OF_REACH;
         }
         Optional<JsonValue.JsonObject> declared = member(responses.get(), statusKey.get());
         if (declared.isEmpty()) {
-            return Optional.empty();
+            return Shape.Missing.OUT_OF_REACH;
         }
         String trail = "#/paths/" + step(operation.path()) + "/" + step(method)
                 + "/responses/" + step(statusKey.get());
         Optional<Named> reply = followReferences(declared.get(), trail);
         if (reply.isEmpty()) {
-            return Optional.empty();
+            return Shape.Missing.OUT_OF_REACH;
         }
         Optional<JsonValue.JsonObject> content = member(reply.get().value(), "content");
         if (content.isEmpty()) {
-            return Optional.empty();
+            return Shape.Missing.OUT_OF_REACH;
         }
         Optional<String> contentKey = keyMatching(content.get(),
                 candidate -> withoutParameters(candidate).equalsIgnoreCase(contentType));
         if (contentKey.isEmpty()) {
-            return Optional.empty();
+            return Shape.Missing.OUT_OF_REACH;
         }
         boolean present = member(content.get(), contentKey.get())
                 .flatMap(declaredContent -> declaredContent.member("schema"))
                 .isPresent();
         if (!present) {
-            return Optional.empty();
+            return Shape.Missing.NONE_GIVEN;
         }
-        return Optional.of(reply.get().trail() + "/content/" + step(contentKey.get()) + "/schema");
+        return new Shape.At(reply.get().trail() + "/content/" + step(contentKey.get())
+                + "/schema");
     }
 
     /** Something found in the document, and the trail of names that leads to it. */

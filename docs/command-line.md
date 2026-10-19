@@ -145,7 +145,7 @@ The number the command ends with, which is what a build server or a script acts 
 
 | Code | Meaning |
 |---|---|
-| `0` | The run finished and found nothing wrong. `--print-campaign`, `--print-settings`, `version` and `--help` answer `0` too |
+| `0` | The run finished and found nothing wrong, in what it could check: the summary and `notChecked` in report.json say what it could not. `--print-campaign`, `--print-settings`, `version` and `--help` answer `0` too |
 | `1` | The run finished and found at least one fault in the API |
 | `2` | The command line was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent. A file of arguments that cannot be read is one of these |
 | `3` | Nothing was tested: the document describes no operation that can be tried, there is no address to send requests to or nowhere to write the results, or not one request was answered - none could be built, the budget ran out before the first, or nothing at the address replied. The run says which. A script that starts the API and RESTest together meets the last one when RESTest is quicker |
@@ -155,7 +155,10 @@ The number the command ends with, which is what a build server or a script acts 
 
 A fault found is `1` rather than `0` because the usual use is a gate that should go red when the API
 is broken. A check switched off reports no fault, so a run's `0` says that nothing was found among
-the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)). An operation
+the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)), in the replies
+those checks could judge: a reply a check could not judge, such as one whose document gives no
+shape for its body, is no fault, and the summary and `notChecked` in report.json say how many there
+were ([what a run leaves behind](report.md#notchecked)). An operation
 RESTest had to skip is not an error: a run says what it skipped and carries on, and only a run in
 which nothing at all was tested answers `3`. A run stopped from outside never answers `0` or `1`, so
 that one stopped half-way never passes for one that finished.

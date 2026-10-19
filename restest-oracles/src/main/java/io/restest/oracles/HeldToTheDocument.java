@@ -28,23 +28,24 @@ import java.util.Optional;
  * before {@link UndeclaredStatusOracle} and {@link UndeclaredContentTypeOracle} say the document
  * left something out.
  *
- * <p>Saying "the document does not declare this" is only fair when RESTest knows what the document
- * declares, and when the request was one the document has something to say about. So a reply is
- * left alone, whatever it is, in four cases:
+ * <p>Saying "the document does not declare this" is only fair when the request was one the
+ * document has something to say about. So a reply is left alone, whatever it is, in three cases:
  *
  * <ul>
  *   <li>Its status code is a server error, which other rules report, so that a reply is never
  *       counted twice over one status code; or a code HTTP gives no meaning to.</li>
  *   <li>Its operation is not one RESTest read from the document.</li>
- *   <li>RESTest could not read everything the document says about that operation - a reply
- *       pointing at a shape that does not exist, say. A reply the document declares and RESTest
- *       could not read would otherwise look undeclared. An operation RESTest only had to give
- *       another name, because the document gives its name to another operation too, was read whole
- *       and is held to it like any other.</li>
  *   <li>RESTest sent its body under a media type the operation does not accept, to see whether the
  *       API turns it away. A document is not expected to describe how an API refuses a body it never
  *       promised to take.</li>
  * </ul>
+ *
+ * <p>None of these is a reply a rule could not judge: there was nothing for it to judge. An
+ * operation RESTest could read only in part - a reply pointing at a shape that does not exist, say -
+ * is different, and each rule deals with it itself: what the part it read declares can still be
+ * held to, while what looks undeclared may be declared in the part it could not read. An operation
+ * RESTest only had to give another name, because the document gives its name to another operation
+ * too, was read whole and is held to it like any other.
  */
 final class HeldToTheDocument {
 
@@ -52,7 +53,8 @@ final class HeldToTheDocument {
     }
 
     /**
-     * The operation the reply in this attempt can be held to, or nothing when it cannot be.
+     * The operation the reply in this attempt can be held to, or nothing when there is nothing to
+     * hold it to.
      *
      * @param interaction the attempt
      * @param response the well-formed reply it got
@@ -66,7 +68,6 @@ final class HeldToTheDocument {
             return Optional.empty();
         }
         return api.operation(interaction.testCase().operation())
-                .filter(operation -> !api.readInPart(operation.id()))
                 .filter(operation -> !bodyWentAsSomethingNotAccepted(interaction, operation));
     }
 

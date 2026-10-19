@@ -15,6 +15,7 @@
  */
 package io.restest.report;
 
+import io.restest.core.event.RunEvent;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
@@ -26,8 +27,11 @@ import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.OperationId;
+import io.restest.core.oracle.CouldNotJudge;
 import io.restest.core.oracle.Finding;
+import io.restest.core.oracle.RestestFault;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.oracle.WhyNotJudged;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -133,6 +137,24 @@ final class Runs {
                         Optional.of(InteractionOutcome.TransportFailure.Wait.REPLY),
                         Instant.parse("2026-09-13T10:00:00Z"), Duration.ofSeconds(30)),
                 "no reply within 30.0s");
+    }
+
+    /** The shape of a body the document gives none for. */
+    static final CouldNotJudge NO_SHAPE = new CouldNotJudge(WfcFault.SCHEMA_INVALID_RESPONSE,
+            "the shape", WhyNotJudged.NO_SHAPE_DECLARED);
+
+    /** The shape of a body longer than the run keeps whole. */
+    static final CouldNotJudge CUT_SHORT = new CouldNotJudge(WfcFault.SCHEMA_INVALID_RESPONSE,
+            "the shape", WhyNotJudged.CUT_SHORT);
+
+    /** The content type of a reply the document describes only in words. */
+    static final CouldNotJudge NO_TYPE = new CouldNotJudge(RestestFault.UNDECLARED_CONTENT_TYPE,
+            "the content type", WhyNotJudged.NO_CONTENT_TYPE_DECLARED);
+
+    /** A reply to this operation that these checks could not judge. */
+    static RunEvent.ReplyNotJudged notJudged(String operation, CouldNotJudge... checks) {
+        return new RunEvent.ReplyNotJudged(Instant.parse("2026-09-13T10:00:00Z"),
+                attempt(operation, "/x", 200), List.of(checks));
     }
 
     static EngineStatistics engine() {

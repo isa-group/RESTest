@@ -1,7 +1,7 @@
 # ADR-0006: One event stream, and every interaction persisted
 
-**Status:** Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10 October 2026
-**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13, 2026-09-15, 2026-09-22, 2026-09-23, 2026-09-24, 2026-09-27, 2026-09-30, 2026-10-10)
+**Status:** Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10 and 19 October 2026
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13, 2026-09-15, 2026-09-22, 2026-09-23, 2026-09-24, 2026-09-27, 2026-09-30, 2026-10-10, 2026-10-19)
 
 ## Context
 
@@ -619,3 +619,21 @@ Three things follow:
 **The schema fault is `F200`.** Where this record speaks of F101 faults for replies off their schema,
 it uses the numbering of Faults 0.7.0; since Faults 0.8.0 that fault is `F200` (ADR-0014's and
 ADR-0016's amendments).
+
+## Amendment (19 October 2026): replies a check could not judge
+
+**`RunEvent` gains `ReplyNotJudged`: a reply some checks could not judge, and which, each with the
+reason it gave.** The listener that runs the checks announces it after all of them have judged the
+reply, once for the reply however many checks could not judge it, and not at all for a reply every
+check could judge. Both reports count it, in one place for both, and say how much of the run could
+not be checked ([ADR-0014](0014-response-conformance.md)'s amendment of the same day). The stored
+run does not keep it: judging the stored replies again gives it again.
+
+It is announced on the one thread that delivers everything, and on some APIs nearly every reply
+brings one: 287,676 in a minute against restcountries, whose document gives no shape for any reply.
+Each is small, and every listener but the two reports passes it over in one comparison. Measured on
+19 October 2026 on swagger-petstore, restcountries and rest-scs, three runs of a minute each before
+and after, the same seed for each pair, on battery power: the run sent on average 2% to 4% fewer
+requests, the nine pairs differing by between −21% and +16%, four up and five down, and the time
+with no request in flight stayed between 0.5% and 0.8% of the run. Three runs do not tell that
+apart from what two runs of the same build differ by.

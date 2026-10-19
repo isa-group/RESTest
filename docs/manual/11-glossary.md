@@ -22,8 +22,8 @@ ran out. What it reports is what it found until then.
 **Dictionary.** A file of values worth sending, handed over with `--dictionary`. See [chapter
 6](06-dictionaries.md).
 
-**Exit code.** The number a run ends with: `0` nothing wrong, `1` a fault found, other numbers when
-the run could not do its job. See [chapter 9](09-exit-codes-and-ci.md).
+**Exit code.** The number a run ends with: `0` nothing wrong in what could be checked, `1` a fault
+found, other numbers when the run could not do its job. See [chapter 9](09-exit-codes-and-ci.md).
 
 **Fault.** A reply RESTest has a reason to call wrong: a reply of 500 (`F100`), another server error
 (`F121`), one whose body is not the shape the document gives it (`F200`), a 501 to an operation the
@@ -39,6 +39,10 @@ and kept as close to nothing as possible.
 
 **Memory.** What a run keeps of the API's replies — identifiers, names, whole things it returned —
 to send in later requests. In a plan, the source called `observed`.
+
+**Not checked.** Said of a reply a check could not judge: the shape of a body the document gives no
+shape for, say. Not a fault; a run counts such replies, says why, and lists them under `notChecked`
+in its report. See [What a run leaves behind](../report.md#notchecked).
 
 **OpenAPI document.** The file, in YAML or JSON, that describes an API: its operations, what each
 accepts and what each answers. The one thing a run needs.

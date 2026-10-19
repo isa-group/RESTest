@@ -173,6 +173,9 @@ public final class JsonReport implements RunListener {
 
     /** How many operations made the API fall over, worked out in one place for every report. */
     private final ServerErrors serverErrors = new ServerErrors();
+
+    /** How many replies could not be checked, and why, worked out in one place for every report. */
+    private final NotChecked notChecked = new NotChecked();
     private final Map<Integer, Integer> repliesByStatus = new LinkedHashMap<>();
     private int attemptsWithNothingWrong;
 
@@ -302,6 +305,7 @@ public final class JsonReport implements RunListener {
             case RunEvent.DictionaryRefused refused -> dictionariesRefused.add(refused);
             case RunEvent.InteractionCompleted completed -> attempted(completed.interaction());
             case RunEvent.FaultFound found -> took(found.finding());
+            case RunEvent.ReplyNotJudged notJudged -> notChecked.note(notJudged);
             case RunEvent.RunFinished finished -> {
                 // The last attempt is still open when the run ends; nothing else will be said about
                 // it, so this is where it is counted.
@@ -454,6 +458,7 @@ public final class JsonReport implements RunListener {
         report.put("cutShort", JsonValue.of(cutShort));
         report.put("totals", totals());
         report.put("skippedOperations", skippedOperations());
+        report.put("notChecked", notChecked());
         report.put("dictionaries", dictionaries());
         report.put("limits", limits());
         report.put("settings", settings());
@@ -523,6 +528,33 @@ public final class JsonReport implements RunListener {
         return JsonValue.array(skipped.stream()
                 .map(skip -> pair("operation", JsonValue.of(skip.operation().value()),
                         "reason", JsonValue.of(skip.reason())))
+                .toList());
+    }
+
+    /**
+     * How many replies each check could not judge, and why, with the operations they came from.
+     *
+     * <p>Beside the operations that were not tried, because it says the same kind of thing about
+     * replies: what a run that found nothing wrong did not look at. One row for each check and
+     * reason, most replies first; every operation the replies came from, most first. Empty when
+     * every reply was checked in every way it could have been.
+     */
+    private JsonValue notChecked() {
+        return JsonValue.array(notChecked.lines().stream()
+                .map(line -> {
+                    Map<String, JsonValue> row = new LinkedHashMap<>();
+                    named(row, line.check().kind());
+                    row.put("what", JsonValue.of(line.check().what()));
+                    row.put("reason", JsonValue.of(line.check().why().word()));
+                    row.put("why", JsonValue.of(line.check().why().inWords()));
+                    row.put("replies", JsonValue.of(line.replies()));
+                    row.put("operations", JsonValue.array(line.operations().entrySet().stream()
+                            .map(operation -> pair("operation",
+                                    JsonValue.of(operation.getKey().value()),
+                                    "replies", JsonValue.of(operation.getValue())))
+                            .toList()));
+                    return (JsonValue) JsonValue.object(row);
+                })
                 .toList());
     }
 

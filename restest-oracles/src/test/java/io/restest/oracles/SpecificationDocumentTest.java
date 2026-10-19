@@ -23,6 +23,7 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.ResponseModel;
 import io.restest.core.schema.AnySchema;
+import io.restest.oracles.SpecificationDocument.Shape;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -38,9 +39,9 @@ class SpecificationDocumentTest {
     @Test
     @DisplayName("the trail to a shape is written the standard way, with slashes in names escaped")
     void a_plain_trail_is_written() {
-        Optional<String> pointer = document().pointerToSchema(
+        Optional<String> pointer = trail(document().pointerToSchema(
                 operation(OperationId.of("GET /pets")), declared("GET /pets", 200),
-                "application/json");
+                "application/json"));
 
         assertThat(pointer)
                 .contains("#/paths/~1pets/get/responses/200/content/application~1json/schema");
@@ -49,9 +50,9 @@ class SpecificationDocumentTest {
     @Test
     @DisplayName("the braces of a path's variable part are written the way a web address allows")
     void a_templated_path_is_escaped() {
-        Optional<String> pointer = document().pointerToSchema(
+        Optional<String> pointer = trail(document().pointerToSchema(
                 operation(OperationId.of("GET /pets/{petId}")),
-                declared("GET /pets/{petId}", 200), "application/json");
+                declared("GET /pets/{petId}", 200), "application/json"));
 
         assertThat(pointer.orElseThrow()).contains("~1pets~1%7BpetId%7D");
     }
@@ -59,9 +60,9 @@ class SpecificationDocumentTest {
     @Test
     @DisplayName("a document that spells a status its own way is still found")
     void a_status_spelled_differently_is_found() {
-        Optional<String> pointer = document().pointerToSchema(
+        Optional<String> pointer = trail(document().pointerToSchema(
                 operation(OperationId.of("GET /kinds")), declared("GET /kinds", 201),
-                "application/json");
+                "application/json"));
 
         assertThat(pointer.orElseThrow()).contains("/responses/2xx/");
     }
@@ -69,29 +70,49 @@ class SpecificationDocumentTest {
     @Test
     @DisplayName("a document that capitalises a media type its own way is still found")
     void a_media_type_spelled_differently_is_found() {
-        Optional<String> pointer = document().pointerToSchema(
+        Optional<String> pointer = trail(document().pointerToSchema(
                 operation(OperationId.of("GET /pets/{petId}")),
-                declared("GET /pets/{petId}", 404), "application/json");
+                declared("GET /pets/{petId}", 404), "application/json"));
 
         assertThat(pointer.orElseThrow())
                 .contains("/responses/default/content/Application~1JSON/schema");
     }
 
     @Test
-    @DisplayName("a reply the document declares but gives no shape for has no trail to follow")
+    @DisplayName("a reply the document declares but gives no shape for has no trail, as the "
+            + "document says")
     void a_reply_without_a_shape_has_no_trail() {
         assertThat(document().pointerToSchema(operation(OperationId.of("GET /unsaid")),
-                declared("GET /unsaid", 200), "application/json")).isEmpty();
+                declared("GET /unsaid", 200), "application/json"))
+                .isEqualTo(Shape.Missing.NONE_GIVEN);
     }
 
     @Test
     @DisplayName("an operation the document does not have has no trail to follow")
     void an_operation_outside_the_document_has_no_trail() {
-        Operation elsewhere = Operation.of(HttpMethod.GET, "/elsewhere")
+        Operation notThere = Operation.of(HttpMethod.GET, "/not-there")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
 
-        assertThat(document().pointerToSchema(elsewhere, elsewhere.responses().get(0),
-                "application/json")).isEmpty();
+        assertThat(document().pointerToSchema(notThere, notThere.responses().get(0),
+                "application/json")).isEqualTo(Shape.Missing.OUT_OF_REACH);
+    }
+
+    @Test
+    @DisplayName("a reply written as something other than an object has no trail to follow")
+    void a_reply_written_as_a_word_has_no_trail() {
+        Operation wordReply = Operation.of(HttpMethod.GET, "/wordreply")
+                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+
+        assertThat(document().pointerToSchema(wordReply, wordReply.responses().get(0),
+                "application/json")).isEqualTo(Shape.Missing.OUT_OF_REACH);
+    }
+
+    @Test
+    @DisplayName("a reply pointing into another document has no trail that can be followed")
+    void a_reply_pointing_elsewhere_has_no_trail() {
+        assertThat(document().pointerToSchema(operation(OperationId.of("GET /elsewhere")),
+                declared("GET /elsewhere", 200), "application/json"))
+                .isEqualTo(Shape.Missing.OUT_OF_REACH);
     }
 
     @Test
@@ -100,37 +121,39 @@ class SpecificationDocumentTest {
         ResponseModel notInTheDocument = ResponseModel.json("500", AnySchema.of());
 
         assertThat(document().pointerToSchema(operation(OperationId.of("GET /pets")),
-                notInTheDocument, "application/json")).isEmpty();
+                notInTheDocument, "application/json")).isEqualTo(Shape.Missing.OUT_OF_REACH);
     }
 
     @Test
     @DisplayName("a reply the document declares with no body at all has no trail to follow")
     void a_reply_with_no_body_declared_has_no_trail() {
         assertThat(document().pointerToSchema(operation(OperationId.of("GET /noreply")),
-                declared("GET /noreply", 200), "application/json")).isEmpty();
+                declared("GET /noreply", 200), "application/json"))
+                .isEqualTo(Shape.Missing.OUT_OF_REACH);
     }
 
     @Test
     @DisplayName("a media type the document never declared has no trail to follow")
     void a_media_type_outside_the_document_has_no_trail() {
         assertThat(document().pointerToSchema(operation(OperationId.of("GET /pets")),
-                declared("GET /pets", 200), "application/xml")).isEmpty();
+                declared("GET /pets", 200), "application/xml"))
+                .isEqualTo(Shape.Missing.OUT_OF_REACH);
     }
 
     @Test
     @DisplayName("a document writing a charset into the type it declares is matched without it")
     void a_declared_media_type_carrying_a_charset_is_matched() {
-        assertThat(document().pointerToSchema(operation(OperationId.of("GET /charsetkey")),
-                declared("GET /charsetkey", 200), "application/json").orElseThrow())
+        assertThat(trail(document().pointerToSchema(operation(OperationId.of("GET /charsetkey")),
+                declared("GET /charsetkey", 200), "application/json")).orElseThrow())
                 .contains("application~1json%3B%20charset%3Dutf-8");
     }
 
     @Test
     @DisplayName("a name keeps only what cannot be read back wrongly, and escapes the rest")
     void a_name_is_written_so_that_it_reads_back_as_itself() {
-        Optional<String> pointer = document().pointerToSchema(
+        Optional<String> pointer = trail(document().pointerToSchema(
                 operation(OperationId.of("GET /problem")), declared("GET /problem", 200),
-                "application/problem+json");
+                "application/problem+json"));
 
         // The plus sign is escaped rather than kept. It is legal to keep, and whoever reads the
         // trail back would read it as a space, so the shape would be looked for under a name the
@@ -206,5 +229,10 @@ class SpecificationDocumentTest {
 
     private ResponseModel declared(String id, int status) {
         return operation(OperationId.of(id)).responseFor(status).orElseThrow();
+    }
+
+    /** The trail to the shape, when the document gives one to follow. */
+    private static Optional<String> trail(Shape shape) {
+        return shape instanceof Shape.At at ? Optional.of(at.trail()) : Optional.empty();
     }
 }

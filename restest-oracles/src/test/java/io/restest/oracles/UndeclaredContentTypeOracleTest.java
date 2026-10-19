@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
+import io.restest.core.execution.Interaction;
 import io.restest.core.execution.Payload;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
@@ -29,6 +30,7 @@ import io.restest.core.model.ResponseModel;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.RestestFault;
+import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.CanonicalSchema;
 import java.util.LinkedHashMap;
@@ -74,10 +76,17 @@ class UndeclaredContentTypeOracleTest {
     private static final Operation LIST_CLINICS = Operation.of(HttpMethod.GET, "/clinics")
             .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
 
+    /** Answers 200 with no type the document gives, and the document says more that was not read. */
+    private static final Operation LIST_KENNELS = Operation.of(HttpMethod.GET, "/kennels")
+            .withResponses(List.of(ResponseModel.empty("200")));
+
     private static final ApiModel API = ApiModel.of("Pets", "1.0.0",
-                    List.of(ADD_PET, LIST_OWNERS, LIST_VETS, LIST_VISITS, LIST_CLINICS))
+                    List.of(ADD_PET, LIST_OWNERS, LIST_VETS, LIST_VISITS, LIST_CLINICS,
+                            LIST_KENNELS))
             .withIssues(List.of(SpecificationIssue.degraded("paths./visits.get", LIST_VISITS.id(),
                     "the response '400' could not be represented"),
+                    SpecificationIssue.degraded("paths./kennels.get", LIST_KENNELS.id(),
+                            "the response '200' could not be represented"),
                     SpecificationIssue.renamed("paths./clinics.get", LIST_CLINICS.id(),
                             "renamed to stay unique")));
 
@@ -94,9 +103,22 @@ class UndeclaredContentTypeOracleTest {
     /** A reply to a request with no body, of this status, with these headers and this body. */
     private List<Finding> judge(Operation operation, int status, List<Header> headers,
             Optional<Payload> body) {
-        return oracle.judge(Attempts.replied(Attempts.testCase(operation.id()),
+        return oracle.judge(replied(operation, status, headers, body), API);
+    }
+
+    private static Interaction replied(Operation operation, int status, List<Header> headers,
+            Optional<Payload> body) {
+        return Attempts.replied(Attempts.testCase(operation.id()),
                 Attempts.sentWithoutBody(operation.method(), operation.path()), status, headers,
-                body), API);
+                body);
+    }
+
+    /** Why the rule could not judge a reply of this status and type, with a body, if it could not. */
+    private Optional<WhyNotJudged> why(Operation operation, int status, String contentType) {
+        return oracle.verdict(replied(operation, status,
+                        List.of(Header.of("Content-Type", contentType)),
+                        Attempts.body("{}", "application/octet-stream")), API)
+                .notJudged();
     }
 
     /** A reply of this status, with these headers and a body. */
@@ -243,6 +265,7 @@ class UndeclaredContentTypeOracleTest {
         @DisplayName("a server error, which other rules report")
         void a_server_error(int status) {
             assertThat(judge(ADD_PET, status, "application/problem+json")).isEmpty();
+            assertThat(why(ADD_PET, status, "application/problem+json")).isEmpty();
         }
 
         @Test
@@ -261,20 +284,29 @@ class UndeclaredContentTypeOracleTest {
                     .isEmpty();
             assertThat(oracle.judge(Attempts.answeredWithoutBody(ADD_PET.id(), "/pets", 200,
                     "text/html"), API)).isEmpty();
+            assertThat(oracle.verdict(Attempts.answeredWithoutBody(ADD_PET.id(), "/pets", 200,
+                    "text/html"), API).notJudged()).isEmpty();
         }
 
         @Test
         @DisplayName("a status code the document does not declare, which is the other rule's")
         void a_status_code_the_document_does_not_declare() {
             assertThat(judge(ADD_PET, 201, "text/html")).isEmpty();
+            assertThat(why(ADD_PET, 201, "text/html")).isEmpty();
         }
 
         @Test
         @DisplayName("a status code the document declares with no content type, though a body "
-                + "came")
+                + "came, which the rule says it could not judge")
         void a_status_code_declared_with_no_content() {
             assertThat(judge(ADD_PET, 404, "text/html")).isEmpty();
             assertThat(judge(ADD_PET, 404, List.of())).isEmpty();
+            assertThat(why(ADD_PET, 404, "text/html"))
+                    .contains(WhyNotJudged.NO_CONTENT_TYPE_DECLARED);
+            assertThat(oracle.verdict(replied(ADD_PET, 404, List.of(),
+                    Attempts.body("{}", "application/octet-stream")), API).notJudged())
+                    .describedAs("with no Content-Type at all")
+                    .contains(WhyNotJudged.NO_CONTENT_TYPE_DECLARED);
         }
 
         @ParameterizedTest
@@ -284,12 +316,24 @@ class UndeclaredContentTypeOracleTest {
         void anything_goes(String contentType) {
             assertThat(judge(LIST_VETS, 200, contentType)).isEmpty();
             assertThat(judge(LIST_VETS, 200, List.of())).isEmpty();
+            assertThat(why(LIST_VETS, 200, contentType)).describedAs("judged, and fine").isEmpty();
         }
 
         @Test
-        @DisplayName("an operation RESTest could not read in full")
+        @DisplayName("an operation RESTest could not read in full, which the rule says it could not "
+                + "judge, unless what came is a type it did read")
         void an_operation_read_in_part() {
             assertThat(judge(LIST_VISITS, 200, "text/html")).isEmpty();
+            assertThat(why(LIST_VISITS, 200, "text/html")).contains(WhyNotJudged.READ_IN_PART);
+            assertThat(judge(LIST_VISITS, 200, "application/json")).isEmpty();
+            assertThat(why(LIST_VISITS, 200, "application/json")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("an operation read in part whose status code seems to come with no type says it "
+                + "was read in part, since the type may be in the part that could not be read")
+        void read_in_part_comes_before_declaring_no_type() {
+            assertThat(why(LIST_KENNELS, 200, "text/html")).contains(WhyNotJudged.READ_IN_PART);
         }
 
         @Test
@@ -302,8 +346,11 @@ class UndeclaredContentTypeOracleTest {
         @Test
         @DisplayName("an operation the document does not declare")
         void an_operation_the_document_does_not_declare() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /cats"), "/cats", 200,
-                    "text/html", "<p>"), API)).isEmpty();
+            Interaction unknown = Attempts.answered(OperationId.of("GET /cats"), "/cats", 200,
+                    "text/html", "<p>");
+
+            assertThat(oracle.judge(unknown, API)).isEmpty();
+            assertThat(oracle.verdict(unknown, API).notJudged()).isEmpty();
         }
 
         @Test
@@ -344,6 +391,8 @@ class UndeclaredContentTypeOracleTest {
     @DisplayName("the rule says what it is called and what it checks")
     void the_rule_describes_itself() {
         assertThat(oracle.name()).isEqualTo("undeclared-content-type");
+        assertThat(oracle.kind()).isEqualTo(RestestFault.UNDECLARED_CONTENT_TYPE);
+        assertThat(oracle.what()).isEqualTo("the content type");
         assertThat(oracle.description()).contains("content type").contains("500");
     }
 }

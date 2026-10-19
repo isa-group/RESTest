@@ -97,16 +97,30 @@ handed over, so everything the document can say counts — shapes built from oth
 between shapes, references from one to another — and the details lines under the fault say which
 part of the body disagreed and how.
 
-Nothing uncertain is reported. The check ends quietly, and reports nothing, when:
+Nothing uncertain is reported. The check reports nothing when it has nothing to judge — a reply with
+no body, or one whose status code or content type the document does not declare, which `F920` and
+`F921` report — and when it cannot judge what it has. In the second case it says so: the run counts
+the reply under `notChecked` in `report.json`, with the reason in brackets below, and its summary
+says how many there were ([what a run leaves behind](report.md#notchecked)). It cannot judge a reply
+when, taking the first of these that applies:
 
-- the document says nothing about what that operation returns with that status code or that media
-  type;
-- the reply does not say it is JSON — `application/json`, or a media type ending in `+json` — or
-  has no body, or says it is written in a character set other than UTF-8;
-- the body was too large to keep whole, so there is no whole body to judge;
-- the disagreement could have been caused by a key the run handed over with `--auth` being hidden in
-  the reply rather than by the API;
-- the shape the document gives is one the checker cannot finish judging.
+1. the document describes the reply only in words (`noShapeDeclared`);
+2. the document could not be kept to check against (`shapeUnusable`);
+3. the document names the reply's media type and gives no shape for it (`noShapeDeclared`);
+4. the shape the document gives cannot be reached — it points at another file, at something the
+   document does not define, or round in a circle (`shapeUnusable`);
+5. the reply is not JSON — `application/json`, or a media type ending in `+json` — though the
+   document gives a shape for it (`notJson`);
+6. the body was too large to keep whole, so there is no whole body to judge (`cutShort`);
+7. the reply says it is written in a character set other than UTF-8 (`notUtf8`);
+8. the checker cannot be built for the shape the document gives, a pattern it cannot read, say
+   (`shapeUnusable`);
+9. a key the run handed over with `--auth` was hidden in the body and it could then not be read as
+   JSON (`keyHidden`);
+10. the checker cannot finish judging the body against the shape (`shapeUnusable`).
+
+Where a key was hidden and the body is still JSON, the reply is judged, and only what the hiding may
+have caused is let pass.
 
 A property the document marks `writeOnly` is one the API is sent and never hands back, so a reply
 without it is not wrong for that, even where the document calls it required.
@@ -254,12 +268,17 @@ and `default` included.
 - **What is left alone.**
   - A server error, 500 and up: `F100`, `F205` and `F121` report those, so no reply is counted
     twice over its status code.
-  - An operation whose document declares no reply at all, since it has promised none.
-  - An operation RESTest could not read in full: a reply the document declares, and RESTest could
-    not read — one that points at a shape the document never defines, say — would otherwise look
-    undeclared. The run lists what it could not read before it starts. A reply the library RESTest
-    reads documents with drops on its own, such as one written as a word rather than an object, is
-    not known to be missing, and does look undeclared ([known
+  - An operation whose document declares no reply at all, since it has promised none. The run
+    counts each such reply as one this check could not judge (`noReplyDeclared`, under
+    `notChecked` in `report.json`), unless the operation is one of those below, read in part,
+    which comes first (`readInPart`).
+  - On an operation RESTest could not read in full, a status code it could not find among what it
+    read: a reply the document declares, and RESTest could not read — one that points at a shape the
+    document never defines, say — would otherwise look undeclared. The run lists what it could not
+    read before it starts, and counts each such reply as one this check could not judge
+    (`readInPart`). A status code it did read is held to as on any other operation. A reply the
+    library RESTest reads documents with drops on its own, such as one written as a word rather than
+    an object, is not known to be missing, and does look undeclared ([known
     limitations](known-limitations.md#what-a-run-says)). An operation RESTest only had to call by
     its method and path, because the document gives its name to an operation RESTest reads first,
     is not one of these: the new name costs it nothing else.
@@ -294,12 +313,16 @@ F921  A Content Type The Document Does Not Declare
   in the document where the API sends it.
 - **What is left alone.**
   - A reply with no body, whatever type it names: an answer to `HEAD`, a `204`.
-  - A status code the document does not declare, which is `F920`'s, and one it declares with no
-    content type at all, even when a body comes: the document described that reply only in words.
+  - A status code the document does not declare, which is `F920`'s.
+  - A status code it declares with no content type at all, even when a body comes: the document
+    described that reply only in words. The run counts each such reply as one this check could not
+    judge (`noContentTypeDeclared`), unless the operation was read in part, below, which comes first
+    (`readInPart`).
   - A document that declares `*/*`, which promises no type in particular — and is what a Swagger 2.0
-    document that says nothing about types is read as.
-  - A server error, an operation RESTest could not read in full, and a reply to a body sent under a
-    media type the operation does not accept, as for `F920`.
+    document that says nothing about types is read as, so such a reply counts as checked.
+  - A server error, and a reply to a body sent under a media type the operation does not accept, as
+    for `F920`; and, on an operation RESTest could not read in full, a type it could not find among
+    what it read, counted as for `F920` (`readInPart`).
 - **What the API wrote is quoted cut short.** The fault quotes the content type as the API sent it,
   cut at 100 characters, with anything that would move a terminal's cursor or change its colours,
   and invisible characters that would reorder or hide what is shown around them, replaced by `?`.
@@ -426,3 +449,9 @@ in which nothing at the address answered ends with `3`, even when it reported re
 reply in time: something that takes connections and never speaks HTTP does exactly that, so the run
 says how many such requests there were beside the address.
 [The exit codes](command-line.md#exit-codes) has every number a run can end with.
+
+A `0` covers what the run could check. Replies a check could not judge — a body the document gives
+no shape for, say — are not faults and do not change the exit code; the summary says how many there
+were, and `notChecked` in `report.json` says which and why ([what a run leaves
+behind](report.md#notchecked)). A build that should know whether everything was checked reads that
+list, which is empty when it was.

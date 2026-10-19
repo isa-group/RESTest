@@ -8,7 +8,7 @@ the details, is in [the exit codes](../command-line.md#exit-codes).
 
 | Code | In short |
 |---|---|
-| `0` | The run finished and found nothing wrong |
+| `0` | The run finished and found nothing wrong, in what it could check |
 | `1` | The run finished and found at least one fault |
 | `2` | The command was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent |
 | `3` | Nothing was tested: the document could not be read or has no operation that can be tried, nothing answered, or the budget ran out first |
@@ -19,6 +19,12 @@ the details, is in [the exit codes](../command-line.md#exit-codes).
 Two things are worth seeing in that table. A fault is `1` rather than `0`, so that a build goes red
 when the API is broken. And a run stopped from outside never ends with `0` or `1`, so that a run cut
 short never passes for one that finished.
+
+One thing is not in it: a `0` covers what the run could check. A reply whose body the document gives
+no shape for has nothing to be compared with, so nothing can be found wrong with it, and that is no
+fault. The summary says how many replies could not be checked and why, and `notChecked` in
+`report.json` says which operations they came from
+([what a run leaves behind](../report.md#notchecked)).
 
 After a run, the shell keeps the number in `$?`:
 

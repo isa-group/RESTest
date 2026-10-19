@@ -28,6 +28,7 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.RestestFault;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.settings.SettingKey;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +53,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -113,7 +115,8 @@ class DocumentedReportTest {
             "findings[].interaction.testCase.mutation.operator",
             "findings[].interaction.testCase.sequence.shape",
             "findings[].interaction.testCase.body.origin",
-            "findings[].interaction.outcome.body.text");
+            "findings[].interaction.outcome.body.text",
+            "notChecked[].operations[].replies");
 
     /** One row of a table: the first cell, when it is a single name in backticks. */
     private static final Pattern ROW = Pattern.compile("^\\| `([^`]+)` \\|");
@@ -130,7 +133,8 @@ class DocumentedReportTest {
     /**
      * An API described by a short document: a list that answers in a shape its document does not
      * allow, a creation that falls over on anything but the body it asks for, a read of one thing
-     * that always falls over, a deletion, and an upload that insists on a body RESTest cannot write.
+     * that always falls over, a deletion, an upload that insists on a body RESTest cannot write, and
+     * a health check whose reply the document describes only in words, so that it cannot be checked.
      */
     private static final String THE_DOCUMENT = """
             openapi: 3.0.3
@@ -185,6 +189,11 @@ class DocumentedReportTest {
                   operationId: deleteThing
                   responses:
                     "204": {description: deleted}
+              /health:
+                get:
+                  operationId: health
+                  responses:
+                    "200": {description: up and running}
               /files:
                 post:
                   operationId: uploadFile
@@ -286,6 +295,17 @@ class DocumentedReportTest {
                 .describedAs("the keys at the top of report.json, against the table under the "
                         + "heading %s", THE_TOP_OF_THE_FILE)
                 .containsExactlyElementsOf(explained.get(""));
+    }
+
+    @Test
+    @DisplayName("the page lists exactly the reasons a check can give for a reply it could not "
+            + "judge, by the words report.json writes, in RESTest's order")
+    void every_reason_a_reply_was_not_checked_is_on_the_page() {
+        assertThat(keysOnThePage().get("notChecked[].reason"))
+                .describedAs("the table under the heading naming `notChecked[].reason` in %s",
+                        REPORT_PAGE)
+                .containsExactlyElementsOf(Stream.of(WhyNotJudged.values())
+                        .map(WhyNotJudged::word).toList());
     }
 
     @Test
@@ -434,6 +454,8 @@ class DocumentedReportTest {
                 reply(exchange, 500, "text/plain", "it fell over");
             } else if (path.startsWith("/things/") && method.equals("DELETE")) {
                 exchange.sendResponseHeaders(204, -1);
+            } else if (path.equals("/health") && method.equals("GET")) {
+                reply(exchange, 200, "application/json", "{\"status\": \"up\"}");
             } else {
                 reply(exchange, 404, "text/plain", "nothing here");
             }

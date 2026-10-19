@@ -18,12 +18,13 @@ package io.restest.oracles;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.Operation;
 import io.restest.core.model.ResponseModel;
+import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
-import io.restest.core.oracle.Oracle;
 import io.restest.core.oracle.RestestFault;
+import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.schema.CanonicalSchema;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -42,12 +43,17 @@ import java.util.Optional;
  * {@code application/json}, though both are JSON, because a program asking for the one has not been
  * told to expect the other.
  *
- * <p>Only a reply that has something to compare is judged: one with a body, whose status code the
- * document declares with at least one content type. A document declaring <code>*&#47;*</code> has
+ * <p>Only a reply with a body, whose status code the document declares, is looked at: a code the
+ * document leaves out is another rule's to report. A document declaring <code>*&#47;*</code> has
  * promised no type in particular, so nothing a reply calls itself contradicts it. Server errors, and
  * every reply {@link HeldToTheDocument} keeps out, are left alone too.
+ *
+ * <p>Two kinds of reply it cannot judge, and says so. One whose status code the document declares
+ * with no content type at all, having described that reply only in words. And one whose type is not
+ * among those it read for an operation it could read only in part, since the type may be declared
+ * in the part it could not read; a type it did read is held to as on any other operation.
  */
-public final class UndeclaredContentTypeOracle implements Oracle {
+public final class UndeclaredContentTypeOracle implements SaysWhyNot {
 
     /** What a document declares when any type at all will do. */
     private static final String ANYTHING = "*/*";
@@ -70,31 +76,57 @@ public final class UndeclaredContentTypeOracle implements Oracle {
     }
 
     @Override
-    public List<Finding> judge(Interaction interaction, ApiModel api) {
+    public FaultCategory kind() {
+        return RestestFault.UNDECLARED_CONTENT_TYPE;
+    }
+
+    @Override
+    public String what() {
+        return "the content type";
+    }
+
+    @Override
+    public Verdict verdict(Interaction interaction, ApiModel api) {
         return interaction.response()
                 .filter(ResponseSchemaOracle::hasBody)
                 .flatMap(response -> HeldToTheDocument.operationFor(interaction, response, api)
-                        .flatMap(operation -> operation.responseFor(response.statusCode()))
-                        .flatMap(declared -> judge(interaction, response, declared)))
-                .map(List::of)
-                .orElseGet(List::of);
+                        .map(operation -> verdict(interaction, response, operation, api)))
+                .orElse(Verdict.NOTHING);
     }
 
-    private static Optional<Finding> judge(Interaction interaction, HttpResponseRecord response,
-            ResponseModel declared) {
+    /**
+     * In this order: a status code the document does not declare is another rule's to report; a
+     * type the document declares, or <code>*&#47;*</code>, is fine, even on an operation read only in
+     * part; then a type that may be declared in the part RESTest could not read, and a status code
+     * declared with no type at all, cannot be judged; anything else is a type the document leaves
+     * out.
+     */
+    private Verdict verdict(Interaction interaction, HttpResponseRecord response,
+            Operation operation, ApiModel api) {
+        Optional<ResponseModel> answered = operation.responseFor(response.statusCode());
+        if (answered.isEmpty()) {
+            return Verdict.NOTHING;
+        }
+        ResponseModel declared = answered.get();
         Map<String, CanonicalSchema> types = declared.content();
-        if (types.isEmpty() || types.containsKey(ANYTHING)) {
-            return Optional.empty();
+        if (types.containsKey(ANYTHING)) {
+            return Verdict.NOTHING;
         }
         Optional<String> said = HeldToTheDocument.contentType(
                 response.headerValues("Content-Type"));
         if (said.isPresent() && declared.declaredContentTypeFor(said.get()).isPresent()) {
-            return Optional.empty();
+            return Verdict.NOTHING;
+        }
+        if (api.readInPart(operation.id())) {
+            return Verdict.couldNot(WhyNotJudged.READ_IN_PART);
+        }
+        if (types.isEmpty()) {
+            return Verdict.couldNot(WhyNotJudged.NO_CONTENT_TYPE_DECLARED);
         }
         String came = said.map(value -> " as " + quoted(value) + ", which the document does not "
                         + "declare for that status; it declares ")
                 .orElse(" with a body and no Content-Type; the document declares ");
-        return Optional.of(Finding.of(RestestFault.UNDECLARED_CONTENT_TYPE, interaction,
+        return Verdict.of(Finding.of(kind(), interaction,
                 "the API answered " + response.statusCode() + came
                         + String.join(", ", types.keySet())));
     }

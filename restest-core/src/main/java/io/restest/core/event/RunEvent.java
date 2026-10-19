@@ -19,9 +19,11 @@ import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.OperationId;
+import io.restest.core.oracle.CouldNotJudge;
 import io.restest.core.oracle.Finding;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -158,6 +160,32 @@ public sealed interface RunEvent {
         public FaultFound {
             Objects.requireNonNull(at, "at");
             Objects.requireNonNull(finding, "finding");
+        }
+    }
+
+    /**
+     * Some of the checks could not judge a reply, and said why: its body was not compared with the
+     * document's shape for it, say, because the document gives none.
+     *
+     * <p>One for each reply at most, listing every check that could not judge it, and none for a
+     * reply every check could judge - so that a run which checked everything announces nothing more
+     * than it did before. What a report makes of these is how much of the run was not looked at,
+     * which is what "no faults found" leaves out.
+     *
+     * @param at          when the checks gave up on it
+     * @param interaction the attempt whose reply could not be judged
+     * @param checks      each check that could not judge it, and why; never empty
+     */
+    record ReplyNotJudged(Instant at, Interaction interaction, List<CouldNotJudge> checks)
+            implements RunEvent {
+        public ReplyNotJudged {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(interaction, "interaction");
+            checks = List.copyOf(checks);
+            if (checks.isEmpty()) {
+                throw new IllegalArgumentException("a reply every check could judge is not "
+                        + "announced as one that could not be judged");
+            }
         }
     }
 

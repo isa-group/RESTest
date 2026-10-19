@@ -58,11 +58,20 @@ of its own. Whether you may test an API at all is not something any tool can che
 
 ## What a run says
 
-- **"No faults found" does not mean every reply was checked.** A run reports how many replies it
-  judged and how many faults it found, not how many replies it could not judge. If the shape the
-  document declares for a reply is one the checker cannot use — a pattern its regular-expression
-  engine rejects, a shape that names something absent — those replies are skipped, and the run can
-  end with exit code `0` while the check never ran on that operation ([ADR-0014](adr/0014-response-conformance.md)).
+- **A reply nobody could judge does not change the exit code.** A run counts the replies each check
+  could not judge, and why — a body the document gives no shape for, a shape the checker cannot use
+  — and says so in its summary and under `notChecked` in `report.json`
+  ([what a run leaves behind](report.md#notchecked)); but those are no faults, so a run whose only
+  replies were of that kind still ends with `0`.
+- **With `checks.undeclaredStatusCode` or `checks.undeclaredContentType` off, some replies go
+  unchecked without a word.** The shape of a reply whose status code or content type the document
+  does not declare is never compared with anything, since the document gives no shape for it, and is
+  not counted under `notChecked`: those replies are what `F920` and `F921` report. With their check
+  switched off, nothing says those replies were not checked.
+- **A reply with a body and no `Content-Type`, to a status code declared as `*/*`, is neither checked
+  nor counted.** `*/*` promises any type, so `F921` passes it, and with no type to look a shape up
+  by, its body is not compared with the shape. A Swagger 2.0 document that names no type is read as
+  `*/*`, so this is where it is met.
 - **A check is switched off for the whole run, never for one operation.** Turning
   `checks.replyOffSchema` off because one operation's error replies are not the shape its document
   gives hides every other reply off its schema too, on every operation
@@ -86,12 +95,13 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **A reply the document declares in a form RESTest cannot read is reported as undeclared.** The
   library RESTest reads documents with drops a reply written as something other than an object —
   `"404": "not found"` — and says so before the run, without naming the operation. That operation's
-  404s are then `F920`, though the document meant to declare them. An operation RESTest knows it read
-  only in part, such as one with a reply pointing at a shape the document never defines, is left
-  alone.
+  404s are then `F920`, though the document meant to declare them. On an operation RESTest knows it
+  read only in part, such as one with a reply pointing at a shape the document never defines, a
+  status code it could not find among what it read is left alone, and counted under `notChecked`.
 - **A body the document describes only in words is not checked against a type.** A reply with a body
   whose status code the document declares with no content type at all is left alone, whatever type
-  it comes as.
+  it comes as, and counted under `notChecked`. A Swagger 2.0 document that names no type at all is
+  read as promising any, `*/*`, so its replies count as checked.
 - **Not every failure of RESTest's own ends in `4`.** Exit code `4` means RESTest itself broke
   ([the exit codes](command-line.md#exit-codes)), but three such failures still read as something the
   API did ([ADR-0015](adr/0015-command-line-contract.md)):

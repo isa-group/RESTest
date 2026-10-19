@@ -79,6 +79,9 @@ class JsonReportTest {
                 .describedAs("whether the run was cut short comes straight after what was tested, "
                         + "before any number it qualifies")
                 .startsWith("tool", "faultCatalogue", "createdAt", "api", "cutShort", "totals");
+        assertThat(report.members().keySet())
+                .describedAs("what could not be checked beside what could not be tried")
+                .containsSubsequence("skippedOperations", "notChecked", "dictionaries");
     }
 
     @Test
@@ -122,6 +125,54 @@ class JsonReportTest {
         // catalogue in the first place.
         assertThat(text(errors, "countedOver")).isEqualTo("replies");
         assertThat(text(errors, "distinctBy")).isEqualTo("operation");
+    }
+
+    @Test
+    @DisplayName("the report says how many replies each check could not judge and why, on every "
+            + "operation they came from, most first")
+    void what_could_not_be_checked_is_written() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(Runs.notJudged("GET /vets", Runs.NO_SHAPE));
+        report.on(Runs.notJudged("GET /pets", Runs.NO_SHAPE, Runs.NO_TYPE));
+        report.on(Runs.notJudged("GET /pets", Runs.NO_SHAPE));
+        report.on(Runs.notJudged("GET /owners", Runs.NO_TYPE));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+
+        JsonValue.JsonArray notChecked =
+                array((JsonValue.JsonObject) report.document().orElseThrow(), "notChecked");
+
+        assertThat(notChecked.elements()).hasSize(2);
+        JsonValue.JsonObject shape = (JsonValue.JsonObject) notChecked.elements().get(0);
+        assertThat(shape.members().keySet()).containsExactly("code", "id", "label", "what",
+                "reason", "why", "replies", "operations");
+        assertThat(number(shape, "code")).isEqualTo(200);
+        assertThat(text(shape, "id")).isEqualTo("SCHEMA_INVALID_RESPONSE");
+        assertThat(text(shape, "what")).isEqualTo("the shape");
+        assertThat(text(shape, "reason")).isEqualTo("noShapeDeclared");
+        assertThat(text(shape, "why")).isEqualTo("the document gives no shape");
+        assertThat(number(shape, "replies")).isEqualTo(3);
+        assertThat(array(shape, "operations").elements())
+                .describedAs("most replies first")
+                .containsExactly(
+                        JsonValue.object(Map.of("operation", JsonValue.of("GET /pets"),
+                                "replies", JsonValue.of(2))),
+                        JsonValue.object(Map.of("operation", JsonValue.of("GET /vets"),
+                                "replies", JsonValue.of(1))));
+        JsonValue.JsonObject type = (JsonValue.JsonObject) notChecked.elements().get(1);
+        assertThat(number(type, "code")).isEqualTo(921);
+        assertThat(text(type, "reason")).isEqualTo("noContentTypeDeclared");
+        assertThat(array(type, "operations").elements())
+                .describedAs("as many on each, so by name")
+                .extracting(operation -> text((JsonValue.JsonObject) operation, "operation"))
+                .containsExactly("GET /owners", "GET /pets");
+    }
+
+    @Test
+    @DisplayName("a run that checked everything it could says so with an empty list")
+    void a_run_that_checked_everything_writes_an_empty_list() {
+        assertThat(array(run(JsonReport.inMemory(fixedClock())), "notChecked").elements())
+                .isEmpty();
     }
 
     @Test

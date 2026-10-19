@@ -76,6 +76,9 @@ Read it from the top:
 - **How many operations answered 500**, and how many some 5xx. This counts operations, not replies:
   one broken operation asked six hundred times is six hundred replies, but one operation.
 - **The faults**, by kind.
+- **What could not be checked**, if anything: how many replies a check could not judge, in which way
+  and why — the shape of a body the document gives no shape for, say. `no faults found` says nothing
+  about a reply nobody could judge.
 - **What could not be tested**, if anything, each operation with the reason. `no faults found` says
   nothing about an operation that was never tried, so read this line before celebrating.
 

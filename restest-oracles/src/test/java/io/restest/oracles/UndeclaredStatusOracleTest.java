@@ -31,6 +31,7 @@ import io.restest.core.model.ResponseModel;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.RestestFault;
+import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.schema.AnySchema;
 import java.util.List;
 import java.util.Map;
@@ -82,19 +83,35 @@ class UndeclaredStatusOracleTest {
     private static final Operation LIST_CLINICS = Operation.of(HttpMethod.GET, "/clinics")
             .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
 
+    /** Declares no reply at all, because the only one the document gives could not be read. */
+    private static final Operation LIST_KENNELS = Operation.of(HttpMethod.GET, "/kennels");
+
     private static final ApiModel API = ApiModel.of("Pets", "1.0.0", List.of(LIST_PETS, ADD_PET,
-                    ADD_OWNER, LIST_VISITS, LIST_OWNERS, HEALTH, LIST_VETS, LIST_CLINICS))
+                    ADD_OWNER, LIST_VISITS, LIST_OWNERS, HEALTH, LIST_VETS, LIST_CLINICS,
+                    LIST_KENNELS))
             .withIssues(List.of(SpecificationIssue.degraded("paths./vets.get", LIST_VETS.id(),
                     "the response '404' is a reference that does not resolve to anything the "
                             + "document declares"),
+                    SpecificationIssue.degraded("paths./kennels.get", LIST_KENNELS.id(),
+                            "the response '200' is a reference that does not resolve to anything "
+                                    + "the document declares"),
                     SpecificationIssue.renamed("paths./clinics.get", LIST_CLINICS.id(),
                             "renamed to stay unique")));
 
     private final UndeclaredStatusOracle oracle = new UndeclaredStatusOracle();
 
     private List<Finding> judge(Operation operation, int status) {
-        return oracle.judge(Attempts.answered(operation.id(), operation.path(), status,
-                "application/json", "{}"), API);
+        return oracle.judge(answered(operation, status), API);
+    }
+
+    /** Why the rule could not judge a reply of this status, when it could not. */
+    private Optional<WhyNotJudged> why(Operation operation, int status) {
+        return oracle.verdict(answered(operation, status), API).notJudged();
+    }
+
+    private static Interaction answered(Operation operation, int status) {
+        return Attempts.answered(operation.id(), operation.path(), status, "application/json",
+                "{}");
     }
 
     @Nested
@@ -184,13 +201,17 @@ class UndeclaredStatusOracleTest {
         @DisplayName("a server error, which other rules report, and a code outside 100 to 599")
         void a_server_error_and_a_code_outside_the_range(int status) {
             assertThat(judge(LIST_PETS, status)).isEmpty();
+            assertThat(why(LIST_PETS, status)).describedAs("nothing for this rule to judge")
+                    .isEmpty();
         }
 
         @ParameterizedTest
         @ValueSource(ints = {200, 400, 404})
-        @DisplayName("an operation whose document declares no reply at all, since it promised none")
+        @DisplayName("an operation whose document declares no reply at all, since it promised none, "
+                + "which the rule says it could not judge")
         void an_operation_that_declares_nothing(int status) {
             assertThat(judge(HEALTH, status)).isEmpty();
+            assertThat(why(HEALTH, status)).contains(WhyNotJudged.NO_REPLY_DECLARED);
         }
 
         @Test
@@ -198,7 +219,22 @@ class UndeclaredStatusOracleTest {
                 + "would look undeclared; the others in the same document are still judged")
         void an_operation_read_in_part() {
             assertThat(judge(LIST_VETS, 404)).isEmpty();
+            assertThat(why(LIST_VETS, 404)).contains(WhyNotJudged.READ_IN_PART);
             assertThat(judge(LIST_PETS, 400)).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("an operation read in part that seems to declare no reply says it was read in "
+                + "part, since the reply it declares may be the part that could not be read")
+        void read_in_part_comes_before_declaring_nothing() {
+            assertThat(why(LIST_KENNELS, 200)).contains(WhyNotJudged.READ_IN_PART);
+        }
+
+        @Test
+        @DisplayName("but a code an operation read in part does declare is judged, and is fine")
+        void a_declared_code_on_an_operation_read_in_part_is_judged() {
+            assertThat(judge(LIST_VETS, 200)).isEmpty();
+            assertThat(why(LIST_VETS, 200)).isEmpty();
         }
 
         @Test
@@ -211,8 +247,11 @@ class UndeclaredStatusOracleTest {
         @Test
         @DisplayName("an operation the document does not declare")
         void an_operation_the_document_does_not_declare() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /cats"), "/cats", 400,
-                    "application/json", "{}"), API)).isEmpty();
+            Interaction unknown = Attempts.answered(OperationId.of("GET /cats"), "/cats", 400,
+                    "application/json", "{}");
+
+            assertThat(oracle.judge(unknown, API)).isEmpty();
+            assertThat(oracle.verdict(unknown, API).notJudged()).isEmpty();
         }
 
         @Test
@@ -234,6 +273,8 @@ class UndeclaredStatusOracleTest {
                     .isEmpty();
             assertThat(oracle.judge(Attempts.neverAnswered(LIST_PETS.id(), "/pets"), API))
                     .isEmpty();
+            assertThat(oracle.verdict(Attempts.brokenOff(LIST_PETS.id(), "/pets", 400), API)
+                    .notJudged()).isEmpty();
         }
     }
 
@@ -253,6 +294,10 @@ class UndeclaredStatusOracleTest {
         void is_left_alone() {
             assertThat(judge(ADD_PET, Attempts.sentWithBody(HttpMethod.POST, "/pets",
                     "text/plain"))).isEmpty();
+            assertThat(oracle.verdict(Attempts.replied(Attempts.testCase(ADD_PET.id()),
+                    Attempts.sentWithBody(HttpMethod.POST, "/pets", "text/plain"), 415,
+                    List.of(), Optional.empty()), API).notJudged())
+                    .describedAs("not one the rule could not judge: nothing to judge").isEmpty();
         }
 
         @Test
@@ -299,6 +344,8 @@ class UndeclaredStatusOracleTest {
     @DisplayName("the rule says what it is called and what it checks")
     void the_rule_describes_itself() {
         assertThat(oracle.name()).isEqualTo("undeclared-status-code");
+        assertThat(oracle.kind()).isEqualTo(RestestFault.UNDECLARED_STATUS_CODE);
+        assertThat(oracle.what()).isEqualTo("the status code");
         assertThat(oracle.description()).contains("status code").contains("500");
     }
 }
