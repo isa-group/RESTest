@@ -320,6 +320,42 @@
         }
       }
     },
+    "/unsaidtext": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a reply of text whose shape the document does not give",
+            "content": {
+              "text/plain": {}
+            }
+          }
+        }
+      }
+    },
+    "/wordreply": {
+      "get": {
+        "responses": {
+          "200": "a reply written as a word rather than an object"
+        }
+      }
+    },
+    "/badpattern": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a text whose pattern no regular-expression engine can read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "(unclosed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/problem": {
       "get": {
         "responses": {

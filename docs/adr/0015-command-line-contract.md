@@ -1,7 +1,7 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11 and 12 October 2026
-**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12)
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11, 12 and 19 October 2026
+**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12, 2026-10-19)
 
 ## Context
 
@@ -1286,3 +1286,17 @@ describes the machine given, which still answers first.
   directory than that address names. That is not the disagreement the earlier amendment ruled out:
   the run was never going to use the first address without `--url`, and it uses it as soon as it
   can.
+
+## Amendment (19 October 2026): replies a run could not judge
+
+A run now counts the replies each check could not judge, and why, and says so in its summary and in
+`report.json` ([ADR-0014](0014-response-conformance.md)'s amendment of the same day). **The exit codes
+do not change**: a reply a check could not judge is not a fault, so a run whose only such replies
+were of that kind still ends with `0`, and `0` still means that nothing was found wrong in what could
+be checked.
+
+What this does not fix is the case the amendment fixing what `--url` throws away left open: a run
+in which every request is refused still reads much like one pointed at the wrong address. A refusal
+is a reply the checks judge — a `404` the document declares is fine, one it does not declare is
+`F920` — so counting what could not be judged does not tell an API that refuses everything from an
+address where the API is not. That case is still open.

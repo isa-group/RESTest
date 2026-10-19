@@ -19,10 +19,12 @@ import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
 import io.restest.core.model.ApiModel;
+import io.restest.core.oracle.CouldNotJudge;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
 import io.restest.core.settings.CheckSettings;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -34,7 +36,10 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>This is what joins the two halves of testing together. Requests go out and replies come back;
  * each finished attempt is announced; this hears the announcement, puts the attempt to every rule
- * in turn, and announces each fault they find so that the reports can print it.
+ * in turn, and announces each fault they find so that the reports can print it. When some rules
+ * could not judge the reply - the document gives no shape to compare its body with, say - it
+ * announces that too, once for the reply and naming every such rule, so that the reports can say how
+ * much of the run could not be checked.
  *
  * <p>Judging happens away from the sending of requests - it is a listener like any other - which is
  * what keeps a slow rule from becoming a slow run. A rule that throws is not allowed to stop the
@@ -96,10 +101,22 @@ public final class OracleListener implements RunListener {
         if (!(event instanceof RunEvent.InteractionCompleted completed)) {
             return;
         }
+        // Made only for a reply some rule could not judge: most replies every rule can.
+        List<CouldNotJudge> notJudged = null;
         for (Oracle oracle : oracles) {
             try {
-                for (Finding finding : oracle.judge(completed.interaction(), api)) {
-                    events.publish(new RunEvent.FaultFound(clock.instant(), finding));
+                if (oracle instanceof SaysWhyNot saysWhy) {
+                    Verdict verdict = saysWhy.verdict(completed.interaction(), api);
+                    announce(verdict.findings());
+                    if (verdict.notJudged().isPresent()) {
+                        if (notJudged == null) {
+                            notJudged = new ArrayList<>();
+                        }
+                        notJudged.add(new CouldNotJudge(saysWhy.kind(), saysWhy.what(),
+                                verdict.notJudged().get()));
+                    }
+                } else {
+                    announce(oracle.judge(completed.interaction(), api));
                 }
             } catch (RuntimeException | LinkageError itFailed) {
                 // Caught around one rule rather than around all of them. Letting it out of here
@@ -116,6 +133,20 @@ public final class OracleListener implements RunListener {
                 // throw may be broken enough to throw again when asked what it is called.
                 broken.add(oracle.getClass().getName());
             }
+        }
+        // After every rule rather than one by one, so that a reply some rules could not judge is
+        // one announcement however many of them it was. A rule that broke is not among them: it
+        // is counted above as RESTest's own failure, which changes how the run ends, and saying
+        // also that it could not judge the reply would count one thing twice.
+        if (notJudged != null) {
+            events.publish(new RunEvent.ReplyNotJudged(clock.instant(), completed.interaction(),
+                    notJudged));
+        }
+    }
+
+    private void announce(List<Finding> findings) {
+        for (Finding finding : findings) {
+            events.publish(new RunEvent.FaultFound(clock.instant(), finding));
         }
     }
 }

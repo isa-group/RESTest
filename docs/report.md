@@ -81,6 +81,7 @@ fifty, the screen stops printing them and says so; every one is still counted.
 | `<k> creation(s) meant to begin a series about a thing the run created were not accepted, so no series began` | The plan sends series and none began | The API refused every creation a series would have started from |
 | `<a> operation(s) answered 500, <b> answered some 5xx` | Some reply was a 5xx | How many *operations* the API fell over on, rather than how many replies: a run spends its whole budget, so one broken operation asked six hundred times is six hundred broken replies. This is the number worth quoting |
 | `no faults found`, or `<n> faults:` and one line per kind | Always, when something was sent | The verdict: how many faults, by kind, as `<count> x F<code>  <name>`. [The faults RESTest reports](faults.md) says what each kind means |
+| `some replies could not be checked; report.json names their operations:` and one line per way and reason | A check could not judge some reply | Each line is `<what> of <n> replies, on <m> operations: <why>` — `the shape of 287676 replies, on 22 operations: the document gives no shape` — one for each check and each reason it gave, most replies first. Said after the verdict because it qualifies it: `no faults found` says nothing about a reply nobody could judge. [What the run could not check](#notchecked) lists every reason, and [the faults](faults.md) say, check by check, when one is given |
 | `<n> operations could not be tested:` | Some operation could not be tested | Up to five of them, each with the reason — a file upload, say, or a parameter written in a style requests are not built in — then how many more. Said after the verdict because it qualifies it: `no faults found` says nothing about an operation that was never tried. `report.json` names every one |
 | `<n> lists of values could not be read, so none of their values were sent:` | A list handed over with `--dictionary` could not be read | Each list and why, so that a run made without the values somebody meant it to have is not mistaken for one made with them |
 
@@ -94,7 +95,7 @@ the run itself was not kept; pass --store to keep every request and reply
 | Line | When | What it says |
 |---|---|---|
 | `<n> test case(s) could not be built and were skipped` | Some request could not be put together | Usually a value of a kind no request can carry |
-| `<n> replies repeated a key back; …` | The API sent a key handed over with `--auth` back in a reply | It is hidden there too, and the check of replies against the document passes over whatever hiding it changed |
+| `<n> replies repeated a key back; …` | The API sent a key handed over with `--auth` back in a reply | It is hidden there too, and the check of replies against the document passes over whatever hiding it changed. A reply the hiding made into something that is not JSON at all could not be checked, and is counted under `notChecked` as `keyHidden` |
 | `report written to <file> (<size>)` | The report could be written | Where `report.json` is |
 | `run stored in <file> (<size>)` | `--store` was given | Where `run.sqlite` is |
 | `the run itself was not kept; pass --store to keep every request and reply` | `--store` was not given | Only the report was written |
@@ -142,6 +143,7 @@ throughout:
 | `cutShort` | `true` or `false` | `true` when the run was stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget ran out. Every number in the file is then what the run found until it was stopped |
 | `totals` | object | The run in eight numbers |
 | `skippedOperations` | list | Every operation the run could not test, each with the reason |
+| `notChecked` | list | How many replies each check could not judge, and why, with the operations they came from |
 | `dictionaries` | object | The lists of values handed over with `--dictionary`: the ones read, and the ones that could not be |
 | `limits` | object | How much of the run this file was allowed to write out whole |
 | `settings` | list | Every setting the run used, with its value and where that value came from |
@@ -201,6 +203,75 @@ five. Operations the plan's filter left alone on purpose are not here: they were
 |---|---|---|
 | `operation` | text | The operation, by its `operationId`, or by its method and path when it has none or the document gives the same one to an operation RESTest reads first |
 | `reason` | text | Why it could not be tested |
+
+### `notChecked[]`
+
+What the run could not check: one row for each check that could not judge some replies and each
+reason it gave, most replies first, and an empty list when every reply was checked in every way it
+could have been. A check switched off is not here: it judged nothing, and `settings` says so. A run
+that found nothing wrong found nothing wrong in these replies only because nothing could look at them
+that way: a document that gives no shape for a reply leaves its body unchecked, whatever the API
+sends in it.
+
+From a minute's run of restcountries, whose document describes every reply only in words —
+`"200": {"description": "Successful response"}` — with each list of operations cut to its first two
+here:
+
+```json
+"notChecked": [
+  {"code": 200, "id": "SCHEMA_INVALID_RESPONSE",
+   "label": "F200:Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema",
+   "what": "the shape", "reason": "noShapeDeclared",
+   "why": "the document gives no shape",
+   "replies": 287676,
+   "operations": [{"operation": "v1All", "replies": 13077}, {"operation": "v1Alphacode", "replies": 13077}]},
+  {"code": 921, "id": "RESTEST_UNDECLARED_CONTENT_TYPE",
+   "label": "F921:A Content Type The Document Does Not Declare",
+   "what": "the content type", "reason": "noContentTypeDeclared",
+   "why": "the document declares the status code with no content type",
+   "replies": 286159,
+   "operations": [{"operation": "v1All", "replies": 13077}, {"operation": "v1Alphacode", "replies": 13077}]}
+]
+```
+
+| Key | Value | What it says |
+|---|---|---|
+| `code` | number | The kind of fault the check reports, which tells the checks apart: `200` is the check of a reply's shape, `920` of its status code, `921` of its content type |
+| `id` | text | The key of that kind |
+| `label` | text | The code and the name of that kind |
+| `what` | text | What the check looks at: `the shape`, `the status code`, `the content type` |
+| `reason` | text | Why it could not, in one word; [the reasons](#notcheckedreason) |
+| `why` | text | The same, in the words the screen prints |
+| `replies` | number | How many replies it could not judge for that reason |
+| `operations` | list | Every operation those replies came from, most first |
+
+### `notChecked[].operations[]`
+
+| Key | Value | What it says |
+|---|---|---|
+| `operation` | text | The operation, named as in `skippedOperations` |
+| `replies` | number | How many of the row's replies came from it |
+
+### `notChecked[].reason`
+
+Each reason belongs to one check, except `readInPart`, which two can give. A reply gets at most one
+reason from each check: the first that applies in that check's own order, which [the
+faults](faults.md) give check by check. The table lists them in the order RESTest keeps them, not in
+that one. What is not here is not counted at all: a reply with no body has no shape to check, and
+one whose status code or content type the document does not declare is reported by the checks of
+those, `F920` and `F921`.
+
+| Reason | Check | When |
+|---|---|---|
+| `noShapeDeclared` | shape | The document declares the reply, and describes it only in words, or names its media type and gives no shape for its body |
+| `notJson` | shape | The document gives a shape for a body that is not JSON — text, XML — and RESTest compares only JSON with a shape |
+| `cutShort` | shape | The body was longer than RESTest keeps whole (`engine.maxRetainedResponseBytes`), so there was no whole body to judge |
+| `notUtf8` | shape | The reply names a character set other than UTF-8, which JSON is always written in |
+| `shapeUnusable` | shape | The document gives a shape RESTest cannot use: one pointing at another file, at something the document does not define, or round in a circle, one with a pattern the checker cannot read, or a document that could not be kept to check against |
+| `keyHidden` | shape | A key handed over with `--auth` came back in the body and was hidden there, and the body could then no longer be read as JSON, so what is wrong with it may be the hiding's doing |
+| `noReplyDeclared` | status code | The document declares no reply at all for the operation, so it promised none |
+| `readInPart` | status code, content type | RESTest could not read all the document says about the operation — a reply pointing at a shape it never defines, say — and what came back is not among what it could read, so it may be declared in the part it could not. What it could read is held to as on any other operation |
+| `noContentTypeDeclared` | content type | The document declares the status code with no content type, describing that reply only in words |
 
 ### `dictionaries`
 
@@ -280,7 +351,7 @@ ways and most replies are wrong in none.
 | Key | Value | What it says |
 |---|---|---|
 | `total` | number | Requests that ended, one way or another |
-| `withNothingWrong` | number | Requests no rule found anything wrong with |
+| `withNothingWrong` | number | Requests no rule found anything wrong with, those some rule could not judge included. `notChecked` counts, check by check, the replies each check could not judge, whether or not another found something wrong with them, so its counts and this one do not add up |
 | `byClass` | object | Requests by the first digit of their status code — `"2xx": 186`, `"4xx": 242` — and `noReply` for those that got no reply, in that order |
 | `commonest` | list | The exact status codes answered most, commonest first: as many as `report.commonestStatusCodesListed` says, ten unless set otherwise |
 

@@ -230,6 +230,45 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("a run that finds nothing wrong answers 0 even when it could not check every reply, "
+            + "and says which it could not")
+    void a_clean_run_that_could_not_check_everything_still_answers_zero(@TempDir Path directory)
+            throws Exception {
+        // A document that describes its one reply only in words: there is no shape to compare the
+        // body with and no type to hold it to, so neither is checked, and the run says so.
+        Path document = Files.writeString(directory.resolve("health.yaml"), """
+                openapi: 3.0.3
+                info: {title: Health, version: '1'}
+                paths:
+                  /health:
+                    get:
+                      operationId: health
+                      responses: {'200': {description: up and running}}
+                """);
+        api.stubFor(get(urlMatching("/health")).willReturn(aResponse().withStatus(200)
+                .withHeader("Content-Type", "application/json").withBody("{\"status\": \"up\"}")));
+
+        int answer = run("run", document.toString(), "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
+                "--out", directory.resolve("out").toString());
+
+        assertThat(answer).describedAs("what could not be checked is said, and is no fault")
+                .isZero();
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("no faults found");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size())).startsWith(
+                "some replies could not be checked; report.json names their operations:");
+        assertThat(lines).anyMatch(line -> line.startsWith("  the shape of ")
+                && line.endsWith(", on 1 operation: the document gives no shape"));
+        JsonValue.JsonObject report = (JsonValue.JsonObject) JsonText.read(
+                Files.readString(directory.resolve("out").resolve("report.json")));
+        assertThat(((JsonValue.JsonArray) report.member("notChecked").orElseThrow()).elements())
+                .extracting(row -> text((JsonValue.JsonObject) row, "reason"))
+                .containsExactly("noShapeDeclared", "noContentTypeDeclared");
+    }
+
+    @Test
     @DisplayName("running with nothing to run shows what the choices are, and answers 2")
     void no_command_answers_two() {
         assertThat(run()).isEqualTo(2);

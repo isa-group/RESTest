@@ -64,7 +64,7 @@ final class Specifications {
         Operation unsaid = Operation.of(HttpMethod.GET, "/unsaid")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation noReply = Operation.of(HttpMethod.GET, "/noreply")
-                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+                .withResponses(List.of(ResponseModel.empty("200")));
         Operation onlyXml = Operation.of(HttpMethod.GET, "/onlyxml")
                 .withResponses(List.of(new ResponseModel("200",
                         Map.of("application/xml", AnySchema.of()), Map.of(), Optional.empty())));
@@ -90,6 +90,11 @@ final class Specifications {
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation nowhere = Operation.of(HttpMethod.GET, "/nowhere")
                 .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+        Operation unsaidText = Operation.of(HttpMethod.GET, "/unsaidtext")
+                .withResponses(List.of(new ResponseModel("200",
+                        Map.of("text/plain", AnySchema.of()), Map.of(), Optional.empty())));
+        Operation badPattern = Operation.of(HttpMethod.GET, "/badpattern")
+                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
         Operation problem = Operation.of(HttpMethod.GET, "/problem")
                 .withResponses(List.of(new ResponseModel("200",
                         Map.of("application/problem+json; charset=utf-8", AnySchema.of()),
@@ -97,7 +102,8 @@ final class Specifications {
 
         return ApiModel.of("Pets", "1.0.0", List.of(listPets, onePet, kinds, raw, unsaid, noReply,
                         onlyXml, dangling, charsetKey, byReference, byChain, elsewhere, seen,
-                        label, strayEscape, encodedReference, cycle, nowhere, problem))
+                        label, strayEscape, encodedReference, cycle, nowhere, unsaidText,
+                        badPattern, problem))
                 .withDocument(read("/pets-3.0.json"));
     }
 

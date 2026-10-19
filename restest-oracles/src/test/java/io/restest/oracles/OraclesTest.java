@@ -19,11 +19,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
+import io.restest.core.execution.Interaction;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.OperationId;
+import io.restest.core.oracle.CouldNotJudge;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.Oracle;
+import io.restest.core.oracle.RestestFault;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.settings.CheckSettings;
 import io.restest.core.settings.Settings;
 import java.time.Clock;
@@ -244,6 +248,116 @@ class OraclesTest {
         assertThat(listener.rulesThatFailed()).isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("a reply some rules could not judge is announced once, naming every one of them")
+    void a_reply_not_judged_is_announced_once_with_every_rule_that_could_not() {
+        List<RunEvent.ReplyNotJudged> announced = new CopyOnWriteArrayList<>();
+        Interaction attempt = Attempts.answered(OperationId.of("GET /noreply"), "/noreply", 200,
+                "application/json", "{\"anything\": true}");
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.ReplyNotJudged notJudged) {
+                    announced.add(notJudged);
+                }
+            });
+            events.subscribe(new OracleListener(Specifications.pets(),
+                    Oracles.standard(CheckSettings.defaults()), events,
+                    Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)));
+
+            events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH, attempt));
+        }
+
+        // The document declares the 200 and describes it only in words: no shape for its body,
+        // and no type for it either. Its status code it declares, so that is judged, and fine.
+        assertThat(announced).singleElement().satisfies(notJudged -> {
+            assertThat(notJudged.at()).isEqualTo(Instant.EPOCH);
+            assertThat(notJudged.interaction()).isEqualTo(attempt);
+            assertThat(notJudged.checks()).containsExactly(
+                    new CouldNotJudge(WfcFault.SCHEMA_INVALID_RESPONSE, "the shape",
+                            WhyNotJudged.NO_SHAPE_DECLARED),
+                    new CouldNotJudge(RestestFault.UNDECLARED_CONTENT_TYPE, "the content type",
+                            WhyNotJudged.NO_CONTENT_TYPE_DECLARED));
+        });
+    }
+
+    @Test
+    @DisplayName("a reply every rule could judge is not announced as one that could not be")
+    void a_reply_every_rule_judged_announces_nothing_more() {
+        List<RunEvent> announced = new CopyOnWriteArrayList<>();
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.ReplyNotJudged) {
+                    announced.add(event);
+                }
+            });
+            events.subscribe(OracleListener.standard(Specifications.pets(),
+                    CheckSettings.defaults(), events));
+
+            events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                    Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 200,
+                            "application/json", "{\"id\": 7, \"name\": \"Rex\"}")));
+            events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                    Attempts.neverAnswered(OperationId.of("GET /pets/{petId}"), "/pets/7")));
+        }
+
+        assertThat(announced).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a rule that throws is RESTest's own failure, not a reply it could not judge")
+    void a_throwing_rule_is_not_a_reply_not_judged() {
+        List<RunEvent.ReplyNotJudged> announced = new CopyOnWriteArrayList<>();
+        OracleListener listener;
+
+        try (EventStream events = new EventStream()) {
+            events.subscribe(event -> {
+                if (event instanceof RunEvent.ReplyNotJudged notJudged) {
+                    announced.add(notJudged);
+                }
+            });
+            listener = new OracleListener(Specifications.pets(),
+                    List.of(new AlwaysThrows(), new ResponseSchemaOracle()), events,
+                    Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+            events.subscribe(listener);
+
+            events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                    Attempts.answered(OperationId.of("GET /unsaid"), "/unsaid", 200,
+                            "application/json", "{}")));
+        }
+
+        assertThat(listener.failures()).isEqualTo(1);
+        assertThat(announced).singleElement().satisfies(notJudged ->
+                assertThat(notJudged.checks()).extracting(CouldNotJudge::why)
+                        .containsExactly(WhyNotJudged.NO_SHAPE_DECLARED));
+    }
+
+    @Test
+    @DisplayName("a rule that can say why it could not judge finds the same faults either way it is "
+            + "asked")
+    void the_faults_of_a_verdict_are_what_judging_finds() {
+        ApiModel api = Specifications.pets();
+        List<Interaction> attempts = List.of(
+                Attempts.answered(OperationId.of("GET /pets/{petId}"), "/pets/7", 200,
+                        "application/json", "{\"id\": \"seven\"}"),
+                Attempts.answered(OperationId.of("GET /pets"), "/pets", 418, "text/html", "<p>"),
+                Attempts.answered(OperationId.of("GET /noreply"), "/noreply", 200,
+                        "application/json", "{}"));
+
+        for (Oracle oracle : Oracles.standard(CheckSettings.defaults())) {
+            if (oracle instanceof SaysWhyNot saysWhy) {
+                attempts.forEach(attempt -> assertThat(oracle.judge(attempt, api))
+                        .describedAs(oracle.name())
+                        .isEqualTo(saysWhy.verdict(attempt, api).findings()));
+            }
+        }
+        assertThat(Oracles.standard(CheckSettings.defaults()))
+                .filteredOn(SaysWhyNot.class::isInstance).extracting(Oracle::name)
+                .containsExactly("response-schema", "undeclared-status-code",
+                        "undeclared-content-type");
+    }
+
     /** A rule that does the one thing a rule is not supposed to do. */
     private static final class AlwaysThrows implements Oracle {
 
@@ -258,7 +372,7 @@ class OraclesTest {
         }
 
         @Override
-        public List<Finding> judge(io.restest.core.execution.Interaction interaction, ApiModel api) {
+        public List<Finding> judge(Interaction interaction, ApiModel api) {
             throw new IllegalStateException("this rule is broken");
         }
     }

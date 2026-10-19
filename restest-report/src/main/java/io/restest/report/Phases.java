@@ -103,6 +103,9 @@ final class Phases {
             case RunEvent.FaultFound ignored -> {
                 // A fault is a judgement about a reply, and the reply has been counted already.
             }
+            case RunEvent.ReplyNotJudged ignored -> {
+                // The same: what could not be judged about a reply already counted.
+            }
         }
     }
 

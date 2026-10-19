@@ -17,13 +17,16 @@ package io.restest.oracles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.execution.Interaction;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.oracle.WhyNotJudged;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -244,48 +247,72 @@ class ResponseSchemaOracleTest {
     }
 
     @Nested
-    @DisplayName("what cannot be judged is never reported")
+    @DisplayName("what cannot be judged is never reported, and says why when it was the rule's to judge")
     class Silence {
+
+        /** That the reply is not reported, and that the rule says it could not judge it, and why. */
+        private void notJudged(Interaction attempt, ApiModel api, WhyNotJudged why) {
+            assertThat(oracle.verdict(attempt, api)).isEqualTo(Verdict.couldNot(why));
+        }
+
+        /** That the reply is not reported, and was not this rule's to judge at all. */
+        private void nothingToJudge(Interaction attempt, ApiModel api) {
+            assertThat(oracle.verdict(attempt, api)).isEqualTo(Verdict.NOTHING);
+        }
+
+        /** Why the rule could not judge the reply, when it could not. */
+        private Optional<WhyNotJudged> why(Interaction attempt, ApiModel api) {
+            return oracle.verdict(attempt, api).notJudged();
+        }
 
         @Test
         @DisplayName("a request that got no answer says nothing about any shape")
         void a_request_with_no_answer_is_left_alone() {
-            assertThat(oracle.judge(Attempts.neverAnswered(ONE_PET, "/pets/7"), pets)).isEmpty();
+            nothingToJudge(Attempts.neverAnswered(ONE_PET, "/pets/7"), pets);
         }
 
         @Test
-        @DisplayName("a reply that is not JSON is not held to a JSON shape")
+        @DisplayName("a reply that is not JSON is not held to a JSON shape, and says so")
         void a_reply_of_another_kind_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(RAW, "/raw", 200, "text/plain", "hello"),
-                    pets)).isEmpty();
+            notJudged(Attempts.answered(RAW, "/raw", 200, "text/plain", "hello"), pets,
+                    WhyNotJudged.NOT_JSON);
+            notJudged(Attempts.answered(OperationId.of("GET /onlyxml"), "/onlyxml", 200,
+                    "application/xml", "<pet/>"), pets, WhyNotJudged.NOT_JSON);
+        }
+
+        @Test
+        @DisplayName("a reply that is not JSON and was cut short says it is not JSON")
+        void a_reply_of_another_kind_cut_short_says_it_is_not_json() {
+            notJudged(Attempts.answeredWithPartOfTheBody(RAW, "/raw", 200, "text/plain", "hel",
+                    4096), pets, WhyNotJudged.NOT_JSON);
         }
 
         @Test
         @DisplayName("a reply that says nothing about its own kind is left alone")
         void a_reply_without_a_content_type_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answeredWithoutContentType(ONE_PET, "/pets/7", 200),
-                    pets)).isEmpty();
+            // Another rule's to report: the document declares what types come with a 200.
+            nothingToJudge(Attempts.answeredWithoutContentType(ONE_PET, "/pets/7", 200), pets);
         }
 
         @Test
         @DisplayName("a status the document says nothing about is left alone")
         void an_undeclared_status_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(LIST_PETS, "/pets", 418, JSON, "{}"), pets))
-                    .isEmpty();
+            // Another rule's to report.
+            nothingToJudge(Attempts.answered(LIST_PETS, "/pets", 418, JSON, "{}"), pets);
         }
 
         @Test
-        @DisplayName("a reply whose shape the document leaves out is left alone")
+        @DisplayName("a reply whose shape the document leaves out is left alone, and says so")
         void a_declared_reply_with_no_shape_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(UNSAID, "/unsaid", 200, JSON,
-                    "anything at all, and not even JSON"), pets)).isEmpty();
+            notJudged(Attempts.answered(UNSAID, "/unsaid", 200, JSON,
+                    "anything at all, and not even JSON"), pets, WhyNotJudged.NO_SHAPE_DECLARED);
         }
 
         @Test
         @DisplayName("a reply kept only in part is not judged on the part that was kept")
         void a_truncated_reply_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answeredWithPartOfTheBody(ONE_PET, "/pets/7", 200,
-                    JSON, "{\"id\": 7, \"na", 4096), pets)).isEmpty();
+            notJudged(Attempts.answeredWithPartOfTheBody(ONE_PET, "/pets/7", 200, JSON,
+                    "{\"id\": 7, \"na", 4096), pets, WhyNotJudged.CUT_SHORT);
         }
 
         @Test
@@ -304,6 +331,14 @@ class ResponseSchemaOracleTest {
                 assertThat(oracle.judge(Attempts.answered(label, "/label", 200, JSON, changed),
                         pets)).describedAs(changed).isEmpty();
             }
+            // Of those, the one the hiding made into something that is not JSON at all could not
+            // be judged; the others were, on everything the hiding cannot have changed.
+            assertThat(why(Attempts.answered(label, "/label", 200, JSON,
+                    "{\"name\": \"a\", \"count\": 9REDACTED-AUTH.digits}"), pets))
+                    .contains(WhyNotJudged.KEY_HIDDEN);
+            assertThat(why(Attempts.answered(label, "/label", 200, JSON,
+                    "{\"name\": \"a\", \"short\": \"REDACTED-AUTH.api_key\"}"), pets))
+                    .isEmpty();
             // What it can never change: a kind of value, even of the replacement itself, a missing
             // member, anything wrong somewhere else in the same reply.
             for (String wrong : List.of(
@@ -371,81 +406,111 @@ class ResponseSchemaOracleTest {
         @Test
         @DisplayName("a reply insisting on some other character set is not read wrongly and blamed")
         void a_reply_in_another_character_set_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200,
-                    "application/json; charset=iso-8859-1", "{\"id\": \"seven\"}"), pets))
-                    .isEmpty();
+            notJudged(Attempts.answered(ONE_PET, "/pets/7", 200,
+                    "application/json; charset=iso-8859-1", "{\"id\": \"seven\"}"), pets,
+                    WhyNotJudged.NOT_UTF8);
         }
 
         @Test
         @DisplayName("an API whose document was not kept has nothing to be judged against")
         void an_api_without_its_document_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
-                    "{\"id\": \"seven\"}"), Specifications.petsWithoutItsDocument())).isEmpty();
+            notJudged(Attempts.answered(ONE_PET, "/pets/7", 200, JSON, "{\"id\": \"seven\"}"),
+                    Specifications.petsWithoutItsDocument(), WhyNotJudged.SHAPE_UNUSABLE);
         }
 
         @Test
-        @DisplayName("a reply the document declares without saying what comes back is left alone")
+        @DisplayName("a reply the document declares without saying what comes back is left alone, "
+                + "and says so")
         void a_declared_reply_with_no_content_at_all_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /noreply"), "/noreply",
-                    200, JSON, "{\"anything\": true}"), pets)).isEmpty();
+            notJudged(Attempts.answered(OperationId.of("GET /noreply"), "/noreply", 200, JSON,
+                    "{\"anything\": true}"), pets, WhyNotJudged.NO_SHAPE_DECLARED);
         }
 
         @Test
         @DisplayName("a JSON reply where the document only ever promised XML is left alone")
         void a_media_type_the_document_never_declared_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /onlyxml"), "/onlyxml",
-                    200, JSON, "{\"anything\": true}"), pets)).isEmpty();
+            // Another rule's to report: the document declares the types that come with a 200.
+            nothingToJudge(Attempts.answered(OperationId.of("GET /onlyxml"), "/onlyxml", 200, JSON,
+                    "{\"anything\": true}"), pets);
         }
 
         @Test
         @DisplayName("a shape the document names and never defines is left alone, not guessed at")
         void a_shape_the_document_never_defines_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /dangling"), "/dangling",
-                    200, JSON, "{\"anything\": true}"), pets)).isEmpty();
+            notJudged(Attempts.answered(OperationId.of("GET /dangling"), "/dangling", 200, JSON,
+                    "{\"anything\": true}"), pets, WhyNotJudged.SHAPE_UNUSABLE);
         }
 
         @Test
         @DisplayName("a media type carrying something other than a character set is still judged")
         void a_media_type_with_another_parameter_is_still_judged() {
-            assertThat(oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200,
-                    "application/json; boundary=x", "{\"id\": 7, \"name\": \"Rex\"}"), pets))
-                    .isEmpty();
+            nothingToJudge(Attempts.answered(ONE_PET, "/pets/7", 200,
+                    "application/json; boundary=x", "{\"id\": 7, \"name\": \"Rex\"}"), pets);
         }
 
         @Test
         @DisplayName("replies pointing round at each other for ever are given up on, not followed")
         void a_cycle_of_pointers_is_given_up_on() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /cycle"), "/cycle", 200,
-                    JSON, "{\"id\": \"seven\"}"), pets)).isEmpty();
+            notJudged(Attempts.answered(OperationId.of("GET /cycle"), "/cycle", 200, JSON,
+                    "{\"id\": \"seven\"}"), pets, WhyNotJudged.SHAPE_UNUSABLE);
         }
 
         @Test
         @DisplayName("a pointer at something the document never declares is left alone")
         void a_pointer_at_nothing_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /nowhere"), "/nowhere",
-                    200, JSON, "{\"id\": \"seven\"}"), pets)).isEmpty();
+            notJudged(Attempts.answered(OperationId.of("GET /nowhere"), "/nowhere", 200, JSON,
+                    "{\"id\": \"seven\"}"), pets, WhyNotJudged.SHAPE_UNUSABLE);
         }
 
         @Test
         @DisplayName("a reply pointing into another document is left alone, not guessed at")
         void a_reference_to_another_document_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /elsewhere"),
-                    "/elsewhere", 200, JSON, "{\"id\": \"seven\"}"), pets)).isEmpty();
+            notJudged(Attempts.answered(OperationId.of("GET /elsewhere"), "/elsewhere", 200, JSON,
+                    "{\"id\": \"seven\"}"), pets, WhyNotJudged.SHAPE_UNUSABLE);
         }
 
         @Test
         @DisplayName("a reply with no body is left alone, because HTTP has replies with no body")
         void a_reply_with_no_body_is_left_alone() {
-            assertThat(oracle.judge(
-                    Attempts.answeredWithoutBody(ONE_PET, "/pets/7", 200, JSON), pets)).isEmpty();
+            nothingToJudge(Attempts.answeredWithoutBody(ONE_PET, "/pets/7", 200, JSON), pets);
         }
 
         @Test
         @DisplayName("an operation the model does not know about is left alone")
         void an_unknown_operation_is_left_alone() {
-            assertThat(oracle.judge(Attempts.answered(OperationId.of("GET /elsewhere"),
-                    "/elsewhere", 200, JSON, "{\"id\": \"seven\"}"), pets)).isEmpty();
+            nothingToJudge(Attempts.answered(OperationId.of("GET /unknown"), "/unknown", 200, JSON,
+                    "{\"id\": \"seven\"}"), pets);
         }
+
+        @Test
+        @DisplayName("a reply that is not JSON, of a type the document gives no shape for, says the "
+                + "document gives no shape rather than that it is not JSON")
+        void a_reply_of_another_kind_with_no_shape_says_there_is_no_shape() {
+            notJudged(Attempts.answered(OperationId.of("GET /unsaidtext"), "/unsaidtext", 200,
+                    "text/plain", "hello"), pets, WhyNotJudged.NO_SHAPE_DECLARED);
+        }
+
+        @Test
+        @DisplayName("a reply that is not JSON, against a document that was not kept, says the shape "
+                + "cannot be used rather than that it is not JSON")
+        void a_reply_of_another_kind_without_the_document_says_the_shape_is_unusable() {
+            notJudged(Attempts.answered(RAW, "/raw", 200, "text/plain", "hello"),
+                    Specifications.petsWithoutItsDocument(), WhyNotJudged.SHAPE_UNUSABLE);
+        }
+
+        @Test
+        @DisplayName("a shape the checker cannot finish with is left alone, and says so")
+        void a_shape_the_checker_cannot_use_is_left_alone() {
+            notJudged(Attempts.answered(OperationId.of("GET /badpattern"), "/badpattern", 200, JSON,
+                    "\"anything\""), pets, WhyNotJudged.SHAPE_UNUSABLE);
+        }
+    }
+
+    @Test
+    @DisplayName("the rule says which kind of fault it reports and what it looks at")
+    void the_rule_says_what_it_looks_at() {
+        assertThat(oracle.kind()).isEqualTo(WfcFault.SCHEMA_INVALID_RESPONSE);
+        assertThat(oracle.what()).isEqualTo("the shape");
     }
 
     @Test

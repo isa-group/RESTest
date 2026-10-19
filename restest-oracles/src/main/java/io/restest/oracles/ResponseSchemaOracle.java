@@ -34,10 +34,12 @@ import io.restest.core.execution.Interaction;
 import io.restest.core.execution.Payload;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
 import io.restest.core.model.ResponseModel;
+import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
-import io.restest.core.oracle.Oracle;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.oracle.WhyNotJudged;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,20 +64,23 @@ import java.util.function.Predicate;
  * other thing a specification can say all count, whether or not RESTest itself understands them.
  * Doing the checking is an off-the-shelf job, and an off-the-shelf checker does it.
  *
- * <p>The rule throughout is that nothing uncertain is ever reported. Silence here means one of two
- * quite different things - the reply was fine, or there was no way to tell - and the second happens
- * far more often than people expect. A document need not say anything about what comes back, or
- * about that particular status code, or about that particular media type. The body may not be JSON,
- * or may have been too large to keep in full. Every one of those ends the check, quietly. A tool
- * that guesses in those situations produces complaints about APIs that were behaving perfectly, and
- * a tool that does that gets switched off.
+ * <p>The rule throughout is that nothing uncertain is ever reported. No complaint here means one of
+ * two quite different things - the reply was fine, or there was no way to tell - and the second
+ * happens far more often than people expect. A document need not say anything about the shape of
+ * what comes back. The body may not be JSON, or may have been too large to keep in full. Every one
+ * of those ends the check without a complaint, because a tool that guesses in those situations
+ * produces complaints about APIs that were behaving perfectly, and a tool that does that gets
+ * switched off. But it does not end it silently: the check says why it could not judge the reply,
+ * so that a run can say how much it could not check rather than seem to have checked it all. A
+ * reply whose status code or content type the document leaves out is not one of these: the rules
+ * for those report it.
  *
  * <p>One thing a specification can say is deliberately not checked: {@code format}. Saying a piece
  * of text is a {@code date} or an {@code email} is, in the standard, a note to the reader and not a
  * rule; different tools enforce different ones, and enforcing them here would report working APIs
  * as broken over a matter of opinion.
  */
-public final class ResponseSchemaOracle implements Oracle {
+public final class ResponseSchemaOracle implements SaysWhyNot {
 
     /** What a JSON reply calls itself: {@code application/json}, or anything ending in +json. */
     private static final String JSON_SUFFIX = "+json";
@@ -125,43 +130,70 @@ public final class ResponseSchemaOracle implements Oracle {
     }
 
     @Override
-    public List<Finding> judge(Interaction interaction, ApiModel api) {
-        Optional<Reader> reader = readerFor(api);
-        if (reader.isEmpty()) {
-            return List.of();
-        }
+    public FaultCategory kind() {
+        return WfcFault.SCHEMA_INVALID_RESPONSE;
+    }
+
+    @Override
+    public String what() {
+        return "the shape";
+    }
+
+    /**
+     * In this order. A reply with nothing to judge, or whose status code or content type the
+     * document leaves out, which other rules report, is passed over. Then it cannot be judged: when
+     * the document describes the reply only in words; when the document was not kept; when the
+     * document gives no shape for the reply's media type, or one that cannot be reached; when the
+     * reply is not JSON, was cut short, or names a character set other than UTF-8; when the checker
+     * cannot be built for the shape; when a hidden key stopped the body being JSON; and when the
+     * checker cannot finish. Otherwise the body is compared with the shape.
+     */
+    @Override
+    public Verdict verdict(Interaction interaction, ApiModel api) {
         Optional<HttpResponseRecord> answer = interaction.response();
         if (answer.isEmpty()) {
-            return List.of();
+            return Verdict.NOTHING;
         }
         HttpResponseRecord response = answer.get();
         Optional<Operation> operation = api.operation(interaction.testCase().operation());
-        if (operation.isEmpty()) {
-            return List.of();
-        }
-        Optional<String> mediaType = response.headerValues("Content-Type").stream().findFirst();
-        if (mediaType.isEmpty() || !isJson(mediaType.get())) {
-            return List.of();
+        if (operation.isEmpty() || !hasBody(response)) {
+            return Verdict.NOTHING;
         }
         Optional<ResponseModel> declared = operation.get().responseFor(response.statusCode());
         if (declared.isEmpty()) {
-            return List.of();
+            return Verdict.NOTHING;
         }
-        Optional<String> contentType = declared.get().declaredContentTypeFor(mediaType.get());
+        if (declared.get().content().isEmpty()) {
+            return Verdict.couldNot(WhyNotJudged.NO_SHAPE_DECLARED);
+        }
+        Optional<String> mediaType = response.headerValues("Content-Type").stream().findFirst();
+        Optional<String> contentType = mediaType.flatMap(declared.get()::declaredContentTypeFor);
         if (contentType.isEmpty()) {
-            return List.of();
+            return Verdict.NOTHING;
         }
-        if (isTruncated(response) || !hasBody(response) || !isUtf8(mediaType.get())) {
-            return List.of();
+        Optional<Reader> reader = readerFor(api);
+        if (reader.isEmpty()) {
+            return Verdict.couldNot(WhyNotJudged.SHAPE_UNUSABLE);
         }
-        Optional<String> pointer = reader.get().document()
-                .pointerToSchema(operation.get(), declared.get(), contentType.get());
-        if (pointer.isEmpty()) {
-            return List.of();
+        SpecificationDocument.Shape shape = reader.get().shapeOf(operation.get(), declared.get(),
+                contentType.get());
+        if (!(shape instanceof SpecificationDocument.Shape.At at)) {
+            return Verdict.couldNot(shape == SpecificationDocument.Shape.Missing.NONE_GIVEN
+                    ? WhyNotJudged.NO_SHAPE_DECLARED
+                    : WhyNotJudged.SHAPE_UNUSABLE);
         }
-        Optional<Schema> checker = reader.get().checkerAt(pointer.get());
+        if (!isJson(mediaType.get())) {
+            return Verdict.couldNot(WhyNotJudged.NOT_JSON);
+        }
+        if (isTruncated(response)) {
+            return Verdict.couldNot(WhyNotJudged.CUT_SHORT);
+        }
+        if (!isUtf8(mediaType.get())) {
+            return Verdict.couldNot(WhyNotJudged.NOT_UTF8);
+        }
+        Optional<Schema> checker = reader.get().checkerAt(at.trail());
         if (checker.isEmpty()) {
-            return List.of();
+            return Verdict.couldNot(WhyNotJudged.SHAPE_UNUSABLE);
         }
         return judgeBody(interaction, checker.get(), bodyText(response), response.statusCode(),
                 contentType.get());
@@ -229,7 +261,7 @@ public final class ResponseSchemaOracle implements Oracle {
         return true;
     }
 
-    private List<Finding> judgeBody(Interaction interaction, Schema checker, String body,
+    private Verdict judgeBody(Interaction interaction, Schema checker, String body,
             int statusCode, String contentType) {
         // Whether the body is JSON at all is decided here, with our own reader, before the checker
         // is asked anything. It used to be decided by the checker throwing, and that was a way of
@@ -249,8 +281,10 @@ public final class ResponseSchemaOracle implements Oracle {
         try {
             JsonText.checkOneValue(body);
         } catch (JsonException notJson) {
-            return hidesAKey ? List.of() : List.of(mismatch(interaction, statusCode, contentType,
-                    "the body is not JSON at all", List.of(firstLineOf(notJson))));
+            return hidesAKey
+                    ? Verdict.couldNot(WhyNotJudged.KEY_HIDDEN)
+                    : Verdict.of(mismatch(interaction, statusCode, contentType,
+                            "the body is not JSON at all", List.of(firstLineOf(notJson))));
         }
         List<Error> errors;
         try {
@@ -263,7 +297,7 @@ public final class ResponseSchemaOracle implements Oracle {
             // The body is JSON and the checker still could not finish. Whatever the reason, it is
             // something about the declared shape rather than about the reply, so nothing is claimed.
             // A reply RESTest was unable to check is not evidence that the API did anything wrong.
-            return List.of();
+            return Verdict.couldNot(WhyNotJudged.SHAPE_UNUSABLE);
         }
         List<String> details = new ArrayList<>();
         for (Error error : errors) {
@@ -279,9 +313,9 @@ public final class ResponseSchemaOracle implements Oracle {
             details.add((where.isEmpty() ? "the body" : where) + ": " + error.getMessage());
         }
         if (details.isEmpty()) {
-            return List.of();
+            return Verdict.NOTHING;
         }
-        return List.of(mismatch(interaction, statusCode, contentType,
+        return Verdict.of(mismatch(interaction, statusCode, contentType,
                 "the body does not match the shape the specification declares for it", details));
     }
 
@@ -361,9 +395,9 @@ public final class ResponseSchemaOracle implements Oracle {
         return false;
     }
 
-    private static Finding mismatch(Interaction interaction, int statusCode, String contentType,
+    private Finding mismatch(Interaction interaction, int statusCode, String contentType,
             String summary, List<String> details) {
-        return Finding.of(WfcFault.SCHEMA_INVALID_RESPONSE, interaction,
+        return Finding.of(kind(), interaction,
                         summary + ", answering " + statusCode + " as " + contentType)
                 .withDetails(details);
     }
@@ -401,7 +435,8 @@ public final class ResponseSchemaOracle implements Oracle {
      * out to an address of its choosing is not something to leave switched on.
      */
     private record Reader(SpecificationDocument document, SchemaRegistry registry,
-            Map<String, Optional<Schema>> checkers) {
+            Map<String, Optional<Schema>> checkers,
+            Map<Declared, SpecificationDocument.Shape> shapes) {
 
         static Optional<Reader> forApi(ApiModel api) {
             return SpecificationDocument.of(api).map(document -> {
@@ -419,8 +454,21 @@ public final class ResponseSchemaOracle implements Oracle {
                                         // English report, and differently on every machine.
                                         .locale(Locale.ROOT)
                                         .build()));
-                return new Reader(document, registry, new ConcurrentHashMap<>());
+                return new Reader(document, registry, new ConcurrentHashMap<>(),
+                        new ConcurrentHashMap<>());
             });
+        }
+
+        /**
+         * Where the shape of one declared reply is, worked out once and kept: an operation answers
+         * the same few status codes and types thousands of times in a run, and the document never
+         * changes under it.
+         */
+        SpecificationDocument.Shape shapeOf(Operation operation, ResponseModel declared,
+                String contentType) {
+            return shapes.computeIfAbsent(
+                    new Declared(operation.id(), declared.status(), contentType),
+                    ignored -> document.pointerToSchema(operation, declared, contentType));
         }
 
         /**
@@ -447,5 +495,9 @@ public final class ResponseSchemaOracle implements Oracle {
                 }
             });
         }
+    }
+
+    /** One reply as the document declares it: an operation, a status or range, a media type. */
+    private record Declared(OperationId operation, String status, String contentType) {
     }
 }

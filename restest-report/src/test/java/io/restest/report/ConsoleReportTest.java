@@ -372,6 +372,61 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("the end of a run says how many replies it could not check, in which way and why, "
+            + "most first, between the verdict and the operations it could not try")
+    void the_summary_says_what_could_not_be_checked() {
+        report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(Runs.notJudged("GET /pets", Runs.NO_SHAPE, Runs.NO_TYPE));
+        report.on(Runs.notJudged("GET /pets", Runs.NO_SHAPE));
+        report.on(Runs.notJudged("GET /vets", Runs.NO_SHAPE, Runs.NO_TYPE));
+        report.on(Runs.notJudged("GET /owners", Runs.CUT_SHORT));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("no faults found");
+        assertThat(verdict).describedAs("the verdict is there").isNotNegative();
+        assertThat(lines.subList(verdict + 1, lines.size())).containsExactly(
+                "some replies could not be checked; report.json names their operations:",
+                "  the shape of 3 replies, on 2 operations: the document gives no shape",
+                "  the content type of 2 replies, on 2 operations: the document declares the status "
+                        + "code with no content type",
+                "  the shape of 1 reply, on 1 operation: the body was longer than RESTest keeps "
+                        + "whole (engine.maxRetainedResponseBytes)",
+                "1 operation could not be tested:",
+                "  uploadPhoto: its body can only be sent as multipart/form-data");
+    }
+
+    @Test
+    @DisplayName("as many replies of one kind as of another are said in the order of the number of "
+            + "what each check reports, then by reason, the same on every run")
+    void ties_are_said_in_a_fixed_order() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(Runs.notJudged("GET /pets", Runs.NO_TYPE));
+        report.on(Runs.notJudged("GET /pets", Runs.CUT_SHORT));
+        report.on(Runs.notJudged("GET /pets", Runs.NO_SHAPE));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString().lines().filter(line -> line.contains(" of 1 reply")))
+                .extracting(line -> line.substring(0, line.indexOf(" of 1 reply")).trim())
+                .containsExactly("the shape", "the shape", "the content type");
+        assertThat(screen.toString()).containsSubsequence("the document gives no shape",
+                "the body was longer");
+    }
+
+    @Test
+    @DisplayName("a run that checked everything it could says nothing more about it")
+    void a_run_that_checked_everything_says_nothing_more() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString()).doesNotContain("could not be checked");
+    }
+
+    @Test
     @DisplayName("when the verdict is a list of faults, what could not be tested comes after all of it")
     void after_a_list_of_faults_the_operations_that_could_not_be_tested_come_last() {
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));

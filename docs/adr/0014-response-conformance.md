@@ -1,6 +1,6 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
-**Status:** Accepted, amended at M1.8 and on 10 and 17 October 2026
+**Status:** Accepted, amended at M1.8 and on 10, 17 and 19 October 2026
 **Date:** 2026-09-13
 
 ## Context
@@ -193,3 +193,70 @@ through a reference that does not resolve is dropped from the canonical model wi
 would otherwise look undeclared. A reply the parser drops on its own — written as a word rather than
 an object — leaves only a warning about the document, naming no operation, and does look
 undeclared; [the known limitations](../known-limitations.md#what-a-run-says) say so.
+
+## Amendment (19 October 2026): what could not be checked is counted and said
+
+**The gap the M1.8 amendment left is closed: a run counts, check by check, the replies it could not
+judge and why, and says so in its summary and in `report.json`. The exit code does not change.**
+
+### What counts
+
+Every reply is judged by at least one check — whether it is a 500 is never in doubt — so "replies no
+check could judge" would always be none and say nothing. What a reader needs is, for each check,
+how many of the replies it applies to it could not judge, and why. Three checks can be unable to;
+the others decide from the status code or from what was sent, and always can.
+
+- **The check of a reply's shape (`F200`)** counts a reply it would have compared with a shape and
+  could not, for one reason each, the first that applies, in this order: the document describes the
+  reply only in words, or names its media type and gives no shape (`noShapeDeclared`); the
+  document could not be kept, or the shape cannot be reached in it — another file, nothing, a
+  circle (`shapeUnusable`); the reply is not JSON though the document gives a shape for it
+  (`notJson`); the body was cut short (`cutShort`); the reply names a character set other than UTF-8
+  (`notUtf8`); the checker cannot be built for the shape, or cannot finish with it
+  (`shapeUnusable`); a hidden key made the body something that is not JSON (`keyHidden`). A reply
+  that got no answer, has no body, or answers with a status code or content type the document does
+  not declare is not counted: there is nothing to judge, or another check reports it.
+- **The check of a status code (`F920`)** counts a reply to an operation that declares no reply at
+  all (`noReplyDeclared`), and, on an operation read only in part, a status code not among those
+  it read (`readInPart`). A code it did read is held to as on any other operation: only what looks
+  undeclared may be declared in the part it could not read.
+- **The check of a content type (`F921`)** counts a status code declared with no content type
+  (`noContentTypeDeclared`) and, on an operation read only in part, a type not among those it read
+  (`readInPart`).
+
+Nothing a check reports changes: only what it says about a reply it reports nothing about.
+
+**The shape of a reply whose status code or content type the document does not declare is not
+counted.** It was weighed and set aside by RESTest's maintainer: `F920` and `F921` report such a
+reply, and counting it again would say the same thing twice. The cost is stated rather than hidden:
+with either of those checks switched off, nothing says those replies went unchecked, and the known
+limitations say so.
+
+### Where it is said
+
+- **The summary**, after the verdict and before the operations that could not be tested, one line
+  for each check and reason, most replies first: `the shape of 287676 replies, on 22 operations: the
+  document gives no shape`. Nothing is printed when every reply was checked.
+- **`report.json`**, under `notChecked`: one row for each check and reason, with its code, the
+  reason in one word, the phrase the screen prints, the count, and every operation the replies came
+  from. An empty list when every reply was checked. The words for the reasons are a closed list in
+  RESTest's code, and a test holds the documentation to it.
+
+How it gets there: a check that can be unable to judge gives a verdict — what it found wrong, or why
+it could not judge — inside the module of checks, and the listener that runs the checks announces one
+event for a reply that some checks could not judge, naming each. The interface every check
+implements is unchanged, so a check written elsewhere stays one method to write. A check that throws
+is still RESTest's own failure, counted as before and ending the run with `4`, never a reply it could
+not judge.
+
+### Why the exit code does not change
+
+A run's `0` still means that no fault was found in what the run could check. Making it mean "and
+everything was checked" would change what `0` means, which this project's command line has promised
+not to do within a major version ([ADR-0015](0015-command-line-contract.md)); and it would end
+almost every run with something else, since most documents leave some reply without a shape: of
+fifteen APIs run for a minute each on 19 October 2026, eleven had replies some check could not
+judge, and on two of them, restcountries and rest-scs, not one reply's shape could be checked.
+Whether a run may be told to fail when something could not be checked is not decided here.
+Schemathesis, the tool closest to this, prints what it could not validate as a warning that fails a
+run only when asked.

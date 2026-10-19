@@ -57,7 +57,9 @@ import java.util.Set;
  * refused is a run whose requests were the problem, not the API. Last come the operations the run
  * said it would not try - the first few by name, with the reason - because finding nothing wrong
  * says nothing about them, and then any list of values that was handed over and could not be read,
- * because a run made without it is not the run somebody asked for.
+ * because a run made without it is not the run somebody asked for. Between the verdict and those
+ * comes how many replies the run could not check, in which way and why, because "no faults found"
+ * says nothing about a reply nobody could judge.
  *
  * <p>It writes wherever it is told to write, rather than to the screen directly, so a test can read
  * back exactly what a person would have seen. While a run lasts it is the only thing writing there:
@@ -79,6 +81,9 @@ public final class ConsoleReport implements RunListener {
 
     /** What each stretch of the run achieved, worked out in one place for every report. */
     private final Phases phases = new Phases();
+
+    /** How many replies could not be checked, and why, worked out in one place for every report. */
+    private final NotChecked notChecked = new NotChecked();
     private int attempts;
     private int faults;
 
@@ -235,6 +240,11 @@ public final class ConsoleReport implements RunListener {
                 print(found.finding());
                 sendOnItsWay();
             }
+            case RunEvent.ReplyNotJudged notJudged -> {
+                // Counted as heard and said once, with the summary: it qualifies the verdict, so it
+                // is printed beside it, and one line per reply would bury the faults.
+                notChecked.note(notJudged);
+            }
             case RunEvent.RunFinished finished -> {
                 summarise(finished);
                 sendOnItsWay();
@@ -332,10 +342,36 @@ public final class ConsoleReport implements RunListener {
 
     private void summarise(RunEvent.RunFinished finished) {
         summariseWhatWasSent(finished);
-        // After the verdict, because it qualifies it: "no faults found" says nothing about an
-        // operation that was never tried. Said whether or not anything was sent at all.
+        // After the verdict, because they qualify it: "no faults found" says nothing about a reply
+        // that could not be checked, nor about an operation that was never tried. Said whether or
+        // not anything was sent at all.
+        nameWhatWasNotChecked();
         nameWhatWasSkipped();
         nameTheListsThatCouldNotBeRead();
+    }
+
+    /**
+     * How many replies could not be checked, one line for each way they could not be and each
+     * reason, most first.
+     *
+     * <p>Counts rather than names: a reply the document gives no shape for is usually one of
+     * thousands like it, and the run's report names every operation they came from. Nothing is said
+     * when every reply was checked in every way it could have been.
+     */
+    private void nameWhatWasNotChecked() {
+        if (notChecked.none()) {
+            return;
+        }
+        write("some replies could not be checked; report.json names their operations:");
+        notChecked.lines().forEach(line -> write("  " + line.check().what() + " of "
+                + counted(line.replies(), "reply", "replies") + ", on "
+                + counted(line.operations().size(), "operation", "operations") + ": "
+                + line.check().why().inWords()));
+    }
+
+    /** A count with the word for what it counts, in the singular when there is one. */
+    private static String counted(long count, String one, String many) {
+        return count + " " + (count == 1 ? one : many);
     }
 
     /**
