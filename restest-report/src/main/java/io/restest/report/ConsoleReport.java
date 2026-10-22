@@ -185,8 +185,10 @@ public final class ConsoleReport implements RunListener {
      *
      * <p>A run that keeps testing for as long as it was given will ask an API the same question
      * thousands of times, and an API that is broken is broken every time. Printing all of them
-     * scrolls everything worth reading off the top of the screen, so past the number given here the
-     * screen says so once and stops. The count at the end is of all of them, printed or not.
+     * scrolls everything worth reading off the top of the screen, so past the number of faults given
+     * here the screen says so once and stops - and past the number of warnings given, it says that
+     * once and prints only errors, so that a flood of warnings found first leaves room for them. The
+     * count at the end is of all of them, printed or not.
      *
      * @param out where to write
      * @param settings how much of what was found belongs on a screen
@@ -225,23 +227,19 @@ public final class ConsoleReport implements RunListener {
     }
 
     /**
-     * How many faults this run found - all of them, errors and warnings, including the ones past the
-     * limit that were counted rather than printed. A run that found two thousand faults and showed
-     * fifty still found two thousand.
-     */
-    public int faults() {
-        return errors + warnings;
-    }
-
-    /**
-     * How many of those were errors: the API failing at its job. The command's answer to whoever ran
-     * it is decided from this, and from the next.
+     * How many errors this run found - the API failing at its job - including the ones past the
+     * limit that were counted rather than printed: a run that found two thousand and showed fifty
+     * still found two thousand. The command's answer to whoever ran it is decided from this, and
+     * from the next.
      */
     public int errors() {
         return errors;
     }
 
-    /** How many were warnings: the API answering something its document does not describe. */
+    /**
+     * How many warnings it found, printed or not: the API answering something its document does not
+     * describe.
+     */
     public int warnings() {
         return warnings;
     }
@@ -572,9 +570,11 @@ public final class ConsoleReport implements RunListener {
         // whether they did too: a run that found only warnings and ended as if it found nothing
         // wrong says why, and names the setting that would make it end otherwise.
         section(Severity.ERROR, errors, operationsWithErrors, ":");
+        String verb = warnings == 1 ? "fails" : "fail";
         section(Severity.WARNING, warnings, operationsWithWarnings, warningsFail
-                ? ", which fail the run, as checks.failOnWarnings asks:"
-                : ", which do not fail the run (checks.failOnWarnings):");
+                ? ", which " + verb + " the run, as checks.failOnWarnings asks:"
+                : ", which " + (warnings == 1 ? "does" : "do") + " not fail the run "
+                        + "(checks.failOnWarnings):");
     }
 
     /**

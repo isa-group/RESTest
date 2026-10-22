@@ -127,6 +127,33 @@ class FaultReadingTest {
     }
 
     @Test
+    @DisplayName("a kind RESTest does not know that has no name is called by its number, so that a "
+            + "report can still say it")
+    void an_unknown_kind_with_no_name_is_called_by_its_number() {
+        for (String name : new String[] {"", "  ", null}) {
+            FaultCategory nameless = new FaultCategory() {
+                @Override
+                public int code() {
+                    return 951;
+                }
+
+                @Override
+                public String descriptiveName() {
+                    return name;
+                }
+
+                @Override
+                public String testCaseLabel() {
+                    return "nameless";
+                }
+            };
+
+            assertThat(FaultReading.of(nameless))
+                    .isEqualTo(new FaultReading(Severity.ERROR, "F951", Optional.empty()));
+        }
+    }
+
+    @Test
     @DisplayName("a kind of the catalogue no rule reports is read as one RESTest does not know")
     void a_kind_no_rule_reports_is_not_known() {
         assertThat(FaultReading.of(WfcFault.HTTP_NONWORKING_DELETE))

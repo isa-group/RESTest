@@ -47,7 +47,8 @@ final class ExitCode {
 
     /**
      * The run finished and found no error in the API. It may have found warnings, and replies it
-     * could not check; both are counted in what it printed and wrote, and neither changes this.
+     * could not check; both are counted in what it printed and wrote. A reply it could not check
+     * never changes this, and a warning only when the run is told that warnings fail it.
      */
     static final int NO_ERRORS = 0;
 

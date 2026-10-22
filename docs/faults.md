@@ -56,10 +56,11 @@ column is what the run's summary says under each kind it found.
 Fault kinds are numbered by the [Web Fuzzing Commons](https://github.com/WebFuzzing/Commons) fault
 catalogue, **version 0.9.0**, which other API testing tools use as well. A number from it — `F100` —
 is what a fault *is*: it is what `report.json` counts by, and what makes a count from RESTest
-comparable with a count from another tool that uses the same catalogue. The catalogue's own name
-for the kind, `HTTP Status 500`, is written beside the number. The sentence under it, `the API
-answered 500, so it fell over while handling this request`, is RESTest's, written to be read rather
-than filed.
+comparable with a count from another tool that uses the same catalogue. On the screen the number
+comes last, in brackets, after RESTest's title for the kind — `Internal server error  (F100)` — and
+the sentence under it, `the API answered 500, so it fell over while handling this request`, is
+RESTest's too, written to be read rather than filed. The catalogue's own name for the kind, `HTTP
+Status 500`, is in `report.json`, beside the number (`descriptiveName`, `label`).
 
 `report.json` says which catalogue it counted by, and which version of it, in `faultCatalogue`, since
 a number only means something next to the list it was taken from: the catalogue has renumbered its
@@ -96,9 +97,10 @@ fault per operation where RESTest counts every reply.
 
 *Its name* is the catalogue's, which `report.json` writes beside the number for comparing a run with
 another tool's; the names of `F920` and `F921` are RESTest's, since the catalogue has none. *Title*
-is what the screen and the summary call the kind, in RESTest's words. The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
-after it was deleted, security problems — and this version reports none of them. A run that finds
-nothing wrong has found none of the kinds above whose check was on, and says nothing about the rest.
+is what the screen and the summary call the kind, in RESTest's words. The catalogue has more kinds
+than these — wrong uses of HTTP status codes, a resource still there after it was deleted, security
+problems — and this version reports none of them. A run that finds nothing wrong has found none of
+the kinds above whose check was on, and says nothing about the rest.
 
 ### `F100`, internal server error
 

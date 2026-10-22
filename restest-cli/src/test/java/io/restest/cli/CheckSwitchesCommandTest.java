@@ -34,6 +34,7 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.settings.SettingKey;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -405,11 +406,18 @@ class CheckSwitchesCommandTest {
         StringWriter screen = new StringWriter();
 
         int answer = run(DOCUMENT, directory, screen);
+        StringWriter asked = new StringWriter();
+        int answerWhenAsked = run(DOCUMENT, Files.createDirectories(directory.resolve("asked")),
+                asked, "--set", "checks.failOnWarnings=true");
 
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
         assertThat(screen.toString())
                 .contains("error    Internal server error  (F100)")
                 .contains("which do not fail the run (checks.failOnWarnings):");
+        assertThat(answerWhenAsked).describedAs("the run said:%n%s", asked).isEqualTo(1);
+        assertThat(asked.toString())
+                .contains("error    Internal server error  (F100)")
+                .contains("which fail the run, as checks.failOnWarnings asks:");
     }
 
     /** A short run against the stand-in read through this document, and the code it ended with. */

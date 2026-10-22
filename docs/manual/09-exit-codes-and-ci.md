@@ -40,8 +40,8 @@ echo $?
 
 ## In a script
 
-A script that tells the three outcomes apart — nothing wrong, faults found, and RESTest not able to
-test at all — and says which:
+A script that tells the three outcomes apart — no error, errors found, and RESTest not able to test
+at all — and says which:
 
 ```bash
 ./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s

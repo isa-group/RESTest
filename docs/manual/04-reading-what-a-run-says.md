@@ -48,9 +48,9 @@ warning  Reply off schema  (F200)
 ```
 
 The indented lines under the sentence are the places in the reply that disagree with the document,
-and how: here, two pets of the list have no type, where the document says every pet has one. A reply that leaves out something the document calls required, or sends a number as text,
-shows here. That is why it is a warning: either side can be wrong, the API or the document
-describing it.
+and how: here, two pets of the list have no type, where the document says every pet has one. A
+reply that leaves out something the document calls required, or sends a number as text, shows here.
+That is why it is a warning: either side can be wrong, the API or the document describing it.
 
 ## The summary
 

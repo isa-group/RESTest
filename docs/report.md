@@ -57,7 +57,8 @@ them and says so; every one is still counted.
 
 ### The summary
 
-From a minute's run of the same pet store, run on the tester's own machine:
+From a minute's run of the pet store's own code, run in a container of the Web Fuzzing Dataset
+(`webfuzzing/wfd-swagger-petstore`), with `--budget 1m --seed 42`:
 
 ```
 514920 requests to 19 operations in 1m 0s, 1% of it idle

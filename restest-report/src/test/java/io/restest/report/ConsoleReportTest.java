@@ -36,6 +36,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -56,11 +57,11 @@ class ConsoleReportTest {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
         }
 
-        assertThat(screen.toString().split("(F100)", -1).length - 1)
+        assertThat(screen.toString().split(Pattern.quote("(F100)"), -1).length - 1)
                 .describedAs("two written out, and the line that says the screen has stopped "
                         + "being the right place for them")
                 .isEqualTo(2);
-        assertThat(report.faults())
+        assertThat(report.errors())
                 .describedAs("the count is of all of them, printed or not")
                 .isEqualTo(6);
     }
@@ -270,7 +271,7 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
 
         String printed = screen.toString();
-        assertThat(printed.split("(F100)", -1).length - 1)
+        assertThat(printed.split(Pattern.quote("(F100)"), -1).length - 1)
                 .describedAs("the screen holds the first 50 faults and the summary line, not 120")
                 .isEqualTo(51);
         assertThat(printed)
@@ -280,7 +281,6 @@ class ConsoleReportTest {
                 .describedAs("while the count at the end is of every one of them")
                 .contains("120 errors, on 1 operation:")
                 .contains("120 x Internal server error  (F100)");
-        assertThat(report.faults()).isEqualTo(120);
         assertThat(report.errors()).isEqualTo(120);
         assertThat(report.warnings()).isZero();
     }
@@ -368,7 +368,8 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
         assertThat(screen.toString()).contains("no faults found");
-        assertThat(report.faults()).isZero();
+        assertThat(report.errors()).isZero();
+        assertThat(report.warnings()).isZero();
     }
 
     @Test
@@ -813,12 +814,11 @@ class ConsoleReportTest {
                         + "places listed with the document, and fix whichever is wrong");
         assertThat(report.errors()).isEqualTo(1);
         assertThat(report.warnings()).isEqualTo(3);
-        assertThat(report.faults()).isEqualTo(4);
     }
 
     @Test
-    @DisplayName("a run that found only warnings says it found no error, and how to make the "
-            + "warnings fail it")
+    @DisplayName("a run that found only warnings counts them with no line of errors, and says how to "
+            + "make them fail it")
     void a_run_with_only_warnings_says_they_do_not_fail_it() {
         report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
                 Runs.attempt("GET /pets/{petId}", "/pets/7", 200)));
@@ -826,7 +826,7 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
 
         assertThat(screen.toString())
-                .contains("1 warning, on 1 operation, which do not fail the run "
+                .contains("1 warning, on 1 operation, which does not fail the run "
                         + "(checks.failOnWarnings):")
                 .doesNotContain(" error")
                 .doesNotContain("no faults found");
@@ -846,7 +846,7 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
 
         assertThat(screen.toString())
-                .contains("1 warning, on 1 operation, which fail the run, as "
+                .contains("1 warning, on 1 operation, which fails the run, as "
                         + "checks.failOnWarnings asks:");
     }
 
@@ -864,7 +864,7 @@ class ConsoleReportTest {
                 .contains("warning  Undeclared status code  (F920)")
                 .contains("1 error, on 1 operation:")
                 .contains("  1 x Invalid data accepted  (F206)")
-                .contains("1 warning, on 1 operation, which do not fail the run");
+                .contains("1 warning, on 1 operation, which does not fail the run");
         assertThat(report.errors()).isEqualTo(1);
         assertThat(report.warnings()).isEqualTo(1);
     }
@@ -940,7 +940,7 @@ class ConsoleReportTest {
                     Runs.undeclaredStatus(Runs.attempt("getPet", "/pets/1", 404))));
         }
 
-        assertThat(screen.toString().split("(F920)", -1).length - 1).isEqualTo(3);
+        assertThat(screen.toString().split(Pattern.quote("(F920)"), -1).length - 1).isEqualTo(3);
         assertThat(screen.toString())
                 .contains("more faults are being found")
                 .doesNotContain("more warnings are being found");

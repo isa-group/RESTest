@@ -37,9 +37,9 @@ import java.util.Optional;
  * </ul>
  *
  * <p>Every kind RESTest reports is listed here, in one place. A kind somebody else's rule reports,
- * and which is not listed, is read as an error under its own name with nothing to advise: every
- * fault ended a run as a failure before kinds had a severity, and a rule written to report
- * something is presumably meant to.
+ * and which is not listed, is read as an error under its own name - or its number, if it has no
+ * name - with nothing to advise: every fault ended a run as a failure before kinds had a severity,
+ * and a rule written to report something is presumably meant to.
  *
  * <p>Kinds are told apart by their number, which is what a fault is within the catalogue a run
  * counts by; {@link FaultCategory} describes it.
@@ -95,14 +95,20 @@ public record FaultReading(Severity severity, String title, Optional<String> adv
      *
      * @param kind the kind, told apart from the others by its number
      * @return what RESTest calls it, how serious it is and where to look; for a kind it does not
-     *     know, an error under the kind's own name with no advice
+     *     know, an error under the kind's own name, or its number when it has no name, with no
+     *     advice
      */
     public static FaultReading of(FaultCategory kind) {
         Objects.requireNonNull(kind, "kind");
         FaultReading reading = BY_CODE.get(kind.code());
-        return reading != null
-                ? reading
-                : new FaultReading(Severity.ERROR, kind.descriptiveName(), Optional.empty());
+        if (reading != null) {
+            return reading;
+        }
+        // A rule somebody else wrote may name its kind badly; that must not stop a report from
+        // saying what it found.
+        String name = kind.descriptiveName();
+        return new FaultReading(Severity.ERROR,
+                name == null || name.isBlank() ? "F" + kind.code() : name, Optional.empty());
     }
 
     private static FaultReading known(Severity severity, String title, String advice) {

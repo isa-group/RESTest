@@ -62,8 +62,7 @@ of its own. Whether you may test an API at all is not something any tool can che
   could not judge, and why — a body the document gives no shape for, a shape the checker cannot use
   — and says so in its summary and under `notChecked` in `report.json`
   ([what a run leaves behind](report.md#notchecked)); but those are no faults, not even with
-  `checks.failOnWarnings`, so a run whose only
-  replies were of that kind still ends with `0`.
+  `checks.failOnWarnings`, so a run whose only replies were of that kind still ends with `0`.
 - **With `checks.undeclaredStatusCode` or `checks.undeclaredContentType` off, some replies go
   unchecked without a word.** The shape of a reply whose status code or content type the document
   does not declare is never compared with anything, since the document gives no shape for it, and is

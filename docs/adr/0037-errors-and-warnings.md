@@ -15,9 +15,9 @@ content type, the document does not declare ([ADR-0036](0036-kinds-of-fault-rest
 is very often the document's to fix: documents list what an operation answers when all goes well and
 leave out the ways it refuses a request. On fifteen APIs of the Web Fuzzing Dataset run locally, a
 minute each, the runs that brought in those two kinds counted 1,443,634 faults of the first on
-thirteen of them, and one API's run went from `0` to `1` for that alone. A build went red for a line missing in a document as it did for an API falling
-over, and a developer reading the run could not tell the two apart without reading the catalogue's
-numbers.
+thirteen of them, and one API's run went from `0` to `1` for that alone. A build went red for a
+line missing in a document as it did for an API falling over, and a developer reading the run could
+not tell the two apart without reading the catalogue's numbers.
 
 **What the related tools do, read in their code on 22 October 2026.**
 
@@ -148,8 +148,8 @@ comparing a run with another tool's.
   with the maintainer on 22 October 2026, for the oracles to come. Kept to two until those oracles
   need a third: a level is cheap to add, but each one is a question about every kind.
 - **`F206` a warning**, as a first wording of the rule had it: a warning wherever the API and its
-  document disagree and either may be the one at fault. It changed no exit code on the fifteen APIs, since each that accepted a broken
-  request also answered 500. Not taken, for the reason above.
+  document disagree and either may be the one at fault. It changed no exit code on the fifteen APIs,
+  since each that accepted a broken request also answered 500. Not taken, for the reason above.
 - **A severity for each kind given as a setting**, as linters let a rule's level be set. CATS and
   Schemathesis fix theirs, and raising or lowering a kind belongs with the configuration per
   operation, which can say where.
