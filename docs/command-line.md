@@ -145,20 +145,23 @@ The number the command ends with, which is what a build server or a script acts 
 
 | Code | Meaning |
 |---|---|
-| `0` | The run finished and found nothing wrong, in what it could check: the summary and `notChecked` in report.json say what it could not. `--print-campaign`, `--print-settings`, `version` and `--help` answer `0` too |
-| `1` | The run finished and found at least one fault in the API |
+| `0` | The run finished and found no error in the API; any warnings, and any replies it could not check, are counted in its summary and in its report: `totals` and `notChecked` in report.json. `--print-campaign`, `--print-settings`, `version` and `--help` answer `0` too |
+| `1` | The run finished and found at least one error in the API, or a warning when checks.failOnWarnings asks. [Errors and warnings](faults.md#errors-and-warnings) says which kinds of fault are which |
 | `2` | The command line was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent. A file of arguments that cannot be read is one of these |
 | `3` | Nothing was tested: the document describes no operation that can be tried, there is no address to send requests to or nowhere to write the results, or not one request was answered - none could be built, the budget ran out before the first, or nothing at the address replied. The run says which. A script that starts the API and RESTest together meets the last one when RESTest is quicker |
 | `4` | RESTest itself went wrong - it lost requests on their way, had to keep exchanges without their details, or broke outright - so what it printed may be incomplete. The message and the stack trace are what to report, with what `restest version` says. A run in which RESTest lost requests answers `4` even when nothing at all was answered; if the address looks wrong as well, the run says so beside it. An exchange kept without its details is one a key could not be picked out of, so everything in it that could hold the key was blanked: the key is hidden, not leaked |
 | `130` | The run was stopped with Ctrl-C. What it found until then was printed and written, and report.json says it was cut short - or the run says what it did not leave behind: a run stopped while it still read the document wrote nothing, and one that could not finish writing in time says what is missing. [Stopping a run](#stopping-a-run) has the details. The number is Java's, the one every shell reads as "interrupted", and it is kept whatever the run found |
 | `143` | The run was stopped with kill or docker stop. What it found until then was printed and written, and report.json says it was cut short - or the run says what it did not leave behind, the same as for `130`. Java gives this number itself |
 
-A fault found is `1` rather than `0` because the usual use is a gate that should go red when the API
-is broken. A check switched off reports no fault, so a run's `0` says that nothing was found among
-the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)), in the replies
-those checks could judge: a reply a check could not judge, such as one whose document gives no
-shape for its body, is no fault, and the summary and `notChecked` in report.json say how many there
-were ([what a run leaves behind](report.md#notchecked)). An operation
+An error found is `1` rather than `0` because the usual use is a gate that should go red when the
+API is broken. A warning — the API answering something its document does not describe, where the
+document may be the one out of date — is counted and said, and ends a run with `1` only when
+`--set checks.failOnWarnings=true` asks, for a gate that should also go red when the API and its
+document disagree. A check switched off reports no fault, so a run's `0` says that no error was
+found among the kinds of fault whose check was on ([the faults](faults.md#switching-a-check-off)),
+in the replies those checks could judge: a reply a check could not judge, such as one whose document
+gives no shape for its body, is no fault and never fails a run, and the summary and `notChecked` in
+report.json say how many there were ([what a run leaves behind](report.md#notchecked)). An operation
 RESTest had to skip is not an error: a run says what it skipped and carries on, and only a run in
 which nothing at all was tested answers `3`. A run stopped from outside never answers `0` or `1`, so
 that one stopped half-way never passes for one that finished.
@@ -187,3 +190,9 @@ A minor version may **add** — a command, an option, a setting, a number for so
 yet — because nothing written for 2.0 breaks when something is added. Anything that would break it
 waits for 3.0. What the tool prints for people to read, the wording of a summary or of this page, is
 not part of the promise and gets better whenever it can.
+
+**One exception, in 2.2.0.** Faults became errors and warnings, and `0` and `1` changed with them:
+`1` had meant at least one fault, and means at least one error. Against 2.1.0 the difference is a
+run whose only faults are replies whose body is off the shape the document gives (`F200`), which
+ended with `1` and ends with `0`; with `--set checks.failOnWarnings=true` such a run ends with `1`
+again, as under 2.1.0. [ADR-0015](adr/0015-command-line-contract.md) records why.

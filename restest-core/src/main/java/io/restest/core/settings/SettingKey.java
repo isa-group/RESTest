@@ -386,6 +386,8 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("checks", "undeclaredContentType", SettingKind.YES_OR_NO,
                     "report a reply with a body whose content type the document does not declare "
                             + "for its status code, below 500 (F921)"),
+            key("checks", "failOnWarnings", SettingKind.YES_OR_NO,
+                    "end the run with 1 when it found warnings, as it does for errors"),
 
             key("report", "writeUpsPerOperationAndKind", SettingKind.WHOLE_NUMBER,
                     "how many faults of one kind, on one operation, are written out whole"),
@@ -395,6 +397,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how much of any one body the report quotes"),
             key("report", "faultsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
                     "how many faults are printed in full before the screen stops being the place"),
+            key("report", "warningsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
+                    "and how many of those may be warnings, so that errors found later still have "
+                            + "room"),
             key("report", "skippedOperationsShownOnTheConsole", SettingKind.WHOLE_NUMBER,
                     "how many operations that could not be tested are named on the screen"),
             key("report", "detailsShownPerFault", SettingKind.WHOLE_NUMBER,

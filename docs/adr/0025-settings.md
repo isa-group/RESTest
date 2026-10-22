@@ -762,3 +762,18 @@ maintainer on 17 October 2026, and named for what is wrong with what came back, 
 first and then RESTest's own ([ADR-0036](0036-kinds-of-fault-restest-numbers-itself.md)), so
 `notImplemented` sits between `replyOffSchema` and `invalidDataAccepted`. Ninety-seven settings in
 nine groups.
+
+## Amendment (22 October 2026): what the checks' findings do to how a run ends
+
+**Date:** 2026-10-22
+
+`checks.failOnWarnings`, `false` unless set, ends a run that found warnings with `1`, as one that
+found errors ([ADR-0037](0037-errors-and-warnings.md)). It is not a switch of a check, which the 12
+October amendment defined this group to hold, and it is not named for what is wrong with a reply: it
+says what the checks' findings do to how a run ends. It goes in this group because it is about the
+checks and nothing else, and last in it, after every check, so that the checks keep the order of the
+numbers of what they report.
+
+`report.warningsShownOnTheConsole`, 10, says how many of the faults printed in full on the screen
+may be warnings, so that errors found later still have room; `report.faultsShownOnTheConsole` keeps
+its meaning, the faults printed in all. Ninety-nine settings in nine groups.

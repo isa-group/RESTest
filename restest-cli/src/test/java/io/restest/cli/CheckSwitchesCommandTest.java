@@ -26,6 +26,7 @@ import static io.restest.cli.ARun.operationsWith;
 import static io.restest.cli.ARun.repliesOfClass;
 import static io.restest.cli.ARun.report;
 import static io.restest.cli.ARun.settingsIn;
+import static io.restest.cli.ARun.totalIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -33,6 +34,7 @@ import io.restest.core.json.JsonValue;
 import io.restest.core.settings.SettingKey;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -209,9 +211,11 @@ class CheckSwitchesCommandTest {
             + "still counted as something the API did")
     void every_check_off(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
+        // Every check, and not what the checks' findings do to how the run ends, which is no check.
         List<String> everyCheck = SettingKey.all().stream()
                 .filter(key -> key.group().equals("checks"))
                 .map(key -> key.group() + "." + key.name())
+                .filter(name -> !name.equals("checks.failOnWarnings"))
                 .toList();
 
         int answer = run(DOCUMENT, directory, screen, everyCheck.stream()
@@ -251,9 +255,14 @@ class CheckSwitchesCommandTest {
         assertThat(operationsWith(920, report)).containsExactly("listVets");
         assertThat(operationsWith(921, report)).containsExactly("listVisits");
         assertThat(screen.toString()).contains(
-                " x F205  Schema Violation: no-501-if-implemented",
-                " x F920  A Status Code The Document Does Not Declare",
-                " x F921  A Content Type The Document Does Not Declare");
+                " x Internal server error  (F100)",
+                " x Other server error  (F121)",
+                " x Invalid data accepted  (F206)",
+                " x No reply in time  (F312)",
+                " x Reply off schema  (F200)",
+                " x Not implemented  (F205)",
+                " x Undeclared status code  (F920)",
+                " x Undeclared content type  (F921)");
     }
 
     @ParameterizedTest
@@ -275,8 +284,8 @@ class CheckSwitchesCommandTest {
         others.remove(Integer.valueOf(code));
         assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
         assertThat(codesIn(report)).doesNotContain(code).containsAll(others);
-        assertThat(screen.toString()).doesNotContain(" x F" + code + " ");
-        others.forEach(other -> assertThat(screen.toString()).contains(" x F" + other + " "));
+        assertThat(screen.toString()).doesNotContain("(F" + code + ")");
+        others.forEach(other -> assertThat(screen.toString()).contains("(F" + other + ")"));
         assertThat(settingsIn(report)).contains(check + " false command line");
     }
 
@@ -352,6 +361,63 @@ class CheckSwitchesCommandTest {
                 "checks.undeclaredStatusCode false command line",
                 "checks.undeclaredContentType false command line",
                 "checks.replyOffSchema true default");
+    }
+
+    @Test
+    @DisplayName("a run whose only faults are replies off their schema - warnings - ends 0, and its "
+            + "summary says that they do not fail the run and which setting would make them")
+    void warnings_alone_do_not_fail_the_run(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(DOCUMENT, directory, screen, "--set", "checks.internalServerError=false");
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(codesIn(report)).containsExactly(200);
+        assertThat(answer)
+                .describedAs("a reply off its schema is a warning, which ends a run 1 only when "
+                        + "asked; the run said:%n%s", screen)
+                .isZero();
+        assertThat(screen.toString())
+                .contains("warning  Reply off schema  (F200)")
+                .contains("on 1 operation, which do not fail the run (checks.failOnWarnings):");
+        assertThat(totalIn(report, "errors")).isZero();
+        assertThat(totalIn(report, "warnings")).isPositive();
+    }
+
+    @Test
+    @DisplayName("told that warnings fail it, the same run ends 1, says so, and records the setting")
+    void warnings_fail_the_run_when_asked(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(DOCUMENT, directory, screen, "--set", "checks.internalServerError=false",
+                "--set", "checks.failOnWarnings=true");
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(codesIn(report)).containsExactly(200);
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(screen.toString())
+                .contains("on 1 operation, which fail the run, as checks.failOnWarnings asks:");
+        assertThat(settingsIn(report)).contains("checks.failOnWarnings true command line");
+    }
+
+    @Test
+    @DisplayName("an error beside the warnings ends the run 1 whether or not warnings fail it")
+    void an_error_fails_the_run_either_way(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = run(DOCUMENT, directory, screen);
+        StringWriter asked = new StringWriter();
+        int answerWhenAsked = run(DOCUMENT, Files.createDirectories(directory.resolve("asked")),
+                asked, "--set", "checks.failOnWarnings=true");
+
+        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(screen.toString())
+                .contains("error    Internal server error  (F100)")
+                .contains("which do not fail the run (checks.failOnWarnings):");
+        assertThat(answerWhenAsked).describedAs("the run said:%n%s", asked).isEqualTo(1);
+        assertThat(asked.toString())
+                .contains("error    Internal server error  (F100)")
+                .contains("which fail the run, as checks.failOnWarnings asks:");
     }
 
     /** A short run against the stand-in read through this document, and the code it ended with. */

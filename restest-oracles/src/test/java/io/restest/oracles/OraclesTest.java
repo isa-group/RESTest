@@ -79,7 +79,7 @@ class OraclesTest {
     @DisplayName("every check off is a run that judges nothing")
     void every_check_off_judges_nothing() {
         assertThat(Oracles.standard(new CheckSettings(false, false, false, false, false, false,
-                false, false)))
+                false, false, false)))
                 .describedAs("every check off is a run that judges nothing, which an experiment "
                         + "measuring what judging costs may want")
                 .isEmpty();

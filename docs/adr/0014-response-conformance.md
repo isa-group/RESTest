@@ -1,6 +1,6 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
-**Status:** Accepted, amended at M1.8 and on 10, 17 and 19 October 2026
+**Status:** Accepted, amended at M1.8 and on 10, 17, 19 and 22 October 2026
 **Date:** 2026-09-13
 
 ## Context
@@ -260,3 +260,17 @@ judge, and on two of them, restcountries and rest-scs, not one reply's shape cou
 Whether a run may be told to fail when something could not be checked is not decided here.
 Schemathesis, the tool closest to this, prints what it could not validate as a warning that fails a
 run only when asked.
+
+## Amendment (22 October 2026): why a reply not checked never fails a run
+
+**Date:** 2026-10-22
+
+The amendment of 19 October kept the replies a check could not judge out of the exit code because
+making `0` mean "and everything was checked" "would change what `0` means", which the command line
+had promised not to do within a major version. [ADR-0037](0037-errors-and-warnings.md) has since
+changed what `0` means — no error, where it was no fault — so that reason no longer holds.
+
+The decision stands, for another reason, the maintainer's of 22 October 2026: a reply no check could
+judge says nothing against the API, so it never fails a run, not even with `checks.failOnWarnings`,
+which makes warnings fail one. Whether a run may be told to fail on it, as the 19 October amendment
+left open, is answered no.

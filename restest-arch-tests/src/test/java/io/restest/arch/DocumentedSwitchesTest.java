@@ -22,6 +22,10 @@ import io.restest.cli.Restest;
 import io.restest.core.json.JsonValue;
 import io.restest.core.json.YamlText;
 import io.restest.core.model.ApiModel;
+import io.restest.core.oracle.FaultCategory;
+import io.restest.core.oracle.FaultReading;
+import io.restest.core.oracle.RestestFault;
+import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.SettingKey;
 import io.restest.core.settings.SettingKind;
 import io.restest.core.settings.SettingSource;
@@ -36,13 +40,16 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -82,6 +89,15 @@ class DocumentedSwitchesTest {
      */
     private static final Pattern ROW = Pattern.compile(
             "^\\| `([a-z]+\\.[A-Za-z]+)` \\| `([^`]*)` \\| ([^|]*) \\| .* \\|$", Pattern.MULTILINE);
+
+    /**
+     * A row of the page's table of checks: the switch, after {@code checks.}, the idea it is part
+     * of, and the number of the kind of fault it reports, which its last column gives in brackets.
+     */
+    private static final Pattern CHECK_ROW = Pattern.compile(
+            "^\\| `checks\\.([A-Za-z]+)` \\| `[^`]*` \\| ([^|]*) \\| "
+                    + "[^|]*?\\(`F(\\d+)`\\)[^|]*\\|$",
+            Pattern.MULTILINE);
 
     /** A setting named anywhere on the page, in a sentence as much as in a table. */
     private static final Pattern NAMED = Pattern.compile(
@@ -385,6 +401,49 @@ class DocumentedSwitchesTest {
                 .describedAs("handed the page's plan and its file for getting the seed back, a run "
                         + "still depends on what the API answers, so the seed does not repeat it")
                 .isFalse();
+    }
+
+    @Test
+    @DisplayName("each check is part of the kind of fault it reports, under the title a run prints "
+            + "for that kind, and its switch is that title in one word")
+    void each_check_is_named_by_the_title_of_its_kind() {
+        List<MatchResult> checks = CHECK_ROW.matcher(page).results().toList();
+        long switchesOfChecks = switches().stream()
+                .filter(key -> key.group().equals("checks"))
+                .filter(key -> !key.name().equals("failOnWarnings"))
+                .count();
+
+        assertThat(checks)
+                .describedAs("every switch of a check has a row naming the kind it reports")
+                .hasSize((int) switchesOfChecks);
+        assertThat(checks).allSatisfy(row -> {
+            String title = FaultReading.of(kindNumbered(Integer.parseInt(row.group(3)))).title();
+            assertThat(row.group(2).trim())
+                    .describedAs("what checks.%s is part of", row.group(1))
+                    .isEqualTo(title);
+            assertThat(row.group(1))
+                    .describedAs("the switch of the check whose kind is called '%s'", title)
+                    .isEqualTo(inOneWord(title));
+        });
+    }
+
+    /** A title written as one word, the way a setting is named: "Reply off schema", replyOffSchema. */
+    private static String inOneWord(String title) {
+        String[] words = title.split(" ");
+        StringBuilder written = new StringBuilder(words[0].toLowerCase(Locale.ROOT));
+        for (int at = 1; at < words.length; at++) {
+            written.append(Character.toUpperCase(words[at].charAt(0)))
+                    .append(words[at].substring(1));
+        }
+        return written.toString();
+    }
+
+    /** The kind of fault with this number, the catalogue's or RESTest's own. */
+    private static FaultCategory kindNumbered(int code) {
+        return WfcFault.byCode(code).<FaultCategory>map(kind -> kind)
+                .or(() -> Arrays.stream(RestestFault.values())
+                        .filter(kind -> kind.code() == code).findFirst())
+                .orElseThrow(() -> new AssertionError("no kind of fault is numbered " + code));
     }
 
     /** Every setting that is true or false, which is what makes it a switch. */

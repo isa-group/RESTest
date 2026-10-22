@@ -278,6 +278,8 @@ checks:
   undeclaredStatusCode: true  # default
   # report a reply with a body whose content type the document does not declare for its status code, below 500 (F921)
   undeclaredContentType: true # default
+  # end the run with 1 when it found warnings, as it does for errors
+  failOnWarnings: false       # default
 
 report:
   # how many faults of one kind, on one operation, are written out whole
@@ -288,6 +290,8 @@ report:
   mostBodyBytesKept: 24576    # default
   # how many faults are printed in full before the screen stops being the place
   faultsShownOnTheConsole: 50 # default
+  # and how many of those may be warnings, so that errors found later still have room
+  warningsShownOnTheConsole: 10 # default
   # how many operations that could not be tested are named on the screen
   skippedOperationsShownOnTheConsole: 5 # default
   # how many of a fault's particulars are printed under it on the screen
@@ -515,8 +519,11 @@ switches](switches.md#switching-off-one-idea) has that file.
 
 ### `checks.*`
 
-The checks a run makes on what came back, or did not, each of which reports a kind of fault. [The
-faults](faults.md#switching-a-check-off) says what switching one off changes, and what it does not.
+The checks a run makes on what came back, or did not, each of which reports a kind of fault, and,
+last, what the faults they find do to how a run ends: an error ends it with `1`, a warning only when
+`failOnWarnings` asks ([errors and warnings](faults.md#errors-and-warnings)). [The
+faults](faults.md#switching-a-check-off) says what switching a check off changes, and what it does
+not.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -528,6 +535,7 @@ faults](faults.md#switching-a-check-off) says what switching one off changes, an
 | `noReplyInTime` | `true` | report a request that got no reply, on a connection open to the API, before RESTest stopped waiting (F312) |
 | `undeclaredStatusCode` | `true` | report a reply whose status code, below 500, the document does not declare for the operation (F920) |
 | `undeclaredContentType` | `true` | report a reply with a body whose content type the document does not declare for its status code, below 500 (F921) |
+| `failOnWarnings` | `false` | end the run with 1 when it found warnings, as it does for errors |
 
 ### `report.*`
 
@@ -537,6 +545,7 @@ faults](faults.md#switching-a-check-off) says what switching one off changes, an
 | `writeUpsInTotal` | `1000` | and how many in the whole file |
 | `mostBodyBytesKept` | `24576` | how much of any one body the report quotes |
 | `faultsShownOnTheConsole` | `50` | how many faults are printed in full before the screen stops being the place |
+| `warningsShownOnTheConsole` | `10` | and how many of those may be warnings, so that errors found later still have room |
 | `skippedOperationsShownOnTheConsole` | `5` | how many operations that could not be tested are named on the screen |
 | `detailsShownPerFault` | `10` | how many of a fault's particulars are printed under it on the screen |
 | `commonestStatusCodesListed` | `10` | how many of the status codes answered most the report lists |

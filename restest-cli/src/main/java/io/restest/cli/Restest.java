@@ -48,8 +48,8 @@ import picocli.CommandLine.UnmatchedArgumentException;
  *
  * <p>Running the command always ends in an answer, however badly RESTest itself breaks along the
  * way - running out of memory included. A crash that escaped instead would end the program with the
- * number Java gives any program that crashes, which is the number that says a fault was found in
- * the API.
+ * number Java gives any program that crashes, which is the number that says an error was found
+ * in the API.
  */
 @Command(
         name = "restest",
@@ -66,7 +66,7 @@ import picocli.CommandLine.UnmatchedArgumentException;
                 "restest help run also lists the exit codes, and what each one means."},
         // What the command-line framework answers when something fails inside the framework itself
         // rather than in a command - while it writes the help, say. Left alone it answers 1, the
-        // number that says a fault was found in the API.
+        // number that says an error was found in the API.
         exitCodeOnExecutionException = ExitCode.TOOL_FAILED)
 public final class Restest {
 
@@ -89,7 +89,7 @@ public final class Restest {
             escaped.printStackTrace();
         } finally {
             // Always with a number RESTest chose. Java would otherwise end the program with 1, the
-            // number that says a fault was found in the API.
+            // number that says an error was found in the API.
             System.exit(answer);
         }
     }
@@ -97,9 +97,9 @@ public final class Restest {
     /**
      * Runs a command and answers, without ending anything.
      *
-     * <p>The answer is 0 when the run found nothing wrong, 1 when it found a fault, 2 when the
-     * command line was wrong, 3 when there was nothing to test, and 4 when RESTest itself went
-     * wrong. A failure that would otherwise be thrown out of the command - running out of memory
+     * <p>The answer is 0 when the run found no error in the API, 1 when it found one - or a
+     * warning, when it was told that warnings fail it - 2 when the command line was wrong, 3 when
+     * there was nothing to test, and 4 when RESTest itself went wrong. A failure that would otherwise be thrown out of the command - running out of memory
      * included - is answered with 4 instead, and said where problems go, with the stack trace
      * somebody needs to report it. A run the program is told to stop while it runs - Ctrl-C, say -
      * makes no new requests, writes what it found and answers 130; the program then ends with the number
@@ -191,7 +191,7 @@ public final class Restest {
             // exceptions a command throws, and lets through the more serious kind of failure Java
             // calls an error: running out of memory, running out of room for the stack, a piece of
             // Java missing where the program runs. Let through, one of those would end the program
-            // with the number Java gives any program that crashes - 1, the number that says a fault
+            // with the number Java gives any program that crashes - 1, the number that says an error
             // was found in the API - and whatever ran the command would count a crash as a finding.
             //
             // Caught here rather than only where the program ends, so that every caller gets the

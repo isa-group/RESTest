@@ -1,6 +1,6 @@
 # ADR-0016: A fault is identified by its catalogue number, described in our own words, and classified twice
 
-**Status:** Accepted, amended at M1.10 and on 10, 12, 15 and 17 October 2026
+**Status:** Accepted, amended at M1.10 and on 10, 12, 15, 17 and 22 October 2026
 **Date:** 2026-09-15
 
 ## Context
@@ -272,7 +272,7 @@ but RESTler under the same name as 500; EvoMaster reports only 500. Checked in e
 
 What the M1.10 amendment says about 502, 503 and 504 still holds: they are often what a gateway or a
 load balancer says, or what an API says when a service it calls is down. The rule's sentence says
-so, and [the faults](../faults.md#f121-a-server-error-other-than-500) call it weaker evidence than a
+so, and [the faults](../faults.md#f121-other-server-error) call it weaker evidence than a
 500. A 503 that carries `Retry-After`, asking the run to wait, is reported like any other, decided by
 the maintainer on 15 October 2026: no tool checked exempts it, and until RESTest waits when it is
 told to, [the known limitations](../known-limitations.md) say that a 503 the run's own pace provoked
@@ -441,3 +441,29 @@ all, `F920` came to 1,539,973 faults on 228 pairs; the table above is left as it
 scout-api no renamed operation is also one RESTest read in part, so the replay's agreement says the
 two rules judge those eight operations as they are defined to; that what could not be read is said
 of the right operation is shown by RESTest's tests, not by this run.
+
+## Amendment (22 October 2026): what a person reads first
+
+**Date:** 2026-10-22
+
+**On the screen, RESTest's words come first and the catalogue's name is gone.** A fault is printed
+as its severity, error or warning, then a title in RESTest's own words, then the number in brackets:
+`error    Internal server error  (F100)`. The summary counts each kind the same way, with a line on
+what to look at under it. This reverses two things this record said, for the screen only:
+
+- "Our own wording replacing the catalogue's" was rejected, because two tools reporting the same
+  fault in different words cannot be compared. Comparison is done on the number, which every line
+  still carries, and in `report.json`, which still writes the catalogue's name beside it
+  (`descriptiveName`, `label`).
+- The 12 October amendment said "The console shows the number and the name, as before". It shows
+  the number and RESTest's title.
+
+**The identity is unchanged**: the number, within one version of the catalogue. The title is a
+description, which this record always asked for, now short enough to come first.
+
+**A third classification, beside the catalogue number and the class of status code: the severity.**
+It is what decides how a run ends, and every row of `report.json` that counts faults says it, as
+`severity`, with the title. Each kind's severity, title and line of advice are in one table
+([ADR-0037](0037-errors-and-warnings.md)). A reply that is both an error and a warning — a request
+broken on purpose, accepted with a status code the document does not declare — is one of each, as it
+was two faults before.

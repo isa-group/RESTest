@@ -33,6 +33,12 @@ package io.restest.core.settings;
  * <p>A check switched off is not made at all. No check decides what a run sends: switching one off
  * changes which replies are called faults, and so whether the run ends saying it found any.
  *
+ * <p>Every kind of fault is an error or a warning. An error ends the run with 1, so that a build
+ * goes red; a warning - a reply the document does not describe, where the document may be the one
+ * out of date - is counted and said, and ends the run with 1 only when the last setting here asks
+ * for it. That setting is no check of its own: it is what the checks' findings do to how a run
+ * ends.
+ *
  * <p>This is one group of the settings a run is handed, {@link Settings}, read when the rules the
  * run judges replies by are chosen.
  *
@@ -52,15 +58,20 @@ package io.restest.core.settings;
  *     declare for the operation
  * @param undeclaredContentType report a reply with a body, and a status code below 500 the document
  *     declares, whose content type the document does not declare for that status code
+ * @param failOnWarnings end the run with 1 when it found warnings, as it does for errors
  */
 public record CheckSettings(boolean internalServerError, boolean otherServerError,
         boolean replyOffSchema, boolean notImplemented, boolean invalidDataAccepted,
-        boolean noReplyInTime, boolean undeclaredStatusCode, boolean undeclaredContentType) {
+        boolean noReplyInTime, boolean undeclaredStatusCode, boolean undeclaredContentType,
+        boolean failOnWarnings) {
 
     private static final CheckSettings DEFAULTS =
-            new CheckSettings(true, true, true, true, true, true, true, true);
+            new CheckSettings(true, true, true, true, true, true, true, true, false);
 
-    /** What a run does when nobody has said otherwise: every check is made. */
+    /**
+     * What a run does when nobody has said otherwise: every check is made, and only errors end the
+     * run with 1.
+     */
     public static CheckSettings defaults() {
         return DEFAULTS;
     }

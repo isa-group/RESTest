@@ -204,8 +204,10 @@ intended:
 A tool that has absorbed assumptions from the benchmark it is measured on is both worse engineering
 and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reasoning and the layout.
 
-Fault reports use the WFC codes rather than a taxonomy of our own, for the same reason: a fault
-count is only meaningful next to somebody else's fault count.
+Fault reports count by the WFC codes rather than by a taxonomy of our own, for the same reason: a
+fault count is only meaningful next to somebody else's fault count. What a person reads first is
+RESTest's own words, though: every kind has a title of its own and is an error or a warning
+([ADR-0037](adr/0037-errors-and-warnings.md)), and the code comes after them.
 
 Every behaviour a run can do without that was added since the tool has had settings — an opening
 lap, a mutation operator, a series of requests — has a switch in them

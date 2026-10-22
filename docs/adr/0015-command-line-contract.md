@@ -1,7 +1,7 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11, 12 and 19 October 2026
-**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12, 2026-10-19)
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11, 12, 19 and 22 October 2026
+**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12, 2026-10-19, 2026-10-22)
 
 ## Context
 
@@ -1300,3 +1300,39 @@ in which every request is refused still reads much like one pointed at the wrong
 is a reply the checks judge — a `404` the document declares is fine, one it does not declare is
 `F920` — so counting what could not be judged does not tell an API that refuses everything from an
 address where the API is not. That case is still open.
+
+## Amendment (22 October 2026): errors and warnings
+
+**Date:** 2026-10-22
+
+**`0` and `1` change what they mean, the first time an exit code does in 2.x.** Every fault is now an
+error or a warning ([ADR-0037](0037-errors-and-warnings.md)), and:
+
+| Code | Meaning |
+|---|---|
+| `0` | The run finished and found no error in the API; any warnings, and any replies it could not check, are counted in its summary and in its report. |
+| `1` | The run finished and found at least one error in the API, or a warning when `checks.failOnWarnings` asks. |
+
+The M12.1a amendment froze what every exit code means for all of 2.x;
+[ADR-0033](0033-a-dictionary-file-is-written-by-operation-and-place.md), which changed a file's format
+in a minor version, said that it was no precedent for changing an exit code, and
+[ADR-0034](0034-version-2-of-the-plans-format.md) that it left them alone. This is not done on their
+strength. It is done because what `1` meant had stopped serving the people who read it: since a run
+reports the status codes and content types a document leaves out, a document that lists only what
+goes well made a build go red as surely as an API that fell over, and the number could not say
+which. The maintainer chose that a reply off its schema would stop failing a run, and that this
+could ship only in a minor version, and decided the rest on 22 October 2026.
+
+What it costs, against 2.1.0, the last release: a run whose only faults are replies whose body is
+off the shape the document gives (`F200`) ended with `1` and ends with `0`. With
+`--set checks.failOnWarnings=true` such a run ends with `1` again. Nothing else that 2.1.0 reported
+changes its number: `F100` is an error. The constants that name the two numbers are now
+`ExitCode.NO_ERRORS` and `ExitCode.ERRORS_FOUND`, and the help, `docs/command-line.md` and its
+section on what frozen means say the same.
+
+**The escape hatch this decision reserved, `--fail-on`, is a setting.** "A reader who disagrees
+should note the escape hatch reserved rather than built" was written for a run that found faults and
+should not fail. The settings of [ADR-0025](0025-settings.md) now say how a run ends:
+`checks.failOnWarnings` for warnings, and the switch of each check for a kind of fault that should
+not count at all. A second, command-line way of saying either would be the second vocabulary
+ADR-0029 rules out.

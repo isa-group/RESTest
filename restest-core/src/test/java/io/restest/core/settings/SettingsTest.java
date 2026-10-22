@@ -66,10 +66,20 @@ class SettingsTest {
         }
 
         @Test
-        @DisplayName("every check is made unless somebody switches it off")
+        @DisplayName("every check is made unless somebody switches it off, and only errors fail "
+                + "the run")
         void every_check_is_on_by_default() {
             assertThat(Settings.defaults().checks())
-                    .isEqualTo(new CheckSettings(true, true, true, true, true, true, true, true));
+                    .isEqualTo(new CheckSettings(true, true, true, true, true, true, true, true,
+                            false));
+        }
+
+        @Test
+        @DisplayName("ten of the faults on the screen may be warnings, and the rest are kept for "
+                + "errors")
+        void ten_warnings_on_the_screen() {
+            assertThat(Settings.defaults().report().faultsShownOnTheConsole()).isEqualTo(50);
+            assertThat(Settings.defaults().report().warningsShownOnTheConsole()).isEqualTo(10);
         }
 
         @Test
@@ -375,8 +385,27 @@ class SettingsTest {
 
             assertThat(changed.checks()).isEqualTo(new CheckSettings(internalServerError,
                     otherServerError, replyOffSchema, notImplemented, invalidDataAccepted,
-                    noReplyInTime, undeclaredStatusCode, undeclaredContentType));
+                    noReplyInTime, undeclaredStatusCode, undeclaredContentType, false));
             assertThat(changed.written(SettingKey.named(key).orElseThrow())).isEqualTo("false");
+        }
+
+        @Test
+        @DisplayName("warnings are made to fail the run in one line, and every check stays on")
+        void warnings_fail_the_run_when_asked() {
+            Settings changed = Settings.from(Map.of("checks.failOnWarnings", "true"));
+
+            assertThat(changed.checks()).isEqualTo(new CheckSettings(true, true, true, true, true,
+                    true, true, true, true));
+            assertThat(changed.written(SettingKey.named("checks.failOnWarnings").orElseThrow()))
+                    .isEqualTo("true");
+        }
+
+        @Test
+        @DisplayName("and nothing but true or false is taken for it")
+        void warnings_fail_only_on_true_or_false() {
+            assertThatThrownBy(() -> Settings.from(Map.of("checks.failOnWarnings", "maybe")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("checks.failOnWarnings takes true or false");
         }
     }
 
@@ -601,7 +630,7 @@ class SettingsTest {
                     false, false)).memory().mostNames()).isZero();
             assertThat(from.withDocument(new DocumentSettings(Duration.ofSeconds(1), 10))
                     .document().mostBytesRead()).isEqualTo(10);
-            assertThat(from.withReport(new ReportSettings(0, 0, 0, 0, 0, 0, 0)).report()
+            assertThat(from.withReport(new ReportSettings(0, 0, 0, 0, 0, 0, 0, 0)).report()
                     .writeUpsInTotal()).isZero();
             assertThat(from.withReport(from.report()))
                     .describedAs("replacing a group with itself changes nothing at all")

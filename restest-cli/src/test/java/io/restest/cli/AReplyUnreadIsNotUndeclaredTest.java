@@ -129,7 +129,10 @@ class AReplyUnreadIsNotUndeclaredTest {
         int answer = ARun.run(DOCUMENT, api.baseUrl(), directory, screen);
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
-        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(answer)
+                .describedAs("an undeclared status code is a warning, which ends no run with 1 "
+                        + "unless asked; the run said:%n%s", screen)
+                .isZero();
         assertThat(screen.toString())
                 .describedAs("what RESTest could not read is said before the run")
                 .contains("the response '404' is a reference that does not resolve");
@@ -147,7 +150,10 @@ class AReplyUnreadIsNotUndeclaredTest {
         int answer = ARun.run(ONE_NAME_FOR_THREE, api.baseUrl(), directory, screen);
 
         JsonValue.JsonObject report = report(directory.resolve("out"));
-        assertThat(answer).describedAs("the run said:%n%s", screen).isEqualTo(1);
+        assertThat(answer)
+                .describedAs("an undeclared status code is a warning, which ends no run with 1 "
+                        + "unless asked; the run said:%n%s", screen)
+                .isZero();
         assertThat(screen.toString())
                 .describedAs("what RESTest could not read, and the new names, are said before the "
                         + "run")

@@ -25,7 +25,9 @@ import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
+import io.restest.core.oracle.FaultReading;
 import io.restest.core.oracle.Finding;
+import io.restest.core.oracle.Severity;
 import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.ReportSettings;
 import io.restest.core.settings.Settings;
@@ -48,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Writes what a run found as one JSON file, for anything that reads a run rather than looks at it.
@@ -95,7 +98,10 @@ import java.util.Set;
  *
  * <p>Fault kinds are named by number from a catalogue several testing tools share, and the report
  * says which version of that catalogue it used, because a fault code only means something next to
- * the list it was taken from.
+ * the list it was taken from. Beside the number, every fault says whether it is an error or a
+ * warning, and what RESTest calls its kind; what to look at is said once for each kind
+ * ({@link FaultReading}). The totals count errors and warnings apart, since a build fails on the
+ * first and, unless told otherwise, not on the second.
  */
 public final class JsonReport implements RunListener {
 
@@ -479,8 +485,14 @@ public final class JsonReport implements RunListener {
         tallies.forEach((kind, tally) -> byNumber.merge(kind.code(), tally.count, Integer::sum));
         return JsonValue.array(byNumber.entrySet().stream()
                 .map(entry -> {
+                    FaultCategory kind = kinds.get(entry.getKey());
                     Map<String, JsonValue> counted = new LinkedHashMap<>(((JsonValue.JsonObject)
-                            categoryOf(kinds.get(entry.getKey()))).members());
+                            categoryOf(kind)).members());
+                    // Said here, once for each kind, rather than under every fault written out:
+                    // a run can write out a thousand faults of one kind, and the advice is the
+                    // same for each.
+                    FaultReading.of(kind).advice()
+                            .ifPresent(advice -> counted.put("advice", JsonValue.of(advice)));
                     counted.put("count", JsonValue.of(entry.getValue()));
                     return (JsonValue) JsonValue.object(counted);
                 })
@@ -502,7 +514,7 @@ public final class JsonReport implements RunListener {
                     Tally tally = entry.getValue();
                     Map<String, JsonValue> row = new LinkedHashMap<>();
                     row.put("operation", JsonValue.of(kind.operation().value()));
-                    named(row, tally.category);
+                    namedFault(row, tally.category);
                     row.put("count", JsonValue.of(tally.count));
                     row.put("writtenInFull", JsonValue.of(tally.writtenInFull));
                     row.put("countedOnly", JsonValue.of(tally.count - tally.writtenInFull));
@@ -682,7 +694,7 @@ public final class JsonReport implements RunListener {
         return JsonValue.array(faultsByStatus.entrySet().stream()
                 .map(entry -> {
                     Map<String, JsonValue> row = new LinkedHashMap<>();
-                    named(row, kinds.get(entry.getKey().code()));
+                    namedFault(row, kinds.get(entry.getKey().code()));
                     row.put("statusClass", JsonValue.of(entry.getKey().statusClass()));
                     row.put("count", JsonValue.of(entry.getValue()));
                     return (JsonValue) JsonValue.object(row);
@@ -697,6 +709,22 @@ public final class JsonReport implements RunListener {
         row.put("label", JsonValue.of(category.label()));
     }
 
+    /**
+     * The same, for a row counting faults: with whether its kind is an error or a warning, and what
+     * RESTest calls it, so that a program can pick out the errors without a table of its own.
+     */
+    private static void namedFault(Map<String, JsonValue> row, FaultCategory category) {
+        named(row, category);
+        readAs(row, category);
+    }
+
+    /** Whether a kind of fault is an error or a warning, and what RESTest calls it. */
+    private static void readAs(Map<String, JsonValue> row, FaultCategory category) {
+        FaultReading reading = FaultReading.of(category);
+        row.put("severity", JsonValue.of(reading.severity().word()));
+        row.put("title", JsonValue.of(reading.title()));
+    }
+
     private JsonValue totals() {
         Map<String, JsonValue> totals = new LinkedHashMap<>();
         totals.put("requests", JsonValue.of(attempts));
@@ -708,6 +736,12 @@ public final class JsonReport implements RunListener {
                 tallies.keySet().stream().map(Kind::code).distinct().count()));
         totals.put("operationsWithFaults", JsonValue.of(
                 tallies.keySet().stream().map(Kind::operation).distinct().count()));
+        // Errors and warnings apart, since a build fails on the first and, unless told otherwise,
+        // not on the second. An operation with both is counted under both.
+        totals.put("errors", JsonValue.of(faultsOf(Severity.ERROR)));
+        totals.put("warnings", JsonValue.of(faultsOf(Severity.WARNING)));
+        totals.put("operationsWithErrors", JsonValue.of(operationsWith(Severity.ERROR)));
+        totals.put("operationsWithWarnings", JsonValue.of(operationsWith(Severity.WARNING)));
         totals.put("faultsWrittenInFull", JsonValue.of(writeUps.size()));
         totals.put("faultsCountedOnly", JsonValue.of(faults - writeUps.size()));
         totals.put("elapsed", JsonValue.of(elapsed.toString()));
@@ -785,7 +819,24 @@ public final class JsonReport implements RunListener {
         written.put("descriptiveName", JsonValue.of(category.descriptiveName()));
         written.put("testCaseLabel", JsonValue.of(category.testCaseLabel()));
         written.put("label", JsonValue.of(category.label()));
+        readAs(written, category);
         return JsonValue.object(written);
+    }
+
+    /** Every operation and kind that went wrong, of the kinds of this severity. */
+    private Stream<Map.Entry<Kind, Tally>> talliesOf(Severity severity) {
+        return tallies.entrySet().stream()
+                .filter(entry -> FaultReading.of(entry.getValue().category).severity() == severity);
+    }
+
+    /** How many faults were of kinds of this severity. */
+    private long faultsOf(Severity severity) {
+        return talliesOf(severity).mapToLong(entry -> entry.getValue().count).sum();
+    }
+
+    /** How many operations had at least one fault of a kind of this severity. */
+    private long operationsWith(Severity severity) {
+        return talliesOf(severity).map(entry -> entry.getKey().operation()).distinct().count();
     }
 
     /**

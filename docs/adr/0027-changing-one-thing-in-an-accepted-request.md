@@ -606,7 +606,7 @@ behind `--strictTypes`, strict by default), RestTestGen as a failure like a 5xx,
 1.x as a failed test — and to let the measurement of noise owed before 2.2.0 is tagged, and the
 severities still to come, decide whether part of it becomes a warning. None of the fifteen APIs
 changed its exit code, since every one that accepted a broken request had also answered 500; what
-changes is how many faults a run counts and prints. [The faults](../faults.md#f206-a-broken-request-accepted)
+changes is how many faults a run counts and prints. [The faults](../faults.md#f206-invalid-data-accepted)
 list the common leniencies, so that a reader recognises them.
 
 Not done, and recorded: CATS expects a success for `null` or an empty value sent to an optional

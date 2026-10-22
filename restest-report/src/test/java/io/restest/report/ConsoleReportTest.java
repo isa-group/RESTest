@@ -19,18 +19,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.execution.Intent;
+import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.SequenceStep;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.OperationId;
+import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.settings.CheckSettings;
 import io.restest.core.settings.ReportSettings;
+import io.restest.core.settings.Settings;
 import java.io.Flushable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -45,17 +51,17 @@ class ConsoleReportTest {
     void how_many_faults_reach_the_screen_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 2, 5, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 2, 2, 5, 10, 10));
 
         for (int found = 0; found < 6; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
         }
 
-        assertThat(screen.toString().split("F100", -1).length - 1)
+        assertThat(screen.toString().split(Pattern.quote("(F100)"), -1).length - 1)
                 .describedAs("two written out, and the line that says the screen has stopped "
                         + "being the right place for them")
                 .isEqualTo(2);
-        assertThat(report.faults())
+        assertThat(report.errors())
                 .describedAs("the count is of all of them, printed or not")
                 .isEqualTo(6);
     }
@@ -68,7 +74,7 @@ class ConsoleReportTest {
         String introduction = "4 of 4 operations can be tested, seed 1, budget 1s"
                 + System.lineSeparator() + System.lineSeparator();
         ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
-                introduction);
+                CheckSettings.defaults(), introduction);
 
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
 
@@ -81,7 +87,7 @@ class ConsoleReportTest {
     void what_the_command_says_first_is_sent_on_its_way_at_once() {
         BufferedScreen terminal = new BufferedScreen();
         ConsoleReport live = ConsoleReport.to(terminal, ReportSettings.defaults(),
-                "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
+                CheckSettings.defaults(), "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
 
         live.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
 
@@ -96,14 +102,14 @@ class ConsoleReportTest {
     void an_introduction_left_open_is_closed() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
-                "4 of 4 operations can be tested");
+                CheckSettings.defaults(), "4 of 4 operations can be tested");
 
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
 
         assertThat(screen.toString().lines().toList())
                 .contains("4 of 4 operations can be tested")
-                .anySatisfy(line -> assertThat(line).startsWith("F100"));
+                .anySatisfy(line -> assertThat(line).startsWith("error    "));
     }
 
     @Test
@@ -113,10 +119,40 @@ class ConsoleReportTest {
 
         assertThat(screen.toString())
                 .contains("F100")
-                .contains("HTTP Status 500")
                 .contains("GET /pets - GET https://api.example/pets")
                 .contains("the API answered 500")
                 .contains("curl -i -X GET 'https://api.example/pets'");
+    }
+
+    @Test
+    @DisplayName("an error is printed first as an error, in RESTest's own words, with the "
+            + "catalogue's number after them and every line under it in one column")
+    void an_error_reads_as_an_error() {
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+
+        assertThat(screen.toString().lines().toList()).containsExactly(
+                "error    Internal server error  (F100)",
+                "         GET /pets - GET https://api.example/pets  ->  500",
+                "         the API answered 500, so it fell over while handling this request",
+                "         curl -i -X GET 'https://api.example/pets' -H 'Accept: application/json'",
+                "");
+        assertThat(screen.toString())
+                .describedAs("the catalogue's name is for comparing tools, not for reading")
+                .doesNotContain("HTTP Status 500");
+    }
+
+    @Test
+    @DisplayName("a warning is printed first as a warning, its title in the same column as an "
+            + "error's")
+    void a_warning_reads_as_a_warning() {
+        report.on(new RunEvent.FaultFound(Instant.EPOCH,
+                Runs.undeclaredStatus(Runs.attempt("GET /pets", "/pets", 404))));
+
+        assertThat(screen.toString().lines().toList()).startsWith(
+                "warning  Undeclared status code  (F920)",
+                "         GET /pets - GET https://api.example/pets  ->  404",
+                "         the API answered 404, which the document does not declare for this "
+                        + "operation; it declares 200");
     }
 
     @Test
@@ -214,7 +250,7 @@ class ConsoleReportTest {
     void how_many_details_are_printed_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 5, 2, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 2, 10));
 
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(25)));
 
@@ -235,7 +271,7 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
 
         String printed = screen.toString();
-        assertThat(printed.split("HTTP Status 500", -1).length - 1)
+        assertThat(printed.split(Pattern.quote("(F100)"), -1).length - 1)
                 .describedAs("the screen holds the first 50 faults and the summary line, not 120")
                 .isEqualTo(51);
         assertThat(printed)
@@ -243,9 +279,10 @@ class ConsoleReportTest {
                 .contains("... more faults are being found");
         assertThat(printed)
                 .describedAs("while the count at the end is of every one of them")
-                .contains("120 faults:")
-                .contains("120 x F100");
-        assertThat(report.faults()).isEqualTo(120);
+                .contains("120 errors, on 1 operation:")
+                .contains("120 x Internal server error  (F100)");
+        assertThat(report.errors()).isEqualTo(120);
+        assertThat(report.warnings()).isZero();
     }
 
     @Test
@@ -262,8 +299,8 @@ class ConsoleReportTest {
         assertThat(screen.toString())
                 .contains("RESTest testing Pets at https://api.example")
                 .contains("2 requests to 2 operations in 10.0s, 30% of it idle")
-                .contains("1 fault:")
-                .contains("1 x F100  HTTP Status 500");
+                .contains("1 error, on 1 operation:")
+                .contains("1 x Internal server error  (F100)");
     }
 
     @Test
@@ -331,7 +368,8 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
         assertThat(screen.toString()).contains("no faults found");
-        assertThat(report.faults()).isZero();
+        assertThat(report.errors()).isZero();
+        assertThat(report.warnings()).isZero();
     }
 
     @Test
@@ -436,11 +474,13 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
 
         List<String> lines = screen.toString().lines().toList();
-        int verdict = lines.indexOf("1 fault:");
+        int verdict = lines.indexOf("1 error, on 1 operation:");
         assertThat(verdict).describedAs("the verdict is there").isNotNegative();
         assertThat(lines.subList(verdict, lines.size())).containsExactly(
-                "1 fault:",
-                "  1 x F100  HTTP Status 500",
+                "1 error, on 1 operation:",
+                "  1 x Internal server error  (F100)",
+                "        look in the API's log for what failed while it handled the request; the "
+                        + "document is not what to fix",
                 "1 operation could not be tested:",
                 "  uploadPhoto: its body can only be sent as multipart/form-data");
     }
@@ -451,7 +491,7 @@ class ConsoleReportTest {
     void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 2, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 2, 10, 10));
         for (String operation : List.of("addPet", "getPet", "updatePet", "deletePet", "listPets")) {
             report.on(skipped(operation, "the reason " + operation + " could not be tested"));
         }
@@ -473,7 +513,7 @@ class ConsoleReportTest {
     void told_to_name_none_the_count_and_the_report_are_still_given() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 0, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 0, 10, 10));
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
@@ -571,15 +611,15 @@ class ConsoleReportTest {
                 Runs.answering(readAgain, 500), "the API answered 500")));
 
         List<String> lines = screen.toString().lines().toList();
-        int said = lines.indexOf("      step 4 of a readAfterDelete series: read it again: the API "
-                + "said it deleted it, so it should be gone. The command below sends this step "
+        int said = lines.indexOf("         step 4 of a readAfterDelete series: read it again: the "
+                + "API said it deleted it, so it should be gone. The command below sends this step "
                 + "alone, without the ones before it");
         assertThat(said)
                 .describedAs("the command on its own reads a thing nobody deleted, and would not "
                         + "answer the same, so the fault says which step it was: %s", lines)
                 .isNotNegative();
         assertThat(lines.get(said + 1)).describedAs("just above the command it is about")
-                .startsWith("      curl ");
+                .startsWith("         curl ");
     }
 
     @Test
@@ -740,5 +780,169 @@ class ConsoleReportTest {
         String shown() {
             return shown.toString();
         }
+    }
+
+    @Test
+    @DisplayName("the summary says the errors first and then the warnings, each kind with what to "
+            + "look at, and that the warnings did not fail the run")
+    void the_summary_says_errors_then_warnings() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 500)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH,
+                Runs.undeclaredStatus(Runs.attempt("getPet", "/pets/1", 404))));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH,
+                Runs.undeclaredStatus(Runs.attempt("addPet", "/pets", 409))));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape("getPet")));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        List<String> lines = screen.toString().lines().toList();
+        int verdict = lines.indexOf("1 error, on 1 operation:");
+        assertThat(verdict).describedAs("the errors come first, though a warning was found first")
+                .isNotNegative();
+        assertThat(lines.subList(verdict, lines.size())).containsExactly(
+                "1 error, on 1 operation:",
+                "  1 x Internal server error  (F100)",
+                "        look in the API's log for what failed while it handled the request; the "
+                        + "document is not what to fix",
+                "3 warnings, on 2 operations, which do not fail the run (checks.failOnWarnings):",
+                "  2 x Undeclared status code  (F920)",
+                "        declare the status code for the operation in the document, or stop the "
+                        + "API answering it",
+                "  1 x Reply off schema  (F200)",
+                "        the API and its document disagree about the reply's body: compare the "
+                        + "places listed with the document, and fix whichever is wrong");
+        assertThat(report.errors()).isEqualTo(1);
+        assertThat(report.warnings()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("a run that found only warnings counts them with no line of errors, and says how to "
+            + "make them fail it")
+    void a_run_with_only_warnings_says_they_do_not_fail_it() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets/{petId}", "/pets/7", 200)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(0)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("1 warning, on 1 operation, which does not fail the run "
+                        + "(checks.failOnWarnings):")
+                .doesNotContain(" error")
+                .doesNotContain("no faults found");
+        assertThat(report.errors()).isZero();
+    }
+
+    @Test
+    @DisplayName("told that warnings fail the run, the summary says they did")
+    void told_that_warnings_fail_the_run_it_says_so() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
+                Settings.from(Map.of("checks.failOnWarnings", "true")).checks(), "");
+
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets/{petId}", "/pets/7", 200)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(0)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("1 warning, on 1 operation, which fails the run, as "
+                        + "checks.failOnWarnings asks:");
+    }
+
+    @Test
+    @DisplayName("one reply that is both an error and a warning is counted in both")
+    void one_reply_can_be_an_error_and_a_warning() {
+        Interaction accepted = Runs.attempt("addPet", "/pets", 202);
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, accepted));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.acceptedBroken(accepted)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.undeclaredStatus(accepted)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("error    Invalid data accepted  (F206)")
+                .contains("warning  Undeclared status code  (F920)")
+                .contains("1 error, on 1 operation:")
+                .contains("  1 x Invalid data accepted  (F206)")
+                .contains("1 warning, on 1 operation, which does not fail the run");
+        assertThat(report.errors()).isEqualTo(1);
+        assertThat(report.warnings()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a kind RESTest has no words for is an error under its own name, with no line of "
+            + "advice under it")
+    void a_kind_with_no_advice_has_no_second_line() {
+        FaultCategory somebodyElses = new FaultCategory() {
+            @Override
+            public int code() {
+                return 950;
+            }
+
+            @Override
+            public String descriptiveName() {
+                return "Somebody Else's Kind";
+            }
+
+            @Override
+            public String testCaseLabel() {
+                return "somebodyElses";
+            }
+        };
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Finding.of(somebodyElses,
+                Runs.attempt("GET /pets", "/pets", 200), "something somebody else's rule saw")));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        List<String> lines = screen.toString().lines().toList();
+        assertThat(lines).contains("error    Somebody Else's Kind  (F950)");
+        int verdict = lines.indexOf("1 error, on 1 operation:");
+        assertThat(lines.subList(verdict, lines.size())).containsExactly(
+                "1 error, on 1 operation:",
+                "  1 x Somebody Else's Kind  (F950)");
+    }
+
+    @Test
+    @DisplayName("warnings found first take only their share of the screen, so errors found later "
+            + "are still printed, and each limit is said once")
+    void warnings_found_first_leave_room_for_errors() {
+        for (int found = 0; found < 30; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH,
+                    Runs.undeclaredStatus(Runs.attempt("getPet", "/pets/1", 404))));
+        }
+        for (int found = 0; found < 60; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        }
+
+        String printed = screen.toString();
+        assertThat(printed.split("warning  Undeclared status code", -1).length - 1)
+                .describedAs("ten warnings, as report.warningsShownOnTheConsole says")
+                .isEqualTo(10);
+        assertThat(printed.split("error    Internal server error", -1).length - 1)
+                .describedAs("and errors until fifty faults in all")
+                .isEqualTo(40);
+        assertThat(printed.split("more warnings are being found", -1).length - 1).isEqualTo(1);
+        assertThat(printed.split("more faults are being found", -1).length - 1).isEqualTo(1);
+        assertThat(printed.indexOf("more warnings are being found"))
+                .isLessThan(printed.indexOf("error    Internal server error"));
+    }
+
+    @Test
+    @DisplayName("room for more warnings than faults leaves the number of faults as the limit")
+    void the_number_of_faults_is_the_limit_however_many_warnings_may_be_printed() {
+        StringBuilder screen = new StringBuilder();
+        ConsoleReport report = ConsoleReport.to(screen,
+                new ReportSettings(5, 1_000, 24L * 1024, 3, 100, 5, 10, 10));
+
+        for (int found = 0; found < 8; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH,
+                    Runs.undeclaredStatus(Runs.attempt("getPet", "/pets/1", 404))));
+        }
+
+        assertThat(screen.toString().split(Pattern.quote("(F920)"), -1).length - 1).isEqualTo(3);
+        assertThat(screen.toString())
+                .contains("more faults are being found")
+                .doesNotContain("more warnings are being found");
     }
 }

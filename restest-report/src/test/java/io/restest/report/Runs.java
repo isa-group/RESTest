@@ -102,6 +102,19 @@ final class Runs {
                 "the body does not match the shape the specification declares for it");
     }
 
+    /** A warning: a status code the document does not declare, on this attempt. */
+    static Finding undeclaredStatus(Interaction attempt) {
+        return Finding.of(RestestFault.UNDECLARED_STATUS_CODE, attempt,
+                "the API answered " + attempt.statusCode().orElseThrow() + ", which the document "
+                        + "does not declare for this operation; it declares 200");
+    }
+
+    /** An error that is not a server error: a request broken on purpose, accepted on this attempt. */
+    static Finding acceptedBroken(Interaction attempt) {
+        return Finding.of(WfcFault.SCHEMA_VALIDATION_BYPASS, attempt,
+                "the API accepted a request it should have refused: left out the required body.name");
+    }
+
     /** A fault whose reply was big, which is how the report's limit in bytes is reached. */
     static Finding fellOverWithBody(String operation, int bytes) {
         String body = "x".repeat(bytes);

@@ -270,7 +270,8 @@ public record Settings(
                 typed.yesOrNo("checks.undeclaredStatusCode",
                         DEFAULTS.checks.undeclaredStatusCode()),
                 typed.yesOrNo("checks.undeclaredContentType",
-                        DEFAULTS.checks.undeclaredContentType())));
+                        DEFAULTS.checks.undeclaredContentType()),
+                typed.yesOrNo("checks.failOnWarnings", DEFAULTS.checks.failOnWarnings())));
         ReportSettings report = group("report", () -> new ReportSettings(
                 typed.wholeNumber("report.writeUpsPerOperationAndKind",
                         DEFAULTS.report.writeUpsPerOperationAndKind()),
@@ -278,6 +279,8 @@ public record Settings(
                 typed.count("report.mostBodyBytesKept", DEFAULTS.report.mostBodyBytesKept()),
                 typed.wholeNumber("report.faultsShownOnTheConsole",
                         DEFAULTS.report.faultsShownOnTheConsole()),
+                typed.wholeNumber("report.warningsShownOnTheConsole",
+                        DEFAULTS.report.warningsShownOnTheConsole()),
                 typed.wholeNumber("report.skippedOperationsShownOnTheConsole",
                         DEFAULTS.report.skippedOperationsShownOnTheConsole()),
                 typed.wholeNumber("report.detailsShownPerFault",
@@ -477,6 +480,7 @@ public record Settings(
             case "checks.noReplyInTime" -> String.valueOf(checks.noReplyInTime());
             case "checks.undeclaredStatusCode" -> String.valueOf(checks.undeclaredStatusCode());
             case "checks.undeclaredContentType" -> String.valueOf(checks.undeclaredContentType());
+            case "checks.failOnWarnings" -> String.valueOf(checks.failOnWarnings());
 
             case "report.writeUpsPerOperationAndKind" ->
                     String.valueOf(report.writeUpsPerOperationAndKind());
@@ -484,6 +488,8 @@ public record Settings(
             case "report.mostBodyBytesKept" -> String.valueOf(report.mostBodyBytesKept());
             case "report.faultsShownOnTheConsole" ->
                     String.valueOf(report.faultsShownOnTheConsole());
+            case "report.warningsShownOnTheConsole" ->
+                    String.valueOf(report.warningsShownOnTheConsole());
             case "report.skippedOperationsShownOnTheConsole" ->
                     String.valueOf(report.skippedOperationsShownOnTheConsole());
             case "report.detailsShownPerFault" -> String.valueOf(report.detailsShownPerFault());
