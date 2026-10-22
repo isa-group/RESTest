@@ -41,7 +41,7 @@ RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/a
 | `the document declares an API key it asks for on no operation (<scheme>, in <where>): --auth <key> sends it with <k> of them` | The document declares a key without saying which operations need it | That a key given with `--auth` would go with every operation |
 | `<n> left alone by the plan` | The plan's filter set operations aside | Operations the plan keeps the run away from, on purpose: [Which operations a run may touch](campaign-format.md#which-operations-a-run-may-touch) |
 | `what it sends depends on the API's own replies, so the seed alone does not repeat this run` | The plan draws on what the API returned, or changes accepted requests, or sends series | Running the same command again makes a similar run rather than the same one. `--store` keeps the run you had. [Getting the seed back](switches.md#getting-the-seed-back) has the files that make a run repeatable from its seed |
-| `<n> setting(s) are not what RESTest does by default; --print-settings lists them with where each came from` | A setting was changed, by a file, the environment or `--set` | That the run is not configured the way RESTest ships, so that a setting given through an environment variable is not invisible. `report.json` lists every setting under `settings` |
+| `<n> setting(s) are not what RESTest does by default; --print-settings lists them with where each came from` | A setting was changed, by a file, the environment or `--set` — counting those worked out from it, such as the longest wait for a whole request once `engine.readTimeout` is changed | That the run is not configured the way RESTest ships, so that a setting given through an environment variable is not invisible. `report.json` lists every setting under `settings` |
 | `<n> part(s) of the document could not be read:` | Some of the document could not be read | Up to five of the problems, then how many more. An operation a problem was in is tested with what could be read, or, when nothing could be built from it, not tested and named at the end. One whose name the document gives to an operation RESTest reads first is called by its method and path, which costs it nothing else |
 
 Problems with a file you handed over — a plan, a list of values, a key in `RESTEST_AUTH` — are
@@ -92,7 +92,7 @@ some replies could not be checked; report.json names their operations:
 | `<n> of them were steps of <s> series about a thing the run created: <kind> <n>, …` | The plan sends series | Requests sent as steps of a short series after a creation — delete it and read it again, create it twice — counted by the kind of series. Creations meant to begin one that the API did not accept are counted after a `;`. [Series of requests around a thing the run created](campaign-format.md#series-of-requests-around-a-thing-the-run-created) |
 | `<k> creation(s) meant to begin a series about a thing the run created were not accepted, so no series began` | The plan sends series and none began | The API refused every creation a series would have started from |
 | `<a> operation(s) answered 500, <b> answered some 5xx` | Some reply was a 5xx | How many *operations* the API fell over on, rather than how many replies: a run spends its whole budget, so one broken operation asked six hundred times is six hundred broken replies. This is the number worth quoting |
-| `no faults found` | Always, when something was sent and nothing was found | The verdict, when it is clean |
+| `no faults found` | Always, when something was sent and nothing was found | The verdict, when it is clean. A run in which nothing at the address answered says it too, and then says why on the error stream and ends with `3`: a run that was answered by nothing has found nothing wrong only because it heard nothing |
 | `<n> errors, on <m> operations:` and two lines per kind | Some fault was an error | How many errors, on how many operations, then each kind as `<count> x <title>  (F<code>)`, with what to look at on the line under it. Errors are what end a run with `1`. [Errors and warnings](faults.md#errors-and-warnings) says which kinds are which |
 | `<n> warnings, on <m> operations, which do not fail the run (checks.failOnWarnings):` and two lines per kind | Some fault was a warning | The same for warnings, after the errors. A run that found only warnings ends with `0`; with `checks.failOnWarnings` on, the line ends `which fail the run, as checks.failOnWarnings asks:` and so does the run, with `1` |
 | `some replies could not be checked; report.json names their operations:` and one line per way and reason | A check could not judge some reply | Each line is `<what> of <n> replies, on <m> operations: <why>` — `the shape of 287676 replies, on 22 operations: the document gives no shape` — one for each check and each reason it gave, most replies first. Said after the verdict because it qualifies it: `no faults found` says nothing about a reply nobody could judge. [What the run could not check](#notchecked) lists every reason, and [the faults](faults.md) say, check by check, when one is given |
@@ -126,8 +126,10 @@ A few more lines go to the error stream, each beginning with `restest:`:
 - **when nothing at all was tested**, which of three reasons it was — the run ends with `3`.
 
 [The exit codes](command-line.md#exit-codes) says what each number means. Where a line on the screen
-counts one thing, it says so in the singular: `1 operation could not be tested:`, `1 list of values
-could not be read, so none of its values were sent:`.
+The lines that name what could not be tested or read, and the counts of errors and warnings, say one
+thing in the singular: `1 operation could not be tested:`, `1 list of values could not be read, so
+none of its values were sent:`, `1 warning, on 1 operation, which does not fail the run`. Others count
+as they always have: `1 of 1 operations can be tested`.
 
 ## `report.json`
 

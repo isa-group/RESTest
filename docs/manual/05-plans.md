@@ -42,7 +42,8 @@ named after its kind, though a name is only a label for reports:
   that.
 
 Each strategy lists its **sources**, the places a value can come from, which are asked in the order
-written. `enum` is first: when the document gives a closed list of the values it accepts, a value
+written; `fuzzing` is the exception, which asks RESTest's own list first and lists only `random`, for
+what that list cannot fill. In the others, `enum` is first: when the document gives a closed list of the values it accepts, a value
 comes from that list. After it comes a **weighted** group, a map from each source to its weight,
 among which the value is drawn by weight each time: `example` (a sample the document writes down),
 `random` (a value invented to fit what the document says), `observed` (a value the API has already

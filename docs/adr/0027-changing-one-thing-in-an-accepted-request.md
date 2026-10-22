@@ -1,6 +1,6 @@
 # ADR-0027: A request the API accepted is sent again with one thing changed, and says what it broke
 
-**Status:** Accepted
+**Status:** Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12, 13, 15 and 17 October 2026
 **Date:** 2026-09-27
 
 ## Context

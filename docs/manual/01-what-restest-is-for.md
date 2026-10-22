@@ -20,18 +20,22 @@ document and the replies are all it has. That has two consequences worth knowing
 
 ## What it finds
 
-A run reports eight kinds of fault:
+A run reports eight kinds of fault. Each is an **error** — the API failing at its job: it fell over,
+never answered, or accepted what its own document forbids — or a **warning** — the API answering
+something its document does not describe, where the document may be the one out of date. A run that
+finds an error ends with `1`, so that a build goes red; warnings are counted and said, and end a run
+with `1` only when you ask with `--set checks.failOnWarnings=true`.
 
-| Code | What happened |
-|---|---|
-| `F100` | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect |
-| `F121` | The API answered another server error, such as `503`: something in it, or in front of it, failed |
-| `F200` | The API answered with a body that is not the shape its document gives for that reply |
-| `F205` | The API answered `501 Not Implemented` to an operation its document declares |
-| `F206` | The API accepted a request RESTest broke on purpose, which its document says it must refuse |
-| `F312` | The API took a request and sent no reply before RESTest stopped waiting: something it waits on does not answer |
-| `F920` | The API answered with a status code its document does not declare for that operation, such as `201` where it promises `200` |
-| `F921` | The API sent a body under a content type its document does not declare for that reply, such as `application/problem+json` where it promises `application/json` |
+| Title | Severity | Code | What happened |
+|---|---|---|---|
+| Internal server error | error | `F100` | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect |
+| Other server error | error | `F121` | The API answered another server error, such as `503`: something in it, or in front of it, failed |
+| Invalid data accepted | error | `F206` | The API accepted a request RESTest broke on purpose, which its document says it must refuse |
+| No reply in time | error | `F312` | The API took a request and sent no reply before RESTest stopped waiting: something it waits on does not answer |
+| Reply off schema | warning | `F200` | The API answered with a body that is not the shape its document gives for that reply |
+| Not implemented | warning | `F205` | The API answered `501 Not Implemented` to an operation its document declares |
+| Undeclared status code | warning | `F920` | The API answered with a status code its document does not declare for that operation, such as `201` where it promises `200` |
+| Undeclared content type | warning | `F921` | The API sent a body under a content type its document does not declare for that reply, such as `application/problem+json` where it promises `application/json` |
 
 Each fault comes with the request that caused it, what the API answered, and a `curl` command that
 sends the same request again, so that whoever fixes the API can see the fault for themselves.
@@ -78,7 +82,7 @@ from writes, chapter 5 shows how to keep it to the requests that change nothing.
 
 **What you need.** A computer with Java 21 or later and git, to build and run RESTest, and Docker,
 for the practice API every example runs against. [Chapter 2](02-installing.md) says how to check
-each. Chapters 3 and 4 also use three small command-line tools many systems already have: `curl`, to
+each. Several chapters also use three small command-line tools many systems already have: `curl`, to
 ask the API something directly, [`jq`](https://jqlang.org/), to read JSON, and
 [`sqlite3`](https://sqlite.org/cli.html), to read a stored run. RESTest itself needs no account, no
 server of its own and no configuration.

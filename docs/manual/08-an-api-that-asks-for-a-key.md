@@ -85,7 +85,8 @@ to whatever API any run tests.
 ## What happens to the key afterwards
 
 **It is written into nothing a run leaves behind.** The screen, `report.json` and its `curl`
-commands, and `run.sqlite` all show a word such as `REDACTED-AUTH.api_key` where the key went. A
+commands, and `run.sqlite` all show `REDACTED-AUTH` where the key went — or a longer word, such as
+`REDACTED-AUTH.api_key`, for a key given by the name of its scheme. A
 `curl` command copied from a report therefore needs the key put back in place of that word before it
 does what the run did.
 

@@ -262,11 +262,12 @@ restest: ids.yaml: 5 of its 8 entries will never be used: 1 for no such operatio
          that operation (postcode in addOwner, firstName in addOwner, body.nonsense in addVisit)
 ```
 
-Seven things earn a mention:
+Eight things earn a mention:
 
 | What | Usually means |
 |---|---|
 | no such operation in this API | the file has fallen behind the document — or the operation gained an `operationId` since |
+| an operation the document could not be read for | the document describes it, but RESTest could not read it, and names it among the operations the run could not test |
 | no such parameter or piece of a body in that operation | a misspelling, or a property written as `city` where it should be `body.city` |
 | a place whose whole list of values the document declares | an `enum`, which nothing overrides, wherever it is |
 | a property the document says the API only ever sends back | `readOnly`, which is never ours to send |

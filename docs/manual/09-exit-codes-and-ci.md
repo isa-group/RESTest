@@ -11,7 +11,7 @@ the details, is in [the exit codes](../command-line.md#exit-codes).
 | `0` | The run finished and found no error, in what it could check |
 | `1` | The run finished and found at least one error — or a warning, when asked |
 | `2` | The command was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent |
-| `3` | Nothing was tested: the document could not be read or has no operation that can be tried, nothing answered, or the budget ran out first |
+| `3` | Nothing was tested: the document could not be read or has no operation that can be tried, there is no address to send to — or `--url` gave one RESTest refuses — or nowhere to write the results, nothing answered, or the budget ran out first |
 | `4` | RESTest itself went wrong, so what it printed may be incomplete |
 | `130` | The run was stopped with Ctrl-C |
 | `143` | The run was stopped with `kill` or `docker stop` |
@@ -112,8 +112,8 @@ jobs:
 ```
 
 Each action is pinned to a commit rather than to a version tag, which whoever owns an action can
-move to other code at any time; the comment says which version the commit is, and Dependabot keeps
-both up to date.
+move to other code at any time; the comment says which version the commit is, and Dependabot, if you
+turn it on for GitHub Actions in your repository, keeps both up to date.
 
 The step that tests the API fails the job when RESTest ends with anything but `0`, which is usually
 what a build wants. `if: always()` keeps the report even then, and it is the report that says what

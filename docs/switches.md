@@ -41,7 +41,7 @@ below is the one RESTest ships with one thing taken out. The decision behind all
 | `memory.namesByResource` | `true` | Plural and name gaps | fills a gap named for a thing's name, such as `{productName}`, only with a value some reply carried under that very name, and no longer with the `name` of one of the products the API returned; and no longer keeps a reply that is a plain list of words, such as `["car", "bike"]` from `GET /products`, as the names of that many products. A gap called `{name}` takes the `name` of the things its address is about either way. It changes nothing while `memory.identifiersByResource` is off |
 | `generation.omitHalProperties` | `true` | HAL's own properties | sends `_links` and `_embedded` in a body when it was built with them, at any depth — invented to the description, sent back from a reply or taken from a sample. HAL keeps those two names for what a server writes, and an API built on HAL reads them in a request its own way, whatever its description says they look like |
 | `generation.freshWhereMade` | `true` | Made afresh | fills the body of a `POST` the way it fills any other body: a property the API has returned a value for — a user name, an e-mail address — may be given that value, and a registration carrying one is refused as already made. How often, when on, such a property is invented afresh instead is `generation.freshWhereMadeChance`, a number rather than a switch. A property named like an identifier is given what the API returned either way |
-| `generation.optionalParametersBySize` | `true` | Optional parameters by number | decides each optional parameter on a coin of its own, weighted by `generation.optionalBodyChance`, so the request carrying only what the API requires is drawn once in 10ⁿ attempts for an operation with n optional parameters, rather than about half the time. That is at the coin's default of 0.9; with `generation.optionalBodyChance` at 0.5, its default before 2.1, it is once in 2ⁿ. [The settings](settings.md#four-things-worth-knowing) say why |
+| `generation.optionalParametersBySize` | `true` | Optional parameters by number | decides each optional parameter on a coin of its own, weighted by `generation.optionalBodyChance`, so the request carrying only what the API requires is drawn once in 10ⁿ attempts for an operation with n optional parameters, rather than about half the time. That is at the coin's default of 0.9; with `generation.optionalBodyChance` at 0.5, it is once in 2ⁿ. [The settings](settings.md#four-things-worth-knowing) say why |
 
 ### Breaking things in more ways
 
@@ -111,7 +111,7 @@ faults](faults.md#switching-a-check-off) says what else it changes, and what it 
 |---|---|---|---|
 | `checks.failOnWarnings` | `false` | How a run ends | ends with `0` when the only faults it found are warnings, as every run does by default. On, it ends with `1` for a warning as it does for an error. It decides what a run's findings do to how it ends, not what it sends or checks, so it plays no part in an ablation |
 | `engine.followRedirects` | `false` | Redirections | reports a redirection rather than following it. It decides what a 3XX answer means rather than turning off something a run could do without, which is why it is off by default and plays no part in an ablation |
-| `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent, as every run did until now. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
+| `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, or when its budget is spent, whichever comes first, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
 
 ## What leaving each one on costs
 
@@ -538,15 +538,15 @@ of its own, since each widens a kind that already has one:
   sends none of them in requests made entirely of awkward values; a value of the wrong kind still
   draws on them.
 
-The kinds a name implies were widened in 2.1 - a password, a user name, a person's name, a name of
-letters for a bare `name`, a gender - and the new rules have no switch of their own either:
-`generation.impliedFormats` turns every implied kind off whole, the old ones with the new. Telling
-the two apart is a comparison of two versions of RESTest, not of two settings.
+The kinds a name implies - among them a password, a user name, a person's name, a name of letters for
+a bare `name`, a gender - have no switch of their own either: `generation.impliedFormats` turns every
+implied kind off whole.
 
 ## What has no switch yet
 
-Two behaviours are older than the settings and have no switch. They are given one when the code
-around them is next changed, and until then the tool always does them:
+Two behaviours are older than the settings and have no switch. They are given one when what they do
+is next changed — a change to one of their numbers, which may become a setting, is not that — and
+until then the tool always does them:
 
 - where an operation wants a whole thing of a shape the API has returned, one it returned is sent
   back with one value in it changed. This is part of the memory, so the plan without the memory

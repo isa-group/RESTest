@@ -1,6 +1,6 @@
 # ADR-0024: v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1
 
-**Status:** Accepted
+**Status:** Accepted, amended on 3, 4, 5, 11 and 12 October 2026
 **Date:** 2026-09-22
 
 ## Context

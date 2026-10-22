@@ -237,7 +237,7 @@ report is run by putting the key back in place of that word. [Handing over a key
 
 A run ends with `0` when it found no error, `1` when it found at least one, and another number when
 it could not do its job — a wrong command line, nothing it could test, RESTest itself breaking, or a
-run stopped with Ctrl-C. A build server can go red on anything but `0`. An error is the API failing
+run stopped from outside, with Ctrl-C, `kill` or `docker stop`. A build server can go red on anything but `0`. An error is the API failing
 at its job; a warning, the API answering something its document does not describe, is counted and
 said and fails a run only with `--set checks.failOnWarnings=true`.
 [The exit codes](docs/command-line.md#exit-codes) says what each number means.
@@ -252,8 +252,9 @@ takes you from a first run against a practice API on your own machine to RESTest
 integration.
 
 [`docs/`](docs/README.md) has a page for each subject: the command line, what a run leaves behind,
-the faults, the plan, dictionaries, the settings and the switches — and, for working on RESTest
-itself, the design, continuous integration and the decision records.
+the faults, the plan, dictionaries, the JSON Schemas of a dictionary and a plan, the settings, the
+switches and the known limitations — and, for working on RESTest itself, the design, continuous
+integration and the decision records.
 
 ## Contributing
 

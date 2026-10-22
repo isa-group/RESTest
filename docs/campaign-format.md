@@ -80,8 +80,9 @@ The `name` is a label, printed in reports; the `kind` is what the strategy does.
 carries every name is its kind's word, but a name can be anything, and two strategies can be of the
 same kind.
 
-Most runs want two or three: one building requests meant to work, one pushing at the API with
-values nobody sensible would send, and one changing a request that worked. The pushing one is not
+RESTest's own plan has four: one building requests meant to work, one pushing at the API with
+values nobody sensible would send, one changing a request that worked, and one sending short series
+around a thing the run created. A plan of your own may have fewer. The pushing one is not
 looking for a refusal — a refusal is a fair answer, and a great many APIs accept an empty word quite
 happily. It is looking for the API falling over. Each of its requests records that it was pushing,
 which is how the run's summary knows how many were of that kind.
@@ -241,9 +242,9 @@ is asked of the same strategy, but without invention in it — invention is what
 So a group of `random` and `default` is a choice at the top level and leaves `default` answering on
 its own underneath. It is worth knowing before measuring a plan's proportions.
 
-**Put invention inside a group, not after one.** `random` fits a value to whatever it is asked
-about, so it answers wherever anything could, and a source written below it is asked for almost
-nothing. A run says so when it sees one rather than refusing the plan, because a shape nothing
+**Put invention inside a group, and nothing below it.** `random` fits a value to whatever it is
+asked about, so it answers wherever anything could: inside a group it gets its share, and a source
+written below it is asked for almost nothing. A run says so when it sees one rather than refusing the plan, because a shape nothing
 satisfies leaves invention with no answer either.
 
 ## Changing one thing in a request that worked

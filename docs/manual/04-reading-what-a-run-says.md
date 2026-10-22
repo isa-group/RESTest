@@ -125,8 +125,9 @@ jq -r '.faultsByOperation[] | select(.severity == "error") | "\(.count)\t\(.titl
 46	Internal server error	addVisitToOwner
 ```
 
-Without the `select`, the warnings come too: on the clinic, most of them are a redirection its
-document does not declare, on the six operations that send a browser to its documentation page.
+Without the `select`, the warnings come too, and on the clinic they head the list: the six operations
+that send a browser to its documentation page answer with a redirection its document does not
+declare.
 
 **How do I reproduce the first fault?**
 

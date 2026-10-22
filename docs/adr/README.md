@@ -57,8 +57,8 @@ so records written from now on cite none.
 | [0002](0002-rewrite-not-refactor.md) | Rewrite rather than refactor; Apache-2.0; no 1.x source | Accepted |
 | [0003](0003-java-baseline.md) | Every module targets Java 21; toolchain on 25 | Accepted, amended at M0.2 |
 | [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 and on 14 October 2026 |
-| [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 October 2026 |
-| [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10 October 2026 |
+| [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 and 17 October 2026 |
+| [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10 and 19 October 2026 |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0, 3.0.x and 3.1.x | Accepted, amended at M0.2, in #303 and in #328, reversed at M1.2 |
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted |
@@ -72,12 +72,12 @@ so records written from now on cite none.
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
 | [0019](0019-the-samples-a-document-writes-down.md) | A document's own sample values are read, sent as written, and named in the record | Accepted |
-| [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted, amended at M2.7c, M2.4, M2.10a, M8.3 and on 1, 4, 12 and 13 October 2026 |
-| [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted, amended at M2.5b and M9.2, and on 12 October 2026 |
-| [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted, amended on 12 October 2026 |
-| [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1, M10.3 and on 1, 12 and 13 October 2026 |
+| [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and the plan decides what each list is for | Accepted, amended at M2.7c, M2.4, M2.10a and M8.3, on 1 October 2026, at 2.1, and on 12 and 13 October 2026 |
+| [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted, amended at M2.5b, M9.2, M9.5, M9.7, M9.8 and M9.9, at 2.1, and on 12 October 2026 |
+| [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted, amended at M9.6, at 2.1, and on 12 October 2026 |
+| [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1 and M10.3, and on 1, 12 and 13 October 2026; its §5 superseded by ADR-0034 |
 | [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted, amended on 3, 4, 5, 11 and 12 October 2026 |
-| [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b and on 1, 12, 14, 15, 17 and 22 October 2026 |
+| [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17 and 22 October 2026 |
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12, 13, 15 and 17 October 2026 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 and 13 October 2026 |
@@ -85,7 +85,7 @@ so records written from now on cite none.
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
 | [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13 October 2026 |
-| [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place; RESTest's own list to push with is the one keyed by kind of value | Accepted, amended on 13 October 2026 |
+| [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place | Accepted, amended on 13 October 2026 |
 | [0034](0034-version-2-of-the-plans-format.md) | Version 2 of the plan's format: a strategy says its kind, a source has two forms, a group is a map of weights | Accepted |
 | [0035](0035-json-schemas-of-the-dictionary-and-the-plan.md) | The dictionary and the plan have published JSON Schemas, held to their readers | Accepted |
 | [0036](0036-kinds-of-fault-restest-numbers-itself.md) | Kinds of fault RESTest numbers itself: `F920` and `F921`, in the range the catalogue leaves to tools | Accepted |

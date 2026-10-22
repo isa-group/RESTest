@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10 October 2026
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10, 12 and 13 October 2026
 **Date:** 2026-09-13
 
 ## Context

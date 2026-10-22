@@ -1,6 +1,6 @@
 # ADR-0021: A request body is one more value, and what the API returns is reused leaf by leaf
 
-**Status:** Accepted, amended at M2.5b and M9.2
+**Status:** Accepted, amended at M2.5b, M9.2, M9.5, M9.7, M9.8 and M9.9, at 2.1, and on 12 October 2026
 **Date:** 2026-09-18
 
 ## Context
