@@ -8,22 +8,27 @@ the details, is in [the exit codes](../command-line.md#exit-codes).
 
 | Code | In short |
 |---|---|
-| `0` | The run finished and found nothing wrong, in what it could check |
-| `1` | The run finished and found at least one fault |
+| `0` | The run finished and found no error, in what it could check |
+| `1` | The run finished and found at least one error — or a warning, when asked |
 | `2` | The command was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent |
 | `3` | Nothing was tested: the document could not be read or has no operation that can be tried, nothing answered, or the budget ran out first |
 | `4` | RESTest itself went wrong, so what it printed may be incomplete |
 | `130` | The run was stopped with Ctrl-C |
 | `143` | The run was stopped with `kill` or `docker stop` |
 
-Two things are worth seeing in that table. A fault is `1` rather than `0`, so that a build goes red
+Two things are worth seeing in that table. An error is `1` rather than `0`, so that a build goes red
 when the API is broken. And a run stopped from outside never ends with `0` or `1`, so that a run cut
 short never passes for one that finished.
 
-One thing is not in it: a `0` covers what the run could check. A reply whose body the document gives
-no shape for has nothing to be compared with, so nothing can be found wrong with it, and that is no
-fault. The summary says how many replies could not be checked and why, and `notChecked` in
-`report.json` says which operations they came from
+Two things are not in it. **A warning does not make `1` unless asked.** An error is the API failing
+at its job — falling over, never answering, accepting what its document forbids — and a warning the
+API answering something its document does not describe, a status code it leaves out, say, where the
+document may be the one out of date ([errors and warnings](../faults.md#errors-and-warnings)). A run
+that found only warnings ends with `0`, and its summary says how many there were and that they did
+not fail it. And **a `0` covers what the run could check.** A reply whose body the document gives no
+shape for has nothing to be compared with, so nothing can be found wrong with it, and that is no
+fault and never fails a run. The summary says how many replies could not be checked and why, and
+`notChecked` in `report.json` says which operations they came from
 ([what a run leaves behind](../report.md#notchecked)).
 
 After a run, the shell keeps the number in `$?`:
@@ -42,8 +47,8 @@ test at all — and says which:
 ./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
 code=$?
 case $code in
-  0) echo "RESTest found nothing wrong" ;;
-  1) echo "RESTest found faults: see restest-out/report.json"; exit 1 ;;
+  0) echo "RESTest found no error" ;;
+  1) echo "RESTest found errors: see restest-out/report.json"; exit 1 ;;
   *) echo "RESTest could not test the API (exit code $code)"; exit 2 ;;
 esac
 ```
@@ -120,8 +125,28 @@ Some things to decide for your own build:
   reasonable start.
 - **What the API starts with.** A run creates and deletes, so start the API afresh for each build,
   as a service container does, rather than pointing RESTest at one shared by other builds.
-- **Whether faults should fail the build.** An API with known faults fails every build until they
-  are fixed. Until then, the step can let faults through and fail on everything else — the API not
+- **Whether warnings should fail the build.** By default only errors do. A team that owns its
+  document and wants the build to go red the moment the API and the document disagree makes
+  warnings fail it too:
+
+  ```bash
+  restest/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m --set checks.failOnWarnings=true
+  ```
+
+  The summary then says so under the warnings it found, and the run ends with `1`. From a run of the
+  clinic with its errors switched off, so that only warnings are left:
+
+  ```
+  2843 warnings, on 37 operations, which fail the run, as checks.failOnWarnings asks:
+    2077 x Undeclared status code  (F920)
+          declare the status code for the operation in the document, or stop the API answering it
+    749 x Undeclared content type  (F921)
+          declare the content type for that status code in the document, or have the API send the one declared
+    17 x Reply off schema  (F200)
+          the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
+  ```
+- **Whether errors should fail the build.** An API with known errors fails every build until they
+  are fixed. Until then, the step can let them through and fail on everything else — the API not
   answering, a misspelt file — by treating `1` as a pass:
 
   ```bash

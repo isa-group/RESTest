@@ -103,8 +103,11 @@ import picocli.CommandLine.Spec;
         sortOptions = false,
         exitCodeListHeading = "%nExit codes - the number the command ends with:%n",
         exitCodeList = {
-                ExitCode.NO_FAULTS + ":The run finished and found nothing wrong.",
-                ExitCode.FAULTS_FOUND + ":The run finished and found at least one fault in the API.",
+                ExitCode.NO_ERRORS + ":The run finished and found no error in the API; any "
+                        + "warnings, and any replies it could not check, are counted in its "
+                        + "summary and in its report.",
+                ExitCode.ERRORS_FOUND + ":The run finished and found at least one error in the "
+                        + "API, or a warning when checks.failOnWarnings asks.",
                 ExitCode.BAD_COMMAND_LINE + ":The command line was wrong, or a plan, a settings file "
                         + "or a key it named could not be used. Nothing was sent.",
                 ExitCode.NOTHING_TO_TEST + ":Nothing was tested: the document describes no "
@@ -367,7 +370,7 @@ final class RunCommand implements Callable<Integer> {
             // would do, not that it do anything.
             try {
                 out.print(Campaigns.shippedText());
-                return ExitCode.NO_FAULTS;
+                return ExitCode.NO_ERRORS;
             } catch (IOException cannotRead) {
                 err.println("restest: " + cannotRead.getMessage());
                 return ExitCode.TOOL_FAILED;
@@ -378,7 +381,7 @@ final class RunCommand implements Callable<Integer> {
             // without starting the clock. Printed after the four layers have been gathered, so
             // what it shows is what this very command would have used.
             out.print(configuration.asAFile());
-            return ExitCode.NO_FAULTS;
+            return ExitCode.NO_ERRORS;
         }
         if (specification == null) {
             err.println("Missing required parameter: '<specification>'");
@@ -595,7 +598,7 @@ final class RunCommand implements Callable<Integer> {
         StringWriter introduction = new StringWriter();
         describe(new PrintWriter(introduction), model, generator, configuration, testable,
                 credentials);
-        ConsoleReport console = ConsoleReport.to(out, settings.report(),
+        ConsoleReport console = ConsoleReport.to(out, settings.report(), settings.checks(),
                 introduction.toString());
 
         RunLoop.Outcome outcome = null;
@@ -700,7 +703,8 @@ final class RunCommand implements Callable<Integer> {
                 rules == null ? 0 : rules.rulesThatFailed(),
                 events.undelivered());
         int answer = ExitCode.of(outcome, ours.reports() + ours.judgements(),
-                ours.eventsNeverHeard(), keptWithoutTheirDetails, console.faults());
+                ours.eventsNeverHeard(), keptWithoutTheirDetails, console.errors(),
+                console.warnings(), settings.checks().failOnWarnings());
         long repeated = sending instanceof CredentialedEngine door
                 ? door.repliesThatRepeatedAKey() : 0;
         UnaryOperator<String> hidden = sending instanceof CredentialedEngine door

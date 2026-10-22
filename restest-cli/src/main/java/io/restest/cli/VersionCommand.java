@@ -44,6 +44,6 @@ final class VersionCommand implements Callable<Integer> {
         for (String line : new ToolVersion().getVersion()) {
             spec.commandLine().getOut().println(line);
         }
-        return ExitCode.NO_FAULTS;
+        return ExitCode.NO_ERRORS;
     }
 }

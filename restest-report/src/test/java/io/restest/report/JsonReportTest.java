@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.execution.Interaction;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.OperationId;
@@ -750,6 +751,61 @@ class JsonReportTest {
         assertThat(text(finding, "statusClass")).isEqualTo("noReply");
         assertThat(text(outcome, "kind")).isEqualTo("failed");
         assertThat(text(outcome, "timedOutWaitingFor")).isEqualTo("reply");
+    }
+
+    @Test
+    @DisplayName("every row counting faults says whether its kind is an error or a warning, and what "
+            + "RESTest calls it; what to look at is said once, for each kind")
+    void each_fault_row_says_its_severity_and_title() {
+        JsonValue.JsonObject written = run(JsonReport.inMemory(fixedClock()));
+
+        for (String table : List.of("faultsByCategory", "faultsByStatus", "faultsByOperation")) {
+            assertThat(array(written, table).elements().stream()
+                    .map(row -> (JsonValue.JsonObject) row)
+                    .map(row -> number(row, "code") + " " + text(row, "severity") + " "
+                            + text(row, "title")))
+                    .describedAs("in %s", table)
+                    .containsExactlyInAnyOrder("100 error Internal server error",
+                            "200 warning Reply off schema");
+        }
+        JsonValue.JsonObject byCategory =
+                (JsonValue.JsonObject) array(written, "faultsByCategory").elements().get(0);
+        assertThat(text(byCategory, "advice")).startsWith("look in the API's log");
+        assertThat(array(written, "faultsByOperation").elements())
+                .allSatisfy(row -> assertThat(((JsonValue.JsonObject) row).member("advice"))
+                        .describedAs("the advice is the kind's, said once, in faultsByCategory")
+                        .isEmpty());
+        JsonValue.JsonObject category = object(
+                (JsonValue.JsonObject) array(written, "findings").elements().get(0), "category");
+        assertThat(text(category, "severity")).isEqualTo("error");
+        assertThat(text(category, "title")).isEqualTo("Internal server error");
+        assertThat(category.member("advice"))
+                .describedAs("not repeated under each of up to a thousand faults written out")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("the totals count errors and warnings apart, and an operation with both under both")
+    void the_totals_count_errors_and_warnings_apart() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        Interaction accepted = Runs.attempt("addPet", "/pets", 202);
+        report.on(new RunEvent.InteractionCompleted(WHEN, accepted));
+        report.on(new RunEvent.FaultFound(WHEN, Runs.acceptedBroken(accepted)));
+        report.on(new RunEvent.FaultFound(WHEN, Runs.undeclaredStatus(accepted)));
+        report.on(new RunEvent.FaultFound(WHEN, Runs.fellOver("getPet")));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject totals =
+                object((JsonValue.JsonObject) report.document().orElseThrow(), "totals");
+
+        assertThat(number(totals, "faults")).isEqualTo(3);
+        assertThat(number(totals, "errors")).isEqualTo(2);
+        assertThat(number(totals, "warnings")).isEqualTo(1);
+        assertThat(number(totals, "operationsWithFaults")).isEqualTo(2);
+        assertThat(number(totals, "operationsWithErrors")).isEqualTo(2);
+        assertThat(number(totals, "operationsWithWarnings")).isEqualTo(1);
+        assertThat(totals.members().keySet()).containsSubsequence("operationsWithFaults",
+                "errors", "warnings", "operationsWithErrors", "operationsWithWarnings",
+                "faultsWrittenInFull");
     }
 
     /** One run in which the same maker is asked for a fault as many times as given. */

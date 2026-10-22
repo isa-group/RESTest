@@ -26,6 +26,7 @@ import io.restest.cli.Restest;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.oracle.FaultCategory;
+import io.restest.core.oracle.FaultReading;
 import io.restest.core.oracle.RestestFault;
 import io.restest.core.oracle.WfcFault;
 import io.restest.core.oracle.WhyNotJudged;
@@ -91,6 +92,9 @@ class DocumentedReportTest {
     /** The heading the faults page lists the kinds this version reports under. */
     private static final String THE_KINDS_REPORTED = "The kinds this version reports";
 
+    /** The heading the faults page says which kinds are errors and which warnings under. */
+    private static final String ERRORS_AND_WARNINGS = "Errors and warnings";
+
     /**
      * Places in the report whose members are data rather than keys: counts by the class of status
      * code, where any class an API answers with becomes a member, and the values a request carried,
@@ -123,6 +127,14 @@ class DocumentedReportTest {
 
     /** A row of the faults page's table of kinds: the code, then the catalogue's name. */
     private static final Pattern KIND_ROW = Pattern.compile("^\\| `F(\\d+)` \\| ([^|]+?) \\|");
+
+    /** The same row, read on: the code, the catalogue's name, RESTest's title, the severity. */
+    private static final Pattern KIND_READ_ROW = Pattern.compile(
+            "^\\| `F(\\d+)` \\| [^|]+? \\| ([^|]+?) \\| ([^|]+?) \\|");
+
+    /** A row of the table of errors and warnings: severity, title, code, what to look at. */
+    private static final Pattern SEVERITY_ROW = Pattern.compile(
+            "^\\| ([a-z]+) \\| ([^|]+?) \\| `F(\\d+)` \\| ([^|]+?) \\|$");
 
     /** A name in backticks in a heading: the place in the file the table under it describes. */
     private static final Pattern IN_BACKTICKS = Pattern.compile("`([^`]+)`");
@@ -312,6 +324,54 @@ class DocumentedReportTest {
     @DisplayName("the faults page lists exactly the kinds of fault RESTest's rules can report, the "
             + "catalogue's and RESTest's own, by their names")
     void the_faults_page_lists_what_the_rules_report() {
+        Map<Integer, String> reported = new TreeMap<>();
+        reportedKinds().forEach((code, kind) -> reported.put(code, kind.descriptiveName()));
+
+        assertThat(kindsOnThePage())
+                .describedAs("the table under '%s' in %s, against the kinds the rules in "
+                        + "io.restest.oracles report", THE_KINDS_REPORTED, FAULTS_PAGE)
+                .containsExactlyEntriesOf(reported);
+    }
+
+    @Test
+    @DisplayName("every kind the rules can report is one RESTest has words of its own for, and the "
+            + "faults page gives each the severity, title and advice RESTest reads it by")
+    void the_faults_page_says_how_each_kind_is_read() {
+        Map<Integer, String> fromTheTable = new TreeMap<>();
+        Map<Integer, String> fromTheTableOfKinds = new TreeMap<>();
+        Map<Integer, String> fromTheCode = new TreeMap<>();
+        Map<Integer, String> titlesFromTheCode = new TreeMap<>();
+        reportedKinds().forEach((code, kind) -> {
+            assertThat(FaultReading.isKnown(kind))
+                    .describedAs("F%d is reported by a rule, and RESTest reads it as a kind it has "
+                            + "no words for", code)
+                    .isTrue();
+            FaultReading reading = FaultReading.of(kind);
+            fromTheCode.put(code, reading.severity().word() + " | " + reading.title() + " | "
+                    + reading.advice().orElseThrow());
+            titlesFromTheCode.put(code, reading.title() + " | " + reading.severity().word());
+        });
+        rowsUnder(ERRORS_AND_WARNINGS, SEVERITY_ROW).forEach(row -> fromTheTable.put(
+                Integer.parseInt(row.group(3)),
+                row.group(1) + " | " + row.group(2).trim() + " | " + row.group(4).trim()));
+        rowsUnder(THE_KINDS_REPORTED, KIND_READ_ROW).forEach(row -> fromTheTableOfKinds.put(
+                Integer.parseInt(row.group(1)), row.group(2).trim() + " | " + row.group(3).trim()));
+
+        assertThat(fromTheTable)
+                .describedAs("the table under '%s' in %s, against FaultReading",
+                        ERRORS_AND_WARNINGS, FAULTS_PAGE)
+                .containsExactlyEntriesOf(fromTheCode);
+        assertThat(fromTheTableOfKinds)
+                .describedAs("the title and severity columns under '%s' in %s",
+                        THE_KINDS_REPORTED, FAULTS_PAGE)
+                .containsExactlyEntriesOf(titlesFromTheCode);
+    }
+
+    /**
+     * Every kind of fault RESTest's rules can report, by its number: the kinds the classes in
+     * {@code io.restest.oracles} reach for, read from their bytecode.
+     */
+    private static Map<Integer, FaultCategory> reportedKinds() {
         JavaClasses rules = new ClassFileImporter()
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
                 .importPackages("io.restest.oracles");
@@ -322,21 +382,17 @@ class DocumentedReportTest {
         for (RestestFault kind : RestestFault.values()) {
             kinds.put(RestestFault.class.getName() + "." + kind.name(), kind);
         }
-        Map<Integer, String> reported = new TreeMap<>();
+        Map<Integer, FaultCategory> reported = new TreeMap<>();
         rules.forEach(rule -> rule.getFieldAccessesFromSelf().stream()
                 .map(access -> kinds.get(access.getTargetOwner().getName() + "."
                         + access.getTarget().getName()))
                 .filter(Objects::nonNull)
-                .forEach(kind -> reported.put(kind.code(), kind.descriptiveName())));
-
+                .forEach(kind -> reported.put(kind.code(), kind)));
         assertThat(reported)
                 .describedAs("RESTest's rules report no kind of fault at all, which means this "
                         + "test is no longer reading them")
                 .isNotEmpty();
-        assertThat(kindsOnThePage())
-                .describedAs("the table under '%s' in %s, against the kinds the rules in "
-                        + "io.restest.oracles report", THE_KINDS_REPORTED, FAULTS_PAGE)
-                .containsExactlyEntriesOf(reported);
+        return reported;
     }
 
     @Test
@@ -548,6 +604,23 @@ class DocumentedReportTest {
     }
 
     /** The kinds of fault the faults page says this version reports, by code. */
+    /** Every row of the table under a heading of the faults page that the pattern matches. */
+    private static List<Matcher> rowsUnder(String heading, Pattern row) {
+        List<Matcher> rows = new ArrayList<>();
+        boolean inTheTable = false;
+        for (String line : faultsPage.split("\n")) {
+            if (line.startsWith("#")) {
+                inTheTable = line.equals("## " + heading);
+            } else if (inTheTable) {
+                Matcher matched = row.matcher(line);
+                if (matched.find()) {
+                    rows.add(matched);
+                }
+            }
+        }
+        return rows;
+    }
+
     private static Map<Integer, String> kindsOnThePage() {
         Map<Integer, String> kinds = new TreeMap<>();
         boolean inTheTable = false;

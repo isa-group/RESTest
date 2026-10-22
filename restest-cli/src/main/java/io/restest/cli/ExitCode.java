@@ -24,10 +24,14 @@ package io.restest.cli;
  * what one of them means breaks somebody's pipeline silently, which is why they are written down in
  * one place with the reasoning attached.
  *
- * <p>The important distinction is between *the API is wrong* and *RESTest is wrong*. Finding a fault
- * is the tool working, and it answers 1 so that a build goes red when the software under test is
- * broken. Not being able to test anything at all, or breaking internally, are different answers,
- * because reacting to them by opening a bug report about the API would waste somebody's afternoon.
+ * <p>The important distinction is between *the API is wrong* and *RESTest is wrong*. Finding an
+ * error - the API falling over, never answering, accepting what its document forbids - is the tool
+ * working, and it answers 1 so that a build goes red when the software under test is broken. A
+ * warning - the API answering something its document does not describe, where the document may be
+ * the one out of date - is counted and said, and answers 1 only when the run is told to treat
+ * warnings as errors. Not being able to test anything at all, or breaking internally, are different
+ * answers, because reacting to them by opening a bug report about the API would waste somebody's
+ * afternoon.
  *
  * <p>An operation that had to be skipped is none of these. Documents are written by people about
  * software that has changed since, so skipping part of one is ordinary; the run says what it
@@ -41,11 +45,17 @@ package io.restest.cli;
  */
 final class ExitCode {
 
-    /** The run finished and found nothing wrong. */
-    static final int NO_FAULTS = 0;
+    /**
+     * The run finished and found no error in the API. It may have found warnings, and replies it
+     * could not check; both are counted in what it printed and wrote, and neither changes this.
+     */
+    static final int NO_ERRORS = 0;
 
-    /** The run finished and found at least one fault. The API is what is wrong, not the tool. */
-    static final int FAULTS_FOUND = 1;
+    /**
+     * The run finished and found at least one error in the API, or a warning when it was told that
+     * warnings fail it. The API is what is wrong, not the tool.
+     */
+    static final int ERRORS_FOUND = 1;
 
     /**
      * The command line was wrong. This is the number the command-line framework itself uses for a
@@ -108,11 +118,15 @@ final class ExitCode {
      * @param keptWithoutTheirDetails how many exchanges had to be kept without their details,
      *     because a key could not be picked out of them: every report and the stored run have those
      *     exchanges with next to nothing in them
-     * @param faults how many faults were reported
+     * @param errors how many errors were reported: faults of a kind that says the API failed at its
+     *     job
+     * @param warnings how many warnings were reported: faults of a kind that says the API answered
+     *     something its document does not describe
+     * @param warningsFail whether the run was told that warnings fail it, as errors do
      * @return the number the command should answer with
      */
     static int of(RunLoop.Outcome outcome, long whatFailedOnOurSide, long eventsNeverHeard,
-            long keptWithoutTheirDetails, int faults) {
+            long keptWithoutTheirDetails, long errors, long warnings, boolean warningsFail) {
         if (outcome != null && outcome.cutShort()) {
             return INTERRUPTED;
         }
@@ -127,6 +141,6 @@ final class ExitCode {
         if (outcome == null || outcome.sent() == 0 || outcome.nothingAnswered()) {
             return NOTHING_TO_TEST;
         }
-        return faults > 0 ? FAULTS_FOUND : NO_FAULTS;
+        return errors > 0 || (warningsFail && warnings > 0) ? ERRORS_FOUND : NO_ERRORS;
     }
 }

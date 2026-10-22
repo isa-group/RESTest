@@ -235,9 +235,11 @@ report is run by putting the key back in place of that word. [Handing over a key
 
 ## Exit codes
 
-A run ends with `0` when it found nothing wrong, `1` when it found at least one fault, and another
-number when it could not do its job — a wrong command line, nothing it could test, RESTest itself
-breaking, or a run stopped with Ctrl-C. A build server can go red on anything but `0`.
+A run ends with `0` when it found no error, `1` when it found at least one, and another number when
+it could not do its job — a wrong command line, nothing it could test, RESTest itself breaking, or a
+run stopped with Ctrl-C. A build server can go red on anything but `0`. An error is the API failing
+at its job; a warning, the API answering something its document does not describe, is counted and
+said and fails a run only with `--set checks.failOnWarnings=true`.
 [The exit codes](docs/command-line.md#exit-codes) says what each number means.
 
 `./restest help run` lists every option, and [the command line](docs/command-line.md) has the same on

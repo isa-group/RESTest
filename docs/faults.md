@@ -2,14 +2,54 @@
 
 A **fault** is a reply RESTest has a reason to call wrong: the API fell over, it answered with
 something its own document says it would never send, it accepted a request its document says it
-must refuse, or it took a request and never answered at all. Every fault is named by a number —
-from a catalogue several testing tools share, or, for the few kinds that catalogue has no number
-for, from the range it leaves to each tool — described in a sentence of RESTest's own, and printed
-with a `curl` command that sends the same request again.
+must refuse, or it took a request and never answered at all. Every fault is an **error** or a
+**warning**, has a title in RESTest's own words, is numbered — from a catalogue several testing
+tools share, or, for the few kinds that catalogue has no number for, from the range it leaves to
+each tool — described in a sentence, and printed with a `curl` command that sends the same request
+again.
 
-This page lists the kinds of fault this version reports, says what each one means and when it is
-reported, how to switch off the check that reports it, and shows how a fault looks on the screen and
-in `report.json`. What the rest of a run's output says is in [What a run leaves behind](report.md).
+This page says which faults are errors and which are warnings, lists the kinds of fault this
+version reports, says what each one means and when it is reported, how to switch off the check
+that reports it, and shows how a fault looks on the screen and in `report.json`. What the rest of a
+run's output says is in [What a run leaves behind](report.md).
+
+## Errors and warnings
+
+**An error is the API failing at its job: it falls over, never answers, or accepts what its own
+document forbids. A warning is the API answering something its document does not describe, where
+the document may be the one out of date.** A run that finds an error ends with `1`, so that a build
+goes red; one that finds only warnings ends with `0`, and its summary counts them and says that they
+did not fail it.
+
+| Severity | Title | Code | What to look at |
+|---|---|---|---|
+| error | Internal server error | `F100` | look in the API's log for what failed while it handled the request; the document is not what to fix |
+| error | Other server error | `F121` | look at what the API sits behind or calls - a gateway, a database, another service - as well as at its code; the document is not what to fix |
+| error | Invalid data accepted | `F206` | make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead |
+| error | No reply in time | `F312` | look at what the operation waits on - a database, another service, a lock; an API known to be slow gets longer with engine.readTimeout |
+| warning | Reply off schema | `F200` | the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong |
+| warning | Not implemented | `F205` | implement the operation, or take it out of the document |
+| warning | Undeclared status code | `F920` | declare the status code for the operation in the document, or stop the API answering it |
+| warning | Undeclared content type | `F921` | declare the content type for that status code in the document, or have the API send the one declared |
+
+The title of each kind is the name of the check that reports it, in words: *Reply off schema* is
+the check `checks.replyOffSchema`, which [switches off](#switching-a-check-off) in one line. The last
+column is what the run's summary says under each kind it found.
+
+- **Warnings make a run fail only when asked.** `--set checks.failOnWarnings=true`, or the same in a
+  file of settings or in the environment ([the settings](settings.md#checks)), ends a run that found
+  warnings with `1`, as one that found errors. For a team that owns its document and wants a build
+  to go red the moment the API and the document disagree.
+- **A warning is often the document's to fix, and not always.** A document that lists the replies an
+  operation gives when all goes well, and leaves out the ways it refuses, makes a warning of nearly
+  every refusal; but an API that answers `201` where it promised `200` may be the one that changed.
+  The title says what disagreed, the sentence under each fault says how, and the line in the summary
+  says where to look.
+- **A reply no check could judge is neither.** It is no fault at all, never fails a run, not even
+  with `checks.failOnWarnings`, and is counted apart ([what a run leaves
+  behind](report.md#notchecked)).
+- **Each kind's severity is fixed.** It cannot be raised or lowered for a run; a check that is wrong
+  about an API is [switched off](#switching-a-check-off).
 
 ## The catalogue
 
@@ -43,23 +83,24 @@ fault per operation where RESTest counts every reply.
 
 ## The kinds this version reports
 
-| Code | Its name | What it means |
-|---|---|---|
-| `F100` | HTTP Status 500 | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code |
-| `F121` | HTTP Status 5xx Other Than 500 And 501 | The API answered a server error other than 500 and 501, most often `502`, `503` or `504`: something in it, or in front of it, failed while handling the request |
-| `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
-| `F205` | Schema Violation: no-501-if-implemented | The API answered `501 Not Implemented` to an operation its document declares: the document promises something the API does not do |
-| `F206` | Received Success Response When Sending Wrong Data | The API accepted a request RESTest broke on purpose, with one thing in it the document forbids: a required value left out, a word where a number goes, a value off a closed list |
-| `F312` | Call Timeout | The API had a request on an open connection and sent no reply, not even the status line and headers that begin one, before RESTest stopped waiting: whatever handles it is waiting on something that does not answer |
-| `F920` | A Status Code The Document Does Not Declare | The API answered, below 500, with a status code the document does not declare for that operation: `201` where it promises only `200`, a `400` it never mentions. RESTest's own number |
-| `F921` | A Content Type The Document Does Not Declare | The API sent a body, with a status code below 500 the document declares, under a content type the document does not declare for that status code: `application/problem+json` where it promises `application/json`, an HTML error page, a body with no content type at all. RESTest's own number |
+| Code | Its name | Title | Severity | What it means |
+|---|---|---|---|---|
+| `F100` | HTTP Status 500 | Internal server error | error | The API answered `500 Internal Server Error`: something went wrong inside it that it did not expect, most often an error nobody handled in its code |
+| `F121` | HTTP Status 5xx Other Than 500 And 501 | Other server error | error | The API answered a server error other than 500 and 501, most often `502`, `503` or `504`: something in it, or in front of it, failed while handling the request |
+| `F200` | Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema | Reply off schema | warning | The body of a reply is not the shape the document says a reply with that status code and media type has: a member it calls required is missing, a number arrives as text, a value is off the closed list the document gives |
+| `F205` | Schema Violation: no-501-if-implemented | Not implemented | warning | The API answered `501 Not Implemented` to an operation its document declares: the document promises something the API does not do |
+| `F206` | Received Success Response When Sending Wrong Data | Invalid data accepted | error | The API accepted a request RESTest broke on purpose, with one thing in it the document forbids: a required value left out, a word where a number goes, a value off a closed list |
+| `F312` | Call Timeout | No reply in time | error | The API had a request on an open connection and sent no reply, not even the status line and headers that begin one, before RESTest stopped waiting: whatever handles it is waiting on something that does not answer |
+| `F920` | A Status Code The Document Does Not Declare | Undeclared status code | warning | The API answered, below 500, with a status code the document does not declare for that operation: `201` where it promises only `200`, a `400` it never mentions. RESTest's own number |
+| `F921` | A Content Type The Document Does Not Declare | Undeclared content type | warning | The API sent a body, with a status code below 500 the document declares, under a content type the document does not declare for that status code: `application/problem+json` where it promises `application/json`, an HTML error page, a body with no content type at all. RESTest's own number |
 
-The names of `F920` and `F921` are RESTest's, since the catalogue has none; every other name is the
-catalogue's. The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
+*Its name* is the catalogue's, which `report.json` writes beside the number for comparing a run with
+another tool's; the names of `F920` and `F921` are RESTest's, since the catalogue has none. *Title*
+is what the screen and the summary call the kind, in RESTest's words. The catalogue has more kinds than these — wrong uses of HTTP status codes, a resource still there
 after it was deleted, security problems — and this version reports none of them. A run that finds
 nothing wrong has found none of the kinds above whose check was on, and says nothing about the rest.
 
-### `F100`, a reply of 500
+### `F100`, internal server error
 
 Reported for every reply whose status code is exactly 500, whatever was sent to get it — an ordinary
 request, a value nobody sensible would send, a request with one thing changed.
@@ -69,7 +110,7 @@ request, a value nobody sensible would send, a request with one thing changed.
 - **It is a reason to look, not a verdict.** An API can answer 500 because its database is down or
   because another service it calls is not answering, neither of which is a bug in the API itself.
 
-### `F121`, a server error other than 500
+### `F121`, other server error
 
 Reported for every reply whose status code is from 502 to 599 — most often 502, 503 or 504 —
 whatever was sent to get it, and whether or not the document declares that status code: a 503 the
@@ -89,7 +130,7 @@ one that fell over.
 - **501 is `F205`'s**, as for `F100`, and a code of 600 or more is left alone, since it is no server
   error whatever its first digit.
 
-### `F200`, a reply of the wrong shape
+### `F200`, reply off schema
 
 Reported when the body of a reply does not match the shape the document declares for that operation,
 that status code and that media type. The reply is checked against the document exactly as it was
@@ -136,13 +177,15 @@ sent to get it, and whether or not the document lists 501 among that operation's
 that promises an operation, and also says it may not be implemented, has still promised something
 the API does not do.
 
-From a minute's run of an API that answers 501 when it has nothing to return:
+From a run of an API that answers 501 when it has nothing to return, with
+`checks.undeclaredStatusCode` off, since the first warnings it finds are otherwise status codes its
+document leaves out:
 
 ```
-F205  Schema Violation: no-501-if-implemented
-      getProblemByCode - GET http://127.0.0.1:63555/api/problem/6HACrYMhxNLbntrqPJwCDiUyltki3RWaR7HwBcToEDWo8GPYlEnXZ5NMv  ->  501
-      the API answered 501, not implemented, to an operation its document declares
-      curl -i -X GET 'http://127.0.0.1:63555/api/problem/6HACrYMhxNLbntrqPJwCDiUyltki3RWaR7HwBcToEDWo8GPYlEnXZ5NMv' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+warning  Not implemented  (F205)
+         getProblemByCode - GET http://127.0.0.1:61293/api/problem/6HACrYMhxNLbntrqPJwCDiUyltki3RWaR7HwBcToEDWo8GPYlEnXZ5NMv  ->  501
+         the API answered 501, not implemented, to an operation its document declares
+         curl -i -X GET 'http://127.0.0.1:61293/api/problem/6HACrYMhxNLbntrqPJwCDiUyltki3RWaR7HwBcToEDWo8GPYlEnXZ5NMv' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
 - **The document or the API has something to fix.** Most often the operation was written into the
@@ -153,7 +196,7 @@ F205  Schema Violation: no-501-if-implemented
   correctly, that it does not do something nobody said it did. RESTest only sends what the document
   declares, so today every 501 it meets is one of these faults.
 
-### `F206`, a broken request accepted
+### `F206`, invalid data accepted
 
 Reported when the API accepts — answers 2xx to — a request RESTest broke on purpose. A strategy of
 kind `mutation` takes a request the API has just accepted and sends it again with one thing changed
@@ -164,10 +207,10 @@ records that a refusal was expected and what was changed, and the fault says whi
 accepted:
 
 ```
-F206  Received Success Response When Sending Wrong Data
-      createRoleUsingPOST - POST http://127.0.0.1:57518/users/rbac/roles  ->  201
-      the API accepted a request it should have refused: sent the words 'this is not JSON' as the body, which is not JSON
-      curl -i -X POST 'http://127.0.0.1:57518/users/rbac/roles' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary 'this is not JSON'
+error    Invalid data accepted  (F206)
+         createRoleUsingPOST - POST http://127.0.0.1:59780/users/rbac/roles  ->  201
+         the API accepted a request it should have refused: sent the words 'this is not JSON' as the body, which is not JSON
+         curl -i -X POST 'http://127.0.0.1:59780/users/rbac/roles' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary 'this is not JSON'
 ```
 
 Every kind of change counts, one that breaks only the `format` the document names included — a
@@ -199,14 +242,14 @@ above.
 Reported for every request sent on a connection open to the API that got no reply — not even the
 status line and headers that begin one — before RESTest stopped waiting. It waits
 `engine.readTimeout` for anything to arrive, half a minute by default, and `engine.callTimeout` for
-the whole request, a minute ([the settings](settings.md#engine)). From a minute's run of an API whose
-`fetch` operation gathers data from GitHub and waits on it:
+the whole request, a minute ([the settings](settings.md#engine)). From a minute's run of
+kafka-rest-proxy, which sits on a request about a broker its cluster does not have:
 
 ```
-F312  Call Timeout
-      fetchUsingGET - GET http://127.0.0.1:55811/fetch  ->  no reply
-      no reply within 30.0s: a connection to the API was open, and RESTest stopped waiting before a reply's status line and headers came back
-      curl -i -X GET 'http://127.0.0.1:55811/fetch' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+error    No reply in time  (F312)
+         GET /clusters/{cluster_id}/brokers/{broker_id}/configs - GET http://127.0.0.1:60613/v3/clusters/5L6g3nShT-eMCtK--X86sw/brokers/327/configs  ->  no reply
+         no reply within 30.0s: a connection to the API was open, and RESTest stopped waiting before a reply's status line and headers came back
+         curl -i -X GET 'http://127.0.0.1:60613/v3/clusters/5L6g3nShT-eMCtK--X86sw/brokers/327/configs' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
 The same request in `report.json` says what RESTest was waiting for ([What a run leaves
@@ -240,7 +283,7 @@ behind](report.md#findingsinteractionoutcome)):
 - **The `curl` waits as long as the API does.** It has no limit of its own: add `--max-time 35` to
   try it without waiting for ever.
 
-### `F920`, a status code the document does not declare
+### `F920`, undeclared status code
 
 Reported for every reply whose status code the document does not declare for its operation, below
 500. A status code counts as declared when the document names it, names its range — `4XX` — or
@@ -249,10 +292,10 @@ gives a `default` reply, which covers every code it does not name.
 From a minute's run of kafka-rest-proxy, whose document lists no `404` for reading a consumer group:
 
 ```
-F920  A Status Code The Document Does Not Declare
-      getKafkaConsumerGroup - GET http://127.0.0.1:54253/v3/clusters/5L6g3nShT-eMCtK--X86sw/consumer-groups/consumer-group-1  ->  404
-      the API answered 404, which the document does not declare for this operation; it declares 200, 400, 401, 403, 429, 5XX
-      curl -i -X GET 'http://127.0.0.1:54253/v3/clusters/5L6g3nShT-eMCtK--X86sw/consumer-groups/consumer-group-1' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+warning  Undeclared status code  (F920)
+         getKafkaConsumerGroup - GET http://127.0.0.1:60613/v3/clusters/5L6g3nShT-eMCtK--X86sw/consumer-groups/consumer-group-1  ->  404
+         the API answered 404, which the document does not declare for this operation; it declares 200, 400, 401, 403, 429, 5XX
+         curl -i -X GET 'http://127.0.0.1:60613/v3/clusters/5L6g3nShT-eMCtK--X86sw/consumer-groups/consumer-group-1' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
 The sentence lists what the document declares for the operation, in its own order and words, ranges
@@ -263,6 +306,7 @@ and `default` included.
   something that is not there. Every request that meets one is a fault, so a document that leaves
   out its refusals gets many. Each is still a place where the document says less than the API does,
   and the fix is usually a line in the document — or, if the API should not answer that, in the API.
+  That is why it is a warning: it fails no run unless `checks.failOnWarnings` asks.
 - **A refusal of a request broken on purpose counts too.** A request RESTest broke on purpose expects
   a refusal, and a refusal with a status code the document leaves out is still one it leaves out.
 - **What is left alone.**
@@ -291,7 +335,7 @@ and `default` included.
 - **Too many to read?** Declare the replies the API really gives, or switch the check off in one line
   (`checks.undeclaredStatusCode`).
 
-### `F921`, a content type the document does not declare
+### `F921`, undeclared content type
 
 Reported for every reply with a body, and a status code below 500 the document declares, whose
 `Content-Type` the document does not declare for that status code — or that comes with no
@@ -301,10 +345,10 @@ do not count, and a range the document declares, `application/*`, covers every t
 From a minute's run of pet-clinic, whose document declares its refusals as `application/json`:
 
 ```
-F921  A Content Type The Document Does Not Declare
-      updateOwner - PUT http://127.0.0.1:50767/petclinic/api/owners/1  ->  400
-      the API answered 400 as application/problem+json, which the document does not declare for that status; it declares application/json
-      curl -i -X PUT 'http://127.0.0.1:50767/petclinic/api/owners/1' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"firstName":"David","lastName":"","address":"2387 S. Fair Way","city":"Waunakee","telephone":"6085555487"}'
+warning  Undeclared content type  (F921)
+         addUser - POST http://127.0.0.1:53333/petclinic/api/users  ->  404
+         the API answered 404 as application/problem+json, which the document does not declare for that status; it declares application/json
+         curl -i -X POST 'http://127.0.0.1:53333/petclinic/api/users' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"username":"john.doe","password":"1234abc","roles":[{"name":"C9dvPc"}]}'
 ```
 
 - **A type that only resembles a declared one does not count.** `application/problem+json`, the
@@ -344,11 +388,16 @@ that check off:
 ```
   1 setting(s) are not what RESTest does by default; --print-settings lists them with where each came from
 ...
-59678 faults:
-  31255 x F920  A Status Code The Document Does Not Declare
-  16647 x F100  HTTP Status 500
-  11432 x F921  A Content Type The Document Does Not Declare
-  344 x F206  Received Success Response When Sending Wrong Data
+471 errors, on 30 operations:
+  462 x Internal server error  (F100)
+        look in the API's log for what failed while it handled the request; the document is not what to fix
+  9 x Invalid data accepted  (F206)
+        make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
+1203 warnings, on 31 operations, which do not fail the run (checks.failOnWarnings):
+  862 x Undeclared status code  (F920)
+        declare the status code for the operation in the document, or stop the API answering it
+  341 x Undeclared content type  (F921)
+        declare the content type for that status code in the document, or have the API send the one declared
 ```
 
 Each switch is named for what is wrong with what came back, or did not, and [the
@@ -368,8 +417,9 @@ A check switched off is not made at all. What that changes, and what it does not
   only how many fit in the budget can change.
 - **What the API did is still counted.** `serverErrors` in `report.json`, and the summary's line
   about 500 and 5xx, count every operation that answered so, whichever checks were made.
-- **The exit code follows the faults reported.** A run whose only faults would have been replies of
-  500 ends with `0` when `checks.internalServerError` is off, since it reported none.
+- **The exit code follows the errors reported.** A run whose only errors would have been replies of
+  500 ends with `0` when `checks.internalServerError` is off, since it reported none, whatever
+  warnings it found — unless `checks.failOnWarnings` is on, when a warning ends it with `1` too.
 - **The run records it.** `report.json` lists every setting under `settings`, with its value and
   where it came from, so a report says which checks its run made. The screen says that some
   settings are not what RESTest does by default, and `--print-settings` lists which.
@@ -382,14 +432,15 @@ limitations](known-limitations.md#what-a-run-says)).
 Faults are printed as they are found, while the run is still going:
 
 ```
-F100  HTTP Status 500
-      getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
-      the API answered 500, so it fell over while handling this request
-      curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+error    Internal server error  (F100)
+         getVisit - GET http://localhost:9966/petclinic/api/visits/-2147483649  ->  500
+         the API answered 500, so it fell over while handling this request
+         curl -i -X GET 'http://localhost:9966/petclinic/api/visits/-2147483649' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
-1. The catalogue number and the catalogue's name for the kind, or, from 900 up, RESTest's own number
-   and name.
+1. Whether it is an `error` or a `warning`, the kind's title in RESTest's own words, and in brackets
+   its number: the catalogue's, or, from 900 up, RESTest's own. The catalogue's name for the kind is
+   in `report.json`, for comparing a run with another tool's.
 2. The operation, by the name the document gives it (its `operationId`) — or by its method and
    path, `GET /pets/{petId}`, when the document gives it none or gives the same one to an operation
    RESTest reads first — the method and address the request went to, and what the API answered: a
@@ -404,17 +455,30 @@ F100  HTTP Status 500
    `REDACTED-AUTH`, or a longer word such as `REDACTED-AUTH.api_key` that the run names before its
    first request: put the key back in place of that whole word before running it.
 
-The first fifty faults are printed in full. After that the screen says
-`... more faults are being found; every one of them is counted in the run's report and in the total
-below`, and prints no more of them; `report.faultsShownOnTheConsole` changes the fifty
+The first fifty faults are printed in full, and at most ten of them may be warnings, so that errors
+found later still have room: a document that leaves out the ways its API refuses a request makes a
+warning of nearly every refusal, from the first requests on. After ten warnings the screen says
+`... more warnings are being found; every one of them is counted in the run's report and in the
+total below`, and after fifty faults `... more faults are being found`, the same way, each once;
+`report.warningsShownOnTheConsole` and `report.faultsShownOnTheConsole` change the two numbers
 ([the settings](settings.md#report)).
 
-At the end of the run, the summary counts them by kind:
+At the end of the run, the summary counts the errors and then the warnings, on how many operations,
+and each kind with what to look at under it:
 
 ```
-336 faults:
-  288 x F100  HTTP Status 500
-  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+1034 errors, on 30 operations:
+  1020 x Internal server error  (F100)
+        look in the API's log for what failed while it handled the request; the document is not what to fix
+  14 x Invalid data accepted  (F206)
+        make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
+2662 warnings, on 37 operations, which do not fail the run (checks.failOnWarnings):
+  1960 x Undeclared status code  (F920)
+        declare the status code for the operation in the document, or stop the API answering it
+  674 x Undeclared content type  (F921)
+        declare the content type for that status code in the document, or have the API send the one declared
+  28 x Reply off schema  (F200)
+        the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
 ```
 
 ## How faults are counted
@@ -426,11 +490,13 @@ much went wrong across the run, not how many problems the API has; [What a run l
 behind](report.md#faults) has the numbers that come closer to that — how many operations went wrong,
 and in how many kinds of way.
 
-**Faults are classified twice.** By catalogue number, which is what makes a run comparable with
-another tool's, and by the class of status code that carried them — `5xx`, `4xx`, `2xx` and so on
-— which is what a developer looks for first. The second makes one thing visible that the first does
-not: how many faults came back with an ordinary `200`. Both are in `report.json`
-(`faultsByCategory` and `faultsByStatus`).
+**Faults are classified three ways.** As errors or warnings, which is what decides how a run ends.
+By catalogue number, which is what makes a run comparable with another tool's. And by the class of
+status code that carried them — `5xx`, `4xx`, `2xx` and so on — which is what a developer looks for
+first, and which makes one thing visible that the others do not: how many faults came back with an
+ordinary `200`. All three are in `report.json`: `totals` counts errors and warnings, every row
+counting faults says which its kind is, and `faultsByCategory` and `faultsByStatus` count by number
+and by class.
 
 **Server errors are counted separately from faults**, under `serverErrors` in `report.json` and in
 the summary line `11 operation(s) answered 500, 11 answered some 5xx`. Those two numbers count what
@@ -442,16 +508,19 @@ the same operation are counted as two, however alike they look.
 
 ## What a fault does to the exit code
 
-A run that ran to the end and found at least one fault ends with `1`, and one that found none ends
-with `0`, so that a build server can go red when the API is broken. A run stopped from outside ends
+A run that ran to the end and found at least one error ends with `1`, and one that found none ends
+with `0`, so that a build server can go red when the API is broken. Warnings do not change that
+unless `checks.failOnWarnings` is on: then a run that found a warning ends with `1` too, as one that
+found an error. A run stopped from outside ends
 with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found. A run
 in which nothing at the address answered ends with `3`, even when it reported requests that got no
 reply in time: something that takes connections and never speaks HTTP does exactly that, so the run
 says how many such requests there were beside the address.
 [The exit codes](command-line.md#exit-codes) has every number a run can end with.
 
-A `0` covers what the run could check. Replies a check could not judge — a body the document gives
-no shape for, say — are not faults and do not change the exit code; the summary says how many there
-were, and `notChecked` in `report.json` says which and why ([what a run leaves
-behind](report.md#notchecked)). A build that should know whether everything was checked reads that
-list, which is empty when it was.
+A `0` says that no error was found in what the run could check. The summary says how many warnings
+there were, and that they did not fail the run. Replies a check could not judge — a body the
+document gives no shape for, say — are not faults and never change the exit code, not even with
+`checks.failOnWarnings`; the summary says how many there were, and `notChecked` in `report.json` says
+which and why ([what a run leaves behind](report.md#notchecked)). A build that should know whether
+everything was checked reads that list, which is empty when it was.

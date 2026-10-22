@@ -70,8 +70,8 @@ from writes, chapter 5 shows how to keep it to the requests that change nothing.
 ## When it is useful
 
 - **Before a release**, to find the requests that make an API fall over.
-- **In continuous integration**, as a check that goes red when a change breaks the API or the
-  document stops matching it. Chapter 9 shows how.
+- **In continuous integration**, as a check that goes red when a change breaks the API, and, if you
+  ask, when the document stops matching it. Chapter 9 shows how.
 - **On an API you do not know**, to find out quickly what its document promises and what it keeps.
 
 ## Before you start

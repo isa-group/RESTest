@@ -22,14 +22,19 @@ ran out. What it reports is what it found until then.
 **Dictionary.** A file of values worth sending, handed over with `--dictionary`. See [chapter
 6](06-dictionaries.md).
 
-**Exit code.** The number a run ends with: `0` nothing wrong in what could be checked, `1` a fault
-found, other numbers when the run could not do its job. See [chapter 9](09-exit-codes-and-ci.md).
+**Error.** A fault that says the API failed at its job: it fell over (`F100`, `F121`), never answered
+(`F312`), or accepted what its own document forbids (`F206`). A run that finds one ends with `1`. See
+[errors and warnings](../faults.md#errors-and-warnings).
+
+**Exit code.** The number a run ends with: `0` no error in what could be checked, `1` an error found
+— or a warning, when `checks.failOnWarnings` asks — other numbers when the run could not do its job.
+See [chapter 9](09-exit-codes-and-ci.md).
 
 **Fault.** A reply RESTest has a reason to call wrong: a reply of 500 (`F100`), another server error
 (`F121`), one whose body is not the shape the document gives it (`F200`), a 501 to an operation the
 document declares (`F205`), a success in answer to a request broken on purpose (`F206`), none at all
 to a request the API took (`F312`), or a status code (`F920`) or content type (`F921`) the document
-does not declare. A reason to look, not a verdict.
+does not declare. Each is an error or a warning. A reason to look, not a verdict.
 
 **Idle.** The share of a run during which RESTest had no request in flight. Reported on every run,
 and kept as close to nothing as possible.
@@ -41,8 +46,8 @@ and kept as close to nothing as possible.
 to send in later requests. In a plan, the source called `observed`.
 
 **Not checked.** Said of a reply a check could not judge: the shape of a body the document gives no
-shape for, say. Not a fault; a run counts such replies, says why, and lists them under `notChecked`
-in its report. See [What a run leaves behind](../report.md#notchecked).
+shape for, say. Not a fault, and it never fails a run; a run counts such replies, says why, and lists
+them under `notChecked` in its report. See [What a run leaves behind](../report.md#notchecked).
 
 **OpenAPI document.** The file, in YAML or JSON, that describes an API: its operations, what each
 accepts and what each answers. The one thing a run needs.
@@ -84,3 +89,9 @@ later without asking the API anything.
 one, or starting a series — with its share of the run.
 
 **Switch.** A setting that is `true` or `false` and turns off one thing a run does.
+
+**Warning.** A fault that says the API answered something its document does not describe — a body
+off its shape (`F200`), a 501 to an operation the document declares (`F205`), a status code
+(`F920`) or content type (`F921`) the document does not declare — where the document may be the one
+out of date. Counted and said; it ends a run with `1` only when `checks.failOnWarnings` asks. See
+[errors and warnings](../faults.md#errors-and-warnings).

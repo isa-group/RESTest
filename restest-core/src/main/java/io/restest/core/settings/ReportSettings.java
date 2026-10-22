@@ -37,6 +37,10 @@ package io.restest.core.settings;
  *     for the API having sent less than it did
  * @param faultsShownOnTheConsole how many faults are printed in full before the screen stops being
  *     the right place for them. The count at the end is of all of them, printed or not
+ * @param warningsShownOnTheConsole and how many of those may be warnings. A document that leaves out
+ *     the ways its API refuses a request makes a warning of nearly every refusal, from the first
+ *     requests on, and without this they would fill the screen before the first reply of 500
+ *     arrived; with it, errors found later still have room
  * @param skippedOperationsShownOnTheConsole how many of the operations a run could not test are
  *     named on the screen, each with its reason, before the rest are only counted. The report file
  *     names every one of them, however many that is
@@ -51,17 +55,19 @@ public record ReportSettings(
         int writeUpsInTotal,
         long mostBodyBytesKept,
         int faultsShownOnTheConsole,
+        int warningsShownOnTheConsole,
         int skippedOperationsShownOnTheConsole,
         int detailsShownPerFault,
         int commonestStatusCodesListed) {
 
     private static final ReportSettings DEFAULTS =
-            new ReportSettings(5, 1_000, 24L * 1024, 50, 5, 10, 10);
+            new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 10, 10);
 
     public ReportSettings {
         atLeastNone(writeUpsPerOperationAndKind, "writeUpsPerOperationAndKind");
         atLeastNone(writeUpsInTotal, "writeUpsInTotal");
         atLeastNone(faultsShownOnTheConsole, "faultsShownOnTheConsole");
+        atLeastNone(warningsShownOnTheConsole, "warningsShownOnTheConsole");
         atLeastNone(skippedOperationsShownOnTheConsole, "skippedOperationsShownOnTheConsole");
         atLeastNone(detailsShownPerFault, "detailsShownPerFault");
         atLeastNone(commonestStatusCodesListed, "commonestStatusCodesListed");

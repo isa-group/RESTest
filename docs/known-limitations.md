@@ -12,7 +12,7 @@ current release: an entry leaves it in the release that lifts it, and that relea
   send more. Against an API that limits its callers, lower `engine.maxConcurrency`
   ([the settings](settings.md)) before you start. A 503 the run's own pace provoked is reported as a
   fault, `F121`, like any other; `checks.otherServerError=false` stops that
-  ([the faults](faults.md#f121-a-server-error-other-than-500)).
+  ([the faults](faults.md#f121-other-server-error)).
 - **There is no ceiling on requests per second.** What bounds a run is the number of requests in
   flight, sixteen at most by default (`engine.maxConcurrency`). The limiter halves it whenever a
   request goes unanswered and sends fewer as answers slow down, but no setting promises an API's
@@ -61,7 +61,8 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **A reply nobody could judge does not change the exit code.** A run counts the replies each check
   could not judge, and why — a body the document gives no shape for, a shape the checker cannot use
   — and says so in its summary and under `notChecked` in `report.json`
-  ([what a run leaves behind](report.md#notchecked)); but those are no faults, so a run whose only
+  ([what a run leaves behind](report.md#notchecked)); but those are no faults, not even with
+  `checks.failOnWarnings`, so a run whose only
   replies were of that kind still ends with `0`.
 - **With `checks.undeclaredStatusCode` or `checks.undeclaredContentType` off, some replies go
   unchecked without a word.** The shape of a reply whose status code or content type the document
@@ -76,22 +77,23 @@ of its own. Whether you may test an API at all is not something any tool can che
   `checks.replyOffSchema` off because one operation's error replies are not the shape its document
   gives hides every other reply off its schema too, on every operation
   ([the faults](faults.md#switching-a-check-off)).
-- **A document that leaves out its refusals makes many faults, and a build fail.** Every reply whose
-  status code the document does not declare is a fault, `F920`, and so is every reply sent as a
-  content type it does not declare, `F921`; a document that lists only what goes well can make most
-  of a run's replies faults, and turn a run that ended with `0` into one that ends with `1`. Each is
-  true, and RESTest does not yet tell a fault the API should fix from one its document should: fix
-  the document, or switch the check off for the run (`checks.undeclaredStatusCode`,
-  `checks.undeclaredContentType`; [the faults](faults.md#f920-a-status-code-the-document-does-not-declare)).
-- **The faults written out on the screen are the first of any kind.** The screen writes out the
-  first 50 faults whole (`report.faultsShownOnTheConsole`) and counts the rest. A document that
-  leaves out its refusals fills those places with `F920` from the first requests, so a 500 found
-  later is only counted there: in a minute's run of an API with both, the 50 were all `F920` and
-  `F205`, and none of its 10,902 replies of 500. Read the counts under the faults, and `report.json`,
-  which writes out the first five of each kind on each operation; or switch `F920` off for the run.
+- **A document that leaves out its refusals makes many warnings.** Every reply whose status code the
+  document does not declare is a warning, `F920`, and so is every reply sent as a content type it
+  does not declare, `F921`; a document that lists only what goes well can make most of a run's
+  replies warnings. They fail no run unless `checks.failOnWarnings` asks, and each line of the
+  summary says where to look, but RESTest cannot tell, reply by reply, whether the API or the
+  document is the one to change: fix the document, or switch the check off for the run
+  (`checks.undeclaredStatusCode`, `checks.undeclaredContentType`; [the
+  faults](faults.md#f920-undeclared-status-code)).
+- **The warnings written out on the screen are the first ten of any kind.** The screen writes out the
+  first 50 faults whole (`report.faultsShownOnTheConsole`), of which at most ten may be warnings
+  (`report.warningsShownOnTheConsole`), so that a 500 found after a flood of `F920` still reaches it.
+  Those ten are the first warnings found, whatever their kind: an `F200` found after ten `F920` is
+  only counted there. Read the counts under the faults, and `report.json`, which writes out the first
+  five of each kind on each operation.
 - **A type that only resembles a declared one is reported.** `application/problem+json`, where the
   document declares `application/json`, is `F921`, though both are JSON
-  ([the faults](faults.md#f921-a-content-type-the-document-does-not-declare)).
+  ([the faults](faults.md#f921-undeclared-content-type)).
 - **A reply the document declares in a form RESTest cannot read is reported as undeclared.** The
   library RESTest reads documents with drops a reply written as something other than an object —
   `"404": "not found"` — and says so before the run, without naming the operation. That operation's

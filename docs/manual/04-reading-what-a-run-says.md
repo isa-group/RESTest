@@ -10,52 +10,70 @@ faults RESTest reports](../faults.md); this chapter is about using them.
 A fault from the clinic, as the screen prints it:
 
 ```
-F100  HTTP Status 500
-      getVisit - GET http://localhost:9966/petclinic/api/visits/99999999999999999999999999999999  ->  500
-      the API answered 500, so it fell over while handling this request
-      curl -i -X GET 'http://localhost:9966/petclinic/api/visits/99999999999999999999999999999999' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+error    Internal server error  (F100)
+         getVisit - GET http://localhost:9966/petclinic/api/visits/-2147483649  ->  500
+         the API answered 500, so it fell over while handling this request
+         curl -i -X GET 'http://localhost:9966/petclinic/api/visits/-2147483649' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
-- `F100  HTTP Status 500` is the kind of fault: a number from a catalogue several testing tools
-  share, and the catalogue's name for it. A number from 900 up, such as `F920`, is one of the few
-  kinds the catalogue has no number for, numbered and named by RESTest itself.
+- `error` says how serious it is. An **error** is the API failing at its job: it fell over, never
+  answered, or accepted what its own document forbids. A **warning**, below, is the API answering
+  something its document does not describe, where the document may be the one out of date. A run
+  that finds an error ends with `1`; one that finds only warnings, with `0` ([chapter
+  9](09-exit-codes-and-ci.md)).
+- `Internal server error  (F100)` is the kind of fault, in RESTest's words, and its number from a
+  catalogue several testing tools share. A number from 900 up, such as `F920`, is one of the few
+  kinds the catalogue has no number for, numbered by RESTest itself. The title is also the name of
+  the check that reports it: `checks.internalServerError` switches it off.
 - The second line is the request: the operation, by the name the document gives it, then the method
   and the address, and after the arrow what the API answered. This one asked for a visit by an
-  identifier far larger than any number the clinic can hold, and instead of refusing it, the clinic
-  fell over.
+  identifier one below the smallest whole number the clinic can hold, and instead of refusing it,
+  the clinic fell over.
 - The third says what is wrong, in a sentence.
 - The last is a `curl` command that sends exactly the same request again. Paste it into a terminal
   and the clinic falls over the same way, which is what whoever fixes it will want to see.
 
-A fault of the wrong shape, `F200`, says more, because a reply can be wrong in several places at
-once:
+A reply off its schema, `F200`, is a warning, and says more, because a reply can be wrong in several
+places at once. The screen prints the first ten warnings a run finds, and on the clinic those are
+nearly all status codes and content types its document leaves out, so this one is from a run with
+those two checks switched off (`checks.undeclaredStatusCode` and `checks.undeclaredContentType`):
 
 ```
-F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-      listVisits - GET http://localhost:9966/petclinic/api/visits  ->  200
-      the body does not match the shape the specification declares for it, answering 200 as application/json
-        /0/petId: null found, integer expected
-      curl -i -X GET 'http://localhost:9966/petclinic/api/visits' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+warning  Reply off schema  (F200)
+         listPets - GET http://localhost:9966/petclinic/api/pets  ->  200
+         the body does not match the shape the specification declares for it, answering 200 as application/json
+           /2/type: null found, object expected
+           /3/type: null found, object expected
+         curl -i -X GET 'http://localhost:9966/petclinic/api/pets' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
 The indented lines under the sentence are the places in the reply that disagree with the document,
-and how: here, the first visit of the list has no pet, where the document says every visit has
-one. A reply that leaves out something the document calls required, or sends a number as text,
-shows here. Remember that either side can be wrong: the API, or the document describing it.
+and how: here, two pets of the list have no type, where the document says every pet has one. A reply that leaves out something the document calls required, or sends a number as text,
+shows here. That is why it is a warning: either side can be wrong, the API or the document
+describing it.
 
 ## The summary
 
 ```
-3388 requests to 43 operations in 30.1s, 14% of it idle
-  opening lap: 43 requests in 3.5s, 34 of 43 operations answered 2xx
-  1153 2xx, 462 3xx, 1145 4xx, 628 5xx
-  561 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 1145 refusals above
-  329 of them changed one thing in a request the API had accepted
-  98 of them were steps of 26 series about a thing the run created: putTwice 32, createTwice 4, deleteTwice 15, safeGet 27, readAfterDelete 20; 44 creation(s) meant to begin one were not accepted
+7015 requests to 43 operations in 30.0s, 9% of it idle
+  opening lap: 43 requests in 2.4s, 35 of 43 operations answered 2xx
+  2422 2xx, 936 3xx, 2637 4xx, 1020 5xx
+  482 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 2637 refusals above
+  1032 of them changed one thing in a request the API had accepted
+  407 of them were steps of 119 series about a thing the run created: createTwice 67, safeGet 72, putTwice 132, writeUnderDeleted 12, readAfterDelete 71, deleteTwice 53; 114 creation(s) meant to begin one were not accepted
   30 operation(s) answered 500, 30 answered some 5xx
-730 faults:
-  628 x F100  HTTP Status 500
-  102 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+1034 errors, on 30 operations:
+  1020 x Internal server error  (F100)
+        look in the API's log for what failed while it handled the request; the document is not what to fix
+  14 x Invalid data accepted  (F206)
+        make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
+2662 warnings, on 37 operations, which do not fail the run (checks.failOnWarnings):
+  1960 x Undeclared status code  (F920)
+        declare the status code for the operation in the document, or stop the API answering it
+  674 x Undeclared content type  (F921)
+        declare the content type for that status code in the document, or have the API send the one declared
+  28 x Reply off schema  (F200)
+        the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
 ```
 
 Read it from the top:
@@ -75,7 +93,9 @@ Read it from the top:
   requests.
 - **How many operations answered 500**, and how many some 5xx. This counts operations, not replies:
   one broken operation asked six hundred times is six hundred replies, but one operation.
-- **The faults**, by kind.
+- **The errors**, on how many operations, each kind with what to look at under it; then **the
+  warnings**, the same way, and whether they failed the run. Errors come first because they are what
+  ends a run with `1`.
 - **What could not be checked**, if anything: how many replies a check could not judge, in which way
   and why — the shape of a body the document gives no shape for, say. `no faults found` says nothing
   about a reply nobody could judge.
@@ -91,19 +111,22 @@ run is in `restest-out/`.
 **Which operations broke, and how often?**
 
 ```bash
-jq -r '.faultsByOperation[] | "\(.count)\t\(.label)\t\(.operation)"' restest-out/report.json | sort -rn | head -8
+jq -r '.faultsByOperation[] | select(.severity == "error") | "\(.count)\t\(.title)\t\(.operation)"' restest-out/report.json | sort -rn | head -8
 ```
 
 ```
-24	F100:HTTP Status 500	getPetType
-23	F100:HTTP Status 500	getVisit
-21	F100:HTTP Status 500	getSpecialty
-20	F100:HTTP Status 500	getVet
-20	F100:HTTP Status 500	getOwner
-20	F100:HTTP Status 500	addUser
-19	F100:HTTP Status 500	updateSpecialty
-19	F100:HTTP Status 500	updateOwnersPet
+61	Internal server error	getOwner
+56	Internal server error	getSpecialty
+56	Internal server error	getPet
+54	Internal server error	getVisit
+54	Internal server error	getPetType
+52	Internal server error	addUser
+47	Internal server error	getVet
+46	Internal server error	addVisitToOwner
 ```
+
+Without the `select`, the warnings come too: on the clinic, most of them are a redirection its
+document does not declare, on the six operations that send a browser to its documentation page.
 
 **How do I reproduce the first fault?**
 

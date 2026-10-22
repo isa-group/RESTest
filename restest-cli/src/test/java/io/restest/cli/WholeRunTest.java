@@ -162,13 +162,13 @@ class WholeRunTest {
                 .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle")
                 .contains("report written to " + directory.resolve("report.json"));
         assertThat(printed)
-                .describedAs("the API that fell over is reported by its catalogue number")
-                .contains("F100")
-                .contains("HTTP Status 500")
+                .describedAs("the API that fell over is reported as an error, in RESTest's words "
+                        + "with its catalogue number after them")
+                .contains("error    Internal server error  (F100)")
                 .contains("listPets - GET " + api.baseUrl() + "/pets");
         assertThat(printed)
-                .describedAs("the API that lied about its own shape is reported too")
-                .contains("F200")
+                .describedAs("the API that lied about its own shape is reported too, as a warning")
+                .contains("warning  Reply off schema  (F200)")
                 .contains("getPet - GET " + api.baseUrl() + "/pets/")
                 .contains("/id: string found, integer expected");
         assertThat(printed)

@@ -87,27 +87,29 @@ would.
 
 Each check a run makes on what came back, or did not, reports one kind of fault, named by its number
 in the catalogue [the faults](faults.md) describes, or, for the two kinds the catalogue has no number
-for, by RESTest's own.
+for, by RESTest's own. What each switch is part of is that kind's title, the words a run prints for
+it, and the switch is the title written as one word: *Reply off schema* is `checks.replyOffSchema`.
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
-| `checks.internalServerError` | `true` | A reply of 500 | never reports a reply of 500 as a fault (`F100`) |
-| `checks.otherServerError` | `true` | Another server error | never reports a reply of a server error other than 500 and 501, such as 502, 503 or 504, as a fault (`F121`) |
-| `checks.replyOffSchema` | `true` | A reply off its schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
+| `checks.internalServerError` | `true` | Internal server error | never reports a reply of 500 as a fault (`F100`) |
+| `checks.otherServerError` | `true` | Other server error | never reports a reply of a server error other than 500 and 501, such as 502, 503 or 504, as a fault (`F121`) |
+| `checks.replyOffSchema` | `true` | Reply off schema | never checks the body of a reply against the shape the document gives it, so never reports one that is off it (`F200`) |
 | `checks.notImplemented` | `true` | Not implemented | never reports a reply of 501, not implemented, to an operation the document declares, as a fault (`F205`); such replies are still counted under `serverErrors` |
-| `checks.invalidDataAccepted` | `true` | A broken request accepted | never reports a request broken on purpose, with one thing in it the document forbids, that the API accepted (`F206`) |
+| `checks.invalidDataAccepted` | `true` | Invalid data accepted | never reports a request broken on purpose, with one thing in it the document forbids, that the API accepted (`F206`) |
 | `checks.noReplyInTime` | `true` | No reply in time | never reports a request that got no reply, on a connection open to the API, before RESTest stopped waiting, as a fault (`F312`); such requests are still counted under `noReply` |
-| `checks.undeclaredStatusCode` | `true` | An undeclared status code | never reports a reply whose status code, below 500, the document does not declare for its operation (`F920`) |
-| `checks.undeclaredContentType` | `true` | An undeclared content type | never reports a reply with a body whose content type the document does not declare for its status code, below 500 (`F921`) |
+| `checks.undeclaredStatusCode` | `true` | Undeclared status code | never reports a reply whose status code, below 500, the document does not declare for its operation (`F920`) |
+| `checks.undeclaredContentType` | `true` | Undeclared content type | never reports a reply with a body whose content type the document does not declare for its status code, below 500 (`F921`) |
 
-No check decides what a run sends: switching one off changes which replies are called faults, and
-so the exit code. [The faults](faults.md#switching-a-check-off) says what else it changes, and what
-it does not.
+No check decides what a run sends: switching one off changes which replies are called faults, and,
+for a check that reports errors — or warnings, with `checks.failOnWarnings` on — the exit code. [The
+faults](faults.md#switching-a-check-off) says what else it changes, and what it does not.
 
-### And two that are not levers
+### And three that are not levers
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
+| `checks.failOnWarnings` | `false` | How a run ends | ends with `0` when the only faults it found are warnings, as every run does by default. On, it ends with `1` for a warning as it does for an error. It decides what a run's findings do to how it ends, not what it sends or checks, so it plays no part in an ablation |
 | `engine.followRedirects` | `false` | Redirections | reports a redirection rather than following it. It decides what a 3XX answer means rather than turning off something a run could do without, which is why it is off by default and plays no part in an ablation |
 | `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent, as every run did until now. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
 
@@ -127,14 +129,14 @@ it does not.
 | One value changed | Its part of the share given to the strategy that changes accepted requests, nearly a third of the run, which builds an ordinary request whenever nothing accepted can be changed; each operation's newest `mutation.acceptedKept` accepted requests, kept in memory; and [the seed](#getting-the-seed-back) |
 | Words that only look like their format, and bodies of the wrong shape | Their part of the same share, and the seed |
 | Series | The share given to the strategy that sends series, fifteen in a hundred of the run, which builds an ordinary request whenever what it drew is not a creation; a series' later steps go out ahead of ordinary requests, so it takes a little more than its share; and the seed |
-| A reply of 500 | One look at the status code of each reply |
-| Another server error | One look at the status code of each reply |
-| A reply off its schema | Checking the body of every JSON reply against the shape the document gives it, which can leave fewer requests sent within the budget ([the faults](faults.md#switching-a-check-off) says why) |
+| Internal server error | One look at the status code of each reply |
+| Other server error | One look at the status code of each reply |
+| Reply off schema | Checking the body of every JSON reply against the shape the document gives it, which can leave fewer requests sent within the budget ([the faults](faults.md#switching-a-check-off) says why) |
 | Not implemented | One look at the status code of each reply |
-| A broken request accepted | One look at what each request expected, and, for one broken on purpose, at the status code of its reply |
+| Invalid data accepted | One look at what each request expected, and, for one broken on purpose, at the status code of its reply |
 | No reply in time | One look at how each request that got no reply ended |
-| An undeclared status code | Finding, for each reply below 500, what the document declares for its status code; one minute's runs could not tell it from the noise, even where most replies were reported |
-| An undeclared content type | The same, and a look at the content type of each reply with a body |
+| Undeclared status code | Finding, for each reply below 500, what the document declares for its status code; one minute's runs could not tell it from the noise, even where most replies were reported |
+| Undeclared content type | The same, and a look at the content type of each reply with a body |
 
 What each was measured to be worth while the rewrite was first built is kept with the rest of that
 record, on the
@@ -263,21 +265,21 @@ sequences:
   createTwice: false
 ```
 
-**A reply of 500** — `F100`
+**Internal server error** — `F100`
 
 ```yaml
 checks:
   internalServerError: false
 ```
 
-**Another server error** — `F121`
+**Other server error** — `F121`
 
 ```yaml
 checks:
   otherServerError: false
 ```
 
-**A reply off its schema** — `F200`
+**Reply off schema** — `F200`
 
 ```yaml
 checks:
@@ -291,7 +293,7 @@ checks:
   notImplemented: false
 ```
 
-**A broken request accepted** — `F206`
+**Invalid data accepted** — `F206`
 
 ```yaml
 checks:
@@ -305,14 +307,14 @@ checks:
   noReplyInTime: false
 ```
 
-**An undeclared status code** — `F920`
+**Undeclared status code** — `F920`
 
 ```yaml
 checks:
   undeclaredStatusCode: false
 ```
 
-**An undeclared content type** — `F921`
+**Undeclared content type** — `F921`
 
 ```yaml
 checks:

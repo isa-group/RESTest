@@ -49,24 +49,35 @@ written before all of this, on the error stream, each line beginning with `reste
 
 ### While it runs
 
-Each fault is printed as it is found: what kind it is, which request, what the API answered, what is
-wrong with it, and a `curl` command that sends the request again. [How a fault looks on the
-screen](faults.md#how-a-fault-looks-on-the-screen) goes through it line by line. After the first
-fifty, the screen stops printing them and says so; every one is still counted.
+Each fault is printed as it is found: whether it is an error or a warning, what kind it is, which
+request, what the API answered, what is wrong with it, and a `curl` command that sends the request
+again. [How a fault looks on the screen](faults.md#how-a-fault-looks-on-the-screen) goes through it
+line by line. After the first fifty, of which at most ten may be warnings, the screen stops printing
+them and says so; every one is still counted.
 
 ### The summary
 
+From a minute's run of the same pet store, run on the tester's own machine:
+
 ```
-716 requests to 19 operations in 10.3s, 13% of it idle
-  opening lap: 19 requests in 2.1s, 8 of 19 operations answered 2xx
-  186 2xx, 242 4xx, 288 5xx
-  141 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 242 refusals above
-  44 of them changed one thing in a request the API had accepted
-  4 of them were steps of 2 series about a thing the run created: createTwice 2, deleteTwice 2; 13 creation(s) meant to begin one were not accepted
-  11 operation(s) answered 500, 11 answered some 5xx
-336 faults:
-  288 x F100  HTTP Status 500
-  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+514920 requests to 19 operations in 1m 0s, 1% of it idle
+  opening lap: 19 requests in 185ms, 12 of 19 operations answered 2xx
+  119648 2xx, 2 3xx, 139923 4xx, 245169 5xx, 10178 no reply
+  40833 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 139923 refusals above
+  64658 of them changed one thing in a request the API had accepted
+  6680 of them were steps of 2296 series about a thing the run created: readAfterDelete 2047, deleteTwice 1740, safeGet 1564, writeUnderDeleted 279, createTwice 1050; 21902 creation(s) meant to begin one were not accepted
+  16 operation(s) answered 500, 16 answered some 5xx
+247271 errors, on 16 operations:
+  245169 x Internal server error  (F100)
+        look in the API's log for what failed while it handled the request; the document is not what to fix
+  2102 x Invalid data accepted  (F206)
+        make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
+27559 warnings, on 8 operations, which do not fail the run (checks.failOnWarnings):
+  27559 x Reply off schema  (F200)
+        the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
+some replies could not be checked; report.json names their operations:
+  the shape of 414777 replies, on 19 operations: the document gives no shape
+  the content type of 165743 replies, on 18 operations: the document declares the status code with no content type
 ```
 
 | Line | When | What it says |
@@ -80,7 +91,9 @@ fifty, the screen stops printing them and says so; every one is still counted.
 | `<n> of them were steps of <s> series about a thing the run created: <kind> <n>, …` | The plan sends series | Requests sent as steps of a short series after a creation — delete it and read it again, create it twice — counted by the kind of series. Creations meant to begin one that the API did not accept are counted after a `;`. [Series of requests around a thing the run created](campaign-format.md#series-of-requests-around-a-thing-the-run-created) |
 | `<k> creation(s) meant to begin a series about a thing the run created were not accepted, so no series began` | The plan sends series and none began | The API refused every creation a series would have started from |
 | `<a> operation(s) answered 500, <b> answered some 5xx` | Some reply was a 5xx | How many *operations* the API fell over on, rather than how many replies: a run spends its whole budget, so one broken operation asked six hundred times is six hundred broken replies. This is the number worth quoting |
-| `no faults found`, or `<n> faults:` and one line per kind | Always, when something was sent | The verdict: how many faults, by kind, as `<count> x F<code>  <name>`. [The faults RESTest reports](faults.md) says what each kind means |
+| `no faults found` | Always, when something was sent and nothing was found | The verdict, when it is clean |
+| `<n> errors, on <m> operations:` and two lines per kind | Some fault was an error | How many errors, on how many operations, then each kind as `<count> x <title>  (F<code>)`, with what to look at on the line under it. Errors are what end a run with `1`. [Errors and warnings](faults.md#errors-and-warnings) says which kinds are which |
+| `<n> warnings, on <m> operations, which do not fail the run (checks.failOnWarnings):` and two lines per kind | Some fault was a warning | The same for warnings, after the errors. A run that found only warnings ends with `0`; with `checks.failOnWarnings` on, the line ends `which fail the run, as checks.failOnWarnings asks:` and so does the run, with `1` |
 | `some replies could not be checked; report.json names their operations:` and one line per way and reason | A check could not judge some reply | Each line is `<what> of <n> replies, on <m> operations: <why>` — `the shape of 287676 replies, on 22 operations: the document gives no shape` — one for each check and each reason it gave, most replies first. Said after the verdict because it qualifies it: `no faults found` says nothing about a reply nobody could judge. [What the run could not check](#notchecked) lists every reason, and [the faults](faults.md) say, check by check, when one is given |
 | `<n> operations could not be tested:` | Some operation could not be tested | Up to five of them, each with the reason — a file upload, say, or a parameter written in a style requests are not built in — then how many more. Said after the verdict because it qualifies it: `no faults found` says nothing about an operation that was never tried. `report.json` names every one |
 | `<n> lists of values could not be read, so none of their values were sent:` | A list handed over with `--dictionary` could not be read | Each list and why, so that a run made without the values somebody meant it to have is not mistaken for one made with them |
@@ -141,7 +154,7 @@ throughout:
 | `createdAt` | moment | When the report was written |
 | `api` | object | Which API was tested, and where |
 | `cutShort` | `true` or `false` | `true` when the run was stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget ran out. Every number in the file is then what the run found until it was stopped |
-| `totals` | object | The run in eight numbers |
+| `totals` | object | The run in twelve numbers |
 | `skippedOperations` | list | Every operation the run could not test, each with the reason |
 | `notChecked` | list | How many replies each check could not judge, and why, with the operations they came from |
 | `dictionaries` | object | The lists of values handed over with `--dictionary`: the ones read, and the ones that could not be |
@@ -190,6 +203,10 @@ another tool ([the faults](faults.md#the-catalogue)).
 | `faults` | number | Faults found, every one |
 | `faultKinds` | number | How many different kinds of fault, by number |
 | `operationsWithFaults` | number | How many operations had at least one fault |
+| `errors` | number | How many of the faults were errors: the API failing at its job. A run that found one ends with `1` |
+| `warnings` | number | How many were warnings: the API answering something its document does not describe. `errors` and `warnings` add up to `faults` |
+| `operationsWithErrors` | number | How many operations had at least one error |
+| `operationsWithWarnings` | number | How many had at least one warning. An operation with both is counted in both, so this and `operationsWithErrors` can add up to more than `operationsWithFaults` |
 | `faultsWrittenInFull` | number | How many of the faults are written out whole under `findings` |
 | `faultsCountedOnly` | number | How many are counted and not written out, because their kind on their operation, or the file, had had its share |
 | `elapsed` | length of time | How long the run took, reading the document included |
@@ -392,6 +409,9 @@ In the order the kinds were first found.
 | `descriptiveName` | text | The catalogue's name for the kind, or RESTest's for one of its own |
 | `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it, or RESTest's for one of its own |
 | `label` | text | Number and name in one: `F100:HTTP Status 500` |
+| `severity` | text | `error` or `warning` ([errors and warnings](faults.md#errors-and-warnings)) |
+| `title` | text | What RESTest calls the kind, the words the screen prints: `Internal server error` |
+| `advice` | text | What to look at, and whether the document may be what needs fixing, as the summary says it under the kind: `look in the API's log for what failed while it handled the request; the document is not what to fix`. Said here, once for each kind, and in no other row |
 | `count` | number | How many faults of this kind |
 
 ### `faultsByStatus[]`
@@ -404,6 +424,8 @@ many faults came back with an ordinary `2xx`.
 | `code` | number | The catalogue number, or RESTest's own from 900 to 999 |
 | `id` | text | The catalogue's key for the kind, or RESTest's, starting with `RESTEST_` |
 | `label` | text | Number and name in one |
+| `severity` | text | `error` or `warning` |
+| `title` | text | What RESTest calls the kind |
 | `statusClass` | text | `2xx`, `5xx` and so on, or `noReply` |
 | `count` | number | How many faults |
 
@@ -417,6 +439,8 @@ One row for each operation and kind of fault. Complete: every pair that went wro
 | `code` | number | The catalogue number, or RESTest's own from 900 to 999 |
 | `id` | text | The catalogue's key for the kind, or RESTest's, starting with `RESTEST_` |
 | `label` | text | Number and name in one |
+| `severity` | text | `error` or `warning` |
+| `title` | text | What RESTest calls the kind |
 | `count` | number | How many faults of this kind on this operation |
 | `writtenInFull` | number | How many of them are written out under `findings` |
 | `countedOnly` | number | How many are only counted |
@@ -433,7 +457,7 @@ in a run from having nothing written about it.
 
 | Key | Value | What it says |
 |---|---|---|
-| `category` | object | The kind of fault: `code`, `id`, `descriptiveName`, `testCaseLabel` and `label`, as in `faultsByCategory` |
+| `category` | object | The kind of fault: `code`, `id`, `descriptiveName`, `testCaseLabel`, `label`, `severity` and `title`, as in `faultsByCategory`; what to look at is said there, once for the kind |
 | `operation` | text | The operation |
 | `summary` | text | What is wrong, in a sentence |
 | `details` | list of text | The particulars, when there are any: for `F200`, each place in the body that disagreed with the document |
@@ -451,6 +475,8 @@ in a run from having nothing written about it.
 | `descriptiveName` | text | The catalogue's name for the kind, or RESTest's for one of its own |
 | `testCaseLabel` | text | The name the catalogue suggests for a test that reproduces it, or RESTest's for one of its own |
 | `label` | text | Number and name in one |
+| `severity` | text | `error` or `warning` |
+| `title` | text | What RESTest calls the kind |
 
 ### `findings[].interaction`
 
@@ -573,7 +599,13 @@ What came back, in one of three shapes, told apart by `kind`.
 Every count, by operation and kind:
 
 ```bash
-jq -r '.faultsByOperation[] | "\(.count)\t\(.label)\t\(.operation)"' restest-out/report.json
+jq -r '.faultsByOperation[] | "\(.count)\t\(.severity)\t\(.title)\t\(.operation)"' restest-out/report.json
+```
+
+The errors alone, the faults that end a run with `1`:
+
+```bash
+jq -r '.faultsByOperation[] | select(.severity == "error") | "\(.count)\t\(.title)\t\(.operation)"' restest-out/report.json
 ```
 
 The command that sends the first fault's request again:
