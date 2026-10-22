@@ -1,6 +1,6 @@
 # ADR-0022: The characters a value is made of are read where its length already is, and the regular expressions are somebody else's
 
-**Status:** Accepted
+**Status:** Accepted, amended at M9.6, at 2.1, and on 12 October 2026
 **Date:** 2026-09-20
 
 ## Context

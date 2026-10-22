@@ -93,13 +93,17 @@ not want loaded, gets one request at a time with `--set engine.maxConcurrency=1`
 longer, `--set engine.readTimeout=2m`. Lengths of time are written `500ms`, `30s`, `5m`, `2h`, or as
 a plain number of seconds.
 
-**A reply that is too large to keep.** RESTest keeps the first megabyte of any reply, which is enough
-to judge it by. `engine.maxRetainedResponseBytes` changes that.
+**A reply that is too large to keep.** RESTest keeps the first megabyte of any reply. A longer body
+is cut there, and its shape is not checked against the document: the run counts it among the replies
+it could not check (`cutShort`). `engine.maxRetainedResponseBytes` changes the megabyte, so that
+such a body is judged too.
 
 ## Switches
 
-Some settings are `true` or `false`, and each turns off one thing the tool does: the opening lap,
-one kind of change to an accepted request, one kind of series, one check on what the API sent back.
+Some settings are `true` or `false`, and nearly every one turns off one thing the tool does: the
+opening lap, one kind of change to an accepted request, one kind of series, one way of using what the
+API returned, one check on what the API sent back. A few are off by default and turn something on,
+such as `checks.failOnWarnings`, which makes warnings end a run with `1`.
 They are there so that something an API dislikes can be turned off in a line, and so that what each
 idea is worth can be measured by running the same tool with it and without it. A run without the
 opening lap:

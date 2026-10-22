@@ -1,6 +1,6 @@
 # ADR-0032: A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher
 
-**Status:** Accepted
+**Status:** Accepted, amended on 13 October 2026
 **Date:** 2026-10-11
 
 ## Context

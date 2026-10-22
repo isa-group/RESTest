@@ -66,6 +66,18 @@ one kind of request it does not build.
 **No address.** A document whose `servers` gives no address RESTest can reach — none at all, or only
 a path such as `/api/v3` — needs one: give it with `--url`.
 
+**`the address given with --url carries …`.** RESTest refuses an address with a query string, or
+with a user name or a password before its host, and does not repeat it, since it may hold a key:
+
+```
+restest: the address given with --url carries a user name or a password before its host, which is not repeated here. Give the address without them, such as http://localhost:8080/api/v3, and a key the API asks for with --auth
+```
+
+Give the address without them, and a key with `--auth` ([chapter 8](08-an-api-that-asks-for-a-key.md)).
+
+**`nothing can be written to …`.** The directory given with `--out`, or `restest-out/` by default,
+cannot be written to. Choose another with `--out`.
+
 ## Almost every request is refused
 
 The summary line counting replies by class — `2xx`, `4xx`, `5xx` — is mostly `4xx`.
@@ -93,16 +105,17 @@ dictionary ([chapter 6](06-dictionaries.md)). Remember that some refusals are me
 summary says how many requests pushed at the API on purpose or changed one thing in a request it
 had accepted.
 
-## Most faults are status codes the document does not declare
+## Most warnings are status codes the document does not declare
 
-The summary's count of faults is mostly `F920`, *A Status Code The Document Does Not Declare*, and
-the operations it names answer `400` or `404`. The document lists what each operation answers when
-all goes well and leaves out the ways it refuses, so every request that meets a refusal is a fault.
-Each one is true — the document says less than the API does — and the fix is to declare those
-replies in the document, or `default` for every reply it does not name. Until then
-`--set checks.undeclaredStatusCode=false` leaves the other checks as they are. The same goes for
-`F921` and a document that declares `application/json` for replies the API sends as
-`application/problem+json`, which `--set checks.undeclaredContentType=false` stops.
+The summary's warnings are mostly *Undeclared status code* (`F920`), and the operations it names
+answer `400` or `404`. The document lists what each operation answers when all goes well and leaves
+out the ways it refuses, so every request that meets a refusal is a warning. Warnings do not fail the
+run unless `checks.failOnWarnings` is on. Each one is true — the document says less than the API
+does — and the fix is to declare those replies in the document, or `default` for every reply it does
+not name. Until then `--set checks.undeclaredStatusCode=false` leaves the other checks as they are.
+The same goes for *Undeclared content type* (`F921`) and a document that declares
+`application/json` for replies the API sends as `application/problem+json`, which
+`--set checks.undeclaredContentType=false` stops.
 
 ## The API falls over under the run
 

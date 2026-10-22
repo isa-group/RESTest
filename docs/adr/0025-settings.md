@@ -1,6 +1,6 @@
 # ADR-0025: The numbers somebody decided live in one settings object, layered from four sources, and never in the plan
 
-**Status:** Accepted
+**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17 and 22 October 2026
 **Date:** 2026-09-22
 
 ## Context

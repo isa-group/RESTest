@@ -9,12 +9,20 @@ requests carried, and changes one thing in them to see what the API does with it
 never its code. RESTest tests only this way.
 
 **Budget.** How long a run tests for, given with `--budget`: a minute unless you say otherwise. The
-whole of it is used, reading the document included.
+whole of it is used, reading the document included, unless `schedule.stopAfterRequests` ends the run
+sooner.
 
 **Catalogue.** The numbered list of kinds of fault that several API testing tools share, the [Web
 Fuzzing Commons](https://github.com/WebFuzzing/Commons) fault catalogue. `F100`, `F121`, `F200`,
 `F205`, `F206` and `F312` come from it. It leaves the numbers from 900 to 999 to each tool, and
 `F920` and `F921` are RESTest's own, for kinds it has no number for.
+
+**Check.** One rule a run applies to what came back, or did not, such as whether a reply's body is
+the shape the document gives. Each check reports one kind of fault and has a switch of its own. See
+[the faults](../faults.md).
+
+**Clinic.** The pet clinic, an open-source API the manual's examples run against, started in Docker
+as [chapter 3](03-a-first-run.md) shows.
 
 **Cut short.** Said of a run stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget
 ran out. What it reports is what it found until then.
@@ -76,6 +84,10 @@ and read it again, create it twice. Some faults only show across several request
 **Setting.** A number, or a yes or a no, that says how the tool behaves — how many requests it keeps
 in flight, how long it waits. See [chapter 7](07-settings.md).
 
+**Share.** The part of a run a strategy is given, as a number in the plan: of RESTest's own plan,
+45 for requests meant to be accepted, 15 for series, 30 for changing accepted requests and 10 for
+pushing. See [chapter 5](05-plans.md).
+
 **Source.** A place a value can come from: the document's closed list of values, its samples, its
 defaults, a value invented to fit, the memory of what the API returned, or a dictionary.
 
@@ -85,10 +97,16 @@ redirection to somewhere else, `4xx` that the request was refused, `5xx` that th
 **Stored run.** `run.sqlite`, written with `--store`: every request and reply of a run, to look at
 later without asking the API anything.
 
-**Strategy.** One way a plan builds requests — meant to be accepted, pushing, changing an accepted
-one, or starting a series — with its share of the run.
+**Strategy.** One way a plan builds requests, with its share of the run. Its kind says which:
+`nominal`, meant to be accepted; `fuzzing`, pushing; `mutation`, changing an accepted one;
+`sequences`, starting a series.
 
-**Switch.** A setting that is `true` or `false` and turns off one thing a run does.
+**Switch.** A setting that is `true` or `false`. Nearly every one turns off one thing a run does; a
+few, off by default, turn something on, such as `checks.failOnWarnings`.
+
+**Title.** What RESTest calls a kind of fault, in its own words — *Internal server error*, *Reply off
+schema* — printed before the catalogue's number. It is also the name of the check's switch, written
+as one word: `checks.internalServerError`.
 
 **Warning.** A fault that says the API answered something its document does not describe — a body
 off its shape (`F200`), a 501 to an operation the document declares (`F205`), a status code

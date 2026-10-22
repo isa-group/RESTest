@@ -1,6 +1,6 @@
 # ADR-0026: A run opens with every operation once, in five steps, and one part of the tool owns the clock
 
-**Status:** Accepted
+**Status:** Accepted, amended at M10.3
 **Date:** 2026-09-23
 
 ## Context

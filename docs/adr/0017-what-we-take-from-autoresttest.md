@@ -1,6 +1,6 @@
 # ADR-0017: What RESTest 2.0 takes from the tool that won the 2026 competition, and what it refuses
 
-**Status:** Proposed
+**Status:** Proposed, amended at M9.1, M9.4 and M10.1
 **Date:** 2026-09-17
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-0020: A dictionary is a named list of values with one key, and the plan decides what each list is for
 
-**Status:** Accepted, amended at M2.7c, M2.4, M2.10a, M8.3, on 1 October 2026 and at 2.1
+**Status:** Accepted, amended at M2.7c, M2.4, M2.10a and M8.3, on 1 October 2026, at 2.1, and on 12 and 13 October 2026
 **Date:** 2026-09-18
 
 ## Context

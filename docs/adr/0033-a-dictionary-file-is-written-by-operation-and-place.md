@@ -1,6 +1,6 @@
 # ADR-0033: A dictionary file is written by operation and place
 
-**Status:** Accepted
+**Status:** Accepted, amended on 13 October 2026
 **Date:** 2026-10-12
 
 ## Context

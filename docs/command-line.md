@@ -28,9 +28,9 @@ path. Every option has a default, and the defaults are the tool's zero-configura
 
 | Option | Value | Default | What it does |
 |---|---|---|---|
-| `--url` | `<base>` | the first usable address the document declares | Which machine the API runs on. Given without a path, the directory the document declares is kept; given with one, that path is used instead. A declared address that is only a path, such as `/v3`, is on the machine given here: listed first, it is the directory kept, unless another declared address names that same machine, whose own directory is then kept. Without `--url` it names no machine, so it is never the default |
+| `--url` | `<base>` | the first usable address the document declares | Which machine the API runs on. Given without a path, the directory the document declares is kept; given with one, that path is used instead. A declared address that is only a path, such as `/v3`, is on the machine given here: listed first, it is the directory kept, unless another declared address names that same machine, whose own directory is then kept. Without `--url` it names no machine, so it is never the default. An address carrying a query string, or a user name or a password before its host, is refused without being repeated — a key goes with `--auth` — and the run ends with `3`, as it does when there is no address at all |
 | `--auth` | `<key>` | none | A key or a token the API asks for — see [below](#handing-over-a-key-or-a-token). Repeat for several |
-| `--budget` | `<duration>` | `60s` | How long to keep testing: `500ms`, `30s`, `5m`, `2h`, a plain number of seconds, or ISO-8601 such as `PT1M30S`. All of it is used, reading the document included |
+| `--budget` | `<duration>` | `60s` | How long to keep testing: `500ms`, `30s`, `5m`, `2h`, a plain number of seconds, or ISO-8601 such as `PT1M30S`. All of it is used, reading the document included, unless `schedule.stopAfterRequests` ends the run sooner |
 | `--seed` | `<number>` | one chosen and printed | With the plan RESTest carries, the same number gives a similar run rather than the same one, because what a run sends also depends on what the API answers; `--store` keeps the run you had. The number fixes every random choice. [Getting the seed back](switches.md#getting-the-seed-back) says how to make it repeat a run exactly |
 | `--out` | `<directory>` | `restest-out` | Where this run's files go: `report.json`, and `run.sqlite` with `--store`. What an earlier run wrote there is replaced; nothing else in the directory is touched |
 | `--dictionary` | `<file-or-directory>` | none | A list of values to send, or a directory of them. Repeat for several. [The format](dictionary-format.md), and [its JSON Schema](schemas.md) |
@@ -195,4 +195,9 @@ not part of the promise and gets better whenever it can.
 `1` had meant at least one fault, and means at least one error. Against 2.1.0 the difference is a
 run whose only faults are replies whose body is off the shape the document gives (`F200`), which
 ended with `1` and ends with `0`; with `--set checks.failOnWarnings=true` such a run ends with `1`
-again, as under 2.1.0. [ADR-0015](adr/0015-command-line-contract.md) records why.
+again, as under 2.1.0. Other runs can end the other way round, but by addition, not by a change of
+meaning: three new kinds of fault are errors — a server error other than 500 (`F121`), a request
+broken on purpose and accepted (`F206`), a request never answered (`F312`) — so a run whose only
+problems were of those kinds, and which ended with `0` under 2.1.0, ends with `1`. Each has a
+switch: `checks.otherServerError`, `checks.invalidDataAccepted`, `checks.noReplyInTime`.
+[ADR-0015](adr/0015-command-line-contract.md) records why.

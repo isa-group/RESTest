@@ -103,6 +103,7 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 | Mutation score | PIT | `restest-oracles` scoring below 85%, on the `ubuntu-latest` / Java 25 row (`-Pmutation`) and whenever it is run by hand |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
 | How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs and in `release.yml` | the image or a launcher failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` when there is no Java it can use, `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan |
+| Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedLinksTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; a relative link that leads nowhere |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
 ### Coverage
@@ -148,10 +149,14 @@ matrix - `ubuntu-latest` with Java 25 - runs it on every change, as a second ste
 
 The `mutation` profile, in `restest-oracles/pom.xml`, binds the score to that module's `verify`;
 the ordinary `./mvnw verify` does not run it, so a laptop pays for the score only when it asks. The
-threshold is **85%**, against 98% measured when it was set and 97% measured on 13 October 2026.
+threshold is **85%**, against 98% measured when it was set and 97% (294 of 304) measured on
+22 October 2026.
 
-Three survive, and they are named here rather than called equivalent, which they are not quite. All
-three are a `<` moved to a `<=` inside the schema oracle: how many pointers it will follow before
+Seven survive. Four are equivalent: each replaces with `null` a value returned inside
+`Optional.map`, in the rules for a status code and a content type the document does not declare, and
+`Optional` turns that `null` into the same empty result. The other three are named here rather than
+called equivalent, which they are not quite. All three are a `<` moved to a `<=` inside the schema
+oracle: how many pointers it will follow before
 deciding a document points at itself, where a character stops being one it can write into a web
 address unchanged, and whether a media type carries a semicolon at all. Both sides of each behave
 the same way for every document anyone would write, and separating them would mean a test built
@@ -228,10 +233,11 @@ JAVA_HOME=/path/to/jdk-21 ./mvnw --batch-mode verify
 ```
 
 On macOS, `/usr/libexec/java_home -V` lists what is installed and `/usr/libexec/java_home -v 21`
-prints the path. Just the rules, without rebuilding everything:
+prints the path. Just the rules — the architecture and documentation tests, after building what
+they read:
 
 ```bash
-./mvnw --batch-mode verify -pl restest-arch-tests -am
+./mvnw -q verify -pl restest-arch-tests -am -Dtest='io.restest.arch.**' -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
 The smoke job, given a running container runtime:
@@ -244,7 +250,7 @@ That runs **only** the container-backed tests. `-Pit` runs everything, those inc
 `./mvnw verify` runs neither: the tests carrying the `smoke` tag are excluded by default, so nobody
 pays a container pull for a build they did not ask one for.
 
-The image and the launchers, as the smoke job and `release.yml` check them:
+The image and the launchers, as `ci.yml`'s smoke and image jobs and `release.yml` check them:
 
 ```bash
 version=$(dist/version.sh)
@@ -255,10 +261,6 @@ dist/assemble.sh target/dist --archives
 .github/scripts/check-restest.sh "$version" --launcher "target/dist/restest-$version/bin/restest"
 .github/scripts/check-restest.sh "$version" --checkout ./restest
 ```
-
-There is no shortcut worth having here: `restest-arch-tests` depends on all eight modules, so `-am`
-builds the whole reactor anyway. The full build takes a couple of minutes, most of it the
-command-line module's tests, which run three classes at a time; just run `./mvnw verify`.
 
 Worth knowing where the rules are actually looking. Under `verify` the reactor has reached
 `package`, so what the rules read is each module's **jar**, not its `target/classes` — only
@@ -322,8 +324,9 @@ The order is what keeps a broken release from being seen: nothing is pushed befo
 checked, the image a release names is made of the images that were checked, and the files appear only
 when the draft is published. A rerun of the same tag never replaces anything: an image already pushed
 is left as it is, a draft keeps the files it has, and a published release is not touched. A pull
-request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow or
-the root `pom.xml` rehearses the first three jobs and pushes nothing.
+request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow,
+`.gitattributes`, the root `pom.xml` or `restest-cli/pom.xml` rehearses the first three jobs and
+pushes nothing.
 
 When what failed is the workflow itself, `workflow_dispatch` makes the same release with the
 workflow as it is on `master`: Actions → Release → Run workflow, with the tag. Everything else it

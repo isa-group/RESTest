@@ -12,8 +12,9 @@ are described in [`docs/ci.md`](ci.md).
 
 ## What it is
 
-A black-box testing tool for REST APIs. Its only mandatory input is an OpenAPI specification and a
-base URL; from those it generates test cases, executes them, and reports the failures it finds.
+A black-box testing tool for REST APIs. Its only mandatory input is an OpenAPI specification; the
+address of the API is taken from it unless one is given. From those it generates test cases,
+executes them, and reports the failures it finds.
 
 The design target is deliberately narrow and deliberately hard: **an unknown API, no human
 configuration, a fixed time budget.** Everything below follows from those three constraints.
@@ -61,10 +62,10 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **Test oracle** | The rule that decides whether a response is right or wrong. "A valid request must not return a server error" is an oracle. Generating requests is half the problem; oracles are the other half. |
 | **Stateless / stateful testing** | Stateless: each test is a single, independent request. Stateful: a test is a *sequence* — create a resource, read it, update it, delete it — where each step depends on the previous one. |
 | **Inter-parameter dependency** | A rule constraining how parameters can be combined, e.g. "if `location` is given, `radius` must be given too". Not expressible in OAS, which is why IDL exists. |
-| **IDL** (Inter-parameter Dependency Language) | A language for writing those rules down formally, so that a machine can reason about them. |
+| **IDL** (Inter-parameter Dependency Language) | A language for writing those rules down formally, so that a machine can reason about them. RESTest 1.x reads it; this tool does not yet ([ADR-0010](adr/0010-idl-strategy.md) says how it will). |
 | **IDL4OAS** | The extension that embeds IDL rules inside an OAS document, under `x-dependencies`. |
 | **CSP** (Constraint Satisfaction Problem) | The mathematical form an IDL specification is translated into, so that a *solver* can compute combinations of parameter values satisfying every rule at once. |
-| **Solver** | The component that does that computation. Behind an interface, so it is replaceable. |
+| **Solver** | The component that does that computation. Not built yet; when it is, it goes behind an interface, so that it is replaceable. |
 | **SPI** (Service Provider Interface) | A deliberately small Java interface that the core defines and *somebody else* implements. The core says "give me values for this parameter" without knowing who answers. Adding a capability then means writing one small class and putting it on the classpath — no change to the core. This is the mechanism that makes the tool extensible. |
 | **Event stream** | An internal broadcast: the engine announces what it is doing ("request sent", "response received", "failure found") and any number of independent listeners react. Adding an eighth report format does not touch the engine. |
 | **AUC** (Area Under the Curve) | A measure of *how fast* a tool achieves something, not just how much it achieves in the end. A tool that covers 15 operations in the first minute scores far better than one covering 15 in the last minute. |
@@ -94,7 +95,7 @@ enforcement is listed under [Quality gates](#quality-gates).
 | 7 | The request loop is never blocked by computation; idle time is measured and reported | [ADR-0009](adr/0009-non-blocking-engine.md) |
 | 8 | Open formats in, open formats out | |
 | 9 | The tool runs standalone; evaluation harnesses live in a repository of their own, not in this one | [ADR-0011](adr/0011-evaluation-harness.md), amended at M1.9 |
-| 10 | English everywhere; Apache-2.0; semantic versioning; published on every tag | [ADR-0002](adr/0002-rewrite-not-refactor.md) |
+| 10 | Apache-2.0, semantic versioning, published on every tag | [ADR-0002](adr/0002-rewrite-not-refactor.md), [ADR-0032](adr/0032-how-a-release-is-published.md) |
 
 ## Architecture
 
@@ -167,10 +168,15 @@ how to reproduce it locally.
 
 - **Unit tests with coverage thresholds** on the core and the oracles.
 - **Architecture tests**: dependencies point inwards; no global mutable state; nothing outside the
-  specification module touches the third-party parser; nothing blocks the request loop; no process
-  termination outside the command-line module; nothing outside the command-line module reads the
-  environment or the system properties, so that every number a run uses arrives by constructor and
-  two runs in one program can differ.
+  specification module touches the third-party parser; no process termination outside the
+  command-line module; nothing outside the command-line module reads the environment or the system
+  properties, so that every number a run uses arrives by constructor and two runs in one program can
+  differ. That nothing blocks the request loop is not a rule a test can read in the code: idle time
+  is measured on every run and reported, so that a change that makes the loop wait shows in it.
+- **Documentation held to the tool**: the reference pages that list the command line, the settings,
+  the switches, the keys of `report.json` and the kinds of fault are checked against the tool on
+  every build, every relative link is checked to lead somewhere, and the JSON Schemas of a dictionary
+  and a plan are held to RESTest's readers.
 - **Mutation testing** on the oracles — deliberately corrupt our own code and
   check that the tests notice. "Our tool finds bugs" is more credible when our own oracle logic has
   a measured score.
@@ -205,7 +211,9 @@ A tool that has absorbed assumptions from the benchmark it is measured on is bot
 and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reasoning and the layout.
 
 Fault reports count by the WFC codes rather than by a taxonomy of our own, for the same reason: a
-fault count is only meaningful next to somebody else's fault count. What a person reads first is
+fault count is only meaningful next to somebody else's fault count. Two kinds the catalogue has no
+number for take numbers of RESTest's own, in the range it leaves to tools
+([ADR-0036](adr/0036-kinds-of-fault-restest-numbers-itself.md)). What a person reads first is
 RESTest's own words, though: every kind has a title of its own and is an error or a warning
 ([ADR-0037](adr/0037-errors-and-warnings.md)), and the code comes after them.
 
@@ -215,8 +223,8 @@ lap, a mutation operator, a series of requests — has a switch in them
 therefore a file handed over with `--settings` or `--campaign` rather than a branch per variant, and
 its results say what they measured. [The switches](switches.md) lists every one, gives the files
 that turn off a whole idea or family of ideas at once and the plan without the memory of what the
-API returned, which is a source rather than a switch, and names the three older behaviours that
-have no switch yet. A test holds that page to the tool.
+API returned, which is a source rather than a switch, and names the two older behaviours that have
+no switch yet. A test holds that page to the tool.
 
 ## Related tools
 
@@ -329,7 +337,7 @@ as it is now.
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x, 3.1.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | `DELETE` after `POST`; read after delete | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
-| **RESTest** (this tool, 2.0 on) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | 5xx detection, schema validation, WFC codes |
+| **RESTest** (this tool, 2.0 on) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | Server errors, replies off their schema, status codes and content types the document does not declare, a 501 to a declared operation, invalid data accepted, no reply in time; WFC codes, and two of its own; errors and warnings |
 
 ## Out of scope
 
@@ -388,7 +396,7 @@ Versions are pinned here and in the root POM, and the container image's two base
 | Concurrency | Virtual threads | JDK 21+ |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
 | JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.1 |
-| YAML reader for the files a person writes | `org.yaml:snakeyaml`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M11.1) | 2.6 |
+| YAML reader for the files a person writes | `org.yaml:snakeyaml`, confined to `restest-core` and `restest-spec` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M11.1) | 2.6 |
 | Strings matching a regular expression | `com.github.curious-odd-man:rgxgen`, confined to `restest-gen` ([ADR-0022](adr/0022-the-characters-a-value-is-made-of.md)) | 3.0 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
 | Assertions | AssertJ | 3.27.7 |

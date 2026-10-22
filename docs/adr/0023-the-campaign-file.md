@@ -1,6 +1,6 @@
 # ADR-0023: A plan is an ordered list of named sources, and the order is the preference
 
-**Status:** Accepted, amended at M9.1, M10.1, M10.3 and on 1 October 2026
+**Status:** Accepted, amended at M9.1, M10.1 and M10.3, and on 1, 12 and 13 October 2026; its §5 superseded by ADR-0034
 **Date:** 2026-09-22
 
 ## Context

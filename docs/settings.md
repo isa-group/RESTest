@@ -590,6 +590,11 @@ A number that is a fact rather than a decision stays in the code: `500` is a ser
 format has a version, a length of a day is a length of a day. The rule for moving one is whether a
 reasonable user or a reasonable experiment might want a different value.
 
-Some decisions have not moved yet, on purpose — the internals of the builder that satisfies a
-spelling rule, and the length beyond which a changed word is not held against one, the limits on
-how deeply a description may nest, the size of the batches the run's own file is written in. They move when the code around them is next touched, rather than in a sweep.
+Some numbers stay in the code on purpose. The builder of words that must match a pattern keeps the
+limits on how much work it hands the library that builds them — how many candidates it draws, how
+many characters it builds before giving up — and a value changed to break a pattern is checked
+against that pattern only up to sixteen characters long. These are safeguards against a pattern that
+would otherwise run for ever, not choices about what is sent. Others are decisions that have not
+moved yet: the size of the batches the run's own file is written in, how long the end of a run waits
+for its reports, how deep the check of a reply's shape follows references. They move when the code
+around them is next touched, rather than in a sweep.

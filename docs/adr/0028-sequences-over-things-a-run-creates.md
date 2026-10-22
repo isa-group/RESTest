@@ -1,6 +1,6 @@
 # ADR-0028: A creation may start a short series about the thing it made, and each series asks one question
 
-**Status:** Accepted
+**Status:** Accepted, amended at M11.2 and on 12 and 13 October 2026
 **Date:** 2026-09-28
 
 ## Context

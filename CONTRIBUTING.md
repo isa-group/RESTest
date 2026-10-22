@@ -21,8 +21,8 @@ Read, in this order:
 
 A command-line tool that tests a REST API. It builds requests from the API's OpenAPI document and
 from what the API answers, sends them for a fixed time, changes accepted requests one thing at a time,
-sends short series around the things it creates, and reports every reply of 500 and every reply that
-is not the shape the document promised.
+sends short series around the things it creates, and reports what it finds wrong, as errors and
+warnings ([the faults](docs/faults.md)).
 
 The OpenAPI document is all it needs, and that stays its first requirement: a run with nothing else
 must work. A run can also be shaped in three ways, each a plain file handed over on the command line:
@@ -61,7 +61,7 @@ Branch names say what kind of change it is and what it does: `feat/…`, `fix/�
 
 ## Pull requests
 
-Use the template. It asks for four things that are not optional:
+Use the template, and fill in every section. Four carry the most weight:
 
 - **What you can do now that you could not before** — concrete and user-facing, not a list of classes.
 - **Try it yourself** — copy-paste commands from a clean checkout, with the real output. They must

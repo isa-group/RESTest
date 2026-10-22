@@ -5,7 +5,7 @@ something its own document says it would never send, it accepted a request its d
 must refuse, or it took a request and never answered at all. Every fault is an **error** or a
 **warning**, has a title in RESTest's own words, is numbered — from a catalogue several testing
 tools share, or, for the few kinds that catalogue has no number for, from the range it leaves to
-each tool — described in a sentence, and printed with a `curl` command that sends the same request
+each tool — described in a sentence, and comes with a `curl` command that sends the same request
 again.
 
 This page says which faults are errors and which are warnings, lists the kinds of fault this
@@ -98,8 +98,8 @@ fault per operation where RESTest counts every reply.
 *Its name* is the catalogue's, which `report.json` writes beside the number for comparing a run with
 another tool's; the names of `F920` and `F921` are RESTest's, since the catalogue has none. *Title*
 is what the screen and the summary call the kind, in RESTest's words. The catalogue has more kinds
-than these — wrong uses of HTTP status codes, a resource still there after it was deleted, security
-problems — and this version reports none of them. A run that finds nothing wrong has found none of
+than these — wrong uses of HTTP status codes, a resource still there after it was deleted, the
+other security problems — and none of them is reported. A run that finds nothing wrong has found none of
 the kinds above whose check was on, and says nothing about the rest.
 
 ### `F100`, internal server error
@@ -123,8 +123,8 @@ one that fell over.
   front of the API says when what it passed the request on to answered nonsense or nothing in time,
   and 503 what an API says when it cannot serve requests just now, often because a database or
   another service it calls is down. Often the thing to fix is the API's surroundings rather than its
-  code. It is reported anyway: an operation that answers 503 is worth knowing about, and until this
-  check existed such replies were only counted, under `serverErrors`. Where the surroundings are
+  code. It is reported anyway: an operation that answers 503 is worth knowing about, and without
+  this check such replies are only counted, under `serverErrors`. Where the surroundings are
   known to be unwell, switch the check off in one line (`checks.otherServerError`).
 - **A 503 that asks the run to wait is reported too.** An API that cannot keep up may answer 503
   with a `Retry-After` header; RESTest does not wait yet ([known
@@ -449,7 +449,8 @@ error    Internal server error  (F100)
    status code, `no reply`, or a reply that could not be read.
 3. What is wrong, in a sentence.
 4. Up to ten lines of details under it, indented further, when there are any — for `F200`, each
-   place in the body that disagreed with the document. More than ten end with `... and 4 more`.
+   place in the body that disagreed with the document. More than ten end with `... and 4 more`;
+   `report.detailsShownPerFault` changes the ten.
 5. For a request that was one step of a series about a thing the run created — delete it and read
    it again, say — a line saying which step, of which series, and that the command below sends this
    step alone, without the steps before it, so it may not answer the same way.
@@ -489,7 +490,7 @@ and each kind with what to look at under it:
 reply of 500 whose body is also not the shape the document gives for a 500 is two faults, one of
 each kind. A broken operation asked six hundred times is six hundred faults. So the total says how
 much went wrong across the run, not how many problems the API has; [What a run leaves
-behind](report.md#faults) has the numbers that come closer to that — how many operations went wrong,
+behind](report.md#totals) has the numbers that come closer to that — how many operations went wrong,
 and in how many kinds of way.
 
 **Faults are classified three ways.** As errors or warnings, which is what decides how a run ends.
