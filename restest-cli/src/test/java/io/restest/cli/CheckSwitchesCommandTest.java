@@ -26,6 +26,7 @@ import static io.restest.cli.ARun.operationsWith;
 import static io.restest.cli.ARun.repliesOfClass;
 import static io.restest.cli.ARun.report;
 import static io.restest.cli.ARun.settingsIn;
+import static io.restest.cli.ARun.totalIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -378,10 +379,8 @@ class CheckSwitchesCommandTest {
         assertThat(screen.toString())
                 .contains("warning  Reply off schema  (F200)")
                 .contains("on 1 operation, which do not fail the run (checks.failOnWarnings):");
-        JsonValue.JsonObject totals = (JsonValue.JsonObject) report.member("totals").orElseThrow();
-        assertThat(totals.member("errors")).contains(JsonValue.of(0));
-        assertThat(totals.member("warnings").orElseThrow())
-                .isNotEqualTo(JsonValue.of(0));
+        assertThat(totalIn(report, "errors")).isZero();
+        assertThat(totalIn(report, "warnings")).isPositive();
     }
 
     @Test

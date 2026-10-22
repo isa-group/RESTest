@@ -105,11 +105,6 @@ public record FaultReading(Severity severity, String title, Optional<String> adv
                 : new FaultReading(Severity.ERROR, kind.descriptiveName(), Optional.empty());
     }
 
-    /** Whether RESTest has words of its own for this kind, rather than reading it as an error. */
-    public static boolean isKnown(FaultCategory kind) {
-        return BY_CODE.containsKey(Objects.requireNonNull(kind, "kind").code());
-    }
-
     private static FaultReading known(Severity severity, String title, String advice) {
         return new FaultReading(severity, title, Optional.of(advice));
     }

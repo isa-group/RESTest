@@ -27,6 +27,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
+import io.restest.core.settings.CheckSettings;
 import io.restest.core.settings.ReportSettings;
 import io.restest.core.settings.Settings;
 import java.io.Flushable;
@@ -72,7 +73,7 @@ class ConsoleReportTest {
         String introduction = "4 of 4 operations can be tested, seed 1, budget 1s"
                 + System.lineSeparator() + System.lineSeparator();
         ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
-                introduction);
+                CheckSettings.defaults(), introduction);
 
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
 
@@ -85,7 +86,7 @@ class ConsoleReportTest {
     void what_the_command_says_first_is_sent_on_its_way_at_once() {
         BufferedScreen terminal = new BufferedScreen();
         ConsoleReport live = ConsoleReport.to(terminal, ReportSettings.defaults(),
-                "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
+                CheckSettings.defaults(), "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
 
         live.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
 
@@ -100,7 +101,7 @@ class ConsoleReportTest {
     void an_introduction_left_open_is_closed() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
-                "4 of 4 operations can be tested");
+                CheckSettings.defaults(), "4 of 4 operations can be tested");
 
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));

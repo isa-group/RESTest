@@ -63,10 +63,8 @@ class FaultReadingTest {
     @DisplayName("each kind has a title of RESTest's own, never the catalogue's name, and no two "
             + "kinds share one")
     void each_title_is_restests_own() {
-        assertThat(REPORTED).allSatisfy(kind -> {
-            assertThat(FaultReading.isKnown(kind)).isTrue();
-            assertThat(FaultReading.of(kind).title()).isNotEqualTo(kind.descriptiveName());
-        });
+        assertThat(REPORTED).allSatisfy(kind ->
+                assertThat(FaultReading.of(kind).title()).isNotEqualTo(kind.descriptiveName()));
         assertThat(REPORTED.stream().map(kind -> FaultReading.of(kind).title()))
                 .doesNotHaveDuplicates();
         assertThat(FaultReading.of(WfcFault.HTTP_STATUS_500).title())
@@ -123,7 +121,6 @@ class FaultReadingTest {
             }
         };
 
-        assertThat(FaultReading.isKnown(somebodyElses)).isFalse();
         assertThat(FaultReading.of(somebodyElses))
                 .isEqualTo(new FaultReading(Severity.ERROR, "Somebody Else's Kind",
                         Optional.empty()));
@@ -132,9 +129,9 @@ class FaultReadingTest {
     @Test
     @DisplayName("a kind of the catalogue no rule reports is read as one RESTest does not know")
     void a_kind_no_rule_reports_is_not_known() {
-        assertThat(FaultReading.isKnown(WfcFault.HTTP_NONWORKING_DELETE)).isFalse();
-        assertThat(FaultReading.of(WfcFault.HTTP_NONWORKING_DELETE).title())
-                .isEqualTo(WfcFault.HTTP_NONWORKING_DELETE.descriptiveName());
+        assertThat(FaultReading.of(WfcFault.HTTP_NONWORKING_DELETE))
+                .isEqualTo(new FaultReading(Severity.ERROR,
+                        WfcFault.HTTP_NONWORKING_DELETE.descriptiveName(), Optional.empty()));
     }
 
     @Test

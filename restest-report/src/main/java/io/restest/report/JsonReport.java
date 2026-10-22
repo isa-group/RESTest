@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Writes what a run found as one JSON file, for anything that reads a run rather than looks at it.
@@ -714,6 +715,11 @@ public final class JsonReport implements RunListener {
      */
     private static void namedFault(Map<String, JsonValue> row, FaultCategory category) {
         named(row, category);
+        readAs(row, category);
+    }
+
+    /** Whether a kind of fault is an error or a warning, and what RESTest calls it. */
+    private static void readAs(Map<String, JsonValue> row, FaultCategory category) {
         FaultReading reading = FaultReading.of(category);
         row.put("severity", JsonValue.of(reading.severity().word()));
         row.put("title", JsonValue.of(reading.title()));
@@ -732,8 +738,8 @@ public final class JsonReport implements RunListener {
                 tallies.keySet().stream().map(Kind::operation).distinct().count()));
         // Errors and warnings apart, since a build fails on the first and, unless told otherwise,
         // not on the second. An operation with both is counted under both.
-        totals.put("errors", JsonValue.of(countOf(Severity.ERROR)));
-        totals.put("warnings", JsonValue.of(countOf(Severity.WARNING)));
+        totals.put("errors", JsonValue.of(faultsOf(Severity.ERROR)));
+        totals.put("warnings", JsonValue.of(faultsOf(Severity.WARNING)));
         totals.put("operationsWithErrors", JsonValue.of(operationsWith(Severity.ERROR)));
         totals.put("operationsWithWarnings", JsonValue.of(operationsWith(Severity.WARNING)));
         totals.put("faultsWrittenInFull", JsonValue.of(writeUps.size()));
@@ -813,27 +819,24 @@ public final class JsonReport implements RunListener {
         written.put("descriptiveName", JsonValue.of(category.descriptiveName()));
         written.put("testCaseLabel", JsonValue.of(category.testCaseLabel()));
         written.put("label", JsonValue.of(category.label()));
-        FaultReading reading = FaultReading.of(category);
-        written.put("severity", JsonValue.of(reading.severity().word()));
-        written.put("title", JsonValue.of(reading.title()));
+        readAs(written, category);
         return JsonValue.object(written);
     }
 
+    /** Every operation and kind that went wrong, of the kinds of this severity. */
+    private Stream<Map.Entry<Kind, Tally>> talliesOf(Severity severity) {
+        return tallies.entrySet().stream()
+                .filter(entry -> FaultReading.of(entry.getValue().category).severity() == severity);
+    }
+
     /** How many faults were of kinds of this severity. */
-    private long countOf(Severity severity) {
-        return tallies.values().stream()
-                .filter(tally -> FaultReading.of(tally.category).severity() == severity)
-                .mapToLong(tally -> tally.count)
-                .sum();
+    private long faultsOf(Severity severity) {
+        return talliesOf(severity).mapToLong(entry -> entry.getValue().count).sum();
     }
 
     /** How many operations had at least one fault of a kind of this severity. */
     private long operationsWith(Severity severity) {
-        return tallies.entrySet().stream()
-                .filter(entry -> FaultReading.of(entry.getValue().category).severity() == severity)
-                .map(entry -> entry.getKey().operation())
-                .distinct()
-                .count();
+        return talliesOf(severity).map(entry -> entry.getKey().operation()).distinct().count();
     }
 
     /**

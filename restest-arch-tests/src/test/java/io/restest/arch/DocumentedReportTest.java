@@ -342,13 +342,11 @@ class DocumentedReportTest {
         Map<Integer, String> fromTheCode = new TreeMap<>();
         Map<Integer, String> titlesFromTheCode = new TreeMap<>();
         reportedKinds().forEach((code, kind) -> {
-            assertThat(FaultReading.isKnown(kind))
-                    .describedAs("F%d is reported by a rule, and RESTest reads it as a kind it has "
-                            + "no words for", code)
-                    .isTrue();
             FaultReading reading = FaultReading.of(kind);
             fromTheCode.put(code, reading.severity().word() + " | " + reading.title() + " | "
-                    + reading.advice().orElseThrow());
+                    + reading.advice().orElseThrow(() -> new AssertionError("F" + code + " is "
+                            + "reported by a rule, and RESTest reads it as a kind it has no words "
+                            + "for")));
             titlesFromTheCode.put(code, reading.title() + " | " + reading.severity().word());
         });
         rowsUnder(ERRORS_AND_WARNINGS, SEVERITY_ROW).forEach(row -> fromTheTable.put(
@@ -603,7 +601,6 @@ class DocumentedReportTest {
         return explained;
     }
 
-    /** The kinds of fault the faults page says this version reports, by code. */
     /** Every row of the table under a heading of the faults page that the pattern matches. */
     private static List<Matcher> rowsUnder(String heading, Pattern row) {
         List<Matcher> rows = new ArrayList<>();
@@ -621,19 +618,11 @@ class DocumentedReportTest {
         return rows;
     }
 
+    /** The kinds of fault the faults page says this version reports, by code. */
     private static Map<Integer, String> kindsOnThePage() {
         Map<Integer, String> kinds = new TreeMap<>();
-        boolean inTheTable = false;
-        for (String line : faultsPage.split("\n")) {
-            if (line.startsWith("#")) {
-                inTheTable = line.equals("## " + THE_KINDS_REPORTED);
-            } else if (inTheTable) {
-                Matcher row = KIND_ROW.matcher(line);
-                if (row.find()) {
-                    kinds.put(Integer.parseInt(row.group(1)), row.group(2).trim());
-                }
-            }
-        }
+        rowsUnder(THE_KINDS_REPORTED, KIND_ROW).forEach(row ->
+                kinds.put(Integer.parseInt(row.group(1)), row.group(2).trim()));
         return kinds;
     }
 

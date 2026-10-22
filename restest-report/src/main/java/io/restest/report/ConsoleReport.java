@@ -83,11 +83,8 @@ public final class ConsoleReport implements RunListener {
 
     private final Appendable out;
 
-    /** How many faults of each kind, by its number, in the order the kinds were first found. */
-    private final Map<Integer, Integer> counts = new LinkedHashMap<>();
-
-    /** The kind each number was first found as, for the words that go with it. */
-    private final Map<Integer, FaultCategory> kinds = new LinkedHashMap<>();
+    /** Each kind of fault found, by its number, in the order the kinds were first found. */
+    private final Map<Integer, Found> found = new LinkedHashMap<>();
 
     /** The operations that had at least one error, and at least one warning. */
     private final Set<OperationId> operationsWithErrors = new LinkedHashSet<>();
@@ -106,7 +103,6 @@ public final class ConsoleReport implements RunListener {
     /** How many replies could not be checked, and why, worked out in one place for every report. */
     private final NotChecked notChecked = new NotChecked();
     private int attempts;
-    private int faults;
     private int errors;
     private int warnings;
 
@@ -114,9 +110,8 @@ public final class ConsoleReport implements RunListener {
     private int printed;
     private int warningsPrinted;
 
-    /** Whether the screen has said it stopped printing faults, and stopped printing warnings. */
-    private boolean saidNoMoreFaults;
-    private boolean saidNoMoreWarnings;
+    /** What the screen has said it stopped printing - faults, warnings - so that it says it once. */
+    private final Set<String> stoppedPrinting = new LinkedHashSet<>();
 
     /** How many requests were built to push at the API with awkward values throughout. */
     private long awkward;
@@ -198,11 +193,12 @@ public final class ConsoleReport implements RunListener {
      * @return the report
      */
     public static ConsoleReport to(Appendable out, ReportSettings settings) {
-        return to(out, settings, "");
+        return to(out, settings, CheckSettings.defaults(), "");
     }
 
     /**
-     * The same, handed what the command running it has to say before the run begins.
+     * The same, handed what the command running it has to say before the run begins, and told
+     * whether warnings end the run with 1 as errors do.
      *
      * <p>That text - how many operations can be tested, the seed, the budget, what could not be
      * read - is printed straight under the line naming the API and the address, exactly as given.
@@ -211,20 +207,9 @@ public final class ConsoleReport implements RunListener {
      * before it: two writers on one screen put their lines there in either order, and sometimes
      * one inside the other.
      *
-     * @param out where to write
-     * @param settings how much of what was found belongs on a screen
-     * @param introduction the lines to print under the first one, each ending in a line break;
-     *     empty for none
-     * @return the report
-     */
-    public static ConsoleReport to(Appendable out, ReportSettings settings, String introduction) {
-        return to(out, settings, CheckSettings.defaults(), introduction);
-    }
-
-    /**
-     * The same, told whether warnings end the run with 1 as errors do, so that the summary can say
-     * which way it is: a run that found only warnings and ends as if it found nothing wrong should
-     * say why, and how to make it end otherwise.
+     * <p>Whether warnings fail the run is told so that the summary can say which way it is: a run
+     * that found only warnings and ends as if it found nothing wrong should say why, and how to make
+     * it end otherwise.
      *
      * @param out where to write
      * @param settings how much of what was found belongs on a screen
@@ -245,7 +230,7 @@ public final class ConsoleReport implements RunListener {
      * fifty still found two thousand.
      */
     public int faults() {
-        return faults;
+        return errors + warnings;
     }
 
     /**
@@ -348,12 +333,11 @@ public final class ConsoleReport implements RunListener {
     }
 
     private void print(Finding finding) {
-        FaultCategory kind = finding.category();
-        FaultReading reading = FaultReading.of(kind);
+        Found kind = found.computeIfAbsent(finding.category().code(),
+                ignored -> new Found(finding.category()));
+        kind.count++;
+        FaultReading reading = kind.reading;
         boolean warning = reading.severity() == Severity.WARNING;
-        faults++;
-        counts.merge(kind.code(), 1, Integer::sum);
-        kinds.putIfAbsent(kind.code(), kind);
         if (warning) {
             warnings++;
             operationsWithWarnings.add(finding.operation());
@@ -366,28 +350,19 @@ public final class ConsoleReport implements RunListener {
         // leaves out the ways its API refuses a request fills the screen with warnings from the first
         // requests on, and an API falling over later never reaches it.
         if (printed >= faultsShown) {
-            if (!saidNoMoreFaults) {
-                saidNoMoreFaults = true;
-                write("... more faults are being found; every one of them is counted in the run's "
-                        + "report and in the total below");
-                write("");
-            }
+            stopPrinting("faults");
             return;
         }
         if (warning && warningsPrinted >= warningsShown) {
-            if (!saidNoMoreWarnings) {
-                saidNoMoreWarnings = true;
-                write("... more warnings are being found; every one of them is counted in the "
-                        + "run's report and in the total below");
-                write("");
-            }
+            stopPrinting("warnings");
             return;
         }
         printed++;
         if (warning) {
             warningsPrinted++;
         }
-        write(severityColumn(reading.severity()) + reading.title() + "  (" + label(kind) + ")");
+        write(severityColumn(reading.severity()) + reading.title() + "  (" + label(kind.kind)
+                + ")");
         write(UNDER + finding.operation() + " - " + finding.interaction().request().method()
                 + " " + finding.interaction().request().url()
                 + "  ->  " + answerTo(finding.interaction()));
@@ -409,6 +384,15 @@ public final class ConsoleReport implements RunListener {
                         + "step alone, without the ones before it"));
         write(UNDER + CurlCommand.of(finding.interaction().request()));
         write("");
+    }
+
+    /** Says, the first time only, that the screen has stopped printing these: faults, warnings. */
+    private void stopPrinting(String what) {
+        if (stoppedPrinting.add(what)) {
+            write("... more " + what + " are being found; every one of them is counted in the "
+                    + "run's report and in the total below");
+            write("");
+        }
     }
 
     /** The word saying how serious a fault is, padded so that every title starts in one column. */
@@ -580,42 +564,53 @@ public final class ConsoleReport implements RunListener {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "
                     + serverErrors.operationsAnsweringAny5xx() + " answered some 5xx");
         }
-        if (counts.isEmpty()) {
+        if (found.isEmpty()) {
             write("no faults found");
             return;
         }
         // Errors first, because they are what ended the run with 1, and then warnings, saying
         // whether they did too: a run that found only warnings and ended as if it found nothing
         // wrong says why, and names the setting that would make it end otherwise.
-        if (errors > 0) {
-            write(counted(errors, "error", "errors") + ", on "
-                    + counted(operationsWithErrors.size(), "operation", "operations") + ":");
-            listKinds(Severity.ERROR);
-        }
-        if (warnings > 0) {
-            write(counted(warnings, "warning", "warnings") + ", on "
-                    + counted(operationsWithWarnings.size(), "operation", "operations")
-                    + (warningsFail
-                            ? ", which fail the run, as checks.failOnWarnings asks:"
-                            : ", which do not fail the run (checks.failOnWarnings):"));
-            listKinds(Severity.WARNING);
-        }
+        section(Severity.ERROR, errors, operationsWithErrors, ":");
+        section(Severity.WARNING, warnings, operationsWithWarnings, warningsFail
+                ? ", which fail the run, as checks.failOnWarnings asks:"
+                : ", which do not fail the run (checks.failOnWarnings):");
     }
 
     /**
-     * Each kind of the given severity, in the order it was first found: how many, RESTest's title
-     * with the catalogue's number after it, and, under it, what to look at.
+     * The faults of one severity, if there were any: how many, on how many operations, and then
+     * each kind in the order it was first found - how many, RESTest's title with the catalogue's
+     * number after it, and, under it, what to look at.
      */
-    private void listKinds(Severity severity) {
-        counts.forEach((code, count) -> {
-            FaultCategory kind = kinds.get(code);
-            FaultReading reading = FaultReading.of(kind);
-            if (reading.severity() != severity) {
-                return;
-            }
-            write("  " + count + " x " + reading.title() + "  (" + label(kind) + ")");
-            reading.advice().ifPresent(advice -> write("        " + advice));
-        });
+    private void section(Severity severity, int count, Set<OperationId> on, String ending) {
+        if (count == 0) {
+            return;
+        }
+        write(counted(count, severity.word(), severity.word() + "s") + ", on "
+                + counted(on.size(), "operation", "operations") + ending);
+        found.values().stream()
+                .filter(kind -> kind.reading.severity() == severity)
+                .forEach(kind -> {
+                    write("  " + kind.count + " x " + kind.reading.title() + "  ("
+                            + label(kind.kind) + ")");
+                    kind.reading.advice().ifPresent(advice -> write("        " + advice));
+                });
+    }
+
+    /**
+     * One kind of fault the run found: the first description of it heard, how RESTest reads it,
+     * worked out once for the kind rather than once for each fault, and how many there were.
+     */
+    private static final class Found {
+
+        private final FaultCategory kind;
+        private final FaultReading reading;
+        private int count;
+
+        Found(FaultCategory kind) {
+            this.kind = kind;
+            this.reading = FaultReading.of(kind);
+        }
     }
 
     private static String label(FaultCategory category) {
