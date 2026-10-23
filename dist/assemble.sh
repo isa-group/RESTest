@@ -7,9 +7,10 @@
 #
 # leaves <output-directory>/restest-<version>/ with bin/ (the two launchers), lib/ (RESTest and every
 # library it runs with), schemas/ (the JSON Schemas of a dictionary and a plan), LICENSE, NOTICE,
-# THIRD-PARTY.txt (every library in lib/, with its licence) and README.md; with --archives, restest-<version>.zip and restest-<version>.tgz beside it, which are what
-# a release carries. The container image runs it too, while it builds, so that the folder in the image
-# and in the archives is the same one.
+# THIRD-PARTY.txt (every library in lib/, with its licence) and README.md; with --archives,
+# restest-<version>.zip and restest-<version>.tgz beside it, which are what a release carries. The
+# container image runs it too, while it builds, so that the folder in the image and in the archives
+# is the same one.
 #
 # Plain sh, and the tools every macOS and Linux has; zip only for --archives.
 
@@ -32,8 +33,8 @@ if [ -z "$version" ] || [ ! -f "$jar" ] || [ ! -d "$target/lib" ]; then
   exit 1
 fi
 
-# Every library a release carries is listed, with its licence, in THIRD-PARTY.txt, and nothing else is:
-# a library added, dropped or moved to another version stops the release here until its line is
+# Every library a release carries is listed, with its licence, in THIRD-PARTY.txt, and nothing else
+# is: a library added, dropped or moved to another version stops the release here until its line is
 # written, and its licence read.
 listed=$(awk '$1 ~ /^lib\/.*\.jar$/ { print substr($1, 5) }' "$here/THIRD-PARTY.txt" | sort)
 carried=$(cd "$target/lib" && ls -- *.jar | grep -v '^restest-' | sort)

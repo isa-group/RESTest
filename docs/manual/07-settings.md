@@ -73,9 +73,9 @@ There are three ways, and a setting given in more than one place takes the last 
    RESTEST_ENGINE_MAX_CONCURRENCY=1 restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
    ```
 
-   With Docker, the variable reaches RESTest only if `docker run` hands it on, with
-   `-e RESTEST_ENGINE_MAX_CONCURRENCY` beside the `-e RESTEST_AUTH` of
-   [chapter 2](02-installing.md#with-docker)'s line.
+   With Docker, the variable reaches RESTest only if `docker run` hands it on: add
+   `-e RESTEST_ENGINE_MAX_CONCURRENCY` beside the `-e RESTEST_AUTH` in the `restest` script of
+   [chapter 2](02-installing.md#with-docker).
 
 3. **`--set`** on the command line, as often as you like:
 

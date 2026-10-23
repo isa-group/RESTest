@@ -2,7 +2,8 @@
 
 RESTest comes three ways: as a container image, which needs nothing but Docker; as an archive, which
 needs nothing but Java; and as its source code, which you build yourself. All three run the same
-RESTest. Pick the one that suits what your machine already has, and skip the other two sections.
+RESTest, and each ends with `restest` as a command on your `PATH`. Pick the one that suits what your
+machine already has, and skip the other two sections.
 
 ## With Docker
 
@@ -29,25 +30,31 @@ Java 21.0.12.1 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 ```
 
 A run reads its document and its other files from a folder, and writes its report into it. Inside
-the container that folder is `/work`, and it has to be lent from your machine. This line makes
-`restest` a command that does that, and the rest a run needs, every time:
+the container that folder is `/work`, and it has to be lent from your machine. These lines write a
+small script, `restest`, into a folder for your own commands, and put that folder on the `PATH`; the
+script runs the image with that, and the rest a run needs, every time:
 
 ```bash
-alias restest='docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.2.0'
+mkdir -p ~/.local/bin
+printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.2.0 "$@"' > ~/.local/bin/restest
+chmod +x ~/.local/bin/restest
+export PATH="$HOME/.local/bin:$PATH"
 ```
+
+What the script hands `docker run`:
 
 - `-v "$PWD:/work"` lends the folder you are in when you run it.
 - `--user "$(id -u):$(id -g)"` makes what the run writes there yours rather than the system's, which
   matters on Linux.
 - `-e RESTEST_AUTH` hands over a key left in that variable ([chapter 8](08-an-api-that-asks-for-a-key.md)).
   Any other variable RESTest reads, such as a setting ([chapter 7](07-settings.md)), needs an `-e`
-  of its own.
+  of its own in the script.
 - `--add-host=host.docker.internal:host-gateway` lets the container reach your own machine by that
   name.
 
 That last one matters for any API on your own machine, such as the practice API of the next chapter:
-inside the container, `localhost` is the container itself, and nothing answers there. Write
-`host.docker.internal` wherever this manual writes `localhost`:
+inside the container, `localhost` is the container itself, and nothing answers there. In the
+addresses this manual gives `restest`, write `host.docker.internal` in place of `localhost`:
 
 ```bash
 restest run http://host.docker.internal:9966/petclinic/v3/api-docs --budget 30s
@@ -56,6 +63,12 @@ restest run http://host.docker.internal:9966/petclinic/v3/api-docs --budget 30s
 The practice API names its own address after the one its document was asked for at, so nothing else
 is needed. A document that gives `http://localhost:8080` as its API's address needs
 `--url http://host.docker.internal:8080` as well.
+
+**On Linux, an API that listens only on `127.0.0.1`** — what many frameworks do while an API is being
+written — cannot be reached as `host.docker.internal`, which is another address of the machine. Put
+`--network host` in the script in place of `--add-host=…`: the container then shares the machine's
+own network, and `localhost` is the machine, as in the rest of this manual. On a Mac or on Windows,
+Docker Desktop reaches such an API as `host.docker.internal` already.
 
 ## With Java
 
@@ -90,16 +103,23 @@ RESTest 2.2.0
 Java 25.0.4.1 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
 ```
 
-The release also carries `checksums_sha256.txt`. Downloaded beside the archive, it says whether the
-archive arrived whole: `sha256sum --ignore-missing -c checksums_sha256.txt` on Linux, or
-`shasum -a 256 --ignore-missing -c checksums_sha256.txt` on macOS, answers `restest-2.2.0.tgz: OK`.
+The release also carries `checksums_sha256.txt`, which says whether the archive arrived whole.
+Downloaded beside it,
+
+```bash
+curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.2.0/checksums_sha256.txt
+sha256sum --ignore-missing -c checksums_sha256.txt
+```
+
+answers `restest-2.2.0.tgz: OK`; on macOS, write `shasum -a 256` in place of `sha256sum`.
 
 The folder `restest-2.2.0` holds `bin/`, with the command, `lib/`, with the libraries, `schemas/`,
 with the JSON Schemas of a dictionary and a plan ([chapter 6](06-dictionaries.md)), and the licences.
-It can live anywhere. This line makes `restest` the command, from any folder:
+It can live anywhere. This line puts its `bin/` on the `PATH`, which makes `restest` the command,
+from any folder:
 
 ```bash
-alias restest="$PWD/restest-2.2.0/bin/restest"
+export PATH="$PWD/restest-2.2.0/bin:$PATH"
 ```
 
 On Windows, unpack `restest-2.2.0.zip` and run `restest-2.2.0\bin\restest.cmd` from the ordinary
@@ -116,8 +136,8 @@ It uses the Java that `JAVA_HOME` names, and otherwise the first `java` on the `
 
 ## From the source
 
-**What you need** is a JDK 21 or later, the edition of Java that can compile programs, which
-`java -version` above also shows, and git, to fetch the source:
+**What you need** is a JDK 21 or later, the edition of Java that can compile programs — `java -version`
+says which Java you have, and a JDK's `javac -version` answers too — and git, to fetch the source:
 
 ```bash
 git --version
@@ -130,7 +150,7 @@ git version 2.54.0 (Apple Git-157)
 Then:
 
 ```bash
-git clone https://github.com/isa-group/RESTest.git
+git clone --branch v2.2.0 https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q install -DskipTests
 ```
@@ -140,15 +160,13 @@ first build downloads everything RESTest is built from and takes a few minutes; 
 than one. `-q` keeps it quiet, so it prints nothing when it works, and `-DskipTests` leaves out
 RESTest's own tests, which take longer than the build and which you do not need to use the tool.
 
-`./restest`, at the root of the checkout, runs what was just built, and this line makes it
-`restest`, from any folder:
+`--branch v2.2.0` fetches the release; without it, `git clone` fetches what is being built next, whose
+version ends in `-SNAPSHOT`. `./restest`, at the root of the checkout, runs what was built, and this
+line puts the checkout on the `PATH`, which makes it `restest`, from any folder:
 
 ```bash
-alias restest="$PWD/restest"
+export PATH="$PWD:$PATH"
 ```
-
-`git clone` fetches what is being built next, whose version ends in `-SNAPSHOT`; add
-`--branch v2.2.0` after `clone` for the release.
 
 On Windows, run the commands in Git Bash, which comes with [Git for
 Windows](https://git-scm.com/download/win). `./restest` is a shell script, and Git Bash is the shell
@@ -170,24 +188,26 @@ machine. They are the two lines to paste at the top of a report of something tha
 `restest help` lists the commands, and `restest help run` every option of a run, with the numbers a
 run can end with.
 
-**The rest of this manual writes `restest`** for the command, as the `alias` line in each section
-above defines it. An alias lasts as long as the terminal; to keep it, add the line to your shell's
-start-up file, such as `~/.bashrc` or `~/.zshrc`. In the lines for the archive and the source, write
-the folder out in full in place of `$PWD`; the line for Docker stays as it is, since its `$PWD` is
-meant to be the folder you are in each time you run it.
+**The rest of this manual writes `restest`** for the command, as each section above makes it. An
+`export PATH=…` lasts as long as the terminal; to keep it, add the line to your shell's start-up
+file, such as `~/.bashrc` or `~/.zshrc`, with the folder written out in full in place of `$PWD`.
+Since `restest` is then a command like any other, scripts, build servers and coding agents started
+from that shell find it too.
 
 ## Updating
 
-- **Docker:** change `2.2.0` in the alias to the version you want.
-- **The archive:** download and unpack the new one beside the old, and point the alias at it.
-- **The source:** from the root of the checkout,
+- **Docker:** change `2.2.0` in the script to the version you want.
+- **The archive:** download and unpack the new one, and point the `PATH` at its `bin/`.
+- **The source:** from the root of the checkout, fetch the new release's tag, move to it, and build
+  again:
 
   ```bash
-  git pull
+  git fetch --tags
+  git checkout v2.2.0
   ./mvnw -q clean install -DskipTests
   ```
 
-  `clean` throws away what the last build left behind, so that the jars of the version you had are
-  not found beside the ones of the version you now have.
+  with the new version in place of `2.2.0`. `clean` throws away what the last build left behind, so
+  that the jars of the version you had are not found beside the ones of the version you now have.
 
 The [next chapter](03-a-first-run.md) starts a practice API and runs RESTest against it.

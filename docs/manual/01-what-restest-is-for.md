@@ -83,8 +83,8 @@ from writes, chapter 5 shows how to keep it to the requests that change nothing.
 **What you need.** A computer with Docker, which runs RESTest with nothing else installed and runs the
 practice API every example tests. Without Docker, RESTest runs on Java 21 or later, and the examples
 can use the public demonstration API the next chapters name. [Chapter 2](02-installing.md) says how
-to install RESTest either way, or to build it from its source. Several chapters also use three small command-line tools many systems already have: `curl`, to
-ask the API something directly, [`jq`](https://jqlang.org/), to read JSON, and
+to install RESTest either way, or to build it from its source. Several chapters also use three small
+command-line tools many systems already have: `curl`, to ask the API something directly, [`jq`](https://jqlang.org/), to read JSON, and
 [`sqlite3`](https://sqlite.org/cli.html), to read a stored run. RESTest itself needs no account, no
 server of its own and no configuration.
 

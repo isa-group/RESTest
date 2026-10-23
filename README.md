@@ -29,6 +29,9 @@ source needs a JDK 21 or later, and git.
 
 ### Install
 
+Each way ends with `restest` as a command on your `PATH`, which the rest of this page, the manual,
+your scripts and a coding agent can all call.
+
 **With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 
 ```bash
@@ -36,37 +39,47 @@ docker run --rm ghcr.io/isa-group/restest:2.2.0 version
 ```
 
 A run reads its document and writes its report in the folder it is started from, which the
-container sees as `/work`. This makes `restest` a command that mounts the folder you are in, makes
-what is written there yours, hands over a key left in `RESTEST_AUTH`, and lets the container reach
-an API on your own machine as `host.docker.internal`, since its own `localhost` is itself:
+container sees as `/work`. These lines write a `restest` command that runs the image with the
+folder you are in lent to it, makes what is written there yours, hands over a key left in
+`RESTEST_AUTH`, and lets the container reach your own machine as `host.docker.internal`:
 
 ```bash
-alias restest='docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.2.0'
+mkdir -p ~/.local/bin
+printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.2.0 "$@"' > ~/.local/bin/restest
+chmod +x ~/.local/bin/restest
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
-**With Java**, from the archive every release carries, which holds RESTest and every library it
-runs with:
+Inside the container, `localhost` is the container itself: in an address you give `restest`, write
+`host.docker.internal` for your own machine. On Linux, an API that listens only on `127.0.0.1`
+cannot be reached that way; put `--network host` in the script in place of `--add-host=…`, and keep
+`localhost`.
+
+**With Java 21 or later**, from the archive every release carries, which holds RESTest and every
+library it runs with:
 
 ```bash
 curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.2.0/restest-2.2.0.tgz
 tar -xzf restest-2.2.0.tgz
-alias restest="$PWD/restest-2.2.0/bin/restest"
+export PATH="$PWD/restest-2.2.0/bin:$PATH"
 ```
 
 On Windows, unpack `restest-2.2.0.zip` and run `restest-2.2.0\bin\restest.cmd`.
 
-**From the source**, with a JDK and git:
+**From the source**, with a JDK 21 or later and git:
 
 ```bash
-git clone https://github.com/isa-group/RESTest.git
+git clone --branch v2.2.0 https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q install -DskipTests
-alias restest="$PWD/restest"
+export PATH="$PWD:$PATH"
 ```
 
 The first build downloads what RESTest is built from and takes a few minutes; the ones after it, less
-than one. `./restest`, at the root of the checkout, runs what was built. On Windows, run it from
-Git Bash.
+than one. On Windows, run it from Git Bash.
+
+An `export PATH=…` lasts as long as the terminal. To keep it, add the line to your shell's start-up
+file, such as `~/.bashrc` or `~/.zshrc`, with the folder written out in full.
 
 However it was installed, `restest version` says which RESTest and which Java you have:
 
@@ -260,9 +273,9 @@ operations:
 
 **How the tool behaves** — how many requests it keeps in flight, how long it waits, how much of a
 reply it keeps — is a setting. `--set` changes one, `--settings` reads a file of them, and each is
-also an environment variable, which is how a container is configured — with `docker run -e`, since
-the alias above hands over only `RESTEST_AUTH`. `--print-settings` writes every one out, with what it
-does and where its value came from:
+also an environment variable, which is how a container is configured: with Docker, name it in the
+`restest` script with an `-e` of its own, beside `-e RESTEST_AUTH`. `--print-settings` writes every
+one out, with what it does and where its value came from:
 
 ```bash
 restest run openapi.yaml --url http://localhost:8080 --set engine.maxConcurrency=1
@@ -318,4 +331,5 @@ integration and the decision records.
 ## License
 
 Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The libraries a release
-carries are listed, with their licences, in [`dist/THIRD-PARTY.txt`](dist/THIRD-PARTY.txt).
+carries are listed, with their licences, in `THIRD-PARTY.txt` beside this file in the archive and
+the image, and in [`dist/THIRD-PARTY.txt`](dist/THIRD-PARTY.txt) in the source.

@@ -19,7 +19,8 @@
 # A launcher and an image are also checked for answering 127 when there is no Java they can use - none
 # at all, or a JAVA_HOME with none in it, and a Java older than 21 when OLD_JAVA_HOME names one. A
 # launcher on macOS or Linux is also started through a symbolic link. An image, and a launcher in a
-# release's folder, are also checked for carrying the JSON Schemas of a dictionary and a plan. An image
+# release's folder, are also checked for carrying the JSON Schemas of a dictionary and a plan, and
+# THIRD-PARTY.txt, the list of the libraries they carry with their licences. An image
 # is also checked for being stopped the way `docker stop` stops it: 143, and a report that says the run
 # was cut short.
 #

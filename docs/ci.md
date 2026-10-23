@@ -368,6 +368,13 @@ date by hand:
 ./mvnw -q versions:display-dependency-updates versions:display-plugin-updates
 ```
 
+A library that a release carries and that is added, dropped or moved to another version also
+changes a line of `dist/THIRD-PARTY.txt`, which lists each one with its licence: `dist/assemble.sh`
+refuses to assemble a release until the list names exactly the jars in `restest-cli/target/lib`,
+and says which differ, so the image job fails on any pull request that forgets it. Read the new
+version's licence before writing its line; a new version can change it
+([ADR-0032](adr/0032-how-a-release-is-published.md)).
+
 Actions are pinned to commit SHAs, not tags. A tag can be repointed at any commit by whoever owns
 the action; a SHA cannot. The version in the trailing comment is what lets Dependabot recognise the
 pin and bump it, and what tells a human reader which release a SHA is.

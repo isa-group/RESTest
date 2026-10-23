@@ -29,13 +29,18 @@ the one that built RESTest; `java -version` says which it is. Put Java 21 or lat
 
 **With Docker, nothing answers at `localhost`.** Inside the container, `localhost` is the container
 itself. An API on your own machine is `host.docker.internal`, which Linux knows only with
-`--add-host=host.docker.internal:host-gateway`; the line in [chapter 2](02-installing.md#with-docker)
-has it. A document read from your machine that names `localhost` as its API's address needs `--url`
-with `host.docker.internal` in its place.
+`--add-host=host.docker.internal:host-gateway`; the `restest` script of
+[chapter 2](02-installing.md#with-docker) has it. A document read from your machine that names
+`localhost` as its API's address needs `--url` with `host.docker.internal` in its place.
+
+**With Docker on Linux, nothing answers at `host.docker.internal` either**, while `curl` reaches the
+API at `localhost`. The API listens only on `127.0.0.1`, and `host.docker.internal` is another
+address of the machine. Put `--network host` in the script in place of `--add-host=…`, and give
+`localhost` again; or have the API listen on every address, `0.0.0.0`.
 
 **With Docker, the run cannot find its document, or writes nothing you can see.** A file is read
 from the folder lent to the container as `/work`, and the report is written there: run the command
-from the folder that holds the document, with the `-v "$PWD:/work"` of chapter 2's line. A file
+from the folder that holds the document, with the `-v "$PWD:/work"` of chapter 2's script. A file
 named by a path outside that folder is not in the container at all.
 
 ## The run refuses to begin: exit code `2`

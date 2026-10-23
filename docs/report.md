@@ -125,7 +125,8 @@ A few more lines go to the error stream, each beginning with `restest:`:
   ends with `4`;
 - **when nothing at all was tested**, which of three reasons it was — the run ends with `3`.
 
-[The exit codes](command-line.md#exit-codes) says what each number means. Where a line on the screen
+[The exit codes](command-line.md#exit-codes) says what each number means.
+
 The lines that name what could not be tested or read, and the counts of errors and warnings, say one
 thing in the singular: `1 operation could not be tested:`, `1 list of values could not be read, so
 none of its values were sent:`, `1 warning, on 1 operation, which does not fail the run`. Others count

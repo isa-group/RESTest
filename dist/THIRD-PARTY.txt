@@ -66,8 +66,9 @@ Apache License, Version 2.0 - the text is in LICENSE
   lib/swagger-parser-v2-converter-2.1.47.jar                        io.swagger.parser.v3:swagger-parser-v2-converter
   lib/swagger-parser-v3-2.1.47.jar                                  io.swagger.parser.v3:swagger-parser-v3
 
-okhttp-jvm and guava also carry data from the Public Suffix List (https://publicsuffix.org/), which
-is published under the Mozilla Public License, Version 2.0, whose text is below. sqlite-jdbc also
+okhttp-jvm, guava and httpclient also carry data from the Public Suffix List
+(https://publicsuffix.org/), which is published under the Mozilla Public License, Version 2.0, whose
+text is below. sqlite-jdbc also
 carries SQLite, which is in the public domain, and code under this licence:
 
 Copyright (c) 2006, David Crawshaw.  All rights reserved.
