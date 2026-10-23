@@ -24,19 +24,69 @@ language and run anywhere.
 
 ### What you need
 
-Java 21 or later — a JDK to build RESTest, and a plain Java runtime to run it afterwards — and git.
+Docker, or Java 21 or later, of which a plain Java runtime is enough. Building RESTest from its
+source needs a JDK 21 or later, and git.
 
-### Install from source
+### Install
+
+Each way ends with `restest` as a command on your `PATH`, which the rest of this page, the manual,
+your scripts and a coding agent can all call.
+
+**With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 
 ```bash
-git clone https://github.com/isa-group/RESTest.git
+docker run --rm ghcr.io/isa-group/restest:2.2.0 version
+```
+
+A run reads its document and writes its report in the folder it is started from, which the
+container sees as `/work`. These lines write a `restest` command that runs the image with the
+folder you are in lent to it, makes what is written there yours, hands over a key left in
+`RESTEST_AUTH`, and lets the container reach your own machine as `host.docker.internal`:
+
+```bash
+mkdir -p ~/.local/bin
+printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.2.0 "$@"' > ~/.local/bin/restest
+chmod +x ~/.local/bin/restest
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Inside the container, `localhost` is the container itself: in an address you give `restest`, write
+`host.docker.internal` for your own machine. On Linux, an API that listens only on `127.0.0.1`
+cannot be reached that way; put `--network host` in the script in place of `--add-host=…`, and keep
+`localhost`.
+
+**With Java 21 or later**, from the archive every release carries, which holds RESTest and every
+library it runs with:
+
+```bash
+curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.2.0/restest-2.2.0.tgz
+tar -xzf restest-2.2.0.tgz
+export PATH="$PWD/restest-2.2.0/bin:$PATH"
+```
+
+On Windows, unpack `restest-2.2.0.zip` and run `restest-2.2.0\bin\restest.cmd`.
+
+**From the source**, with a JDK 21 or later and git:
+
+```bash
+git clone --branch v2.2.0 https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q install -DskipTests
+export PATH="$PWD:$PATH"
 ```
 
 The first build downloads what RESTest is built from and takes a few minutes; the ones after it, less
-than one. `./restest`, at the root of the checkout, then runs what was built. On Windows, run it from
-Git Bash.
+than one. On Windows, run it from Git Bash.
+
+An `export PATH=…` lasts as long as the terminal. To keep it, add the line to your shell's start-up
+file, such as `~/.bashrc` or `~/.zshrc`, with the folder written out in full.
+
+However it was installed, `restest version` says which RESTest and which Java you have:
+
+```
+RESTest 2.2.0
+Java 21.0.12.1 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
+```
 
 ### Your first run
 
@@ -44,7 +94,7 @@ One command, a document and an address. This one tests the pet shop that the Ope
 online as a demonstration, for ten seconds:
 
 ```bash
-./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s
 ```
 
@@ -59,25 +109,31 @@ it. The numbers are one run's, and yours will be different:
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-19 of 19 operations can be tested, seed -2533421039499011723, budget 10s
+19 of 19 operations can be tested, seed 2692467261078506747, budget 10s
   2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
-F100  HTTP Status 500
-      getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
-      the API answered 500, so it fell over while handling this request
-      curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+error    Internal server error  (F100)
+         getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
+         the API answered 500, so it fell over while handling this request
+         curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
-A fault of the other kind, later in the same run, says what in the reply was not the shape the
-document gives:
+Later in the same run, a request RESTest broke on purpose, with a status the document does not
+allow, was accepted — an error — and the reply to it was not the shape the document gives either,
+which is a warning:
 
 ```
-F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-      getPetById - GET https://petstore3.swagger.io/api/v3/pet/1022725  ->  200
-      the body does not match the shape the specification declares for it, answering 200 as application/json
-        /status: does not have a value in the enumeration ["available", "pending", "sold"]
-      curl -i -X GET 'https://petstore3.swagger.io/api/v3/pet/1022725' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0'
+warning  Reply off schema  (F200)
+         updatePet - PUT https://petstore3.swagger.io/api/v3/pet  ->  200
+         the body does not match the shape the specification declares for it, answering 200 as application/json
+           /status: does not have a value in the enumeration ["available", "pending", "sold"]
+         curl -i -X PUT 'https://petstore3.swagger.io/api/v3/pet' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"id":7,"category":{"id":4,"name":"Lions"},"name":"Lion 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag1"}],"status":"AVAILABLE"}'
+
+error    Invalid data accepted  (F206)
+         updatePet - PUT https://petstore3.swagger.io/api/v3/pet  ->  200
+         the API accepted a request it should have refused: sent "AVAILABLE" for body.status, which is not on its list of accepted values
+         curl -i -X PUT 'https://petstore3.swagger.io/api/v3/pet' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"id":7,"category":{"id":4,"name":"Lions"},"name":"Lion 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag1"}],"status":"AVAILABLE"}'
 ```
 
 After fifty faults the screen stops printing them, and the run ends with a summary:
@@ -85,17 +141,25 @@ After fifty faults the screen stops printing them, and the run ends with a summa
 ```
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-716 requests to 19 operations in 10.3s, 13% of it idle
-  opening lap: 19 requests in 2.1s, 8 of 19 operations answered 2xx
-  186 2xx, 242 4xx, 288 5xx
-  141 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 242 refusals above
-  44 of them changed one thing in a request the API had accepted
-  4 of them were steps of 2 series about a thing the run created: createTwice 2, deleteTwice 2; 13 creation(s) meant to begin one were not accepted
-  11 operation(s) answered 500, 11 answered some 5xx
-336 faults:
-  288 x F100  HTTP Status 500
-  48 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (163.1 KiB)
+563 requests to 19 operations in 10.8s, 12% of it idle
+  opening lap: 19 requests in 2.8s, 11 of 19 operations answered 2xx
+  220 2xx, 173 4xx, 170 5xx
+  53 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 173 refusals above
+  60 of them changed one thing in a request the API had accepted
+  21 of them were steps of 8 series about a thing the run created: readAfterDelete 7, createTwice 4, safeGet 10; 11 creation(s) meant to begin one were not accepted
+  8 operation(s) answered 500, 8 answered some 5xx
+179 errors, on 9 operations:
+  170 x Internal server error  (F100)
+        look in the API's log for what failed while it handled the request; the document is not what to fix
+  9 x Invalid data accepted  (F206)
+        make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
+41 warnings, on 7 operations, which do not fail the run (checks.failOnWarnings):
+  41 x Reply off schema  (F200)
+        the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
+some replies could not be checked; report.json names their operations:
+  the shape of 401 replies, on 18 operations: the document gives no shape
+  the content type of 226 replies, on 16 operations: the document declares the status code with no content type
+report written to restest-out/report.json (172.7 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -104,16 +168,19 @@ the run itself was not kept; pass --store to keep every request and reply
 - **The top** says what will be tested: how many of the document's operations RESTest can send
   requests to, the seed and the budget, and anything worth knowing before the first request — here,
   that two operations want a key nobody gave.
-- **Each fault** is printed as it is found: its kind, by a number from a catalogue other testing
-  tools share (`F100` is a reply of 500), the request and what the API answered, what is wrong, and
-  a `curl` command that does it again.
-- **The summary** says how much was sent and how it was answered. `186 2xx, 242 4xx, 288 5xx` is
+- **Each fault** is printed as it is found: whether it is an *error*, the API failing at its job, or
+  a *warning*, the API answering something its document does not describe; what kind of fault it
+  is, in RESTest's words and by its number in a catalogue other testing tools share (`F100` is a
+  reply of 500); the request and what the API answered; what is wrong; and a `curl` command that
+  does it again.
+- **The summary** says how much was sent and how it was answered. `220 2xx, 173 4xx, 170 5xx` is
   worth a glance even when nothing is wrong: if almost everything was refused, the requests were the
-  problem rather than the API. `11 operation(s) answered 500` counts operations rather than replies,
+  problem rather than the API. `8 operation(s) answered 500` counts operations rather than replies,
   and is the number worth quoting, since one broken operation asked six hundred times is six hundred
-  broken replies.
-- **`report.json`**, in `restest-out/`, has all of it for a program to read: every fault counted,
-  every operation and kind of fault that went wrong, the first few faults of each kind written out
+  broken replies. Then come the errors and the warnings, each kind with a line on what to look at,
+  and what the run could not check, and why.
+- **`report.json`**, in `restest-out/`, has all of it for a program to read: every error and warning
+  counted, every operation and kind of fault that went wrong, the first few faults of each kind written out
   whole, every operation that could not be tested and why, and every setting the run used.
 
 [What a run leaves behind](docs/report.md) goes through every line and every key, and [The faults
@@ -178,7 +245,7 @@ values:
 ```
 
 ```bash
-./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s --dictionary pet-ids.yaml
 ```
 
@@ -190,8 +257,8 @@ touch — is a file. `--print-campaign` writes out the one RESTest follows; save
 and hand it back with `--campaign`.
 
 ```bash
-./restest run --print-campaign > plan.yaml
-./restest run openapi.yaml --url http://localhost:8080 --campaign plan.yaml
+restest run --print-campaign > plan.yaml
+restest run openapi.yaml --url http://localhost:8080 --campaign plan.yaml
 ```
 
 A block worth knowing, since a run writes to whatever it is pointed at: added to the plan, this keeps
@@ -206,12 +273,13 @@ operations:
 
 **How the tool behaves** — how many requests it keeps in flight, how long it waits, how much of a
 reply it keeps — is a setting. `--set` changes one, `--settings` reads a file of them, and each is
-also an environment variable, which is how a container is configured. `--print-settings` writes every
+also an environment variable, which is how a container is configured: with Docker, name it in the
+`restest` script with an `-e` of its own, beside `-e RESTEST_AUTH`. `--print-settings` writes every
 one out, with what it does and where its value came from:
 
 ```bash
-./restest run openapi.yaml --url http://localhost:8080 --set engine.maxConcurrency=1
-RESTEST_ENGINE_MAX_CONCURRENCY=1 ./restest run openapi.yaml --url http://localhost:8080
+restest run openapi.yaml --url http://localhost:8080 --set engine.maxConcurrency=1
+RESTEST_ENGINE_MAX_CONCURRENCY=1 restest run openapi.yaml --url http://localhost:8080
 ```
 
 That one is the answer to an API that falls over when it is asked two things at once. [The
@@ -222,7 +290,7 @@ one thing a run does.
 sends it where the document says, with the operations that ask for it:
 
 ```bash
-./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s --auth special-key
 ```
 
@@ -242,8 +310,8 @@ at its job; a warning, the API answering something its document does not describ
 said and fails a run only with `--set checks.failOnWarnings=true`.
 [The exit codes](docs/command-line.md#exit-codes) says what each number means.
 
-`./restest help run` lists every option, and [the command line](docs/command-line.md) has the same on
-one page; `./restest version` says which RESTest and which Java you have.
+`restest help run` lists every option, and [the command line](docs/command-line.md) has the same on
+one page; `restest version` says which RESTest and which Java you have.
 
 ## Documentation
 
@@ -262,4 +330,6 @@ integration and the decision records.
 
 ## License
 
-Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The libraries a release
+carries are listed, with their licences, in `THIRD-PARTY.txt` beside this file in the archive and
+the image, and in [`dist/THIRD-PARTY.txt`](dist/THIRD-PARTY.txt) in the source.

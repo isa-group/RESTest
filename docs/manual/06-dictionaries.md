@@ -39,7 +39,7 @@ values:
 Save it as `clinic.yaml` and hand it over with `--dictionary`:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --dictionary clinic.yaml
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --dictionary clinic.yaml
 ```
 
 `--dictionary` takes a file or a directory of them, and can be given more than once.

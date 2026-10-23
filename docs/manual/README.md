@@ -12,7 +12,7 @@ here point to them rather than repeat them.
 
 1. [What RESTest is for](01-what-restest-is-for.md) — the problem it solves, what it finds, and what
    it does not.
-2. [Installing RESTest](02-installing.md) — what you need, and building it from source.
+2. [Installing RESTest](02-installing.md) — with Docker, with Java, or built from the source.
 3. [A first run](03-a-first-run.md) — a practice API on your own machine, and the first run against
    it.
 4. [Reading what a run says](04-reading-what-a-run-says.md) — the screen, the report, and the

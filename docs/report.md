@@ -16,7 +16,7 @@ throws away a run kept with `--store` the new run says so. A run worth keeping i
 of its own:
 
 ```bash
-./restest run openapi.yaml --url http://localhost:8080 --out runs/before-the-fix
+restest run openapi.yaml --url http://localhost:8080 --out runs/before-the-fix
 ```
 
 ## On the screen
@@ -26,7 +26,7 @@ of its own:
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-19 of 19 operations can be tested, seed -2533421039499011723, budget 10s
+19 of 19 operations can be tested, seed 2692467261078506747, budget 10s
   2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 ```
@@ -102,7 +102,7 @@ some replies could not be checked; report.json names their operations:
 ### The last lines
 
 ```
-report written to restest-out/report.json (163.1 KiB)
+report written to restest-out/report.json (172.7 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -125,7 +125,8 @@ A few more lines go to the error stream, each beginning with `restest:`:
   ends with `4`;
 - **when nothing at all was tested**, which of three reasons it was — the run ends with `3`.
 
-[The exit codes](command-line.md#exit-codes) says what each number means. Where a line on the screen
+[The exit codes](command-line.md#exit-codes) says what each number means.
+
 The lines that name what could not be tested or read, and the counts of errors and warnings, say one
 thing in the singular: `1 operation could not be tested:`, `1 list of values could not be read, so
 none of its values were sent:`, `1 warning, on 1 operation, which does not fail the run`. Others count

@@ -44,44 +44,64 @@ curl -s http://localhost:9966/petclinic/v3/api-docs | head -c 300
 ## The first run
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
 ```
 
 That is the whole command: the document, and how long to test for. RESTest finds the address of the
-API in the document itself. Without `--budget` it tests for a minute.
+API in the document itself. Without `--budget` it tests for a minute. With Docker, write
+`host.docker.internal` in place of `localhost` ([chapter 2](02-installing.md#with-docker)).
 
 It begins like this, with what it will test and then each fault as it finds it:
 
 ```
 RESTest testing REST Petclinic backend API documentation at http://localhost:9966/petclinic
 
-43 of 43 operations can be tested, seed -78297543526922448, budget 30s
+43 of 43 operations can be tested, seed -8717084955806451298, budget 30s
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 1 part(s) of the document could not be read:
   info: attribute info.license.extensions is unexpected
 
-F100  HTTP Status 500
-      getVisit - GET http://localhost:9966/petclinic/api/visits/99999999999999999999999999999999  ->  500
-      the API answered 500, so it fell over while handling this request
-      curl -i -X GET 'http://localhost:9966/petclinic/api/visits/99999999999999999999999999999999' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
+warning  Undeclared status code  (F920)
+         redirectToSwagger_5 - HEAD http://localhost:9966/petclinic/  ->  302
+         the API answered 302, which the document does not declare for this operation; it declares 200
+         curl --head 'http://localhost:9966/petclinic/' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0'
 ```
 
-and after fifty faults it stops printing them and ends with a summary:
+and a few faults later comes the first error:
+
+```
+error    Internal server error  (F100)
+         addUser - POST http://localhost:9966/petclinic/api/users  ->  500
+         the API answered 500, so it fell over while handling this request
+         curl -i -X POST 'http://localhost:9966/petclinic/api/users' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"username":"john.doe","password":"1234abc","enabled":true}'
+```
+
+After ten warnings it stops printing them, after fifty faults it stops printing any, and it ends with
+a summary:
 
 ```
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-3388 requests to 43 operations in 30.1s, 14% of it idle
-  opening lap: 43 requests in 3.5s, 34 of 43 operations answered 2xx
-  1153 2xx, 462 3xx, 1145 4xx, 628 5xx
-  561 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 1145 refusals above
-  329 of them changed one thing in a request the API had accepted
-  98 of them were steps of 26 series about a thing the run created: putTwice 32, createTwice 4, deleteTwice 15, safeGet 27, readAfterDelete 20; 44 creation(s) meant to begin one were not accepted
+6991 requests to 43 operations in 30.5s, 8% of it idle
+  opening lap: 43 requests in 2.3s, 35 of 43 operations answered 2xx
+  2351 2xx, 942 3xx, 2690 4xx, 1008 5xx
+  504 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 2690 refusals above
+  1043 of them changed one thing in a request the API had accepted
+  328 of them were steps of 97 series about a thing the run created: readAfterDelete 81, createTwice 52, deleteTwice 51, writeUnderDeleted 15, putTwice 72, safeGet 57; 92 creation(s) meant to begin one were not accepted
   30 operation(s) answered 500, 30 answered some 5xx
-730 faults:
-  628 x F100  HTTP Status 500
-  102 x F200  Schema Violation: Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (452.0 KiB)
+1032 errors, on 30 operations:
+  1008 x Internal server error  (F100)
+        look in the API's log for what failed while it handled the request; the document is not what to fix
+  24 x Invalid data accepted  (F206)
+        make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
+2723 warnings, on 36 operations, which do not fail the run (checks.failOnWarnings):
+  1972 x Undeclared status code  (F920)
+        declare the status code for the operation in the document, or stop the API answering it
+  742 x Undeclared content type  (F921)
+        declare the content type for that status code in the document, or have the API send the one declared
+  9 x Reply off schema  (F200)
+        the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
+report written to restest-out/report.json (1.4 MiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -94,12 +114,19 @@ What you are looking at, from the top:
    clinic's document could not be read: a detail of its licence, which no operation depends on. A
    part of a document RESTest cannot read is said, never silently ignored, and an operation it
    affects is named at the end as one that could not be tested.
-2. **The faults**, printed as they are found. Each says what kind it is, which request caused it,
-   what the API answered, what is wrong, and gives a `curl` command that sends the request again.
-   After the first fifty, the run stops printing them and only counts them.
-3. **The summary**: how many requests went to how many operations, how the API answered them, and the
-   faults by kind.
+2. **The faults**, printed as they are found. Each says first whether it is an *error*, the API
+   failing at its job — here, falling over with a 500 — or a *warning*, the API answering something
+   its document does not describe — here, a status code the document leaves out. Then what kind of
+   fault it is, in RESTest's words and by number; which request caused it; what the API answered;
+   what is wrong; and a `curl` command that sends the request again. At most ten of the first fifty
+   are warnings, so that errors found later still have room; after that, the run only counts them.
+3. **The summary**: how many requests went to how many operations, how the API answered them, then
+   the errors and the warnings by kind, each with a line on what to look at.
 4. **Where the report was written**: `restest-out/report.json`.
+
+The run ends with `1`, because it found errors. Warnings alone would have ended it with `0`: the
+clinic's document leaves out most of the ways the clinic says no, and that is worth knowing, but it
+is not the clinic failing. [Chapter 9](09-exit-codes-and-ci.md) says what every number means.
 
 The [next chapter](04-reading-what-a-run-says.md) reads all of this in detail. For now, two lines of
 the summary are worth a look. The one counting replies by class — `2xx`, `4xx`, `5xx` — says whether
@@ -112,14 +139,14 @@ is the number to quote, because it counts operations rather than replies.
 The same command again:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
 ```
 
 replaces what the first run left in `restest-out/`. Give a run a directory of its own with `--out` to
 keep it:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --out runs/first
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --out runs/first
 ```
 
 The numbers will differ from run to run. A run chooses values by chance, and the clinic has changed:
@@ -137,7 +164,7 @@ docker run -d --name petclinic -p 9966:9966 springcommunity/spring-petclinic-res
 every request and every reply, add `--store`:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --store
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --store
 ```
 
 It writes a second file, `restest-out/run.sqlite`, a database that the next chapter reads. It is off

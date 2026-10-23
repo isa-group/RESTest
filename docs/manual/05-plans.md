@@ -9,14 +9,14 @@ file](../campaign-format.md).
 ## The plan RESTest carries
 
 ```bash
-./restest run --print-campaign
+restest run --print-campaign
 ```
 
 writes out the plan, with comments that explain each part. Its strategies and their shares, picked
 out of it:
 
 ```bash
-./restest run --print-campaign | grep -E 'name:|share:'
+restest run --print-campaign | grep -E 'name:|share:'
 ```
 
 ```
@@ -54,8 +54,8 @@ returned), `dictionaries` (the lists you hand over), and `default` (the document
 Save it, change it, hand it back:
 
 ```bash
-./restest run --print-campaign > plan.yaml
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --campaign plan.yaml
+restest run --print-campaign > plan.yaml
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --campaign plan.yaml
 ```
 
 A plan RESTest cannot read stops the run before it sends anything, and says why: a misspelt word, a

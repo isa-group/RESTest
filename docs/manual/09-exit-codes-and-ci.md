@@ -34,7 +34,7 @@ fault and never fails a run. The summary says how many replies could not be chec
 After a run, the shell keeps the number in `$?`:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
 echo $?
 ```
 
@@ -44,7 +44,7 @@ A script that tells the three outcomes apart — no error, errors found, and RES
 at all — and says which:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
 code=$?
 case $code in
   0) echo "RESTest found no error" ;;
@@ -64,8 +64,8 @@ before running RESTest, as the example below does.
 
 ## In GitHub Actions
 
-A workflow that starts the API as a service container, builds RESTest, waits for the API, tests it
-for two minutes and keeps the report whatever happens. The clinic stands in for your API here;
+A workflow that starts the API as a service container, fetches RESTest's archive, waits for the API,
+tests it for two minutes and keeps the report whatever happens. The clinic stands in for your API here;
 replace the image, the address and the document with your own.
 
 ```yaml
@@ -87,10 +87,8 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Build RESTest
-        run: |
-          git clone --depth 1 --branch v2.1.0 https://github.com/isa-group/RESTest.git restest
-          cd restest && ./mvnw -q install -DskipTests
+      - name: Get RESTest
+        run: curl -fsSL https://github.com/isa-group/RESTest/releases/download/v2.2.0/restest-2.2.0.tgz | tar -xz
 
       - name: Wait for the API
         run: |
@@ -101,7 +99,7 @@ jobs:
           exit 1
 
       - name: Test the API
-        run: restest/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m
+        run: restest-2.2.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m
 
       - name: Keep the report
         if: always()
@@ -130,7 +128,7 @@ Some things to decide for your own build:
   warnings fail it too:
 
   ```bash
-  restest/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m --set checks.failOnWarnings=true
+  restest-2.2.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m --set checks.failOnWarnings=true
   ```
 
   The summary then says so under the warnings it found, and the run ends with `1`. From a run of the
@@ -150,7 +148,7 @@ Some things to decide for your own build:
   answering, a misspelt file — by treating `1` as a pass:
 
   ```bash
-  restest/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m || [ $? -eq 1 ]
+  restest-2.2.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m || [ $? -eq 1 ]
   ```
 
 The [next chapter](10-troubleshooting.md) is about runs that do not do what you expected.

@@ -5,19 +5,43 @@ When a run does not do what you expected, it nearly always says why, either in a
 
 ## RESTest does not start
 
+**`restest: RESTest needs Java 21 or later, and … is Java 17.0.20.1`**, or **`… there is no java on
+the PATH`**, and the exit code `127`, from the command in the archive. It found no Java it can use:
+it takes the one `JAVA_HOME` names, and otherwise the first `java` on the `PATH`. Install Java 21
+or later, or point `JAVA_HOME` at one you have ([chapter 2](02-installing.md#with-java)). That `127`
+comes before RESTest starts, and says nothing about the API.
+
 **`RESTest has not been built in this checkout yet`**, and the exit code `127`. The `./restest`
-script found nothing to run: no build of the version the checkout declares, which is also what you
-see after a `git pull` that moves it to a new version. Build it with `./mvnw -q install -DskipTests`
-([chapter 2](02-installing.md)), and read what that prints if it fails.
+script of a checkout found nothing to run: no build of the version the checkout declares, which is
+also what you see after a `git pull` that moves it to a new version. Build it with
+`./mvnw -q install -DskipTests` ([chapter 2](02-installing.md#from-the-source)), and read what that
+prints if it fails.
 
 **`Unrecognized option: --enable-native-access=ALL-UNNAMED`**, or **`UnsupportedClassVersionError`**
 (*has been compiled by a more recent version of the Java Runtime*), and the exit code `1`. The Java
-that runs `./restest` is older than 21: the first message comes from Java 16 or older, the second from
-17 to 20. `./restest` uses the `java` the terminal finds first, which need not be the one that built
-RESTest; `java -version` says which it is. Put Java 21 or later first on the `PATH`. That `1` comes
-from Java, not from RESTest, and says nothing about the API.
+that runs a checkout's `./restest` is older than 21: the first message comes from Java 16 or older,
+the second from 17 to 20. `./restest` uses the `java` the terminal finds first, which need not be
+the one that built RESTest; `java -version` says which it is. Put Java 21 or later first on the
+`PATH`. That `1` comes from Java, not from RESTest, and says nothing about the API.
 
-**On Windows, `./restest` is not recognised.** It is a shell script: run it from Git Bash.
+**On Windows, `./restest` is not recognised.** It is a shell script: run it from Git Bash, or use
+`bin\restest.cmd` from the archive.
+
+**With Docker, nothing answers at `localhost`.** Inside the container, `localhost` is the container
+itself. An API on your own machine is `host.docker.internal`, which Linux knows only with
+`--add-host=host.docker.internal:host-gateway`; the `restest` script of
+[chapter 2](02-installing.md#with-docker) has it. A document read from your machine that names
+`localhost` as its API's address needs `--url` with `host.docker.internal` in its place.
+
+**With Docker on Linux, nothing answers at `host.docker.internal` either**, while `curl` reaches the
+API at `localhost`. The API listens only on `127.0.0.1`, and `host.docker.internal` is another
+address of the machine. Put `--network host` in the script in place of `--add-host=…`, and give
+`localhost` again; or have the API listen on every address, `0.0.0.0`.
+
+**With Docker, the run cannot find its document, or writes nothing you can see.** A file is read
+from the folder lent to the container as `/work`, and the report is written there: run the command
+from the folder that holds the document, with the `-v "$PWD:/work"` of chapter 2's script. A file
+named by a path outside that folder is not in the container at all.
 
 ## The run refuses to begin: exit code `2`
 
@@ -146,7 +170,7 @@ back](../switches.md#getting-the-seed-back). To keep the run you had, use `--sto
 RESTest lost requests on their way to the API or back, had to keep exchanges without their details,
 or broke outright, so what it printed may be incomplete. The lines beginning with `restest:` say
 which, with the first error in full. That is a fault in RESTest rather than in the API: report it
-with those lines, the two lines `./restest version` prints, and the command you ran.
+with those lines, the two lines `restest version` prints, and the command you ran.
 
 ## No report was written
 
