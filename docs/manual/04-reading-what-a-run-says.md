@@ -171,7 +171,7 @@ stored run included, so if your last run was not made with `--store` — the one
 the end of the last chapter was not — make one now:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --store
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --store
 ```
 
 [`sqlite3`](https://sqlite.org/cli.html), SQLite's own command-line tool, asks it anything:

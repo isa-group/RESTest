@@ -84,6 +84,20 @@ of its own. Whether you may test an API at all is not something any tool can che
   document is the one to change: fix the document, or switch the check off for the run
   (`checks.undeclaredStatusCode`, `checks.undeclaredContentType`; [the
   faults](faults.md#f920-undeclared-status-code)).
+- **Many `F206` are an API reading leniently what its document forbids.** A request RESTest broke on
+  purpose that the API accepted is an error, `F206`, however the API read it. Many frameworks read an
+  empty value or `null` in an optional place as if it had been left out, trim a space from around a
+  number, turn a number or `true` into the word the document asks for, or take a date-time without
+  its offset, and each of those is reported. Of 28 `F206` read by hand from runs of 52 APIs of the
+  Web Fuzzing Dataset, 22 were of that kind, and 3 the API taking what it should have refused. Read
+  what each one sent before changing the API, and loosen the document where the API is right; or
+  switch the check off for the run (`checks.invalidDataAccepted`;
+  [the faults](faults.md#f206-invalid-data-accepted)).
+- **A path parameter the path has no place for gives a false `F206`.** A document can declare a path
+  parameter for an operation whose path has no `{…}` for it. RESTest breaks that parameter like any
+  other, the request goes out as the API had already accepted it, since the parameter has nowhere to
+  go, and its acceptance is reported. The line under the fault names the parameter; a path
+  parameter the address does not carry is this.
 - **The warnings written out on the screen are the first ten of any kind.** The screen writes out the
   first 50 faults whole (`report.faultsShownOnTheConsole`), of which at most ten may be warnings
   (`report.warningsShownOnTheConsole`), so that a 500 found after a flood of `F920` still reaches it.

@@ -14,7 +14,7 @@ document declares one. It is somebody else's server: keep these runs short.
 Run against the pet shop without a key, and the run says so before its first request:
 
 ```bash
-./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s
 ```
 
@@ -32,7 +32,7 @@ pet shop's operations ask for it.
 ## Handing it over
 
 ```bash
-./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s --auth special-key
 ```
 
@@ -62,7 +62,7 @@ filled with the key. The last part of that line is the word the run writes where
 A bearer token you already have goes the last way, as the header it is:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s \
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s \
     --auth 'header:Authorization=Bearer eyJhbGciOi...'
 ```
 
@@ -75,7 +75,7 @@ A key typed on the command line stays in the shell's history. `RESTEST_AUTH` hol
 `--auth`, and set only for the command that needs it, it goes nowhere else:
 
 ```bash
-RESTEST_AUTH=special-key ./restest run https://petstore3.swagger.io/api/v3/openapi.json \
+RESTEST_AUTH=special-key restest run https://petstore3.swagger.io/api/v3/openapi.json \
     --url https://petstore3.swagger.io/api/v3 --budget 10s
 ```
 

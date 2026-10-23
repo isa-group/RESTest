@@ -16,7 +16,7 @@ and on how much load you are willing to put on the API, not on what the API does
 ## Seeing them
 
 ```bash
-./restest run --print-settings | head -26
+restest run --print-settings | head -26
 ```
 
 ```
@@ -63,20 +63,24 @@ There are three ways, and a setting given in more than one place takes the last 
    ```
 
    ```bash
-   ./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --settings settings.yaml
+   restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --settings settings.yaml
    ```
 
 2. **An environment variable**, the setting's name in capitals, with `RESTEST_` in front and an
    underscore wherever the name has a capital of its own. This is how a container is configured:
 
    ```bash
-   RESTEST_ENGINE_MAX_CONCURRENCY=1 ./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
+   RESTEST_ENGINE_MAX_CONCURRENCY=1 restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
    ```
+
+   With Docker, the variable reaches RESTest only if `docker run` hands it on, with
+   `-e RESTEST_ENGINE_MAX_CONCURRENCY` beside the `-e RESTEST_AUTH` of
+   [chapter 2](02-installing.md#with-docker)'s line.
 
 3. **`--set`** on the command line, as often as you like:
 
    ```bash
-   ./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --set engine.maxConcurrency=1
+   restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --set engine.maxConcurrency=1
    ```
 
 A run with any setting other than RESTest's own says so under its first lines, so that a variable
@@ -109,7 +113,7 @@ idea is worth can be measured by running the same tool with it and without it. A
 opening lap:
 
 ```bash
-./restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --set schedule.openingLap=false
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --set schedule.openingLap=false
 ```
 
 [The switches](../switches.md) lists every one, says what turning it off does, and gives files that
