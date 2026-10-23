@@ -218,3 +218,15 @@ list, or lacks one it does. So a dependency that is added, dropped or moved to a
 fails the image job of continuous integration until its line is written, and its licence read: a
 new version of a library can change its licence, and no tool can say what a licence asks of a copy.
 `check-restest.sh` checks that the image and a release's folder carry the file.
+
+## Amendment (23 October 2026): the package was public from its first image
+
+**Date:** 2026-10-23
+
+The consequences above expected the first image to create `ghcr.io/isa-group/restest` as a private
+package, for an owner of the organisation to make public. The first image, pushed for 2.2.0 by
+`release.yml`, created it public, linked to this repository: on the day of the tag, before the
+release was published, `docker pull ghcr.io/isa-group/restest:2.2.0` worked with no one signed in to
+the registry, for `linux/amd64` and `linux/arm64`. So the step that made it public is gone from
+`docs/ci.md`'s release steps; trying the installation from outside, with no one signed in, is still
+one of them, and would show a package that was not public.
