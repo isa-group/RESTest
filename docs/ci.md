@@ -345,11 +345,9 @@ The steps of every release, in order, each taken by a maintainer:
    and 9 of the manual — with output from the image and the archive built from that commit.
 3. **The tag**, pushed once that pull request is merged.
 4. **The draft**: its notes written, read, and the release published.
-5. **The first time only**: the package `ghcr.io/isa-group/restest` is created private; an
-   organisation owner makes it public in its settings.
-6. **From outside**: the README's installation commands, run against the published release with no
+5. **From outside**: the README's installation commands, run against the published release with no
    one signed in to GitHub or to the registry.
-7. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
+6. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
    the `$id` of both schemas to the next release, since the schemas on `master` name the release
    being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
 
