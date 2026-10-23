@@ -262,4 +262,5 @@ integration and the decision records.
 
 ## License
 
-Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The libraries a release
+carries are listed, with their licences, in [`dist/THIRD-PARTY.txt`](dist/THIRD-PARTY.txt).

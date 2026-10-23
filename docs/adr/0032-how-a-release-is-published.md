@@ -1,6 +1,6 @@
 # ADR-0032: A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher
 
-**Status:** Accepted, amended on 13 October 2026
+**Status:** Accepted, amended on 13 and 23 October 2026
 **Date:** 2026-10-11
 
 ## Context
@@ -198,3 +198,23 @@ The archive's folder also carries `schemas/`, with the JSON Schemas of a diction
 ([ADR-0035](0035-json-schemas-of-the-dictionary-and-the-plan.md)), and the image has them in
 `/opt/restest/schemas/`; `check-restest.sh` checks that the image, and a launcher in a release's
 folder, carry both.
+
+## Amendment (23 October 2026): the libraries and their licences
+
+**Date:** 2026-10-23
+
+What the consequences above asked for before 2.2.0 is `dist/THIRD-PARTY.txt`, which `dist/assemble.sh`
+puts beside `LICENSE` and `NOTICE` in the archive's folder, and so in the image's
+`/opt/restest/`. It lists the 63 libraries in `lib/`, each under the licence it is used under - 49
+under the Apache License, Version 2.0; 8 under that licence or the LGPL, used under the first; 3
+under MIT; 2 under the Eclipse Distribution License; and Rhino under the Mozilla Public License,
+Version 2.0 - and gives the texts that MIT, the Eclipse Distribution License, the Mozilla Public
+License and the notices Rhino and SQLite JDBC carry ask to travel with every copy. The Apache
+License's text is `LICENSE` itself.
+
+It is written by hand, from the licences each library's own Maven description declares, and
+`dist/assemble.sh` refuses to assemble a release whose `lib/` holds a library the file does not
+list, or lacks one it does. So a dependency that is added, dropped or moved to another version
+fails the image job of continuous integration until its line is written, and its licence read: a
+new version of a library can change its licence, and no tool can say what a licence asks of a copy.
+`check-restest.sh` checks that the image and a release's folder carry the file.
