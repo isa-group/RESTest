@@ -157,9 +157,14 @@ throughout:
 | `faultCatalogue` | object | Which catalogue the fault codes come from, and which version of it. A code from 900 to 999 is RESTest's own instead, for a kind the catalogue has no number for |
 | `createdAt` | moment | When the report was written |
 | `api` | object | Which API was tested, and where |
+| `run` | object | How the run was started: which plan and which file of settings, and whether every request and reply was kept |
 | `cutShort` | `true` or `false` | `true` when the run was stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget ran out. Every number in the file is then what the run found until it was stopped |
+| `verdict` | text | What the run amounts to, in one word: whether it found errors, found none, or could not say. The number the command ends with follows from the same answer |
 | `totals` | object | The run in twelve numbers |
+| `operations` | list | Every operation the document describes, with what happened to it and how its requests ended |
 | `skippedOperations` | list | Every operation the run could not test, each with the reason |
+| `documentIssues` | list | Every part of the document that could not be used as it is written |
+| `keysNotGiven` | list | Every key the document asks for that nobody handed over |
 | `notChecked` | list | How many replies each check could not judge, and why, with the operations they came from |
 | `dictionaries` | object | The lists of values handed over with `--dictionary`: the ones read, and the ones that could not be |
 | `limits` | object | How much of the run this file was allowed to write out whole |
@@ -199,6 +204,43 @@ another tool ([the faults](faults.md#the-catalogue)).
 | `title` | text | The title the document gives the API |
 | `baseUrl` | text | The address requests were sent to |
 
+### `run`
+
+What the command was handed beyond its settings. Never the command line itself: it can carry a key
+or a token, in an address for one, where nothing would know to hide it.
+
+```json
+"run": {"plan": null, "settingsFile": null, "stored": false}
+```
+
+| Key | Value | What it says |
+|---|---|---|
+| `plan` | text or `null` | The plan, as it was named after `--campaign`; `null` when the run followed the plan RESTest carries |
+| `settingsFile` | text or `null` | The file of settings, as it was named after `--settings`; `null` when none was given. Where each setting came from is under [`settings`](#settings) |
+| `stored` | `true` or `false` | Whether every request and reply was kept, with `--store`, in `run.sqlite` beside this file |
+
+### `verdict`
+
+What the run amounts to, in one word. The questions are asked in this order, and the first that
+applies gives the word: a run stopped from outside was stopped, whatever it found until then; a run
+that sent nothing, or was answered by nothing, tested nothing, so its faults say nothing about the
+API — an API that accepts connections and never answers is counted thousands of times as a reply
+that never came, and is still `nothingAnswered`; only then do errors, and warnings when
+`checks.failOnWarnings` is on, decide.
+
+The number the command ends with is worked out by the same rule, so the two agree, with one
+exception: whether RESTest itself went wrong is only known after this file is written, and only
+the number says it, with `4`. [The exit codes](command-line.md#exit-codes) gives each number.
+
+| Word | Ends with | When |
+|---|---|---|
+| `stopped` | `130` or `143` | The run was stopped from outside before its time ran out |
+| `nothingTested` | `3` | Not one request went out: none could be built from the document, or the time ran out before the first. The screen says which |
+| `nothingAnswered` | `3` | Requests went out and not one of them was answered |
+| `errorsFound` | `1` | At least one error was found in the API |
+| `failedOnWarnings` | `1` | No error, but warnings, and `checks.failOnWarnings` is on |
+| `noErrorsFound` | `0` | No error was found; there may have been warnings |
+
 ### `totals`
 
 | Key | Value | What it says |
@@ -216,6 +258,53 @@ another tool ([the faults](faults.md#the-catalogue)).
 | `faultsCountedOnly` | number | How many are counted and not written out, because their kind on their operation, or the file, had had its share |
 | `elapsed` | length of time | How long the run took, reading the document included |
 
+### `operations[]`
+
+Every operation the document describes, whether or not anything went wrong with it, so that one that
+answered every request well can be told from one the run never sent anything to. First the ones that
+could be read, path by path in the order the document gives the paths; then the ones that could not be read, in the
+order the run named them, with no method or path, which is what could not be read. From a run of
+pet-clinic, with the list cut to its first two:
+
+```json
+"operations": [
+  {"operation": "getVisit", "method": "GET", "path": "/api/visits/{visitId}", "summary": "Get a visit by ID",
+   "state": "tested", "requests": 148, "replies": {"byClass": {"2xx": 10, "4xx": 86, "5xx": 52}}},
+  {"operation": "updateVisit", "method": "PUT", "path": "/api/visits/{visitId}", "summary": "Update a visit by ID",
+   "state": "tested", "requests": 147, "replies": {"byClass": {"2xx": 1, "4xx": 110, "5xx": 36}}}
+]
+```
+
+The requests of every operation add up to `totals.requests`, and their classes to
+`replies.byClass`. What went wrong on each is under [`faultsByOperation`](#faultsbyoperation), by
+the same name.
+
+| Key | Value | What it says |
+|---|---|---|
+| `operation` | text | The operation, by the name every other part of the file calls it |
+| `method` | text | Only when it could be read: its method, such as `GET` |
+| `path` | text | Only when it could be read: its path as the document writes it, such as `/api/visits/{visitId}` |
+| `summary` | text | Only when the document gives one: what the document says it does |
+| `state` | text | What happened to it: one of the words below |
+| `reason` | text | Only when it could not be tested: why, in the words of `skippedOperations` |
+| `requests` | number | How many requests went to it |
+| `replies` | object | How they ended |
+
+### `operations[].state`
+
+| Word | What it means |
+|---|---|
+| `tested` | At least one request went to it |
+| `notReached` | It could have been tested, and no request went to it: the run ended first, or no request could be built for it from what the document says. A clean record here is no news at all |
+| `couldNotBeTested` | It was not tried: the document could not be read for it, or it asks for something RESTest cannot send yet, such as a file upload. It is also under `skippedOperations` |
+| `leftAloneByThePlan` | The plan asked the run to leave it alone, on purpose. It is not under `skippedOperations`, since nothing failed |
+
+### `operations[].replies`
+
+| Key | Value | What it says |
+|---|---|---|
+| `byClass` | object | How many of its requests ended in each class of status code, `noReply` among them, as `replies.byClass` counts them for the whole run |
+
 ### `skippedOperations[]`
 
 Every operation the run did not try, however many there are, where the screen names only the first
@@ -225,6 +314,63 @@ five. Operations the plan's filter left alone on purpose are not here: they were
 |---|---|---|
 | `operation` | text | The operation, by its `operationId`, or by its method and path when it has none or the document gives the same one to an operation RESTest reads first |
 | `reason` | text | Why it could not be tested |
+
+### `documentIssues[]`
+
+Every part of the document that could not be used as it is written, as the screen counts them under
+`part(s) of the document could not be read` before the run begins. From a run of pet-clinic:
+
+```json
+"documentIssues": [
+  {"location": "info", "message": "attribute info.license.extensions is unexpected", "effect": "document"}
+]
+```
+
+| Key | Value | What it says |
+|---|---|---|
+| `location` | text | Where in the document, written the way the document is navigated, such as `paths./pets.get.parameters[2]` |
+| `message` | text | What could not be used and why |
+| `operation` | text | Only when it belongs to one: the operation it concerns |
+| `effect` | text | What it cost: one of the words below |
+
+### `documentIssues[].effect`
+
+| Word | What it means |
+|---|---|
+| `operationSkipped` | The operation it belongs to is not tested at all, and is under `skippedOperations` |
+| `degraded` | The operation is tested with less than the document holds |
+| `renamed` | The operation is tested with everything the document says, under a name of RESTest's own, because the document gives its name to another operation too |
+| `document` | It is about the document as a whole, not one operation |
+
+### `keysNotGiven[]`
+
+Every key the document asks for that nobody handed over with `--auth`, as the screen says it before
+the run begins, with how many of the operations that can be tested ask for it. Those operations are
+expected to be refused, which is worth knowing before their refusals are read as the API's doing.
+Empty when every key asked for was given, or when none is asked for. A key the document declares
+and asks for on no operation is not here, since nothing is expected to be refused for want of it;
+the screen still names it. From a run of pet-clinic, with its document asking for an API key on
+three operations:
+
+```json
+"keysNotGiven": [{"scheme": "api_key", "in": "header", "name": "X-API-Key", "operations": 3}]
+```
+
+| Key | Value | What it says |
+|---|---|---|
+| `scheme` | text | The name the document gives the key |
+| `in` | text | Where it would go: one of the words below |
+| `name` | text | The name it would go under there |
+| `operations` | number | How many of the operations that can be tested ask for it |
+
+### `keysNotGiven[].in`
+
+| Word | Where the key would go |
+|---|---|
+| `header` | A header of the request |
+| `query` | A parameter in the query of the address |
+| `cookie` | A cookie |
+| `formField` | A field of a body written as a web form |
 
 ### `notChecked[]`
 

@@ -100,6 +100,12 @@ final class Timeline {
             case RunEvent.OperationSkipped ignored -> {
                 // Not about the run's time: an operation no request will be sent to.
             }
+            case RunEvent.OperationSetAside ignored -> {
+                // The same, for one the plan keeps the run away from.
+            }
+            case RunEvent.DocumentRead ignored -> {
+                // Nor is what the document describes, said before anything was sent.
+            }
             case RunEvent.DictionaryRead ignored -> {
                 // Nor is a list of values, read before anything was sent.
             }

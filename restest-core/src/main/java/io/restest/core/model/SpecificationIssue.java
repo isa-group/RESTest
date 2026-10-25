@@ -49,16 +49,27 @@ public record SpecificationIssue(
     /** What a part of the document that could not be used as it is written cost. */
     public enum Effect {
         /** The operation is not being tested at all. */
-        OPERATION_SKIPPED,
+        OPERATION_SKIPPED("operationSkipped"),
         /** The operation is being tested with less information than the document holds. */
-        DEGRADED,
+        DEGRADED("degraded"),
         /**
          * The operation is being tested with everything the document says, under a name of
          * RESTest's own, because the document gives its name to another operation too.
          */
-        RENAMED,
+        RENAMED("renamed"),
         /** The problem is the document as a whole, not one operation. */
-        DOCUMENT
+        DOCUMENT("document");
+
+        private final String word;
+
+        Effect(String word) {
+            this.word = word;
+        }
+
+        /** The word a report writes for it, the same in every version. */
+        public String word() {
+            return word;
+        }
     }
 
     public SpecificationIssue {

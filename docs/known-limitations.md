@@ -145,7 +145,8 @@ of its own. Whether you may test an API at all is not something any tool can che
   it waits by default, is not. Nor is a reply whose status line and headers arrived and whose body
   never finished.
 - **`report.json` does not say that a run broke.** When a run ends with `4`, the file reads like that
-  of a finished run. Read the exit code, not only the file.
+  of a finished run, and its `verdict` says what the run amounts to otherwise. Read the exit code,
+  not only the file.
 
 ## The files a run reads
 

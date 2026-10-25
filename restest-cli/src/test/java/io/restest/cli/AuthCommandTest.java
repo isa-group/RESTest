@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import io.restest.core.json.JsonValue;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,6 +38,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -373,7 +376,7 @@ class AuthCommandTest {
     class BeforeTheFirstRequest {
 
         @Test
-        @DisplayName("a key the document asks for and nobody gave is named, with the option that gives it")
+        @DisplayName("a key the document asks for and nobody gave is named, with the option that gives it, and the report lists it")
         void a_missing_key_is_named(@TempDir Path directory) throws IOException {
             int answer = run(Map.of(), "run", document(directory, PETSTORE), "--url",
                     "http://127.0.0.1:1", "--budget", "1ms", "--seed", "20260930", "--out",
@@ -385,10 +388,12 @@ class AuthCommandTest {
                     "3 of 3 operations can be tested, seed 20260930, budget 1ms",
                     "  1 of them asks for an API key that was not given (api_key, in the header "
                             + "api_key): --auth <key> gives it");
+            assertThat(keysNotGivenIn(directory.resolve("out")))
+                    .containsExactly("api_key header api_key 1");
         }
 
         @Test
-        @DisplayName("a document with several keys says which to name, and one asked for nowhere says it would go everywhere")
+        @DisplayName("a document with several keys says which to name, and one asked for nowhere says it would go everywhere, which the report does not list")
         void the_option_named_fits_the_document(@TempDir Path directory) throws IOException {
             String nowhere = """
                     openapi: 3.0.3
@@ -411,6 +416,8 @@ class AuthCommandTest {
                     + "given (token, in the query parameter token): --auth token=<key> gives it")
                     .contains("  1 of them asks for an API key that was not given (session, in "
                             + "the cookie sid): --auth session=<key> gives it");
+            assertThat(keysNotGivenIn(directory.resolve("two")))
+                    .containsExactly("token query token 1", "session cookie sid 1");
 
             screen.getBuffer().setLength(0);
             run(Map.of(), "run", document(directory, nowhere), "--url", "http://127.0.0.1:1",
@@ -419,6 +426,10 @@ class AuthCommandTest {
             assertThat(screen.toString()).contains("  the document declares an API key it asks "
                     + "for on no operation (api key, in the header X-Recipe-Key): --auth "
                     + "'api key=<key>' sends it with 1 of them");
+            assertThat(keysNotGivenIn(directory.resolve("nowhere")))
+                    .describedAs("no operation asks for it, so none is expected to be refused for "
+                            + "want of it")
+                    .isEmpty();
         }
     }
 
@@ -571,6 +582,22 @@ class AuthCommandTest {
                     new String[] {"run", "@arguments"}))
                     .isEqualTo("found '--auth=<key>'\nUsage: restest run");
         }
+    }
+
+    /** Each key the report in this directory says nobody gave, as "scheme in name operations". */
+    private static List<String> keysNotGivenIn(Path directory) {
+        JsonValue.JsonArray rows =
+                (JsonValue.JsonArray) ARun.report(directory).member("keysNotGiven").orElseThrow();
+        return rows.elements().stream()
+                .map(JsonValue.JsonObject.class::cast)
+                .map(row -> Stream.of("scheme", "in", "name", "operations")
+                        .map(member -> switch (row.member(member).orElseThrow()) {
+                            case JsonValue.JsonString text -> text.value();
+                            case JsonValue.JsonNumber number -> number.value().toString();
+                            default -> throw new AssertionError(member + " is neither");
+                        })
+                        .collect(Collectors.joining(" ")))
+                .toList();
     }
 
     /** How many requests the stand-in refused, which a request carrying its key never is. */

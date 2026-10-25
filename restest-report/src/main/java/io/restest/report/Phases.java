@@ -94,6 +94,12 @@ final class Phases {
             case RunEvent.OperationSkipped ignored -> {
                 // Nor is an operation no stretch of it will try.
             }
+            case RunEvent.OperationSetAside ignored -> {
+                // Nor one the plan keeps every stretch of it away from.
+            }
+            case RunEvent.DocumentRead ignored -> {
+                // Nor is what the document describes, said before any stretch of it began.
+            }
             case RunEvent.DictionaryRead ignored -> {
                 // Nor is a list of values, read before any stretch of it began.
             }

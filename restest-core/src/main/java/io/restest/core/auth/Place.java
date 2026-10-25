@@ -33,23 +33,30 @@ public record Place(Where where, String name) {
     /** The parts of a request a key can travel in. */
     public enum Where {
         /** A header of the request. */
-        HEADER("header"),
+        HEADER("header", "header"),
         /** A parameter in the query of the address. */
-        QUERY("query parameter"),
+        QUERY("query parameter", "query"),
         /** A cookie, inside the request's one {@code Cookie} header. */
-        COOKIE("cookie"),
+        COOKIE("cookie", "cookie"),
         /** A field of a body written as a web form. */
-        FORM_FIELD("form field");
+        FORM_FIELD("form field", "formField");
 
         private final String words;
+        private final String reportWord;
 
-        Where(String words) {
+        Where(String words, String reportWord) {
             this.words = words;
+            this.reportWord = reportWord;
         }
 
         /** The words a sentence names this part of a request in: "query parameter". */
         public String words() {
             return words;
+        }
+
+        /** The one word a report writes for it, the same in every version: "query". */
+        public String reportWord() {
+            return reportWord;
         }
     }
 

@@ -637,3 +637,37 @@ and after, the same seed for each pair, on battery power: the run sent on averag
 requests, the nine pairs differing by between −21% and +16%, four up and five down, and the time
 with no request in flight stayed between 0.5% and 0.8% of the run. Three runs do not tell that
 apart from what two runs of the same build differ by.
+
+## Amendment (25 October 2026): every operation, and what the document could not give
+
+**`RunEvent` gains `DocumentRead` and `OperationSetAside`.** `DocumentRead` carries every operation
+the document describes that could be read, path by path in the document's order, and every part of the document
+that could not be used as it is written. `OperationSetAside` names one operation the plan asked the
+run to leave alone. The command announces both as the run begins, inside the block that guarantees
+`RunFinished`: `DocumentRead` first, then the lists of values and the operations skipped as before,
+then one `OperationSetAside` for each operation the plan sets aside. Neither is stored; the console
+passes both over, since the command prints the same facts itself before the run begins.
+
+**Why.** The HTML report planned next shows every operation beside what happened to it, and a
+report shows only what `report.json` holds (maintainer, 25 October 2026). Until now `report.json`
+named only the operations something went wrong on, by name alone: an operation that answered every
+request well and one the run never sent anything to were both absent, and there was no method or
+path to show for any of them. Any report that lists every operation, passing ones included, needs
+the same list. An event rather than an argument handed to the report when it is
+made, because what the document describes is part of the run, and every listener can hear it; what
+the command itself was handed - the plan and the file of settings as they were named, whether the
+run is kept, the keys nobody gave - is the command's own account, and is handed to the JSON report
+when it is made, as its settings are, which is what
+[one writer for the screen](#amendment-one-writer-for-the-screen) asked of the command's account.
+
+**Set aside is not skipped.** An operation the plan leaves alone is never announced as skipped, as
+[naming what a run skips](#amendment-naming-what-a-run-skips) decided, and is announced on its own
+so that a report can keep the two apart.
+
+**What the JSON report writes from them**, each always there, an empty list when there is nothing:
+`operations` (every operation, its state - `tested`, `notReached`, `couldNotBeTested` or
+`leftAloneByThePlan` - and its requests by class of status code, which add up to the whole run's),
+`documentIssues`, `keysNotGiven` and `run`, beside `verdict`, worked out by the rule the exit code
+follows ([ADR-0015](0015-command-line-contract.md)'s amendment of the same day). A report that never
+hears `DocumentRead` lists the operations requests went to, by name, so that its counts still add
+up. `docs/report.md` describes every key.

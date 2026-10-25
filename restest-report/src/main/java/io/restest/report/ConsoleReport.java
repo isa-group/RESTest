@@ -260,6 +260,13 @@ public final class ConsoleReport implements RunListener {
             case RunEvent.DictionaryRead ignored -> {
                 // Nothing to say about a list that was read: it is what was asked for.
             }
+            case RunEvent.DocumentRead ignored -> {
+                // What the document describes, and what of it could not be read, is said by the
+                // command before the run begins, with the count of operations it goes with.
+            }
+            case RunEvent.OperationSetAside ignored -> {
+                // The same: the command counts what the plan left alone on the line under the count.
+            }
             case RunEvent.DictionaryRefused refused -> {
                 // Said as the run starts by whoever read the file, and said again here with the
                 // summary, because the first time is one line among many and easy to miss.

@@ -105,6 +105,11 @@ final class ARun {
         }
     }
 
+    /** The one word a report a run wrote into this directory gives for what the run amounts to. */
+    static String verdictIn(Path directory) {
+        return text(report(directory), "verdict");
+    }
+
     /** How many exchanges a run kept in this file. */
     static long stored(Path runFile) {
         try (InteractionStore store = SqliteInteractionStore.at(runFile)) {

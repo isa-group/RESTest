@@ -1336,3 +1336,21 @@ should not fail. The settings of [ADR-0025](0025-settings.md) now say how a run 
 `checks.failOnWarnings` for warnings, and the switch of each check for a kind of fault that should
 not count at all. A second, command-line way of saying either would be the second vocabulary
 ADR-0029 rules out.
+
+## Amendment (25 October 2026): the verdict, written where the report is
+
+**`report.json` gains `verdict`, one word for what the run amounts to, worked out by the rule the
+exit code follows.** `stopped`, `nothingTested`, `nothingAnswered`, `errorsFound`,
+`failedOnWarnings` or `noErrorsFound`. One function decides it, `Verdict.of`, and `ExitCode.of` asks
+it for every case but RESTest's own failures, so the word a report writes and the number a script
+reads cannot disagree: an API that accepts connections and never answers has thousands of replies
+that never came counted against it, and is still `nothingAnswered`, ending with `3`, in the file as
+on the command line. The order of the questions is unchanged.
+
+**Why.** The HTML report planned next puts the verdict first, and shows only what
+`report.json` holds. Worked out in the page's JavaScript from the counts, it would have contradicted
+the exit code in exactly the cases above, with no test to catch it (maintainer, 25 October 2026).
+
+**What is still open.** The file is written before RESTest knows whether it went wrong itself, so a
+run that ends with `4` still reads like a finished run, as [Still open](#still-open) says; the word
+it writes is what the run amounts to otherwise. No exit code changes meaning.

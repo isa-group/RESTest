@@ -15,6 +15,8 @@
  */
 package io.restest.cli;
 
+import io.restest.report.Verdict;
+
 /**
  * The number {@code restest} leaves behind when it finishes, and what each one means.
  *
@@ -139,9 +141,16 @@ final class ExitCode {
         if (outcome != null && outcome.lost() > 0) {
             return TOOL_FAILED;
         }
-        if (outcome == null || outcome.sent() == 0 || outcome.nothingAnswered()) {
-            return NOTHING_TO_TEST;
-        }
-        return errors > 0 || (warningsFail && warnings > 0) ? ERRORS_FOUND : NO_ERRORS;
+        // The rest is the verdict every report writes, asked by the same rule, so that the number a
+        // script reads and the word a report says cannot disagree. A run stopped from outside was
+        // answered above.
+        boolean ran = outcome != null;
+        return switch (Verdict.of(false, ran ? outcome.sent() : 0, ran ? outcome.answered() : 0,
+                errors, warnings, warningsFail)) {
+            case STOPPED -> INTERRUPTED;
+            case NOTHING_TESTED, NOTHING_ANSWERED -> NOTHING_TO_TEST;
+            case ERRORS_FOUND, FAILED_ON_WARNINGS -> ERRORS_FOUND;
+            case NO_ERRORS_FOUND -> NO_ERRORS;
+        };
     }
 }
