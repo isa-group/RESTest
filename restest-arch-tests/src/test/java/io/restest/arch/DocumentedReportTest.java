@@ -23,14 +23,18 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import io.restest.cli.Restest;
+import io.restest.core.auth.Place;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.SpecificationIssue;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.FaultReading;
 import io.restest.core.oracle.RestestFault;
 import io.restest.core.oracle.WfcFault;
 import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.settings.SettingKey;
+import io.restest.report.OperationState;
+import io.restest.report.Verdict;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -103,6 +107,7 @@ class DocumentedReportTest {
      */
     private static final Set<String> HOLDING_DATA = Set.of(
             "replies.byClass",
+            "operations[].replies.byClass",
             "phases[].replies.byClass",
             "timeline.intervals[].byClass",
             "findings[].interaction.testCase.parameters[].value",
@@ -114,6 +119,10 @@ class DocumentedReportTest {
      * no longer checked for that part, and the test says so rather than passing on less.
      */
     private static final List<String> THE_RUN_IS_MEANT_TO_WRITE = List.of(
+            "operations[].summary",
+            "operations[].reason",
+            "documentIssues[].operation",
+            "keysNotGiven[].name",
             "skippedOperations[].reason",
             "dictionaries.read[].from",
             "dictionaries.refused[].reason",
@@ -148,8 +157,9 @@ class DocumentedReportTest {
     /**
      * An API described by a short document: a list that answers in a shape its document does not
      * allow, a creation that falls over on anything but the body it asks for, a read of one thing
-     * that always falls over, a deletion, an upload that insists on a body RESTest cannot write, and
-     * a health check whose reply the document describes only in words, so that it cannot be checked.
+     * that always falls over, a deletion that asks for a key nobody hands over, an upload that
+     * insists on a body RESTest cannot write, and a health check whose reply the document describes
+     * only in words, so that it cannot be checked, and one of whose replies points at nothing.
      */
     private static final String THE_DOCUMENT = """
             openapi: 3.0.3
@@ -160,6 +170,7 @@ class DocumentedReportTest {
               /things:
                 get:
                   operationId: listThings
+                  summary: List the things
                   parameters:
                     - name: limit
                       in: query
@@ -202,6 +213,8 @@ class DocumentedReportTest {
                           schema: {$ref: "#/components/schemas/Thing"}
                 delete:
                   operationId: deleteThing
+                  security:
+                    - apiKey: []
                   responses:
                     "204": {description: deleted}
               /health:
@@ -209,6 +222,7 @@ class DocumentedReportTest {
                   operationId: health
                   responses:
                     "200": {description: up and running}
+                    "503": {$ref: "#/components/responses/Down"}
               /files:
                 post:
                   operationId: uploadFile
@@ -223,6 +237,8 @@ class DocumentedReportTest {
                   responses:
                     "201": {description: uploaded}
             components:
+              securitySchemes:
+                apiKey: {type: apiKey, in: header, name: X-API-Key}
               schemas:
                 NewThing:
                   type: object
@@ -316,11 +332,28 @@ class DocumentedReportTest {
     @DisplayName("the page lists exactly the reasons a check can give for a reply it could not "
             + "judge, by the words report.json writes, in RESTest's order")
     void every_reason_a_reply_was_not_checked_is_on_the_page() {
-        assertThat(keysOnThePage().get("notChecked[].reason"))
-                .describedAs("the table under the heading naming `notChecked[].reason` in %s",
-                        REPORT_PAGE)
-                .containsExactlyElementsOf(Stream.of(WhyNotJudged.values())
-                        .map(WhyNotJudged::word).toList());
+        theTableUnder("notChecked[].reason",
+                Stream.of(WhyNotJudged.values()).map(WhyNotJudged::word));
+    }
+
+    @Test
+    @DisplayName("the page lists exactly the words report.json writes for a verdict, for what "
+            + "happened to an operation, for what a part of the document that could not be used "
+            + "cost, and for where a key goes, in RESTest's order")
+    void every_verdict_state_effect_and_place_is_on_the_page() {
+        theTableUnder("verdict", Stream.of(Verdict.values()).map(Verdict::word));
+        theTableUnder("operations[].state",
+                Stream.of(OperationState.values()).map(OperationState::word));
+        theTableUnder("documentIssues[].effect",
+                Stream.of(SpecificationIssue.Effect.values()).map(SpecificationIssue.Effect::word));
+        theTableUnder("keysNotGiven[].in", Stream.of(Place.Where.values()).map(Place.Where::reportWord));
+    }
+
+    /** The table under the heading naming this place lists exactly these words, in this order. */
+    private static void theTableUnder(String place, Stream<String> words) {
+        assertThat(keysOnThePage().get(place))
+                .describedAs("the table under the heading naming `%s` in %s", place, REPORT_PAGE)
+                .containsExactlyElementsOf(words.toList());
     }
 
     @Test

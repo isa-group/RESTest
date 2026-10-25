@@ -26,6 +26,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static io.restest.cli.ARun.SIXTY_REQUESTS;
 import static io.restest.cli.ARun.STOP_AFTER_REQUESTS;
 import static io.restest.cli.ARun.stored;
+import static io.restest.cli.ARun.verdictIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -213,6 +214,8 @@ class RestestTest {
                         + "their own work: only the files this tool writes are ever removed")
                 .exists();
         assertThat(Files.readString(somebodysWork)).isEqualTo("not ours");
+        assertThat(verdictIn(directory)).describedAs("the report says what the 1 says")
+                .isEqualTo("errorsFound");
     }
 
     @Test
@@ -227,6 +230,7 @@ class RestestTest {
         // declares for every operation.
         assertThat(answer).isZero();
         assertThat(screen.toString()).contains("no faults found");
+        assertThat(verdictIn(directory)).isEqualTo("noErrorsFound");
     }
 
     @Test
@@ -351,6 +355,7 @@ class RestestTest {
                 .isEqualTo(3);
         assertThat(problems.toString()).contains("answered any of the").contains("Check the address")
                 .doesNotContain("open connection");
+        assertThat(verdictIn(directory)).isEqualTo("nothingAnswered");
     }
 
     /**
@@ -379,6 +384,10 @@ class RestestTest {
                     .contains("of them were sent on an open connection that never got a reply")
                     .contains("Check what is listening at the address")
                     .contains("--set engine.readTimeout=");
+            assertThat(verdictIn(directory))
+                    .describedAs("every request is a fault, and the report still says what the 3 "
+                            + "says, not that errors were found")
+                    .isEqualTo("nothingAnswered");
         }
     }
 
@@ -686,6 +695,7 @@ class RestestTest {
                 .describedAs("and explains where the time went, because it is not obvious")
                 .contains("ran out before a single request could be sent")
                 .contains("paid out of the budget");
+        assertThat(verdictIn(directory)).isEqualTo("nothingTested");
     }
 
     @Test

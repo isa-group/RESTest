@@ -17,9 +17,13 @@ package io.restest.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.report.Verdict;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * What number a finished run leaves behind, for each way a run can finish.
@@ -172,6 +176,53 @@ class ExitCodeTest {
                         + "says, so a test must read the same")
                 .isEqualTo(ExitCode.INTERRUPTED);
         assertThat(ExitCode.TERMINATED).isEqualTo(143);
+    }
+
+    /**
+     * One way a run can go well enough for RESTest itself, the verdict worked out from its counts
+     * and the number it ends with. The verdict is what a report writes; the runs that read it back
+     * from a report a real run wrote are in {@link RestestTest} and {@link CheckSwitchesCommandTest}.
+     */
+    record Case(String run, RunLoop.Outcome outcome, long errors, long warnings,
+            boolean warningsFail, Verdict says, int endsWith) {
+
+        @Override
+        public String toString() {
+            return run;
+        }
+    }
+
+    static List<Case> everyVerdict() {
+        return List.of(
+                new Case("a clean run", A_REAL_RUN, 0, 0, false, Verdict.NO_ERRORS_FOUND,
+                        ExitCode.NO_ERRORS),
+                new Case("errors found", A_REAL_RUN, 3, 0, false, Verdict.ERRORS_FOUND,
+                        ExitCode.ERRORS_FOUND),
+                new Case("only warnings", A_REAL_RUN, 0, 7, false, Verdict.NO_ERRORS_FOUND,
+                        ExitCode.NO_ERRORS),
+                new Case("only warnings, told they fail it", A_REAL_RUN, 0, 7, true,
+                        Verdict.FAILED_ON_WARNINGS, ExitCode.ERRORS_FOUND),
+                new Case("nothing sent", outcome(0, 0), 0, 0, false, Verdict.NOTHING_TESTED,
+                        ExitCode.NOTHING_TO_TEST),
+                new Case("nothing answered, with a fault for every request", outcome(64, 0), 64,
+                        0, false, Verdict.NOTHING_ANSWERED, ExitCode.NOTHING_TO_TEST),
+                new Case("stopped from outside", cutShort(32, 30, 0), 5, 0, false,
+                        Verdict.STOPPED, ExitCode.INTERRUPTED));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("everyVerdict")
+    @DisplayName("the number agrees with the verdict worked out from the same counts, whenever "
+            + "RESTest itself went right")
+    void the_number_agrees_with_the_verdict(Case run) {
+        assertThat(Verdict.of(run.outcome().cutShort(), run.outcome().sent(),
+                run.outcome().answered(), run.errors(), run.warnings(), run.warningsFail()))
+                .describedAs("the verdict a report writes")
+                .isEqualTo(run.says());
+        assertThat(ExitCode.of(run.outcome(), 0, 0, 0, run.errors(), run.warnings(),
+                run.warningsFail()))
+                .describedAs("ends as its report says it went: %s", run.says().word())
+                .isEqualTo(run.endsWith());
     }
 
     private static RunLoop.Outcome outcome(long sent, long answered) {

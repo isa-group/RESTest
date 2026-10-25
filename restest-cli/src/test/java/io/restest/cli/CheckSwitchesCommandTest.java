@@ -27,6 +27,7 @@ import static io.restest.cli.ARun.repliesOfClass;
 import static io.restest.cli.ARun.report;
 import static io.restest.cli.ARun.settingsIn;
 import static io.restest.cli.ARun.totalIn;
+import static io.restest.cli.ARun.verdictIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -382,6 +383,7 @@ class CheckSwitchesCommandTest {
                 .contains("on 1 operation, which do not fail the run (checks.failOnWarnings):");
         assertThat(totalIn(report, "errors")).isZero();
         assertThat(totalIn(report, "warnings")).isPositive();
+        assertThat(verdictIn(directory.resolve("out"))).isEqualTo("noErrorsFound");
     }
 
     @Test
@@ -398,6 +400,9 @@ class CheckSwitchesCommandTest {
         assertThat(screen.toString())
                 .contains("on 1 operation, which fail the run, as checks.failOnWarnings asks:");
         assertThat(settingsIn(report)).contains("checks.failOnWarnings true command line");
+        assertThat(verdictIn(directory.resolve("out")))
+                .describedAs("the report says what the 1 says")
+                .isEqualTo("failedOnWarnings");
     }
 
     @Test

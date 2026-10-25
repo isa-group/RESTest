@@ -18,7 +18,9 @@ package io.restest.core.event;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
+import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.SpecificationIssue;
 import io.restest.core.oracle.CouldNotJudge;
 import io.restest.core.oracle.Finding;
 import java.time.Duration;
@@ -94,6 +96,50 @@ public sealed interface RunEvent {
                 throw new IllegalArgumentException("an operation that is skipped is skipped for a "
                         + "reason, which a report prints");
             }
+        }
+    }
+
+    /**
+     * What the API's document describes, said once as a run begins: every operation that could be
+     * read from it, and every part of it that could not be used as it is written.
+     *
+     * <p>A report needs the whole list, not only the operations something went wrong on, to show
+     * every operation beside what happened to it - including the ones that answered every request
+     * well, and the ones that were never sent. An operation that could not be read at all is not in
+     * the list; it is named by {@link OperationSkipped}, with the reason, and by one of the parts
+     * that could not be used.
+     *
+     * @param at         when it was said
+     * @param operations every operation that could be read, path by path in the order the document
+     *                   gives the paths
+     * @param issues     every part of the document that could not be used as it is written, in the
+     *                   order they were found
+     */
+    record DocumentRead(Instant at, List<Operation> operations, List<SpecificationIssue> issues)
+            implements RunEvent {
+        public DocumentRead {
+            Objects.requireNonNull(at, "at");
+            operations = List.copyOf(operations);
+            issues = List.copyOf(issues);
+        }
+    }
+
+    /**
+     * One of the API's operations will not be tried in this run because the plan asked for it to be
+     * left alone.
+     *
+     * <p>Not the same as an operation being skipped, and never said of one: the plan did not want
+     * this one, where a skipped operation was wanted and could not be done. A report keeps the two
+     * apart, so that leaving the destructive operations of a shared API alone on purpose does not
+     * read as something the run failed to do.
+     *
+     * @param at        when it was said
+     * @param operation the operation the plan left alone
+     */
+    record OperationSetAside(Instant at, OperationId operation) implements RunEvent {
+        public OperationSetAside {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(operation, "operation");
         }
     }
 

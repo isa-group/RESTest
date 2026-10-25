@@ -18,11 +18,16 @@ package io.restest.report;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.restest.core.auth.Place;
 import io.restest.core.event.RunEvent;
+import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.HttpMethod;
+import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.SpecificationIssue;
 import io.restest.core.oracle.Finding;
 import io.restest.core.settings.ReportSettings;
 import io.restest.core.settings.Settings;
@@ -37,6 +42,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
@@ -78,12 +84,16 @@ class JsonReportTest {
         assertThat(object(report, "api").members().keySet())
                 .containsExactly("title", "baseUrl");
         assertThat(report.members().keySet())
-                .describedAs("whether the run was cut short comes straight after what was tested, "
-                        + "before any number it qualifies")
-                .startsWith("tool", "faultCatalogue", "createdAt", "api", "cutShort", "totals");
+                .describedAs("how the run was started beside what was tested; whether it was cut "
+                        + "short, and what it amounts to, before any number they qualify")
+                .startsWith("tool", "faultCatalogue", "createdAt", "api", "run", "cutShort",
+                        "verdict", "totals");
         assertThat(report.members().keySet())
-                .describedAs("what could not be checked beside what could not be tried")
-                .containsSubsequence("skippedOperations", "notChecked", "dictionaries");
+                .describedAs("every operation, then what could not be tried, read or checked")
+                .containsSubsequence("operations", "skippedOperations", "documentIssues",
+                        "keysNotGiven", "notChecked", "dictionaries");
+        assertThat(object(report, "run").members().keySet())
+                .containsExactly("plan", "settingsFile", "stored");
         assertThat(report.members().keySet())
                 .describedAs("the run over time straight after its stretches, which are marked on it")
                 .containsSubsequence("phases", "timeline", "replies");
@@ -507,6 +517,191 @@ class JsonReportTest {
                 (JsonValue.JsonObject) report.document().orElseThrow(), "timeline");
         assertThat(text(timeline, "interval")).isEqualTo("PT15S");
         assertThat(array(timeline, "intervals").elements()).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("every operation the document describes is listed with what happened to it: "
+            + "tested, never reached, could not be tested, or left alone by the plan, in the "
+            + "document's order with the unreadable ones last")
+    void every_operation_is_listed_with_what_happened_to_it() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(Runs.started(WHEN));
+        report.on(new RunEvent.DocumentRead(WHEN, List.of(
+                new Operation(OperationId.synthesised(HttpMethod.GET, "/pets"), HttpMethod.GET,
+                        "/pets", List.of(), List.of(), Optional.empty(), List.of(), List.of(),
+                        Optional.of("List the pets"), Optional.empty(), false),
+                Operation.of(HttpMethod.POST, "/pets"),
+                Operation.of(HttpMethod.DELETE, "/pets"),
+                Operation.of(HttpMethod.GET, "/owners")), List.of()));
+        report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("POST /pets"),
+                "a file upload, which RESTest cannot send yet"));
+        report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("FOO /x"),
+                "the document could not be read for it"));
+        report.on(new RunEvent.OperationSetAside(WHEN, OperationId.of("DELETE /pets")));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 500)));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+
+        List<JsonValue.JsonObject> operations = array(written, "operations").elements().stream()
+                .map(JsonValue.JsonObject.class::cast).toList();
+        assertThat(operations).extracting(row -> text(row, "operation"))
+                .containsExactly("GET /pets", "POST /pets", "DELETE /pets", "GET /owners",
+                        "FOO /x");
+        assertThat(operations).extracting(row -> text(row, "state"))
+                .containsExactly("tested", "couldNotBeTested", "leftAloneByThePlan", "notReached",
+                        "couldNotBeTested");
+        JsonValue.JsonObject tested = operations.get(0);
+        assertThat(text(tested, "method")).isEqualTo("GET");
+        assertThat(text(tested, "path")).isEqualTo("/pets");
+        assertThat(text(tested, "summary")).isEqualTo("List the pets");
+        assertThat(number(tested, "requests")).isEqualTo(2);
+        assertThat(object(object(tested, "replies"), "byClass").members())
+                .containsOnlyKeys("2xx", "5xx");
+        assertThat(text(operations.get(1), "reason"))
+                .isEqualTo("a file upload, which RESTest cannot send yet");
+        assertThat(operations.get(3).members()).doesNotContainKey("summary");
+        assertThat(operations.get(4).members())
+                .describedAs("what could not be read has no method or path to give")
+                .doesNotContainKeys("method", "path");
+        assertThat(operations.stream().mapToInt(row -> number(row, "requests")).sum())
+                .describedAs("the requests of every operation add up to the requests of the run")
+                .isEqualTo(number(object(written, "totals"), "requests"));
+        Map<String, Integer> classes = new TreeMap<>();
+        operations.forEach(row -> classesOf(object(row, "replies"))
+                .forEach((statusClass, count) -> classes.merge(statusClass, count, Integer::sum)));
+        assertThat(classes).describedAs("and their classes add up to the run's")
+                .isEqualTo(classesOf(object(written, "replies")));
+    }
+
+    /** How many replies of each class of status code a {@code replies} object counts. */
+    private static Map<String, Integer> classesOf(JsonValue.JsonObject replies) {
+        Map<String, Integer> classes = new TreeMap<>();
+        object(replies, "byClass").members().forEach((statusClass, count) -> classes.put(
+                statusClass, ((JsonValue.JsonNumber) count).value().intValueExact()));
+        return classes;
+    }
+
+    @Test
+    @DisplayName("a run whose document was never said to have been read still lists every "
+            + "operation it skipped, then every one a request went to in the order of the first "
+            + "request, so that the operations add up to the totals")
+    void operations_add_up_without_the_document() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(Runs.started(WHEN));
+        report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("FOO /x"),
+                "the document could not be read for it"));
+        report.on(new RunEvent.InteractionCompleted(WHEN,
+                Runs.attempt("GET /zebras", "/zebras", 200)));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /ants", "/ants", 500)));
+        report.on(new RunEvent.InteractionCompleted(WHEN,
+                Runs.attempt("GET /zebras", "/zebras", 404)));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+
+        List<JsonValue.JsonObject> operations = array(written, "operations").elements().stream()
+                .map(JsonValue.JsonObject.class::cast).toList();
+        assertThat(operations).extracting(row -> text(row, "operation"))
+                .containsExactly("FOO /x", "GET /zebras", "GET /ants");
+        assertThat(operations).extracting(row -> text(row, "state"))
+                .containsExactly("couldNotBeTested", "tested", "tested");
+        assertThat(operations).extracting(row -> number(row, "requests")).containsExactly(0, 2, 1);
+        assertThat(operations).allSatisfy(row -> assertThat(row.members())
+                .doesNotContainKeys("method", "path"));
+    }
+
+    @Test
+    @DisplayName("every part of the document that could not be used is written, with where it is, "
+            + "the operation it belongs to when it belongs to one, and what it cost")
+    void every_part_of_the_document_that_could_not_be_used_is_written() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(Runs.started(WHEN));
+        report.on(new RunEvent.DocumentRead(WHEN, List.of(), List.of(
+                SpecificationIssue.document("info", "attribute info.license.extensions is "
+                        + "unexpected"),
+                SpecificationIssue.skipped("paths./x.foo", OperationId.of("FOO /x"),
+                        "FOO is not a method RESTest can send"))));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+
+        List<JsonValue.JsonObject> issues = array(written, "documentIssues").elements().stream()
+                .map(JsonValue.JsonObject.class::cast).toList();
+        assertThat(issues).extracting(row -> text(row, "effect"))
+                .containsExactly("document", "operationSkipped");
+        assertThat(text(issues.get(0), "location")).isEqualTo("info");
+        assertThat(issues.get(0).members()).doesNotContainKey("operation");
+        assertThat(text(issues.get(1), "operation")).isEqualTo("FOO /x");
+        assertThat(text(issues.get(1), "message")).isEqualTo("FOO is not a method RESTest can send");
+    }
+
+    @Test
+    @DisplayName("how the run was started is written: the plan and the file of settings as they "
+            + "were named, whether it was kept, and the keys nobody handed over; and nothing of the "
+            + "kind when it was started with none of them")
+    void how_the_run_was_started_is_written() {
+        JsonValue.JsonObject handed = run(JsonReport.inMemory(fixedClock(),
+                SettingsInEffect.of(Settings.defaults()),
+                new JsonReport.Invocation(Optional.of("plans/no-deletes.yaml"),
+                        Optional.of("restest.yaml"), true,
+                        List.of(new JsonReport.KeyNotGiven("api_key",
+                                new Place(Place.Where.HEADER, "X-API-Key"), 3)))));
+        JsonValue.JsonObject run = object(handed, "run");
+        assertThat(text(run, "plan")).isEqualTo("plans/no-deletes.yaml");
+        assertThat(text(run, "settingsFile")).isEqualTo("restest.yaml");
+        assertThat(run.member("stored")).contains(JsonValue.of(true));
+        JsonValue.JsonObject key = (JsonValue.JsonObject) array(handed, "keysNotGiven")
+                .elements().getFirst();
+        assertThat(text(key, "scheme")).isEqualTo("api_key");
+        assertThat(text(key, "in")).isEqualTo("header");
+        assertThat(text(key, "name")).isEqualTo("X-API-Key");
+        assertThat(number(key, "operations")).isEqualTo(3);
+
+        JsonValue.JsonObject plain = run(JsonReport.inMemory(fixedClock()));
+        assertThat(object(plain, "run").member("plan")).contains(JsonValue.NULL);
+        assertThat(object(plain, "run").member("settingsFile")).contains(JsonValue.NULL);
+        assertThat(object(plain, "run").member("stored")).contains(JsonValue.of(false));
+        assertThat(array(plain, "keysNotGiven").elements()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the verdict is the word for what the run amounts to: errors found, none, only "
+            + "warnings that were told to fail it, nothing answered, nothing sent, or stopped")
+    void the_verdict_says_what_the_run_amounts_to() {
+        assertThat(verdictOf(JsonReport.inMemory(fixedClock()), true, false))
+                .isEqualTo("errorsFound");
+        assertThat(verdictOf(JsonReport.inMemory(fixedClock()), false, false))
+                .isEqualTo("noErrorsFound");
+        assertThat(verdictOf(JsonReport.inMemory(fixedClock(), SettingsInEffect.of(
+                Settings.from(Map.of("checks.failOnWarnings", "true")))), false, false))
+                .isEqualTo("failedOnWarnings");
+        assertThat(verdictOf(JsonReport.inMemory(fixedClock()), true, true))
+                .isEqualTo("stopped");
+
+        JsonReport unanswered = JsonReport.inMemory(fixedClock());
+        unanswered.on(Runs.started(WHEN));
+        unanswered.on(new RunEvent.InteractionCompleted(WHEN, Runs.unansweredSentAt(WHEN)));
+        unanswered.on(new RunEvent.FaultFound(WHEN, Runs.neverAnswered("GET /pets")));
+        unanswered.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+        assertThat(text((JsonValue.JsonObject) unanswered.document().orElseThrow(), "verdict"))
+                .describedAs("an API that answered nothing found no errors in itself, whatever was "
+                        + "counted against it")
+                .isEqualTo("nothingAnswered");
+
+        JsonReport silent = JsonReport.inMemory(fixedClock());
+        silent.on(Runs.started(WHEN));
+        silent.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10),
+                EngineStatistics.none()));
+        assertThat(text((JsonValue.JsonObject) silent.document().orElseThrow(), "verdict"))
+                .isEqualTo("nothingTested");
+    }
+
+    /** The verdict of a run that answered, with an error or only a warning, maybe stopped. */
+    private static String verdictOf(JsonReport report, boolean withAnError, boolean stopped) {
+        report.on(Runs.started(WHEN));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.FaultFound(WHEN, withAnError ? Runs.fellOver() : Runs.wrongShape(1)));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine(), stopped));
+        return text((JsonValue.JsonObject) report.document().orElseThrow(), "verdict");
     }
 
     private static JsonValue.JsonObject run(JsonReport report) {

@@ -15,6 +15,7 @@
  */
 package io.restest.report;
 
+import io.restest.core.auth.Place;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
 import io.restest.core.exec.EngineStatistics;
@@ -23,7 +24,9 @@ import io.restest.core.execution.InteractionId;
 import io.restest.core.json.InteractionDocument;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
+import io.restest.core.model.SpecificationIssue;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.FaultReading;
 import io.restest.core.oracle.Finding;
@@ -43,6 +46,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -86,6 +90,12 @@ import java.util.stream.Stream;
  *
  * <p>Every limit is written into the file beside what it applies to, and the file says when a limit
  * stopped it writing, so nothing is quietly missing.
+ *
+ * <p>It lists every operation the document describes, with what happened to it - tested, never
+ * reached, not testable, or left alone by the plan - and how its requests ended, so that an
+ * operation that answered every request well can be told from one nobody sent anything to. And it
+ * says in one word what the run amounts to ({@link Verdict}), by the rule the number the command ends
+ * with follows, so that the file and the number never disagree.
  *
  * <p>It also names every operation the run said it would not try, each with the reason, so that a
  * run which found nothing wrong says what it did not look at - and every list of values the run
@@ -151,8 +161,56 @@ public final class JsonReport implements RunListener {
         }
     }
 
+    /**
+     * What the command that started the run was handed, beyond its settings: which plan, which file
+     * of settings, whether the run is being kept, and which keys the document asks for that nobody
+     * handed over.
+     *
+     * <p>Handed to the report when it is made, as the settings are, rather than announced during the
+     * run: it is what the command was told, not something the run did. Never the command line
+     * itself, which can carry a key or a token where nothing would know to hide it.
+     *
+     * @param plan the plan as it was named on the command line, or nothing when the run followed the
+     *     plan RESTest carries
+     * @param settingsFile the file of settings as it was named on the command line, or nothing
+     * @param stored whether every request and reply is being kept, in a file beside the report
+     * @param keysNotGiven each key the document asks for that nobody handed over
+     */
+    public record Invocation(Optional<String> plan, Optional<String> settingsFile, boolean stored,
+            List<KeyNotGiven> keysNotGiven) {
+
+        public Invocation {
+            Objects.requireNonNull(plan, "plan");
+            Objects.requireNonNull(settingsFile, "settingsFile");
+            keysNotGiven = List.copyOf(keysNotGiven);
+        }
+
+        /** A run started with nothing beyond its settings: RESTest's own plan, kept nowhere. */
+        public static Invocation none() {
+            return new Invocation(Optional.empty(), Optional.empty(), false, List.of());
+        }
+    }
+
+    /**
+     * A key the API's document asks for that nobody handed over, and how many of the operations
+     * the run can test ask for it. Those operations are expected to be refused, which is worth
+     * saying beside the faults, so that their refusals are not read as the API's doing.
+     *
+     * @param scheme the name the document gives the key
+     * @param place where it would go in a request
+     * @param operations how many of the operations that can be tested ask for it
+     */
+    public record KeyNotGiven(String scheme, Place place, long operations) {
+
+        public KeyNotGiven {
+            Objects.requireNonNull(scheme, "scheme");
+            Objects.requireNonNull(place, "place");
+        }
+    }
+
     private final Optional<Path> file;
     private final Clock clock;
+    private final Invocation invocation;
 
     /**
      * One entry per operation and kind that went wrong. This is the structure that is not bounded by
@@ -175,9 +233,6 @@ public final class JsonReport implements RunListener {
      */
     private final Map<Integer, FaultCategory> kinds = new LinkedHashMap<>();
 
-    /** How every attempt ended, whether or not anything turned out to be wrong with it. */
-    private final Map<String, Integer> repliesByClass = new LinkedHashMap<>();
-
     /** How many operations made the API fall over, worked out in one place for every report. */
     private final ServerErrors serverErrors = new ServerErrors();
 
@@ -198,7 +253,25 @@ public final class JsonReport implements RunListener {
     private InteractionId beingJudged;
     private boolean somethingWrongWithIt;
 
-    private final Set<OperationId> operations = new LinkedHashSet<>();
+    /**
+     * How every attempt ended, whether or not anything turned out to be wrong with it, by the
+     * operation it went to: every operation a request went to, in the order the first one went, and
+     * how many of its requests ended in each class of status code. The whole run's count is their
+     * sum. As long as the document has operations, never as long as the run.
+     */
+    private final Map<OperationId, Map<String, Integer>> sentTo = new LinkedHashMap<>();
+
+    /** How many attempts came back with a reply, rather than failing on the way. */
+    private int answered;
+
+    /** Every operation the document describes that could be read, once the run has said so. */
+    private List<Operation> described = List.of();
+
+    /** Every part of the document that could not be used as it is written. */
+    private List<SpecificationIssue> issues = List.of();
+
+    /** Every operation the plan asked the run to leave alone, in the order it said so. */
+    private final Set<OperationId> setAside = new LinkedHashSet<>();
 
     /**
      * Every operation the run said it would not try, and why, in the order it said so.
@@ -231,10 +304,12 @@ public final class JsonReport implements RunListener {
     private final ReportSettings limits;
     private final SettingsInEffect configuration;
 
-    private JsonReport(Optional<Path> file, Clock clock, SettingsInEffect configuration) {
+    private JsonReport(Optional<Path> file, Clock clock, SettingsInEffect configuration,
+            Invocation invocation) {
         this.file = file;
         this.clock = clock;
         this.configuration = configuration;
+        this.invocation = invocation;
         this.limits = configuration.settings().report();
         this.timeline = new Timeline(limits.timelineIntervals());
     }
@@ -245,7 +320,8 @@ public final class JsonReport implements RunListener {
     }
 
     /**
-     * A report written to this file when the run finishes.
+     * A report written to this file when the run finishes, for a run handed nothing beyond its
+     * settings.
      *
      * @param file where to write it
      * @param configuration how the run was configured: the report's own limits are read from it,
@@ -254,8 +330,22 @@ public final class JsonReport implements RunListener {
      * @return the report
      */
     public static JsonReport to(Path file, SettingsInEffect configuration) {
+        return to(file, configuration, Invocation.none());
+    }
+
+    /**
+     * A report written to this file when the run finishes.
+     *
+     * @param file where to write it
+     * @param configuration how the run was configured, as above
+     * @param invocation what else the command that started the run was handed
+     * @return the report
+     */
+    public static JsonReport to(Path file, SettingsInEffect configuration,
+            Invocation invocation) {
         return new JsonReport(Optional.of(Objects.requireNonNull(file, "file")), Clock.systemUTC(),
-                Objects.requireNonNull(configuration, "configuration"));
+                Objects.requireNonNull(configuration, "configuration"),
+                Objects.requireNonNull(invocation, "invocation"));
     }
 
     /**
@@ -277,20 +367,25 @@ public final class JsonReport implements RunListener {
 
     /** A report that is built but written nowhere, for anyone who only wants to read it back. */
     public static JsonReport inMemory() {
-        return new JsonReport(Optional.empty(), Clock.systemUTC(),
-                SettingsInEffect.of(Settings.defaults()));
+        return inMemory(Clock.systemUTC());
     }
 
     /** The same, with the clock the report's timestamp comes from, so a test can fix it. */
     public static JsonReport inMemory(Clock clock) {
-        return new JsonReport(Optional.empty(), Objects.requireNonNull(clock, "clock"),
-                SettingsInEffect.of(Settings.defaults()));
+        return inMemory(clock, SettingsInEffect.of(Settings.defaults()));
     }
 
     /** The same, configured, for anyone who wants to read back what a configured run would write. */
     public static JsonReport inMemory(Clock clock, SettingsInEffect configuration) {
+        return inMemory(clock, configuration, Invocation.none());
+    }
+
+    /** The same, with what else the command was handed. */
+    public static JsonReport inMemory(Clock clock, SettingsInEffect configuration,
+            Invocation invocation) {
         return new JsonReport(Optional.empty(), Objects.requireNonNull(clock, "clock"),
-                Objects.requireNonNull(configuration, "configuration"));
+                Objects.requireNonNull(configuration, "configuration"),
+                Objects.requireNonNull(invocation, "invocation"));
     }
 
     /** What was written, once the run has finished. Empty before that. */
@@ -312,7 +407,12 @@ public final class JsonReport implements RunListener {
                 api = started.api();
                 baseUrl = started.baseUrl();
             }
+            case RunEvent.DocumentRead read -> {
+                described = read.operations();
+                issues = read.issues();
+            }
             case RunEvent.OperationSkipped skip -> skipped.add(skip);
+            case RunEvent.OperationSetAside aside -> setAside.add(aside.operation());
             case RunEvent.DictionaryRead read -> dictionariesRead.add(read);
             case RunEvent.DictionaryRefused refused -> dictionariesRefused.add(refused);
             case RunEvent.InteractionCompleted completed -> attempted(completed.interaction());
@@ -348,11 +448,14 @@ public final class JsonReport implements RunListener {
      */
     private void attempted(Interaction interaction) {
         attempts++;
-        operations.add(interaction.testCase().operation());
+        if (interaction.isAnswered()) {
+            answered++;
+        }
         closeOffTheAttemptBeingJudged();
         beingJudged = interaction.id();
         somethingWrongWithIt = false;
-        repliesByClass.merge(StatusClass.of(interaction), 1, Integer::sum);
+        sentTo.computeIfAbsent(interaction.testCase().operation(), ignored -> new LinkedHashMap<>())
+                .merge(StatusClass.of(interaction), 1, Integer::sum);
         interaction.statusCode().ifPresent(status -> repliesByStatus.merge(status, 1, Integer::sum));
         serverErrors.note(interaction);
     }
@@ -450,11 +553,16 @@ public final class JsonReport implements RunListener {
                 "version", JsonValue.of(WfcFault.CATALOGUE_VERSION)));
         report.put("createdAt", JsonValue.of(clock.instant().toString()));
         report.put("api", pair("title", JsonValue.of(api), "baseUrl", JsonValue.of(baseUrl)));
+        report.put("run", run());
         // Beside what was tested, before any number: a run stopped from outside reports what it
         // found until then, and every count below is to be read as that.
         report.put("cutShort", JsonValue.of(cutShort));
+        report.put("verdict", JsonValue.of(verdict().word()));
         report.put("totals", totals());
+        report.put("operations", operations());
         report.put("skippedOperations", skippedOperations());
+        report.put("documentIssues", documentIssues());
+        report.put("keysNotGiven", keysNotGiven());
         report.put("notChecked", notChecked());
         report.put("dictionaries", dictionaries());
         report.put("limits", limits());
@@ -512,6 +620,119 @@ public final class JsonReport implements RunListener {
                     row.put("countedOnly", JsonValue.of(tally.count - tally.writtenInFull));
                     row.put("firstSeenAt", JsonValue.of(tally.firstSeenAt.toString()));
                     row.put("lastSeenAt", JsonValue.of(tally.lastSeenAt.toString()));
+                    return (JsonValue) JsonValue.object(row);
+                })
+                .toList());
+    }
+
+    /**
+     * What the command was handed beyond its settings: which plan and which file of settings, as
+     * they were named, and whether the run is being kept. A plan or a file nobody named is written
+     * as {@code null}: the run followed the plan RESTest carries, or no file of settings was read.
+     */
+    private JsonValue run() {
+        Map<String, JsonValue> run = new LinkedHashMap<>();
+        run.put("plan", orNull(invocation.plan()));
+        run.put("settingsFile", orNull(invocation.settingsFile()));
+        run.put("stored", JsonValue.of(invocation.stored()));
+        return JsonValue.object(run);
+    }
+
+    private static JsonValue orNull(Optional<String> text) {
+        return text.<JsonValue>map(JsonValue::of).orElse(JsonValue.NULL);
+    }
+
+    /**
+     * What the run amounts to, by the rule the number the command ends with follows, so that the
+     * two never disagree.
+     *
+     * <p>Counted over the attempts this report heard of, sent and either answered or not. A request
+     * still owed an answer when the run gave up waiting is never heard of here, so a run in which
+     * every request was still owed reads as having sent nothing; it ends with the same number as one
+     * whose requests were all left unanswered.
+     */
+    private Verdict verdict() {
+        return Verdict.of(cutShort, attempts, answered, faultsOf(Severity.ERROR),
+                faultsOf(Severity.WARNING), configuration.settings().checks().failOnWarnings());
+    }
+
+    /**
+     * Every operation the document describes, with what happened to it and how its requests ended.
+     *
+     * <p>The operations that could be read come first, in the order the document gives them; then
+     * the ones that could not be read, in the order the run named them, with no method or path,
+     * which is what could not be read. An operation a request went to that neither list names - a
+     * run whose document was never said to have been read - comes last, so that what is written
+     * still adds up to the totals.
+     */
+    private JsonValue operations() {
+        Map<OperationId, String> whyNot = new LinkedHashMap<>();
+        skipped.forEach(skip -> whyNot.putIfAbsent(skip.operation(), skip.reason()));
+        List<JsonValue> rows = new ArrayList<>();
+        Set<OperationId> written = new HashSet<>();
+        for (Operation operation : described) {
+            rows.add(operation(operation.id(), Optional.of(operation), whyNot));
+            written.add(operation.id());
+        }
+        Stream.concat(whyNot.keySet().stream(), sentTo.keySet().stream())
+                .filter(written::add)
+                .forEach(id -> rows.add(operation(id, Optional.empty(), whyNot)));
+        return JsonValue.array(rows);
+    }
+
+    private JsonValue operation(OperationId id, Optional<Operation> read,
+            Map<OperationId, String> whyNot) {
+        Map<String, JsonValue> row = new LinkedHashMap<>();
+        row.put("operation", JsonValue.of(id.value()));
+        read.ifPresent(operation -> {
+            row.put("method", JsonValue.of(operation.method().name()));
+            row.put("path", JsonValue.of(operation.path()));
+            operation.summary().ifPresent(summary -> row.put("summary", JsonValue.of(summary)));
+        });
+        Map<String, Integer> byClass = sentTo.getOrDefault(id, Map.of());
+        OperationState state = sentTo.containsKey(id) ? OperationState.TESTED
+                : whyNot.containsKey(id) ? OperationState.COULD_NOT_BE_TESTED
+                : setAside.contains(id) ? OperationState.LEFT_ALONE_BY_THE_PLAN
+                : OperationState.NOT_REACHED;
+        row.put("state", JsonValue.of(state.word()));
+        if (state == OperationState.COULD_NOT_BE_TESTED) {
+            row.put("reason", JsonValue.of(whyNot.get(id)));
+        }
+        row.put("requests", JsonValue.of(byClass.values().stream().mapToInt(Integer::intValue).sum()));
+        row.put("replies", JsonValue.object(Map.of("byClass", byClass(byClass))));
+        return JsonValue.object(row);
+    }
+
+    /**
+     * Every part of the document that could not be used as it is written: where it is, what was
+     * wrong, the operation it belongs to when it belongs to one, and what it cost.
+     */
+    private JsonValue documentIssues() {
+        return JsonValue.array(issues.stream()
+                .map(issue -> {
+                    Map<String, JsonValue> row = new LinkedHashMap<>();
+                    row.put("location", JsonValue.of(issue.location()));
+                    row.put("message", JsonValue.of(issue.message()));
+                    issue.operation().ifPresent(operation ->
+                            row.put("operation", JsonValue.of(operation.value())));
+                    row.put("effect", JsonValue.of(issue.effect().word()));
+                    return (JsonValue) JsonValue.object(row);
+                })
+                .toList());
+    }
+
+    /**
+     * Every key the document asks for that nobody handed over, with where it would go and how many
+     * of the operations that can be tested ask for it.
+     */
+    private JsonValue keysNotGiven() {
+        return JsonValue.array(invocation.keysNotGiven().stream()
+                .map(key -> {
+                    Map<String, JsonValue> row = new LinkedHashMap<>();
+                    row.put("scheme", JsonValue.of(key.scheme()));
+                    row.put("in", JsonValue.of(key.place().where().reportWord()));
+                    row.put("name", JsonValue.of(key.place().name()));
+                    row.put("operations", JsonValue.of(key.operations()));
                     return (JsonValue) JsonValue.object(row);
                 })
                 .toList());
@@ -632,7 +853,10 @@ public final class JsonReport implements RunListener {
         Map<String, JsonValue> replies = new LinkedHashMap<>();
         replies.put("total", JsonValue.of(attempts));
         replies.put("withNothingWrong", JsonValue.of(attemptsWithNothingWrong));
-        replies.put("byClass", byClass(repliesByClass));
+        Map<String, Integer> everyReply = new LinkedHashMap<>();
+        sentTo.values().forEach(operation ->
+                operation.forEach((family, count) -> everyReply.merge(family, count, Integer::sum)));
+        replies.put("byClass", byClass(everyReply));
         replies.put("commonest", JsonValue.array(repliesByStatus.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
                 .limit(limits.commonestStatusCodesListed())
@@ -716,7 +940,7 @@ public final class JsonReport implements RunListener {
     private JsonValue totals() {
         Map<String, JsonValue> totals = new LinkedHashMap<>();
         totals.put("requests", JsonValue.of(attempts));
-        totals.put("operations", JsonValue.of(operations.size()));
+        totals.put("operations", JsonValue.of(sentTo.size()));
         totals.put("faults", JsonValue.of(faults));
         // The two numbers whose absence made a report of a thousand copies of one fault look like a
         // report of a thousand faults.

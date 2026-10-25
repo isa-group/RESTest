@@ -632,7 +632,11 @@ final class RunCommand implements Callable<Integer> {
                 rules = OracleListener.standard(model, settings.checks(), drained);
                 drained.subscribe(rules);
                 drained.subscribe(console);
-                drained.subscribe(JsonReport.to(reportFile, configuration));
+                drained.subscribe(JsonReport.to(reportFile, configuration,
+                        new JsonReport.Invocation(
+                                Optional.ofNullable(campaignFile).map(Path::toString),
+                                Optional.ofNullable(settingsFile).map(Path::toString),
+                                keepTheRun, keysNotGiven(credentials, testable))));
 
                 drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address,
                         budget));
@@ -646,6 +650,11 @@ final class RunCommand implements Callable<Integer> {
                     // Inside this block so that an announcement going wrong still leaves the
                     // summary and the report.
                     Instant said = Instant.now();
+                    // What the document describes, so that a report can name every operation
+                    // beside what happened to it, the ones that went well and the ones never sent
+                    // included, with what of the document could not be used.
+                    drained.publish(new RunEvent.DocumentRead(said, model.operations(),
+                            model.issues()));
                     // Which lists of values the run holds, and which it was handed and could not
                     // read: said on the screen as the files were read, and said again here so that
                     // both reports carry it beside the verdict. A run made without a list somebody
@@ -660,6 +669,10 @@ final class RunCommand implements Callable<Integer> {
                                     whyNot(issue))));
                     generator.untestableOperations().forEach((operation, reason) ->
                             drained.publish(new RunEvent.OperationSkipped(said, operation, reason)));
+                    // And the ones the plan keeps the run away from, which are not skipped: they
+                    // were never wanted, and a report keeps them apart from what could not be done.
+                    generator.operationsThePlanSetAside().forEach(operation ->
+                            drained.publish(new RunEvent.OperationSetAside(said, operation)));
                     // The deadline is the moment the command started plus the budget, not the
                     // moment testing starts: reading the document was paid for out of the same
                     // budget, and so is the first round the scheduler may open with.
@@ -979,8 +992,7 @@ final class RunCommand implements Callable<Integer> {
      */
     private static void describeTheKeys(PrintWriter out, ApiModel model,
             CredentialPlan credentials, List<Operation> testable) {
-        Set<OperationId> tested = testable.stream().map(Operation::id)
-                .collect(Collectors.toSet());
+        Set<OperationId> tested = idsOf(testable);
         for (CredentialPlan.Placed placed : credentials.placed()) {
             long with = placed.operations().stream().filter(tested::contains).count();
             if (with == 0) {
@@ -996,7 +1008,7 @@ final class RunCommand implements Callable<Integer> {
         long keys = model.securitySchemes().values().stream()
                 .filter(SecurityScheme.ApiKey.class::isInstance).count();
         for (CredentialPlan.Missing missing : credentials.missing()) {
-            long asking = missing.operations().stream().filter(tested::contains).count();
+            long asking = asking(missing, tested);
             if (asking == 0) {
                 continue;
             }
@@ -1012,6 +1024,32 @@ final class RunCommand implements Callable<Integer> {
                         + "not given " + which + ": " + option + " gives it");
             }
         }
+    }
+
+    /**
+     * The keys the document asks for that nobody handed over, as the report writes them: counted by
+     * the rule the screen uses, and left out when none of the operations that can be tested ask. A
+     * key the document only declares is left out too: the screen names it, but no operation is
+     * expected to be refused for want of it.
+     */
+    private static List<JsonReport.KeyNotGiven> keysNotGiven(CredentialPlan credentials,
+            List<Operation> testable) {
+        Set<OperationId> tested = idsOf(testable);
+        return credentials.missing().stream()
+                .filter(missing -> !missing.askedForNowhere())
+                .map(missing -> new JsonReport.KeyNotGiven(missing.scheme(), missing.place(),
+                        asking(missing, tested)))
+                .filter(key -> key.operations() > 0)
+                .toList();
+    }
+
+    /** How many of the operations that can be tested ask for a key nobody handed over. */
+    private static long asking(CredentialPlan.Missing missing, Set<OperationId> tested) {
+        return missing.operations().stream().filter(tested::contains).count();
+    }
+
+    private static Set<OperationId> idsOf(List<Operation> operations) {
+        return operations.stream().map(Operation::id).collect(Collectors.toSet());
     }
 
     private static String ofThem(long some, int all) {
