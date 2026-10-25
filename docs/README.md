@@ -9,7 +9,7 @@ what to look things up in afterwards.
 | Page | What it covers |
 |---|---|
 | [The command line](command-line.md) | Every command, every option of a run, the environment variables, how to stop a run, and the number a run ends with |
-| [What a run leaves behind](report.md) | Every line a run prints, every key of `report.json`, and the stored run `--store` keeps |
+| [What a run leaves behind](report.md) | Every line a run prints, every key of `report.json`, the page `report.html`, and the stored run `--store` keeps |
 | [The faults RESTest reports](faults.md) | The kinds of fault a run reports, which are errors and which warnings, what each means, and how they are counted |
 | [The campaign file](campaign-format.md) | The plan a run follows: where its values come from, how much of it pushes at the API, which operations it may touch |
 | [The dictionary format](dictionary-format.md) | Lists of values of your own, handed over with `--dictionary` |

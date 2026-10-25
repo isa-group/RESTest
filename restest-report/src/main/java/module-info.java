@@ -18,8 +18,9 @@
  *
  * <p>Nothing here is part of testing an API. A run announces what it is doing, and everything in
  * this module listens: one report prints faults in the terminal as they are found, another writes
- * the whole run out as a JSON file for a build server or a script to read. Adding another kind of
- * report is a new class in here and no change anywhere else.
+ * the whole run out as a JSON file for a build server or a script to read, and a third writes that
+ * same file into a page anybody can open in a browser. Adding another kind of report is a new class
+ * in here and no change anywhere else.
  *
  * <p>Every fault comes with the {@code curl} command that reproduces it, which is the first thing
  * anybody wants when told their API has a bug.

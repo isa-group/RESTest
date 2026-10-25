@@ -114,3 +114,10 @@ announcements rather than the loop that sends. A minute's run of pet-clinic wrot
   §5's cost is not one a run would notice.
 - **A JSON Schema of `report.json`**, planned with this at first. Left out by the maintainer on
   25 October 2026.
+
+## Amendment (25 October 2026): the page draws no opening lap
+
+**The HTML report draws the timeline without marking the opening lap**, as the maintainer asked on
+25 October 2026 while the page was designed. `phases` still says when the lap began and ended, for
+any report that wants to mark it, and the page draws everything else this record describes
+([ADR-0039](0039-the-html-report.md)).

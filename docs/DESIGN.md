@@ -29,8 +29,8 @@ things it creates. Every request is judged by eight rules — a reply of 500, a 
 error, a reply whose body is not the shape the document promised, a 501 to an operation the document
 declares, a request broken on purpose that the API accepted, a request the API took on an open
 connection and never answered, and a reply whose status code, or whose content type, the document
-does not declare — and what they find is reported on the screen and in `report.json` with a `curl`
-command that repeats it; each rule can be switched off. What a user sees of all this is in
+does not declare — and what they find is reported on the screen, in `report.json` and in a page
+drawn from it, `report.html`, with a `curl` command that repeats it; each rule can be switched off. What a user sees of all this is in
 [`docs/`](README.md); how it is built is the rest of this page.
 
 From version 2.0 on, RESTest is a rewrite rather than a refactor of RESTest 1.x. The reasoning is

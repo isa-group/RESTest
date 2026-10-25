@@ -81,7 +81,7 @@ so records written from now on cite none.
 | [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12, 13, 15 and 17 October 2026 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 and 13 October 2026 |
-| [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 October 2026 |
+| [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 and 25 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
 | [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13 and 23 October 2026 |
@@ -90,4 +90,5 @@ so records written from now on cite none.
 | [0035](0035-json-schemas-of-the-dictionary-and-the-plan.md) | The dictionary and the plan have published JSON Schemas, held to their readers | Accepted |
 | [0036](0036-kinds-of-fault-restest-numbers-itself.md) | Kinds of fault RESTest numbers itself: `F920` and `F921`, in the range the catalogue leaves to tools | Accepted |
 | [0037](0037-errors-and-warnings.md) | Every fault is an error or a warning, and a run fails on its errors | Accepted |
-| [0038](0038-how-a-run-went-over-time.md) | report.json says how a run went over the time it was given | Accepted |
+| [0038](0038-how-a-run-went-over-time.md) | report.json says how a run went over the time it was given | Accepted, amended on 25 October 2026 |
+| [0039](0039-the-html-report.md) | The HTML report: one page beside report.json, drawn in the browser from the whole of it, fetching nothing | Accepted |

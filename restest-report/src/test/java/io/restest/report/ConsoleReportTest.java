@@ -51,7 +51,7 @@ class ConsoleReportTest {
     void how_many_faults_reach_the_screen_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 2, 2, 5, 10, 10, 60));
+                new ReportSettings(5, 1_000, 24L * 1024, 2, 2, 5, 10, 10, 60, true));
 
         for (int found = 0; found < 6; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
@@ -250,7 +250,7 @@ class ConsoleReportTest {
     void how_many_details_are_printed_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 2, 10, 60));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 2, 10, 60, true));
 
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(25)));
 
@@ -491,7 +491,7 @@ class ConsoleReportTest {
     void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 2, 10, 10, 60));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 2, 10, 10, 60, true));
         for (String operation : List.of("addPet", "getPet", "updatePet", "deletePet", "listPets")) {
             report.on(skipped(operation, "the reason " + operation + " could not be tested"));
         }
@@ -513,7 +513,7 @@ class ConsoleReportTest {
     void told_to_name_none_the_count_and_the_report_are_still_given() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 0, 10, 10, 60));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 0, 10, 10, 60, true));
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
@@ -933,7 +933,7 @@ class ConsoleReportTest {
     void the_number_of_faults_is_the_limit_however_many_warnings_may_be_printed() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 3, 100, 5, 10, 10, 60));
+                new ReportSettings(5, 1_000, 24L * 1024, 3, 100, 5, 10, 10, 60, true));
 
         for (int found = 0; found < 8; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH,

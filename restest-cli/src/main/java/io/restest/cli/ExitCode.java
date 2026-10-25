@@ -145,8 +145,19 @@ final class ExitCode {
         // script reads and the word a report says cannot disagree. A run stopped from outside was
         // answered above.
         boolean ran = outcome != null;
-        return switch (Verdict.of(false, ran ? outcome.sent() : 0, ran ? outcome.answered() : 0,
-                errors, warnings, warningsFail)) {
+        return of(Verdict.of(false, ran ? outcome.sent() : 0, ran ? outcome.answered() : 0,
+                errors, warnings, warningsFail));
+    }
+
+    /**
+     * The number a run ends with when RESTest itself went right, for what the run amounts to.
+     *
+     * <p>The page a run writes says this number too, read from the verdict in the report, so the
+     * two are held to each other. A run stopped from outside ends with Java's number for how it was
+     * stopped: {@link #INTERRUPTED} for Ctrl-C, {@link #TERMINATED} otherwise.
+     */
+    static int of(Verdict verdict) {
+        return switch (verdict) {
             case STOPPED -> INTERRUPTED;
             case NOTHING_TESTED, NOTHING_ANSWERED -> NOTHING_TO_TEST;
             case ERRORS_FOUND, FAILED_ON_WARNINGS -> ERRORS_FOUND;
