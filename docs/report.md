@@ -462,6 +462,7 @@ in a run from having nothing written about it.
 | Key | Value | What it says |
 |---|---|---|
 | `category` | object | The kind of fault: `code`, `id`, `descriptiveName`, `testCaseLabel`, `label`, `severity` and `title`, as in `faultsByCategory`; what to look at is said there, once for the kind |
+| `context` | text | Only when the check that found it gave one: a word telling apart two faults of the same kind, where one kind covers more than one way of going wrong, as the catalogue's own report format tells them apart. No check of this version gives one |
 | `operation` | text | The operation |
 | `summary` | text | What is wrong, in a sentence |
 | `details` | list of text | The particulars, when there are any: for `F200`, each place in the body that disagreed with the document |
