@@ -288,7 +288,8 @@ public record Settings(
                 typed.wholeNumber("report.commonestStatusCodesListed",
                         DEFAULTS.report.commonestStatusCodesListed()),
                 typed.wholeNumber("report.timelineIntervals",
-                        DEFAULTS.report.timelineIntervals())));
+                        DEFAULTS.report.timelineIntervals()),
+                typed.yesOrNo("report.html", DEFAULTS.report.html())));
         return new Settings(engine, schedule, generation, mutation, sequences, memory, document,
                 checks, report);
     }
@@ -498,6 +499,7 @@ public record Settings(
             case "report.commonestStatusCodesListed" ->
                     String.valueOf(report.commonestStatusCodesListed());
             case "report.timelineIntervals" -> String.valueOf(report.timelineIntervals());
+            case "report.html" -> String.valueOf(report.html());
 
             // Unreachable while every key in the catalogue is answered above, which a test in this
             // module checks by asking for every one of them. It is here so that adding a key and

@@ -1,9 +1,10 @@
 # What a run leaves behind
 
-A run says what it found in three places: on the screen while it runs, in a file called
-`report.json` when it ends, and — only when asked with `--store` — in a file called `run.sqlite`
-that keeps every request and every reply. This page says what each line on the screen means, what
-every key in `report.json` holds, and what `run.sqlite` contains.
+A run says what it found in four places: on the screen while it runs, in a file called
+`report.json` when it ends, in `report.html` beside it — the same run as a page to open in a
+browser — and, only when asked with `--store`, in a file called `run.sqlite` that keeps every
+request and every reply. This page says what each line on the screen means, what every key in
+`report.json` holds, what the page is, and what `run.sqlite` contains.
 
 The kinds of fault a run reports, and how a fault looks, are on a page of their own:
 [The faults RESTest reports](faults.md).
@@ -102,7 +103,8 @@ some replies could not be checked; report.json names their operations:
 ### The last lines
 
 ```
-report written to restest-out/report.json (172.7 KiB)
+report written to restest-out/report.json (1.5 MiB)
+page written to restest-out/report.html (1.5 MiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -111,8 +113,9 @@ the run itself was not kept; pass --store to keep every request and reply
 | `<n> test case(s) could not be built and were skipped` | Some request could not be put together | Usually a value of a kind no request can carry |
 | `<n> replies repeated a key back; …` | The API sent a key handed over with `--auth` back in a reply | It is hidden there too, and the check of replies against the document passes over whatever hiding it changed. A reply the hiding made into something that is not JSON at all could not be checked, and is counted under `notChecked` as `keyHidden` |
 | `report written to <file> (<size>)` | The report could be written | Where `report.json` is |
+| `page written to <file> (<size>)` | The report could be written, and [`report.html`](settings.md#report) is on, as it is unless set otherwise | Where [`report.html`](#reporthtml) is |
 | `run stored in <file> (<size>)` | `--store` was given | Where `run.sqlite` is |
-| `the run itself was not kept; pass --store to keep every request and reply` | `--store` was not given | Only the report was written |
+| `the run itself was not kept; pass --store to keep every request and reply` | `--store` was not given | Only the report, and the page, were written |
 | `a run kept in <directory> by an earlier command was replaced` | `--out` pointed at a directory holding a run kept with `--store` | That run is gone |
 
 A few more lines go to the error stream, each beginning with `restest:`:
@@ -810,6 +813,31 @@ The settings a run did not take from RESTest's own defaults:
 ```bash
 jq '.settings[] | select(.source != "default")' restest-out/report.json
 ```
+
+## `report.html`
+
+The same run as `report.json`, as a page to open in a browser: one file, written beside
+`report.json` once it is whole, that needs nothing beside it and fetches nothing, so that it opens
+from what a build kept, from an e-mail or on a laptop with no network. It shows the replies,
+errors and warnings in all and on every operation, the timeline, the first request written out
+whole for each kind of fault on each operation with buttons that copy its `curl` command or the
+whole of it as an issue in Markdown, what could not be tested or read, how the run was started, and
+the number it ended with, worked out from [`verdict`](#verdict). [Chapter 4 of the manual](manual/04-reading-what-a-run-says.md#the-page) shows it.
+
+- **It shows nothing `report.json` does not hold.** The whole of `report.json` is inside it, as it
+  was written, and the page draws itself from that in the browser, with JavaScript. A page opened
+  where JavaScript is turned off says so and points at `report.json`.
+- **A program reads `report.json`, not the page.** The run sits in the page inside
+  `<script type="application/json" id="report">`, with every `<` written as `\u003c` so that nothing
+  quoted from a reply can end that element early; read as JSON, it is `report.json` exactly. How the
+  rest of the page is laid out is not part of what stays the same from one version to the next.
+- **It fetches nothing.** The page tells the browser so, in its own `Content-Security-Policy`: no
+  address is visited, no script but its own is run, and the only pictures are the ones inside it.
+  What came from the API is put on the page only as text.
+- **A key handed over is hidden in it** as it is in `report.json`, since it is the same text.
+- **`--set report.html=false` writes no page**, for a run whose results only a program will read.
+  A page left by an earlier run in the same directory is removed either way, so that it is never
+  taken for this run's.
 
 ## `run.sqlite`
 

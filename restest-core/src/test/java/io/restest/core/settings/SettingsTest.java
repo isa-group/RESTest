@@ -644,7 +644,7 @@ class SettingsTest {
                     false, false)).memory().mostNames()).isZero();
             assertThat(from.withDocument(new DocumentSettings(Duration.ofSeconds(1), 10))
                     .document().mostBytesRead()).isEqualTo(10);
-            assertThat(from.withReport(new ReportSettings(0, 0, 0, 0, 0, 0, 0, 0, 1)).report()
+            assertThat(from.withReport(new ReportSettings(0, 0, 0, 0, 0, 0, 0, 0, 1, true)).report()
                     .writeUpsInTotal()).isZero();
             assertThat(from.withReport(from.report()))
                     .describedAs("replacing a group with itself changes nothing at all")

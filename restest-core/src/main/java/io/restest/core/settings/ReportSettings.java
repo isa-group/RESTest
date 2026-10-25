@@ -16,7 +16,8 @@
 package io.restest.core.settings;
 
 /**
- * How much of what a run found is written out, and how much of it reaches the screen.
+ * How much of what a run found is written out, how much of it reaches the screen, and whether it is
+ * also written as a page to open in a browser.
  *
  * <p>An API that is broken is broken every time it is asked, so a run of any length finds the same
  * fault over and over. Writing all of them out produces a file nobody can open and a screen nobody
@@ -57,6 +58,9 @@ package io.restest.core.settings;
  *     has some time, and at most ten thousand: a slice a run is told it cannot spare is still
  *     written out, so a number typed with a few zeros too many would otherwise fill the file with
  *     empty slices, and the memory with them before a request was sent
+ * @param html whether the run is also written as a page, beside the file a program reads: one file
+ *     anybody can open in a browser, with no network, that shows the same run. Off, only the file
+ *     for programs is written, for a run whose results only a program will ever read
  */
 public record ReportSettings(
         int writeUpsPerOperationAndKind,
@@ -67,13 +71,14 @@ public record ReportSettings(
         int skippedOperationsShownOnTheConsole,
         int detailsShownPerFault,
         int commonestStatusCodesListed,
-        int timelineIntervals) {
+        int timelineIntervals,
+        boolean html) {
 
     /** The most slices a run's time can be cut into for showing how it went. */
     private static final int MOST_TIMELINE_INTERVALS = 10_000;
 
     private static final ReportSettings DEFAULTS =
-            new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 10, 10, 60);
+            new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 10, 10, 60, true);
 
     public ReportSettings {
         atLeastNone(writeUpsPerOperationAndKind, "writeUpsPerOperationAndKind");

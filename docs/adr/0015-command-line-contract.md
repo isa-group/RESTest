@@ -1354,3 +1354,19 @@ the exit code in exactly the cases above, with no test to catch it (maintainer, 
 **What is still open.** The file is written before RESTest knows whether it went wrong itself, so a
 run that ends with `4` still reads like a finished run, as [Still open](#still-open) says; the word
 it writes is what the run amounts to otherwise. No exit code changes meaning.
+
+## Amendment (25 October 2026): the page beside the report
+
+**A run writes `report.html` into `--out`, beside `report.json`**, the same run as a page to open in
+a browser ([ADR-0039](0039-the-html-report.md)), and says so in a line after the report's:
+`page written to <file> (<size>)`. The setting `report.html` leaves it out. Its name joins those of
+`report.json` and `run.sqlite` among the names a 2.x version keeps; how the page is laid out does
+not, since a program reads `report.json`.
+
+**A directory holds one run, the page included.** A page, or the file it is written into first, left
+by an earlier run is removed before a run starts, whether or not this run writes one. A run stopped
+from outside that could not finish writing in time says `report.html was not written` beside what
+else it did not leave behind.
+
+**No exit code changes meaning.** A page that cannot be written is a report that failed, and the run
+ends with `4`, as for any report.

@@ -158,7 +158,11 @@ final class Runs {
 
     /** A fault whose reply was big, which is how the report's limit in bytes is reached. */
     static Finding fellOverWithBody(String operation, int bytes) {
-        String body = "x".repeat(bytes);
+        return fellOverSaying(operation, "x".repeat(bytes));
+    }
+
+    /** The API falling over on this operation with this body, as plain text. */
+    static Finding fellOverSaying(String operation, String body) {
         Interaction attempt = Interaction.answered(
                 TestCase.of(OperationId.of(operation), List.of()),
                 new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(), Optional.empty()),

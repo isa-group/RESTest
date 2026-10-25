@@ -62,8 +62,9 @@ import org.junit.jupiter.api.io.TempDir;
  * rather than typed; the one in the query also fills a field of a form. The stand-in for the API
  * answers with the keys in its headers, in a cookie it sets, in an address it points to, in the
  * JSON it returns, in a reply that is not text at all, and in an error that the run reports as a
- * fault with a {@code curl} command. Every file the run writes, the stored run included, and
- * everything it printed, are then read byte by byte for any way of writing any of the keys.
+ * fault with a {@code curl} command. Every file the run writes, the page and the stored run
+ * included, and everything it printed, are then read byte by byte for any way of writing any of
+ * the keys.
  *
  * <p>A search that finds nothing proves nothing unless the thing searched for was there to find, so
  * the test also checks that the API did receive every key, in its place, and that what was written
@@ -219,7 +220,7 @@ class AKeyIsWrittenNowhereTest {
             written = files.filter(Files::isRegularFile).toList();
         }
         assertThat(written).extracting(path -> path.getFileName().toString())
-                .contains("report.json", "run.sqlite");
+                .contains("report.json", "report.html", "run.sqlite");
         List<String> sought = spellingsOfTheKeys();
         for (Path file : written) {
             String bytes = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
@@ -236,6 +237,11 @@ class AKeyIsWrittenNowhereTest {
         // What stands in for each key is where each key went.
         String report = Files.readString(out.resolve("report.json"));
         assertThat(report).contains("REDACTED-AUTH.inAHeader")
+                .contains("token=REDACTED-AUTH.inTheQuery")
+                .contains("sid=REDACTED-AUTH.inACookie");
+        assertThat(Files.readString(out.resolve("report.html")))
+                .describedAs("the page holds the same run as report.json, keys hidden alike")
+                .contains("REDACTED-AUTH.inAHeader")
                 .contains("token=REDACTED-AUTH.inTheQuery")
                 .contains("sid=REDACTED-AUTH.inACookie");
         assertThat(screen.toString()).contains("-H 'X-API-Key: REDACTED-AUTH.inAHeader'")

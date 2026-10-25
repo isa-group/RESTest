@@ -90,50 +90,51 @@ Java 21.0.12.1 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 
 ### Your first run
 
-One command, a document and an address. This one tests the pet shop that the OpenAPI project keeps
-online as a demonstration, for ten seconds:
+One command, a document and an address. Start a pet shop on your own machine — the demonstration API
+the OpenAPI project publishes as a Docker image — and test it for ten seconds:
 
 ```bash
-restest run https://petstore3.swagger.io/api/v3/openapi.json \
-    --url https://petstore3.swagger.io/api/v3 --budget 10s
+docker run -d --name petstore -p 8080:8080 swaggerapi/petstore3:1.0.28
+restest run http://localhost:8080/api/v3/openapi.json \
+    --url http://localhost:8080/api/v3 --budget 10s
 ```
 
-That server is somebody else's, and RESTest tests an operation that creates something by creating
-something: a run leaves pets, orders and users behind wherever it is pointed. Keep runs there short,
-and point `--url` at a copy of your own for anything longer, or for anything you would mind having
-written to.
+The shop takes a few seconds to start: once `curl -s http://localhost:8080/api/v3/pet/1` prints a
+pet, it is ready. Its image is built for Intel and AMD processors, so on a Mac with Apple silicon
+Docker runs it in emulation and warns that the platforms do not match. Its document gives its address
+as a path alone, `/api/v3`, which is why `--url` says where it is running. With RESTest's own Docker
+image, write `host.docker.internal` in place of `localhost` in the second command, as
+[Install](#install) says.
+
+RESTest tests an operation that creates something by creating something, so a run leaves pets,
+orders and users behind. `docker rm -f petstore` and the same `docker run` give you a shop as good
+as new.
 
 What it prints begins like this, saying what it will test and then printing each fault as it finds
 it. The numbers are one run's, and yours will be different:
 
 ```
-RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
+RESTest testing Swagger Petstore - OpenAPI 3.0 at http://localhost:8080/api/v3
 
-19 of 19 operations can be tested, seed 2692467261078506747, budget 10s
+19 of 19 operations can be tested, seed -8087786691817110837, budget 10s
   2 of them ask for an API key that was not given (api_key, in the header api_key): --auth <key> gives it
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 
-error    Internal server error  (F100)
-         getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory  ->  500
-         the API answered 500, so it fell over while handling this request
-         curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
-```
-
-Later in the same run, a request RESTest broke on purpose, with a status the document does not
-allow, was accepted — an error — and the reply to it was not the shape the document gives either,
-which is a warning:
-
-```
 warning  Reply off schema  (F200)
-         updatePet - PUT https://petstore3.swagger.io/api/v3/pet  ->  200
-         the body does not match the shape the specification declares for it, answering 200 as application/json
-           /status: does not have a value in the enumeration ["available", "pending", "sold"]
-         curl -i -X PUT 'https://petstore3.swagger.io/api/v3/pet' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"id":7,"category":{"id":4,"name":"Lions"},"name":"Lion 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag1"}],"status":"AVAILABLE"}'
+         loginUser - GET http://localhost:8080/api/v3/user/login  ->  200
+         the body is not JSON at all, answering 200 as application/json
+           Stored JSON could not be read back: Unrecognized token 'Logged': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')
+         curl -i -X GET 'http://localhost:8080/api/v3/user/login' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0'
+```
 
+Later in the same run, a request RESTest broke on purpose, with `null` where the document says a
+value may not be null, was accepted, which is an error:
+
+```
 error    Invalid data accepted  (F206)
-         updatePet - PUT https://petstore3.swagger.io/api/v3/pet  ->  200
-         the API accepted a request it should have refused: sent "AVAILABLE" for body.status, which is not on its list of accepted values
-         curl -i -X PUT 'https://petstore3.swagger.io/api/v3/pet' -H 'Accept: application/json, application/xml;q=0.5' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"id":7,"category":{"id":4,"name":"Lions"},"name":"Lion 1","photoUrls":["url1","url2"],"tags":[{"id":1,"name":"tag1"},{"id":2,"name":"tag1"}],"status":"AVAILABLE"}'
+         placeOrder - POST http://localhost:8080/api/v3/store/order  ->  200
+         the API accepted a request it should have refused: sent null for body.complete, which may not be null
+         curl -i -X POST 'http://localhost:8080/api/v3/store/order' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"id":10,"petId":198772,"quantity":0,"status":"delivered","complete":null}'
 ```
 
 After fifty faults the screen stops printing them, and the run ends with a summary:
@@ -141,25 +142,26 @@ After fifty faults the screen stops printing them, and the run ends with a summa
 ```
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-563 requests to 19 operations in 10.8s, 12% of it idle
-  opening lap: 19 requests in 2.8s, 11 of 19 operations answered 2xx
-  220 2xx, 173 4xx, 170 5xx
-  53 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 173 refusals above
-  60 of them changed one thing in a request the API had accepted
-  21 of them were steps of 8 series about a thing the run created: readAfterDelete 7, createTwice 4, safeGet 10; 11 creation(s) meant to begin one were not accepted
-  8 operation(s) answered 500, 8 answered some 5xx
-179 errors, on 9 operations:
-  170 x Internal server error  (F100)
+5384 requests to 19 operations in 10.0s, 4% of it idle
+  opening lap: 19 requests in 710ms, 13 of 19 operations answered 2xx
+  2106 2xx, 1743 4xx, 1535 5xx
+  431 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 1743 refusals above
+  722 of them changed one thing in a request the API had accepted
+  214 of them were steps of 75 series about a thing the run created: deleteTwice 41, createTwice 38, readAfterDelete 62, safeGet 49, writeUnderDeleted 24; 153 creation(s) meant to begin one were not accepted
+  16 operation(s) answered 500, 16 answered some 5xx
+1625 errors, on 16 operations:
+  1535 x Internal server error  (F100)
         look in the API's log for what failed while it handled the request; the document is not what to fix
-  9 x Invalid data accepted  (F206)
+  90 x Invalid data accepted  (F206)
         make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
-41 warnings, on 7 operations, which do not fail the run (checks.failOnWarnings):
-  41 x Reply off schema  (F200)
+376 warnings, on 8 operations, which do not fail the run (checks.failOnWarnings):
+  376 x Reply off schema  (F200)
         the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
 some replies could not be checked; report.json names their operations:
-  the shape of 401 replies, on 18 operations: the document gives no shape
-  the content type of 226 replies, on 16 operations: the document declares the status code with no content type
-report written to restest-out/report.json (172.7 KiB)
+  the shape of 3844 replies, on 18 operations: the document gives no shape
+  the content type of 2267 replies, on 17 operations: the document declares the status code with no content type
+report written to restest-out/report.json (313.1 KiB)
+page written to restest-out/report.html (393.9 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -173,15 +175,24 @@ the run itself was not kept; pass --store to keep every request and reply
   is, in RESTest's words and by its number in a catalogue other testing tools share (`F100` is a
   reply of 500); the request and what the API answered; what is wrong; and a `curl` command that
   does it again.
-- **The summary** says how much was sent and how it was answered. `220 2xx, 173 4xx, 170 5xx` is
+- **The summary** says how much was sent and how it was answered. `2106 2xx, 1743 4xx, 1535 5xx` is
   worth a glance even when nothing is wrong: if almost everything was refused, the requests were the
-  problem rather than the API. `8 operation(s) answered 500` counts operations rather than replies,
+  problem rather than the API. `16 operation(s) answered 500` counts operations rather than replies,
   and is the number worth quoting, since one broken operation asked six hundred times is six hundred
   broken replies. Then come the errors and the warnings, each kind with a line on what to look at,
   and what the run could not check, and why.
 - **`report.json`**, in `restest-out/`, has all of it for a program to read: every error and warning
-  counted, every operation and kind of fault that went wrong, the first few faults of each kind written out
-  whole, every operation that could not be tested and why, and every setting the run used.
+  counted, every operation the document describes and what happened to it, the first few faults of
+  each kind written out whole, every operation that could not be tested and why, and every setting
+  the run used.
+- **`report.html`**, beside it, is the same run as a page to open in a browser, with no network: the
+  errors and warnings on every operation, the request behind each kind of fault with a button that
+  copies its `curl` command, what could not be tested, and the number the run ended with. The page
+  of the run above, in light and dark colours:
+
+| Light | Dark |
+|---|---|
+| ![The top of report.html for the run above, in light colours: four cards counting the replies by class of status code, the errors and the warnings by kind, and the operations by what was found on them, then the timeline of the run](docs/images/petstore-report-light.png) | ![The same page in dark colours](docs/images/petstore-report-dark.png) |
 
 [What a run leaves behind](docs/report.md) goes through every line and every key, and [The faults
 RESTest reports](docs/faults.md) says what each kind of fault means.
@@ -245,8 +256,8 @@ values:
 ```
 
 ```bash
-restest run https://petstore3.swagger.io/api/v3/openapi.json \
-    --url https://petstore3.swagger.io/api/v3 --budget 10s --dictionary pet-ids.yaml
+restest run http://localhost:8080/api/v3/openapi.json \
+    --url http://localhost:8080/api/v3 --budget 10s --dictionary pet-ids.yaml
 ```
 
 [The dictionary format](docs/dictionary-format.md). A dictionary and a plan each have a [JSON
@@ -290,15 +301,15 @@ one thing a run does.
 sends it where the document says, with the operations that ask for it:
 
 ```bash
-restest run https://petstore3.swagger.io/api/v3/openapi.json \
-    --url https://petstore3.swagger.io/api/v3 --budget 10s --auth special-key
+restest run http://localhost:8080/api/v3/openapi.json \
+    --url http://localhost:8080/api/v3 --budget 10s --auth special-key
 ```
 
 A bearer token or a session cookie you already hold goes the same way:
 `--auth 'header:Authorization=Bearer …'`, `--auth cookie:JSESSIONID=…`. The key is written into
-nothing the run leaves behind: the screen, `report.json` and its `curl` commands show `REDACTED-AUTH`
-where it went — or, for a key given with its name or its place, a longer word such as
-`REDACTED-AUTH.api_key`, which the run names before its first request. A `curl` command copied from a
+nothing the run leaves behind: the screen, `report.json`, `report.html` and their `curl` commands
+show `REDACTED-AUTH` where it went — or, for a key given with its name or its place, a longer word
+such as `REDACTED-AUTH.api_key`, which the run names before its first request. A `curl` command copied from a
 report is run by putting the key back in place of that word. [Handing over a key or a token](docs/command-line.md#handing-over-a-key-or-a-token).
 
 ## Exit codes

@@ -1,7 +1,8 @@
 # Reading what a run says
 
-A run says what it found three times over: on the screen as it goes, in `report.json` when it ends,
-and, with `--store`, in `run.sqlite`. This chapter reads each with a question in mind. Every line and
+A run says what it found on the screen as it goes, in `report.json` when it ends, in `report.html`
+beside it, the same run as a page, and, with `--store`, in `run.sqlite`. This chapter reads each
+with a question in mind. Every line and
 every key is listed in [What a run leaves behind](../report.md), and every kind of fault in [The
 faults RESTest reports](../faults.md); this chapter is about using them.
 
@@ -101,6 +102,41 @@ Read it from the top:
   about a reply nobody could judge.
 - **What could not be tested**, if anything, each operation with the reason. `no faults found` says
   nothing about an operation that was never tried, so read this line before celebrating.
+
+## The page
+
+`report.html`, beside `report.json`, is the same run as a page to open in a browser: from what a
+build kept, from an e-mail, on a laptop with no network. It is one file, needs nothing beside it,
+fetches nothing, and shows nothing that `report.json` does not hold. The clinic's first run, from
+[chapter 3](03-a-first-run.md#the-first-run), opens like this:
+
+![The top of report.html for a run of the clinic: under the header and the menu, four cards counting the replies by class of status code, the errors and the warnings by kind, and the operations by what was found on them](images/the-page.png)
+
+From the top:
+
+- **Four cards**: the replies by class of status code, the errors and the warnings by kind, each
+  with on how many operations — warnings do not fail a run unless `checks.failOnWarnings` says so —
+  and the operations by what was found on them: errors, only warnings, nothing, or not tested at
+  all.
+- **The timeline**: how the replies came back over the time the run was given, one bar for each
+  stretch of it.
+- **Operations**: every operation the document describes, with a filter for each of those groups and
+  a search. Open one to see how its replies divided and, for each kind of fault found on it, the
+  first request of that kind written out whole and the reply to it. **Copy curl** copies the command
+  that sends the request again; **Copy as issue** copies a title, the request, the reply and the
+  command, in Markdown, ready for an issue tracker.
+- **What was found**: each kind of fault, with its number in the catalogue testing tools share —
+  point at the number, or reach it with the keyboard, to read what it means — what to look at, in
+  which classes of status code it came back, and the operations it was found on.
+- **What could not be tested or read**: operations no request went to, replies no check could judge,
+  parts of the document that could not be read, and keys the document asks for that nobody gave.
+- **How it was run**: the number the run ended with and what it means, as [chapter
+  9](09-exit-codes-and-ci.md) gives it; the plan and the file of settings, as they were named on the
+  command line; the time given; and whether every request and reply was kept.
+
+The page draws itself in the browser, with JavaScript; where that is turned off, it says so and
+points at `report.json`. A run that only a program will read can leave the page out with `--set
+report.html=false` ([the settings](../settings.md#report)).
 
 ## Asking the report
 

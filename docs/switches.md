@@ -105,13 +105,24 @@ No check decides what a run sends: switching one off changes which replies are c
 for a check that reports errors — or warnings, with `checks.failOnWarnings` on — the exit code. [The
 faults](faults.md#switching-a-check-off) says what else it changes, and what it does not.
 
-### And three that are not levers
+### And four that are not levers
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
 | `checks.failOnWarnings` | `false` | How a run ends | ends with `0` when the only faults it found are warnings, as every run does by default. On, it ends with `1` for a warning as it does for an error. It decides what a run's findings do to how it ends, not what it sends or checks, so it plays no part in an ablation |
 | `engine.followRedirects` | `false` | Redirections | reports a redirection rather than following it. It decides what a 3XX answer means rather than turning off something a run could do without, which is why it is off by default and plays no part in an ablation |
 | `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, or when its budget is spent, whichever comes first, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
+| `report.html` | `true` | The page | writes no `report.html`, only `report.json`, for a run whose results only a program will read. It changes which files a run leaves, not what it sends or finds, so it plays no part in an ablation |
+
+The one of these that is on by default is turned off with this file, for a campaign that keeps only
+what a program reads:
+
+**The page**
+
+```yaml
+report:
+  html: false
+```
 
 ## What leaving each one on costs
 

@@ -144,9 +144,13 @@ of its own. Whether you may test an API at all is not something any tool can che
   RESTest stopped waiting is a fault; one answered in twenty-nine seconds, against the half a minute
   it waits by default, is not. Nor is a reply whose status line and headers arrived and whose body
   never finished.
-- **`report.json` does not say that a run broke.** When a run ends with `4`, the file reads like that
-  of a finished run, and its `verdict` says what the run amounts to otherwise. Read the exit code,
-  not only the file.
+- **`report.json` does not say that a run broke**, nor does the page drawn from it. When a run ends
+  with `4`, the file reads like that of a finished run, its `verdict` says what the run amounts to
+  otherwise, and the page gives the number that verdict ends with. Read the exit code, not only the
+  file.
+- **The page shows the first request of each kind of fault on an operation**, of the up to five
+  `report.json` writes out whole; the others are in `report.json`. It needs JavaScript to draw
+  itself, and holds the whole of `report.json`, so it is about as large.
 
 ## The files a run reads
 

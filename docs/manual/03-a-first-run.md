@@ -37,9 +37,10 @@ The clinic also serves its own OpenAPI document, which is everything RESTest nee
 curl -s http://localhost:9966/petclinic/v3/api-docs | head -c 300
 ```
 
-> **No Docker?** The OpenAPI project keeps a demonstration pet shop online, and RESTest's
-> [README](../../README.md#your-first-run) runs against it. It is somebody else's server, shared by
-> everyone who tries it, so keep your runs there short. The examples in this manual use the clinic.
+> **No Docker?** The pet shop the [README](../../README.md#your-first-run) starts with Docker is also
+> kept online by the OpenAPI project, at `https://petstore3.swagger.io/api/v3`. It is somebody else's
+> server, shared by everyone who tries it, so keep your runs there short. The examples in this manual
+> use the clinic.
 
 ## The first run
 
@@ -56,24 +57,24 @@ It begins like this, with what it will test and then each fault as it finds it:
 ```
 RESTest testing REST Petclinic backend API documentation at http://localhost:9966/petclinic
 
-43 of 43 operations can be tested, seed -8717084955806451298, budget 30s
+43 of 43 operations can be tested, seed -8262865887456371519, budget 30s
   what it sends depends on the API's own replies, so the seed alone does not repeat this run; --store keeps what it sent
 1 part(s) of the document could not be read:
   info: attribute info.license.extensions is unexpected
 
 warning  Undeclared status code  (F920)
-         redirectToSwagger_5 - HEAD http://localhost:9966/petclinic/  ->  302
+         redirectToSwagger - GET http://localhost:9966/petclinic/  ->  302
          the API answered 302, which the document does not declare for this operation; it declares 200
-         curl --head 'http://localhost:9966/petclinic/' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0'
+         curl -i -X GET 'http://localhost:9966/petclinic/' -H 'Accept: */*' -H 'User-Agent: RESTest/2.0'
 ```
 
 and a few faults later comes the first error:
 
 ```
 error    Internal server error  (F100)
-         addUser - POST http://localhost:9966/petclinic/api/users  ->  500
+         getVisit - GET http://localhost:9966/petclinic/api/visits/true  ->  500
          the API answered 500, so it fell over while handling this request
-         curl -i -X POST 'http://localhost:9966/petclinic/api/users' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0' -H 'Content-Type: application/json' --data-binary '{"username":"john.doe","password":"1234abc","enabled":true}'
+         curl -i -X GET 'http://localhost:9966/petclinic/api/visits/true' -H 'Accept: application/json' -H 'User-Agent: RESTest/2.0'
 ```
 
 After ten warnings it stops printing them, after fifty faults it stops printing any, and it ends with
@@ -82,26 +83,27 @@ a summary:
 ```
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-6991 requests to 43 operations in 30.5s, 8% of it idle
-  opening lap: 43 requests in 2.3s, 35 of 43 operations answered 2xx
-  2351 2xx, 942 3xx, 2690 4xx, 1008 5xx
-  504 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 2690 refusals above
-  1043 of them changed one thing in a request the API had accepted
-  328 of them were steps of 97 series about a thing the run created: readAfterDelete 81, createTwice 52, deleteTwice 51, writeUnderDeleted 15, putTwice 72, safeGet 57; 92 creation(s) meant to begin one were not accepted
+7647 requests to 43 operations in 30.5s, 9% of it idle
+  opening lap: 43 requests in 2.5s, 35 of 43 operations answered 2xx
+  2734 2xx, 1029 3xx, 2748 4xx, 1136 5xx
+  469 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 2748 refusals above
+  1196 of them changed one thing in a request the API had accepted
+  357 of them were steps of 102 series about a thing the run created: readAfterDelete 91, safeGet 60, writeUnderDeleted 18, putTwice 99, deleteTwice 45, createTwice 44; 121 creation(s) meant to begin one were not accepted
   30 operation(s) answered 500, 30 answered some 5xx
-1032 errors, on 30 operations:
-  1008 x Internal server error  (F100)
+1165 errors, on 30 operations:
+  1136 x Internal server error  (F100)
         look in the API's log for what failed while it handled the request; the document is not what to fix
-  24 x Invalid data accepted  (F206)
+  29 x Invalid data accepted  (F206)
         make the API refuse what its document forbids; where the document forbids more than the API should, loosen the document instead
-2723 warnings, on 36 operations, which do not fail the run (checks.failOnWarnings):
-  1972 x Undeclared status code  (F920)
+3052 warnings, on 37 operations, which do not fail the run (checks.failOnWarnings):
+  2104 x Undeclared status code  (F920)
         declare the status code for the operation in the document, or stop the API answering it
-  742 x Undeclared content type  (F921)
+  774 x Undeclared content type  (F921)
         declare the content type for that status code in the document, or have the API send the one declared
-  9 x Reply off schema  (F200)
+  174 x Reply off schema  (F200)
         the API and its document disagree about the reply's body: compare the places listed with the document, and fix whichever is wrong
-report written to restest-out/report.json (1.4 MiB)
+report written to restest-out/report.json (1.5 MiB)
+page written to restest-out/report.html (1.5 MiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
@@ -122,7 +124,9 @@ What you are looking at, from the top:
    are warnings, so that errors found later still have room; after that, the run only counts them.
 3. **The summary**: how many requests went to how many operations, how the API answered them, then
    the errors and the warnings by kind, each with a line on what to look at.
-4. **Where the report was written**: `restest-out/report.json`.
+4. **Where the report was written**: `restest-out/report.json`, for programs, and
+   `restest-out/report.html`, the same run as a page to open in a browser, which the
+   [next chapter](04-reading-what-a-run-says.md#the-page) shows.
 
 The run ends with `1`, because it found errors. Warnings alone would have ended it with `0`: the
 clinic's document leaves out most of the ways the clinic says no, and that is worth knowing, but it
@@ -167,7 +171,7 @@ every request and every reply, add `--store`:
 restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --store
 ```
 
-It writes a second file, `restest-out/run.sqlite`, a database that the next chapter reads. It is off
+It writes one more file, `restest-out/run.sqlite`, a database that the next chapter reads. It is off
 by default because it is large: a minute against a fast API keeps hundreds of megabytes.
 
 ## Stopping a run early

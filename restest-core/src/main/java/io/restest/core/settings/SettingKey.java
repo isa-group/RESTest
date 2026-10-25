@@ -408,7 +408,10 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many of the status codes answered most the report lists"),
             key("report", "timelineIntervals", SettingKind.WHOLE_NUMBER,
                     "how many equal intervals, up to 10000, the budget is cut into for the run "
-                            + "over time in the report"));
+                            + "over time in the report"),
+            key("report", "html", SettingKind.YES_OR_NO,
+                    "write report.html beside report.json: the same run, as a page to open in a "
+                            + "browser"));
 
     private static final Map<String, SettingKey> BY_NAME = byName();
 

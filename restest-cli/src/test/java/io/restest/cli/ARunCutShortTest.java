@@ -182,9 +182,9 @@ class ARunCutShortTest {
         assertThat(problems.toString())
                 .contains("restest: the run was stopped from outside and had not finished writing "
                         + "what it found 1s later, so it ends here: report.json was not written; "
-                        + "run.sqlite was not closed, so the last interactions it had not yet saved "
-                        + "are lost, and some of what it did save is in run.sqlite-wal beside it: "
-                        + "keep the three files together");
+                        + "report.html was not written; run.sqlite was not closed, so the last "
+                        + "interactions it had not yet saved are lost, and some of what it did save "
+                        + "is in run.sqlite-wal beside it: keep the three files together");
         // A real program would have ended there. This one is a test, so the run finishes after all.
         assertThat(answer).isEqualTo(130);
     }

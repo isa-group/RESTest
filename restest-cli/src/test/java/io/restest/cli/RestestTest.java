@@ -43,6 +43,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -216,6 +217,33 @@ class RestestTest {
         assertThat(Files.readString(somebodysWork)).isEqualTo("not ours");
         assertThat(verdictIn(directory)).describedAs("the report says what the 1 says")
                 .isEqualTo("errorsFound");
+    }
+
+    @Test
+    @DisplayName("a run writes the page beside report.json and says where; told to write no page, "
+            + "it writes none and leaves no page of an earlier run behind")
+    void the_page_is_written_unless_asked_not_to(@TempDir Path directory) throws Exception {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
+                "--out", directory.toString());
+
+        Path page = directory.resolve("report.html");
+        assertThat(page).exists();
+        assertThat(screen.toString()).containsPattern(
+                "page written to " + Pattern.quote(page.toString())
+                        + " \\(\\d+\\.\\d KiB\\)");
+        assertThat(Files.readString(page)).contains("<title>RESTest report</title>");
+
+        screen.getBuffer().setLength(0);
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "30s",
+                "--set", STOP_AFTER_REQUESTS, "--set", SIXTY_REQUESTS, "--seed", "1",
+                "--set", "report.html=false", "--out", directory.toString());
+
+        assertThat(page)
+                .describedAs("a page beside this run's report.json would be read as this run's")
+                .doesNotExist();
+        assertThat(directory.resolve("report.json")).exists();
+        assertThat(screen.toString()).contains("report written to").doesNotContain("page written");
     }
 
     @Test

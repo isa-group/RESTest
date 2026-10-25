@@ -300,6 +300,8 @@ report:
   commonestStatusCodesListed: 10 # default
   # how many equal intervals, up to 10000, the budget is cut into for the run over time in the report
   timelineIntervals: 60       # default
+  # write report.html beside report.json: the same run, as a page to open in a browser
+  html: true                  # default
 ```
 
 ## What a settings file looks like
@@ -552,6 +554,7 @@ not.
 | `detailsShownPerFault` | `10` | how many of a fault's particulars are printed under it on the screen |
 | `commonestStatusCodesListed` | `10` | how many of the status codes answered most the report lists |
 | `timelineIntervals` | `60` | how many equal intervals, up to 10000, the budget is cut into for the run over time in the report |
+| `html` | `true` | write report.html beside report.json: the same run, as a page to open in a browser |
 
 ## Four things worth knowing
 

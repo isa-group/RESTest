@@ -35,13 +35,8 @@ import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.ReportSettings;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsInEffect;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -294,6 +289,7 @@ public final class JsonReport implements RunListener {
     private EngineStatistics engine = EngineStatistics.none();
     private boolean cutShort;
     private JsonValue written;
+    private String text;
 
     /** What each stretch of the run achieved, worked out in one place for every report. */
     private final Phases phases = new Phases();
@@ -349,7 +345,8 @@ public final class JsonReport implements RunListener {
     }
 
     /**
-     * Where the report is written before it is given its own name, beside the file it becomes.
+     * Where a report's file is written before it is given its own name, beside the file it becomes:
+     * this report's, and the page {@link HtmlReport} writes.
      *
      * <p>The report is written there in full and then renamed in one step, so that a file with the
      * report's name is always a whole report. A program ended outright while it was writing - a
@@ -361,8 +358,7 @@ public final class JsonReport implements RunListener {
      * @return where it is written first
      */
     public static Path whileBeingWritten(Path file) {
-        Objects.requireNonNull(file, "file");
-        return file.resolveSibling(file.getFileName() + ".partial");
+        return WholeFile.whileBeingWritten(file);
     }
 
     /** A report that is built but written nowhere, for anyone who only wants to read it back. */
@@ -393,9 +389,12 @@ public final class JsonReport implements RunListener {
         return Optional.ofNullable(written);
     }
 
-    /** What was written, as the text that went into the file. Empty before the run has finished. */
+    /**
+     * What was written, as the text that went into the file, kept rather than written again for
+     * whoever needs the same text. Empty before the run has finished.
+     */
     public Optional<String> asText() {
-        return document().map(JsonText::write);
+        return Optional.ofNullable(text);
     }
 
     @Override
@@ -505,27 +504,8 @@ public final class JsonReport implements RunListener {
 
     private void finish() {
         written = build();
-        file.ifPresent(path -> {
-            Path partial = whileBeingWritten(path);
-            try {
-                Files.writeString(partial, JsonText.write(written));
-                try {
-                    Files.move(partial, path, StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.ATOMIC_MOVE);
-                } catch (AtomicMoveNotSupportedException notInOneStep) {
-                    // A file system that cannot rename in one step still renames: the report is
-                    // then whole or absent everywhere but in the instant of the rename.
-                    Files.move(partial, path, StandardCopyOption.REPLACE_EXISTING);
-                }
-            } catch (IOException e) {
-                try {
-                    Files.deleteIfExists(partial);
-                } catch (IOException alsoNot) {
-                    e.addSuppressed(alsoNot);
-                }
-                throw new UncheckedIOException("the report could not be written to " + path, e);
-            }
-        });
+        text = JsonText.write(written);
+        file.ifPresent(path -> WholeFile.write(path, "the report", out -> out.write(text)));
     }
 
     /**

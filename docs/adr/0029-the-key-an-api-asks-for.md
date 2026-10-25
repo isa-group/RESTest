@@ -541,3 +541,11 @@ memory, or of stack, names no key - but the run was handed one, and prints what 
 
 The decision above is unchanged: RESTest uses only the credentials the person running it hands over.
 Signing in by itself, as Schemathesis now does, would be a decision of its own.
+
+## Amendment (25 October 2026): the page
+
+**`report.html` carries the same text as `report.json`**, inside the page, so every key in it was
+hidden at the door before either file was written, and nothing about §6 changes. The page is one
+more place the hiding reaches without being told: the test that searches everything a run leaves
+behind for every way of writing every key now finds the page there, and checks that it shows the
+words that stand in for the keys, as `report.json` does ([ADR-0039](0039-the-html-report.md)).

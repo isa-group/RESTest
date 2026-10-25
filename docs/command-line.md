@@ -32,7 +32,7 @@ path. Every option has a default, and the defaults are the tool's zero-configura
 | `--auth` | `<key>` | none | A key or a token the API asks for — see [below](#handing-over-a-key-or-a-token). Repeat for several |
 | `--budget` | `<duration>` | `60s` | How long to keep testing: `500ms`, `30s`, `5m`, `2h`, a plain number of seconds, or ISO-8601 such as `PT1M30S`. All of it is used, reading the document included, unless `schedule.stopAfterRequests` ends the run sooner |
 | `--seed` | `<number>` | one chosen and printed | With the plan RESTest carries, the same number gives a similar run rather than the same one, because what a run sends also depends on what the API answers; `--store` keeps the run you had. The number fixes every random choice. [Getting the seed back](switches.md#getting-the-seed-back) says how to make it repeat a run exactly |
-| `--out` | `<directory>` | `restest-out` | Where this run's files go: `report.json`, and `run.sqlite` with `--store`. What an earlier run wrote there is replaced; nothing else in the directory is touched |
+| `--out` | `<directory>` | `restest-out` | Where this run's files go: `report.json`; `report.html`, the same run as a page to open in a browser, unless [`report.html`](settings.md#report) is off; and `run.sqlite` with `--store`. What an earlier run wrote there is replaced; nothing else in the directory is touched |
 | `--dictionary` | `<file-or-directory>` | none | A list of values to send, or a directory of them. Repeat for several. [The format](dictionary-format.md), and [its JSON Schema](schemas.md) |
 | `--campaign` | `<file>` | the plan RESTest carries | A plan saying where values come from and which operations the run may touch. [The format](campaign-format.md), and [its JSON Schema](schemas.md) |
 | `--print-campaign` | — | — | Writes out the plan RESTest carries, and stops. Not with `--campaign` or `--print-settings` |
@@ -105,20 +105,22 @@ named by mistake — answers `2`, with a sentence saying which.
 Ctrl-C, `kill` and `docker stop` stop a run without losing what it found. The run makes no new
 requests, waits for the answers to the requests it had already made for up to
 `schedule.interruptGrace` — 2 seconds unless [set](settings.md) otherwise — and then writes what it
-found, as it would at the end of its budget: the summary, `report.json` with `"cutShort": true`, and
-with `--store` a closed `run.sqlite`. It ends with `130` for Ctrl-C and `143` for the other two.
-Requests it had made and not yet sent, waiting their turn behind the ones in flight, still go out
-while it waits: never more than may be waiting for an answer at once, 32 unless set otherwise.
+found, as it would at the end of its budget: the summary, `report.json` with `"cutShort": true`, the
+page `report.html` drawn from it, and with `--store` a closed `run.sqlite`. It ends with `130` for
+Ctrl-C and `143` for the other two. Requests it had made and not yet sent, waiting their turn behind
+the ones in flight, still go out while it waits: never more than may be waiting for an answer at
+once, 32 unless set otherwise.
 
 ```
 $ restest run openapi.yaml --url http://localhost:9966/petclinic/api --budget 60s --store
 ...
 ^C
-16306 requests to 35 operations in 11.9s, 9% of it idle, cut short
+1107 requests to 35 operations in 12.7s, 6% of it idle, cut short
 ...
-restest: the run was stopped from outside after 11.8s of its 60s budget; what is reported above, and in report.json, is what it found until then
-report written to restest-out/report.json (382.8 KiB)
-run stored in restest-out/run.sqlite (117.8 MiB)
+restest: the run was stopped from outside after 12.4s of its 60s budget; what is reported above, and in report.json, is what it found until then
+report written to restest-out/report.json (1.2 MiB)
+page written to restest-out/report.html (1.3 MiB)
+run stored in restest-out/run.sqlite (3.1 MiB)
 $ echo $?
 130
 ```
@@ -127,8 +129,8 @@ An answer that has not come back by the end of that wait counts as never answere
 says how many there were. A second Ctrl-C does nothing: the run is already stopping, and is done in
 a few seconds. If it has not finished writing `schedule.interruptGrace` and
 `schedule.interruptWritingGrace` — five seconds unless set otherwise — after it was stopped, a
-report that got stuck, say, it says what it did not leave behind, and ends. `report.json` is only
-ever there whole. A `run.sqlite` that was not closed has lost the last interactions it had not yet
+report that got stuck, say, it says what it did not leave behind, and ends. `report.json` and
+`report.html` are only ever there whole. A `run.sqlite` that was not closed has lost the last interactions it had not yet
 saved, and keeps some of what it did save in `run.sqlite-wal` beside it, so the three files go
 together. If the directory itself does not answer within `schedule.interruptLookingGrace`, a second
 unless set otherwise, the run says that instead.
@@ -184,7 +186,8 @@ From v2.0, and for every 2.x version:
 
 - no command, option or environment variable is removed or renamed, and none changes what it means;
 - no exit code changes what it means;
-- the names of the files a run writes, `report.json` and `run.sqlite`, stay what they are.
+- the names of the files a run writes, `report.json`, `report.html` and `run.sqlite`, stay what they
+  are.
 
 A minor version may **add** — a command, an option, a setting, a number for something that has none
 yet — because nothing written for 2.0 breaks when something is added. Anything that would break it

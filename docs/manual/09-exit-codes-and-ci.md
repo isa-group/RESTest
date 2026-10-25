@@ -48,7 +48,7 @@ restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s
 code=$?
 case $code in
   0) echo "RESTest found no error" ;;
-  1) echo "RESTest found errors: see restest-out/report.json"; exit 1 ;;
+  1) echo "RESTest found errors: see restest-out/report.html"; exit 1 ;;
   *) echo "RESTest could not test the API (exit code $code)"; exit 2 ;;
 esac
 ```
@@ -106,7 +106,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: restest-report
-          path: restest-out/report.json
+          path: |
+            restest-out/report.json
+            restest-out/report.html
 ```
 
 Each action is pinned to a commit rather than to a version tag, which whoever owns an action can
@@ -115,7 +117,9 @@ turn it on for GitHub Actions in your repository, keeps both up to date.
 
 The step that tests the API fails the job when RESTest ends with anything but `0`, which is usually
 what a build wants. `if: always()` keeps the report even then, and it is the report that says what
-went wrong: download it from the run's page on GitHub.
+went wrong: download it from the run's page on GitHub and open `report.html` in a browser, or hand
+`report.json` to a program. A release before 2.3.0 writes no page, and the artifact then holds the
+JSON alone.
 
 Some things to decide for your own build:
 

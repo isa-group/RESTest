@@ -17,11 +17,26 @@ package io.restest.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.event.RunEvent;
+import io.restest.core.exec.EngineStatistics;
+import io.restest.report.HtmlReport;
+import io.restest.report.JsonReport;
 import io.restest.report.Verdict;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -223,6 +238,46 @@ class ExitCodeTest {
                 run.warningsFail()))
                 .describedAs("ends as its report says it went: %s", run.says().word())
                 .isEqualTo(run.endsWith());
+    }
+
+    @Test
+    @DisplayName("the page a run writes gives, for every verdict, the number the run ends with")
+    void the_page_gives_the_number_for_every_verdict(@TempDir Path directory) throws IOException {
+        Path page = directory.resolve("report.html");
+        HtmlReport report = HtmlReport.around(JsonReport.inMemory(), page);
+        Instant now = Instant.now();
+        report.on(new RunEvent.RunStarted(now, "Pets", "http://localhost", Duration.ofSeconds(1)));
+        report.on(new RunEvent.RunFinished(now, Duration.ofSeconds(1), EngineStatistics.none()));
+
+        Map<String, String> onThePage = new TreeMap<>();
+        Matcher row = Pattern.compile("^\\s+(\\w+): \\['([^']+)', ", Pattern.MULTILINE)
+                .matcher(theExitCodesIn(Files.readString(page)));
+        while (row.find()) {
+            onThePage.put(row.group(1), row.group(2));
+        }
+
+        assertThat(onThePage.keySet())
+                .describedAs("one number for each word report.json can write, and no other")
+                .containsExactlyInAnyOrderElementsOf(Arrays.stream(Verdict.values())
+                        .map(Verdict::word).toList());
+        for (Verdict verdict : Verdict.values()) {
+            String said = onThePage.get(verdict.word());
+            if (verdict == Verdict.STOPPED) {
+                assertThat(said).describedAs("a stopped run ends with Java's number for how")
+                        .contains(String.valueOf(ExitCode.of(verdict)))
+                        .contains(String.valueOf(ExitCode.TERMINATED));
+            } else {
+                assertThat(said).describedAs("what the page says for %s", verdict.word())
+                        .isEqualTo(String.valueOf(ExitCode.of(verdict)));
+            }
+        }
+    }
+
+    /** The table of exit codes in a page a run wrote. */
+    private static String theExitCodesIn(String page) {
+        int start = page.indexOf("var EXIT_CODES = {");
+        assertThat(start).describedAs("the page carries its table of exit codes").isNotNegative();
+        return page.substring(start, page.indexOf("};", start));
     }
 
     private static RunLoop.Outcome outcome(long sent, long answered) {

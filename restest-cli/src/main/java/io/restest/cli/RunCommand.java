@@ -40,6 +40,7 @@ import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.Scheduler;
 import io.restest.oracles.OracleListener;
 import io.restest.report.ConsoleReport;
+import io.restest.report.HtmlReport;
 import io.restest.report.JsonReport;
 import io.restest.spec.SwaggerSpecificationParser;
 import io.restest.store.SqliteInteractionStore;
@@ -65,6 +66,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -149,6 +151,16 @@ final class RunCommand implements Callable<Integer> {
     private static final int ISSUES_SHOWN = 5;
 
     /**
+     * A file one of the reports writes into the run's directory, and the word the run calls it by
+     * when it says where it went: "report written to", "page written to".
+     */
+    private record ReportFile(String word, String name) {
+    }
+
+    private static final ReportFile THE_REPORT = new ReportFile("report", "report.json");
+    private static final ReportFile THE_PAGE = new ReportFile("page", "report.html");
+
+    /**
      * Everything RESTest writes into an output directory.
      *
      * <p>A directory holds one run, so every run begins by removing what an earlier one left there -
@@ -163,9 +175,11 @@ final class RunCommand implements Callable<Integer> {
      * into the next run and be read as part of it. So is the file the report is written into before
      * it is given its name, which only a program ended outright while writing it leaves behind.
      */
-    private static final List<String> FILES_A_RUN_WRITES = List.of("run.sqlite", "run.sqlite-wal",
-            "run.sqlite-shm", "report.json",
-            JsonReport.whileBeingWritten(Path.of("report.json")).toString());
+    private static final List<String> FILES_A_RUN_WRITES = Stream.concat(
+            Stream.of("run.sqlite", "run.sqlite-wal", "run.sqlite-shm"),
+            Stream.of(THE_REPORT, THE_PAGE).flatMap(report -> Stream.of(report.name(),
+                    JsonReport.whileBeingWritten(Path.of(report.name())).toString())))
+            .toList();
 
     @Parameters(
             index = "0",
@@ -227,9 +241,10 @@ final class RunCommand implements Callable<Integer> {
             names = "--out",
             paramLabel = "<directory>",
             defaultValue = "restest-out",
-            description = "Where to write this run's files: report.json, and run.sqlite with "
-                    + "--store. What an earlier run wrote there is replaced, and nothing else in "
-                    + "the directory is touched. Default: ${DEFAULT-VALUE}.")
+            description = "Where to write this run's files: report.json; report.html, the same "
+                    + "run as a page to open in a browser; and run.sqlite with --store. What an "
+                    + "earlier run wrote there is replaced, and nothing else in the directory is "
+                    + "touched. Default: ${DEFAULT-VALUE}.")
     private Path outputDirectory;
 
     @Option(
@@ -395,7 +410,7 @@ final class RunCommand implements Callable<Integer> {
         StopFromOutside stop = new StopFromOutside();
         ScheduleSettings schedule = settings.schedule();
         try (StopsFromOutside.Arrangement heard = stops.whenStopped(
-                () -> stoppedFromOutside(stop, schedule, err))) {
+                () -> stoppedFromOutside(stop, schedule, reportsOf(settings), err))) {
             try {
                 int answer = readAndTest(configuration, stop, out, err);
                 // Stopped while it was still reading, a run can go on to find something else to
@@ -515,7 +530,7 @@ final class RunCommand implements Callable<Integer> {
      * stopped the run: ten seconds, when a container is stopped.
      */
     private void stoppedFromOutside(StopFromOutside stop, ScheduleSettings schedule,
-            PrintWriter err) {
+            List<ReportFile> reports, PrintWriter err) {
         Duration atMost = schedule.interruptGrace().plus(schedule.interruptWritingGrace());
         switch (stop.askAndWait(atMost)) {
             case DONE -> {
@@ -535,7 +550,7 @@ final class RunCommand implements Callable<Integer> {
         // Looked at on a thread of its own, and for a moment at most. Writing may have run out of
         // time because the directory stopped answering, and a look that waited on it for ever
         // would keep the program from ending, when a second Ctrl-C does nothing.
-        FutureTask<List<String>> look = new FutureTask<>(this::whatWasNotLeftBehind);
+        FutureTask<List<String>> look = new FutureTask<>(() -> whatWasNotLeftBehind(reports));
         Thread.ofVirtual().name("restest-looking").start(look);
         String missing;
         try {
@@ -559,14 +574,17 @@ final class RunCommand implements Callable<Integer> {
 
     /**
      * What a run stopped from outside has not left behind, read from its directory rather than from
-     * the run. The report is given its name only once it is written whole, so there being none is
-     * the answer. The stored run keeps a working file beside it until it is closed; what it had not
-     * yet saved when the program ends is lost, and some of what it did save is in that file.
+     * the run. A report is given its name only once it is written whole, so there being none is
+     * the answer, for each report the run was to write. The stored run keeps a working file beside
+     * it until it is closed; what it had not yet saved when the program ends is lost, and some of
+     * what it did save is in that file.
      */
-    private List<String> whatWasNotLeftBehind() {
+    private List<String> whatWasNotLeftBehind(List<ReportFile> reports) {
         List<String> missing = new ArrayList<>();
-        if (!Files.exists(outputDirectory.resolve("report.json"))) {
-            missing.add("report.json was not written");
+        for (ReportFile report : reports) {
+            if (!Files.exists(outputDirectory.resolve(report.name()))) {
+                missing.add(report.name() + " was not written");
+            }
         }
         if (keepTheRun && Files.exists(outputDirectory.resolve("run.sqlite-wal"))) {
             missing.add("run.sqlite was not closed, so the last interactions it had not yet saved "
@@ -588,7 +606,7 @@ final class RunCommand implements Callable<Integer> {
         // closed where it was opened.
         HttpEngine sending = credentials.isEmpty()
                 ? engine : new CredentialedEngine(engine, credentials);
-        Path reportFile = directory.resolve("report.json");
+        List<ReportFile> reports = reportsOf(settings);
         Path runFile = directory.resolve("run.sqlite");
         // What this command has to say about the run before it begins - the count, the seed, the
         // budget, what could not be read - is handed to the report that owns the screen while the
@@ -632,11 +650,15 @@ final class RunCommand implements Callable<Integer> {
                 rules = OracleListener.standard(model, settings.checks(), drained);
                 drained.subscribe(rules);
                 drained.subscribe(console);
-                drained.subscribe(JsonReport.to(reportFile, configuration,
+                JsonReport json = JsonReport.to(directory.resolve(THE_REPORT.name()), configuration,
                         new JsonReport.Invocation(
                                 Optional.ofNullable(campaignFile).map(Path::toString),
                                 Optional.ofNullable(settingsFile).map(Path::toString),
-                                keepTheRun, keysNotGiven(credentials, testable))));
+                                keepTheRun, keysNotGiven(credentials, testable)));
+                // The page is written from the JSON report's own text, so it goes around it and
+                // hands it every event, rather than being subscribed beside it.
+                drained.subscribe(reports.contains(THE_PAGE)
+                        ? HtmlReport.around(json, directory.resolve(THE_PAGE.name())) : json);
 
                 drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address,
                         budget));
@@ -726,8 +748,8 @@ final class RunCommand implements Callable<Integer> {
         Optional<Duration> stoppedAfter = outcome != null && outcome.cutShort()
                 ? stop.askedAt().map(at -> Duration.between(startedAt, at))
                 : Optional.empty();
-        explain(out, err, answer, outcome, address, reportFile, runFile, ours, repeated, hidden,
-                stoppedAfter, settings.schedule().interruptGrace());
+        explain(out, err, answer, outcome, address, directory, reports, runFile, ours, repeated,
+                hidden, stoppedAfter, settings.schedule().interruptGrace());
         return answer;
     }
 
@@ -763,7 +785,8 @@ final class RunCommand implements Callable<Integer> {
      * <em>judging</em> broke kept it in full, so that one is still announced.
      */
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
-            String address, Path reportFile, Path runFile, OurOwnFailures ours,
+            String address, Path directory, List<ReportFile> reports, Path runFile,
+            OurOwnFailures ours,
             long repliesThatRepeatedAKey, UnaryOperator<String> hidden,
             Optional<Duration> stoppedAfter, Duration interruptGrace) {
         // First, because it says how to read everything else: a run stopped half-way reports half
@@ -840,7 +863,10 @@ final class RunCommand implements Callable<Integer> {
             return;
         }
 
-        out.println("report written to " + reportFile + sizeOf(reportFile));
+        for (ReportFile report : reports) {
+            Path file = directory.resolve(report.name());
+            out.println(report.word() + " written to " + file + sizeOf(file));
+        }
         if (keepTheRun) {
             out.println("run stored in " + runFile + sizeOf(runFile));
         } else {
@@ -1024,6 +1050,11 @@ final class RunCommand implements Callable<Integer> {
                         + "not given " + which + ": " + option + " gives it");
             }
         }
+    }
+
+    /** The files this run's reports write: report.json, and the page unless it was turned off. */
+    private static List<ReportFile> reportsOf(Settings settings) {
+        return settings.report().html() ? List.of(THE_REPORT, THE_PAGE) : List.of(THE_REPORT);
     }
 
     /**
