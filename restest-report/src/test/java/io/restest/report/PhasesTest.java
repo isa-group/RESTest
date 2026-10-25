@@ -106,8 +106,7 @@ class PhasesTest {
         phases.on(new RunEvent.PhaseFinished(START, "opening lap", false));
 
         Phases.Phase lap = phases.all().get(0);
-        assertThat(lap.noReply()).isEqualTo(1);
-        assertThat(lap.repliesByClass()).isEmpty();
+        assertThat(lap.repliesByClass()).containsExactly(Map.entry("noReply", 1));
     }
 
     @Test
@@ -119,7 +118,7 @@ class PhasesTest {
         planned(outside);
         phases.on(new RunEvent.InteractionCompleted(START, Runs.answering(outside, 200)));
         phases.on(new RunEvent.FaultFound(START, Runs.fellOver()));
-        phases.on(new RunEvent.RunStarted(START, "Pets", Runs.BASE));
+        phases.on(Runs.started(START));
 
         assertThat(phases.all()).isEmpty();
     }

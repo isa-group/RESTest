@@ -424,7 +424,7 @@ public final class ConsoleReport implements RunListener {
 
     /** Which family that answer belongs to, or that there was none. */
     private static String classOf(Interaction interaction) {
-        return interaction.statusCode().map(code -> (code / 100) + "xx").orElse("no reply");
+        return interaction.statusCode().map(StatusClass::of).orElse("no reply");
     }
 
 

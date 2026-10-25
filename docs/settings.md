@@ -298,6 +298,8 @@ report:
   detailsShownPerFault: 10    # default
   # how many of the status codes answered most the report lists
   commonestStatusCodesListed: 10 # default
+  # how many equal intervals, up to 10000, the budget is cut into for the run over time in the report
+  timelineIntervals: 60       # default
 ```
 
 ## What a settings file looks like
@@ -549,6 +551,7 @@ not.
 | `skippedOperationsShownOnTheConsole` | `5` | how many operations that could not be tested are named on the screen |
 | `detailsShownPerFault` | `10` | how many of a fault's particulars are printed under it on the screen |
 | `commonestStatusCodesListed` | `10` | how many of the status codes answered most the report lists |
+| `timelineIntervals` | `60` | how many equal intervals, up to 10000, the budget is cut into for the run over time in the report |
 
 ## Four things worth knowing
 

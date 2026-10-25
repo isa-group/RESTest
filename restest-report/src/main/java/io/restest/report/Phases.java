@@ -133,7 +133,6 @@ final class Phases {
         private Instant finishedAt;
         private boolean cutShort;
         private int requests;
-        private int noReply;
         private final Set<OperationId> operations = new LinkedHashSet<>();
         private final Set<OperationId> answeredWithASuccess = new LinkedHashSet<>();
         private final SortedMap<String, Integer> repliesByClass = new TreeMap<>();
@@ -149,12 +148,9 @@ final class Phases {
         }
 
         private void answered(Interaction interaction) {
-            interaction.statusCode().ifPresentOrElse(status -> {
-                repliesByClass.merge((status / 100) + "xx", 1, Integer::sum);
-                if (StatusCodes.isSuccess(status)) {
-                    answeredWithASuccess.add(interaction.testCase().operation());
-                }
-            }, () -> noReply++);
+            repliesByClass.merge(StatusClass.of(interaction), 1, Integer::sum);
+            interaction.statusCode().filter(StatusCodes::isSuccess).ifPresent(status ->
+                    answeredWithASuccess.add(interaction.testCase().operation()));
         }
 
         private void finished(Instant at, boolean wasCutShort) {
@@ -200,14 +196,12 @@ final class Phases {
             return answeredWithASuccess.size();
         }
 
-        /** How the replies to its requests divide by family of status code, {@code 2xx} first. */
+        /**
+         * How the replies to its requests divide by family of status code, {@code 2xx} first, and
+         * how many got no reply at all, last.
+         */
         SortedMap<String, Integer> repliesByClass() {
             return new TreeMap<>(repliesByClass);
-        }
-
-        /** How many of its requests got no reply at all. */
-        int noReply() {
-            return noReply;
         }
     }
 }

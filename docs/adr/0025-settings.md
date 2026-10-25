@@ -1,6 +1,6 @@
 # ADR-0025: The numbers somebody decided live in one settings object, layered from four sources, and never in the plan
 
-**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17 and 22 October 2026
+**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22 and 25 October 2026
 **Date:** 2026-09-22
 
 ## Context
@@ -777,3 +777,14 @@ numbers of what they report.
 `report.warningsShownOnTheConsole`, 10, says how many of the faults printed in full on the screen
 may be warnings, so that errors found later still have room; `report.faultsShownOnTheConsole` keeps
 its meaning, the faults printed in all. Ninety-nine settings in nine groups.
+
+## Amendment (25 October 2026): how finely the report cuts a run's time
+
+**Date:** 2026-10-25
+
+`report.timelineIntervals`, 60, says how many equal slices the time a run was given is cut into for
+the `timeline` of `report.json`, which says what came back in each
+([ADR-0038](0038-how-a-run-went-over-time.md)). Unlike the other numbers of its group it is not a
+limit on what is quoted, so zero does not mean none: it is at least one, and at most ten thousand,
+since every slice is written out, an empty one too. It has no switch, since it changes nothing a run
+sends. One hundred settings in nine groups.

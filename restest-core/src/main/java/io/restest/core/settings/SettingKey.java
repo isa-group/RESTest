@@ -405,7 +405,10 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("report", "detailsShownPerFault", SettingKind.WHOLE_NUMBER,
                     "how many of a fault's particulars are printed under it on the screen"),
             key("report", "commonestStatusCodesListed", SettingKind.WHOLE_NUMBER,
-                    "how many of the status codes answered most the report lists"));
+                    "how many of the status codes answered most the report lists"),
+            key("report", "timelineIntervals", SettingKind.WHOLE_NUMBER,
+                    "how many equal intervals, up to 10000, the budget is cut into for the run "
+                            + "over time in the report"));
 
     private static final Map<String, SettingKey> BY_NAME = byName();
 

@@ -634,7 +634,8 @@ final class RunCommand implements Callable<Integer> {
                 drained.subscribe(console);
                 drained.subscribe(JsonReport.to(reportFile, configuration));
 
-                drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address));
+                drained.publish(new RunEvent.RunStarted(startedAt, model.title(), address,
+                        budget));
 
                 try {
                     // Every operation this run will never try, and why, announced before anything

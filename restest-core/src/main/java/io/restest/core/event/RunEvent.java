@@ -43,17 +43,28 @@ public sealed interface RunEvent {
     Instant at();
 
     /**
-     * A run has begun against a particular API.
+     * A run has begun against a particular API, with this much time to test it.
      *
-     * @param at      when it began
+     * <p>The time is said so that a report can show how the run went over it - what came back in
+     * each stretch of the time it had, and whether it used all of it. Only the part of the tool that
+     * decides what to send next acts on it.
+     *
+     * @param at      when it began, which is also when its time began to run
      * @param api     the title the specification gives the API
      * @param baseUrl where the requests are being sent
+     * @param budget  how long it was given, reading the document included
      */
-    record RunStarted(Instant at, String api, String baseUrl) implements RunEvent {
+    record RunStarted(Instant at, String api, String baseUrl, Duration budget)
+            implements RunEvent {
         public RunStarted {
             Objects.requireNonNull(at, "at");
             Objects.requireNonNull(api, "api");
             Objects.requireNonNull(baseUrl, "baseUrl");
+            Objects.requireNonNull(budget, "budget");
+            if (budget.isNegative() || budget.isZero()) {
+                throw new IllegalArgumentException("a run is given some time to test, or it would "
+                        + "end before it began: " + budget);
+            }
         }
     }
 

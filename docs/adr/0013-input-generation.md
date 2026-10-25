@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10, 12 and 13 October 2026
+**Status:** Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10, 12, 13 and 25 October 2026
 **Date:** 2026-09-13
 
 ## Context
@@ -158,6 +158,10 @@ in the background. An asynchronous interface would not even be better at the job
 a caller wait; a filled index cannot.
 
 ### 6. The scheduler is the only component that knows the budget
+
+**Amended on 25 October 2026:** the only component that decides anything by it. The reports are told
+the budget too, to show how a run went over it ([ADR-0038](0038-how-a-run-went-over-time.md)); see
+the amendment of that date.
 
 Which strategy runs, how often, and for how long is decided in one place. Generation does not know what
 time it is, and there is no concept of a "phase" inside it: a phase is a share of the budget, and that
@@ -736,3 +740,13 @@ of awkward values RESTest carries keeps its keying by kind of value, as its own.
 [ADR-0034](0034-version-2-of-the-plans-format.md) writes the plan in a version 2 of its format. The
 M10.1 amendment's `mutates: accepted` is now `kind: mutation`, and a strategy pushes by being of
 kind `fuzzing` rather than by naming `dictionary: fuzzing`. The plan a run follows is unchanged.
+
+## Amendment (25 October 2026): the reports are told the budget
+
+**Date:** 2026-10-25
+
+The announcement that a run has begun carries its budget, so that `report.json` can cut the run's
+time into equal slices and say what came back in each
+([ADR-0038](0038-how-a-run-went-over-time.md)). §6's point stands: the scheduler is still the only
+part of the tool that decides anything by the budget - which strategy runs, when the run stops -
+and generation still does not know what time it is. The reports only show it.

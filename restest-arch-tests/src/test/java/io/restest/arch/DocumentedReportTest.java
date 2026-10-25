@@ -97,12 +97,14 @@ class DocumentedReportTest {
 
     /**
      * Places in the report whose members are data rather than keys: counts by the class of status
-     * code, where any class an API answers with becomes a member, and the values a request carried,
-     * which are whatever the API was sent.
+     * code - for the whole run, a stretch of it or a slice of its time - where any class an API
+     * answers with becomes a member, and the values a request carried, which are whatever the API
+     * was sent.
      */
     private static final Set<String> HOLDING_DATA = Set.of(
             "replies.byClass",
             "phases[].replies.byClass",
+            "timeline.intervals[].byClass",
             "findings[].interaction.testCase.parameters[].value",
             "findings[].interaction.testCase.body.value");
 
@@ -116,6 +118,7 @@ class DocumentedReportTest {
             "dictionaries.read[].from",
             "dictionaries.refused[].reason",
             "phases[].replies",
+            "timeline.intervals[].byClass",
             "findings[].interaction.testCase.mutation.operator",
             "findings[].interaction.testCase.sequence.shape",
             "findings[].interaction.testCase.body.origin",

@@ -498,6 +498,20 @@ class SettingsTest {
                     .hasMessageStartingWith("report: ")
                     .hasMessageContaining("cannot be negative");
 
+            // Not a limit on what is quoted, so not one that zero turns off: a run always has some
+            // time, and cutting it into no stretches at all shows nothing.
+            assertThatThrownBy(() -> Settings.from(Map.of("report.timelineIntervals", "0")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageStartingWith("report: ")
+                    .hasMessageContaining("at least 1");
+            // A few zeros too many would fill the report, and the memory, with empty slices.
+            assertThatThrownBy(() -> Settings.from(Map.of("report.timelineIntervals", "10001")))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageStartingWith("report: ")
+                    .hasMessageContaining("at most 10000");
+            assertThat(Settings.from(Map.of("report.timelineIntervals", "10000")).report()
+                    .timelineIntervals()).isEqualTo(10_000);
+
             assertThatThrownBy(() -> Settings.from(Map.of("schedule.workAheadFactor", "0")))
                     .isInstanceOf(SettingsException.class)
                     .hasMessageStartingWith("schedule: ")
@@ -630,7 +644,7 @@ class SettingsTest {
                     false, false)).memory().mostNames()).isZero();
             assertThat(from.withDocument(new DocumentSettings(Duration.ofSeconds(1), 10))
                     .document().mostBytesRead()).isEqualTo(10);
-            assertThat(from.withReport(new ReportSettings(0, 0, 0, 0, 0, 0, 0, 0)).report()
+            assertThat(from.withReport(new ReportSettings(0, 0, 0, 0, 0, 0, 0, 0, 1)).report()
                     .writeUpsInTotal()).isZero();
             assertThat(from.withReport(from.report()))
                     .describedAs("replacing a group with itself changes nothing at all")

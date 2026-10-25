@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,11 @@ class JsonReportTest {
         assertThat(report.members().keySet())
                 .describedAs("what could not be checked beside what could not be tried")
                 .containsSubsequence("skippedOperations", "notChecked", "dictionaries");
+        assertThat(report.members().keySet())
+                .describedAs("the run over time straight after its stretches, which are marked on it")
+                .containsSubsequence("phases", "timeline", "replies");
+        assertThat(object(report, "timeline").members().keySet())
+                .containsExactly("startedAt", "budget", "interval", "intervals");
     }
 
     @Test
@@ -92,7 +98,7 @@ class JsonReportTest {
                 .contains(JsonValue.of(false));
 
         JsonReport stopped = JsonReport.inMemory(fixedClock());
-        stopped.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        stopped.on(Runs.started(WHEN));
         stopped.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 200)));
         stopped.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(3), Runs.engine(), true));
         JsonValue.JsonObject written = (JsonValue.JsonObject) stopped.document().orElseThrow();
@@ -192,7 +198,7 @@ class JsonReportTest {
             + "order it was told of them")
     void every_operation_that_could_not_be_tested_is_named_with_its_reason() {
         JsonReport report = JsonReport.inMemory(fixedClock());
-        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(Runs.started(WHEN));
         // Not in alphabetical order, so that an order made up on the way would show.
         report.on(new RunEvent.OperationSkipped(WHEN, OperationId.of("uploadPhoto"),
                 "its body can only be sent as multipart/form-data"));
@@ -244,7 +250,7 @@ class JsonReportTest {
             + "every one it could not read, with the reason")
     void the_lists_read_and_refused_are_named() {
         JsonReport report = JsonReport.inMemory(fixedClock());
-        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(Runs.started(WHEN));
         report.on(new RunEvent.DictionaryRead(WHEN, "fuzzing", "built in"));
         report.on(new RunEvent.DictionaryRead(WHEN, "petshop-ids", "dictionaries/ids.yaml"));
         report.on(new RunEvent.DictionaryRefused(WHEN, "dictionaries/broken.yaml",
@@ -388,7 +394,7 @@ class JsonReportTest {
     @DisplayName("nothing has been written before the run finishes")
     void nothing_is_written_before_the_end() {
         JsonReport report = JsonReport.inMemory(fixedClock());
-        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(Runs.started(WHEN));
 
         assertThat(report.document()).isEmpty();
         assertThat(report.asText()).isEmpty();
@@ -398,7 +404,7 @@ class JsonReportTest {
     @DisplayName("a run that found nothing still produces a report, with nothing in it")
     void a_clean_run_still_reports() {
         JsonReport report = JsonReport.inMemory(fixedClock());
-        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(Runs.started(WHEN));
         report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(1), Runs.engine()));
 
         JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
@@ -415,7 +421,7 @@ class JsonReportTest {
                 io.restest.core.model.OperationId.of("POST /pets"), java.util.List.of());
         io.restest.core.execution.TestCase second = io.restest.core.execution.TestCase.of(
                 io.restest.core.model.OperationId.of("GET /pets/{petId}"), java.util.List.of());
-        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(Runs.started(WHEN));
         report.on(new RunEvent.PhaseStarted(WHEN, "opening lap"));
         report.on(new RunEvent.TestCasePlanned(WHEN, first));
         report.on(new RunEvent.TestCasePlanned(WHEN, second));
@@ -449,8 +455,62 @@ class JsonReportTest {
         assertThat(phases.elements()).isEmpty();
     }
 
+    @Test
+    @DisplayName("the run over time says when the run began, the time it had, and what came back "
+            + "in each slice of it, the slices adding up to the replies of the whole run")
+    void the_run_over_time_is_written() {
+        Instant start = Instant.parse("2026-10-25T10:00:00Z");
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(Runs.started(start, Duration.ofMinutes(1)));
+        for (Interaction attempt : List.of(
+                Runs.sentAt(start.plusMillis(1_200), 200),
+                Runs.sentAt(start.plusMillis(1_400), 404),
+                Runs.sentAt(start.plusSeconds(30), 500),
+                Runs.unansweredSentAt(start.plusSeconds(59)))) {
+            report.on(new RunEvent.InteractionCompleted(attempt.sentAt(), attempt));
+        }
+        report.on(new RunEvent.RunFinished(start.plusSeconds(61), Duration.ofSeconds(61),
+                Runs.engine()));
+
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+        JsonValue.JsonObject timeline = object(written, "timeline");
+        assertThat(text(timeline, "startedAt")).isEqualTo("2026-10-25T10:00:00Z");
+        assertThat(text(timeline, "budget")).isEqualTo("PT1M");
+        assertThat(text(timeline, "interval")).isEqualTo("PT1S");
+        List<JsonValue> slices = array(timeline, "intervals").elements();
+        assertThat(slices).hasSize(60);
+        assertThat(slices.get(1))
+                .isEqualTo(JsonText.read("{\"byClass\": {\"2xx\": 1, \"4xx\": 1}}"));
+
+        Map<String, Integer> added = new TreeMap<>();
+        slices.forEach(slice -> {
+            JsonValue.JsonObject byClass = object((JsonValue.JsonObject) slice, "byClass");
+            byClass.members().keySet().forEach(family ->
+                    added.merge(family, number(byClass, family), Integer::sum));
+        });
+        JsonValue.JsonObject wholeRun = object(object(written, "replies"), "byClass");
+        assertThat(added).containsOnlyKeys(wholeRun.members().keySet())
+                .allSatisfy((family, count) -> assertThat(count)
+                        .isEqualTo(number(wholeRun, family)));
+    }
+
+    @Test
+    @DisplayName("how many slices the run's time is cut into is a setting")
+    void how_finely_the_time_is_cut_is_a_setting() {
+        JsonReport report = JsonReport.inMemory(fixedClock(),
+                SettingsInEffect.of(Settings.from(Map.of("report.timelineIntervals", "4"))));
+        report.on(Runs.started(WHEN, Duration.ofMinutes(1)));
+        report.on(new RunEvent.RunFinished(WHEN.plusSeconds(60), Duration.ofSeconds(60),
+                Runs.engine()));
+
+        JsonValue.JsonObject timeline = object(
+                (JsonValue.JsonObject) report.document().orElseThrow(), "timeline");
+        assertThat(text(timeline, "interval")).isEqualTo("PT15S");
+        assertThat(array(timeline, "intervals").elements()).hasSize(4);
+    }
+
     private static JsonValue.JsonObject run(JsonReport report) {
-        report.on(new RunEvent.RunStarted(WHEN, "Pets", Runs.BASE));
+        report.on(Runs.started(WHEN));
         report.on(new RunEvent.TestCasePlanned(WHEN,
                 Runs.attempt("GET /pets", "/pets", 200).testCase()));
         report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 500)));

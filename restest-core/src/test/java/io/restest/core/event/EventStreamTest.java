@@ -262,6 +262,15 @@ class EventStreamTest {
     }
 
     @Test
+    @DisplayName("a run is given some time to test, or it would end before it began")
+    void a_run_is_given_some_time() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new RunEvent.RunStarted(
+                Instant.EPOCH, "Petstore", "https://api.example", Duration.ZERO));
+        assertThatIllegalArgumentException().isThrownBy(() -> new RunEvent.RunStarted(
+                Instant.EPOCH, "Petstore", "https://api.example", Duration.ofSeconds(-1)));
+    }
+
+    @Test
     @DisplayName("a list of values that could not be read is said to be so for a reason")
     void a_refused_list_carries_a_reason() {
         assertThatIllegalArgumentException().isThrownBy(() -> new RunEvent.DictionaryRefused(
@@ -449,7 +458,8 @@ class EventStreamTest {
     }
 
     private static RunEvent started() {
-        return new RunEvent.RunStarted(Instant.EPOCH, "Petstore", "https://api.example");
+        return new RunEvent.RunStarted(Instant.EPOCH, "Petstore", "https://api.example",
+                Duration.ofSeconds(10));
     }
 
     private static RunEvent planned() {

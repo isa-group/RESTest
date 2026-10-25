@@ -31,6 +31,7 @@ import io.restest.core.oracle.WhyNotJudged;
 import io.restest.core.settings.CheckSettings;
 import io.restest.core.settings.Settings;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -178,7 +179,8 @@ class OraclesTest {
                     Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
             events.subscribe(listener);
 
-            events.publish(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Attempts.BASE));
+            events.publish(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Attempts.BASE,
+                    Duration.ofSeconds(10)));
 
             assertThat(listener.oracles()).hasSize(SHIPPED.size());
         }
