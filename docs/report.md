@@ -166,6 +166,7 @@ throughout:
 | `settings` | list | Every setting the run used, with its value and where that value came from |
 | `engine` | object | How the part that sends requests spent the run |
 | `phases` | list | Each stretch of the run with a purpose of its own — today, only the opening lap — and what it achieved |
+| `timeline` | object | How the run went over the time it was given: what came back in each equal slice of it |
 | `replies` | object | How every request ended: counts of attempts, not of faults |
 | `serverErrors` | object | How many operations answered 500, and how many some 5xx |
 | `faultsByCategory` | list | Faults counted by kind |
@@ -362,6 +363,45 @@ line. [The settings](settings.md) lists them.
 | Key | Value | What it says |
 |---|---|---|
 | `byClass` | object | Requests by how they ended: `2xx`, `4xx` and so on, and `noReply` when some got none |
+
+### `timeline`
+
+How the run went, rather than how it ended: the time it was given cut into equal slices — sixty,
+unless [`report.timelineIntervals`](settings.md#report) says otherwise — and what came back in
+each, by class of status code. A reply counts in the slice its request was sent in, so one answered
+after the time was up counts where it was asked, and the slices add up to `replies.byClass`. Only
+the slices that began before the run ended are written: a run of a minute stopped after 15 seconds
+has fifteen, not sixty. The first slice begins when the command started, so the first slices hold
+little or nothing while the document is read; the opening lap's moments, under `phases`, fall on the
+same time.
+
+From a minute's run of pet-clinic, with the list of slices cut to its first three of sixty:
+
+```json
+"timeline": {
+  "startedAt": "2026-10-25T06:29:29.371167Z",
+  "budget": "PT1M",
+  "interval": "PT1S",
+  "intervals": [
+    {"byClass": {"2xx": 9, "3xx": 2}},
+    {"byClass": {"2xx": 7, "3xx": 1, "5xx": 1}},
+    {"byClass": {"2xx": 29, "3xx": 5, "4xx": 18, "5xx": 6}}
+  ]
+}
+```
+
+| Key | Value | What it says |
+|---|---|---|
+| `startedAt` | moment | When the run began, which is where the first slice begins: the moment the command started, before the document was read |
+| `budget` | length of time | The time the run was given with `--budget`, reading the document included |
+| `interval` | length of time | How long each slice is: the budget divided by the number of slices, rounded up to a whole millisecond, so the last slice can end after the budget does |
+| `intervals` | list | One entry for each slice, in order, from the first to the last that began before the run ended |
+
+### `timeline.intervals[]`
+
+| Key | Value | What it says |
+|---|---|---|
+| `byClass` | object | What came back to the requests sent in that slice: `2xx`, `4xx` and so on, and `noReply` for those that got none, as `replies.byClass` counts them. Empty when no request was sent in it |
 
 ### `replies`
 

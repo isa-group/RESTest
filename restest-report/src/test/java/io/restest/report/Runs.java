@@ -60,20 +60,61 @@ final class Runs {
                 Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42));
     }
 
+    /** A run against the API above that has begun, with ten seconds to test it. */
+    static RunEvent.RunStarted started(Instant at) {
+        return started(at, Duration.ofSeconds(10));
+    }
+
+    /** The same, with this much time. */
+    static RunEvent.RunStarted started(Instant at, Duration budget) {
+        return new RunEvent.RunStarted(at, "Pets", BASE, budget);
+    }
+
     /** The reply to one particular test case, so that its plan and its answer can be matched. */
     static Interaction answering(TestCase testCase, int status) {
+        return answering(testCase, status, Instant.parse("2026-09-13T10:00:00Z"),
+                Duration.ofMillis(42));
+    }
+
+    /** The same, sent at this moment and answered this long after, for counting over time. */
+    static Interaction answering(TestCase testCase, int status, Instant sentAt, Duration took) {
         return Interaction.answered(testCase,
                 new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(), Optional.empty()),
                 new HttpResponseRecord(StatusLine.of(status), List.of(), Optional.empty()),
-                Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42));
+                sentAt, took);
+    }
+
+    /** An attempt sent at this moment and answered with this status. */
+    static Interaction sentAt(Instant when, int status) {
+        return sentAt(when, Duration.ofMillis(42), status);
+    }
+
+    /** The same, answered this long after it was sent. */
+    static Interaction sentAt(Instant when, Duration took, int status) {
+        return answering(TestCase.of(OperationId.of("GET /pets"), List.of()), status, when, took);
+    }
+
+    /** An attempt sent at this moment that got nothing back at all. */
+    static Interaction unansweredSentAt(Instant when) {
+        return unansweredSentAt(when, Duration.ofMillis(42));
+    }
+
+    /** The same, given up on this long after it was sent. */
+    static Interaction unansweredSentAt(Instant when, Duration took) {
+        return neverAnswering(TestCase.of(OperationId.of("GET /pets"), List.of()), when, took);
     }
 
     /** One particular test case that never got a reply at all. */
     static Interaction neverAnswering(TestCase testCase) {
+        return neverAnswering(testCase, Instant.parse("2026-09-13T10:00:00Z"),
+                Duration.ofMillis(42));
+    }
+
+    /** The same, sent at this moment and given up on this long after. */
+    static Interaction neverAnswering(TestCase testCase, Instant sentAt, Duration took) {
         return Interaction.transportFailure(testCase,
                 new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(), Optional.empty()),
-                "the connection was refused", Instant.parse("2026-09-13T10:00:00Z"),
-                Duration.ofMillis(42));
+                "the connection was refused", sentAt, took);
     }
 
     static Finding fellOver() {

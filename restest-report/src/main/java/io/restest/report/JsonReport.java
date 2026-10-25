@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 /**
@@ -224,6 +225,9 @@ public final class JsonReport implements RunListener {
     /** What each stretch of the run achieved, worked out in one place for every report. */
     private final Phases phases = new Phases();
 
+    /** How the run went over the time it was given, worked out in one place for every report. */
+    private final Timeline timeline;
+
     private final ReportSettings limits;
     private final SettingsInEffect configuration;
 
@@ -232,6 +236,7 @@ public final class JsonReport implements RunListener {
         this.clock = clock;
         this.configuration = configuration;
         this.limits = configuration.settings().report();
+        this.timeline = new Timeline(limits.timelineIntervals());
     }
 
     /** A report written to this file when the run finishes, with the limits RESTest ships. */
@@ -301,6 +306,7 @@ public final class JsonReport implements RunListener {
     @Override
     public void on(RunEvent event) {
         phases.on(event);
+        timeline.on(event);
         switch (event) {
             case RunEvent.RunStarted started -> {
                 api = started.api();
@@ -346,7 +352,7 @@ public final class JsonReport implements RunListener {
         closeOffTheAttemptBeingJudged();
         beingJudged = interaction.id();
         somethingWrongWithIt = false;
-        repliesByClass.merge(classOf(interaction), 1, Integer::sum);
+        repliesByClass.merge(StatusClass.of(interaction), 1, Integer::sum);
         interaction.statusCode().ifPresent(status -> repliesByStatus.merge(status, 1, Integer::sum));
         serverErrors.note(interaction);
     }
@@ -373,27 +379,12 @@ public final class JsonReport implements RunListener {
         tally.saw(finding.interaction().sentAt());
         kinds.putIfAbsent(finding.category().code(), finding.category());
         faultsByStatus.merge(
-                new ByStatus(finding.category().code(), classOf(finding.interaction())),
+                new ByStatus(finding.category().code(), StatusClass.of(finding.interaction())),
                 1, Integer::sum);
         if (finding.interactionId().equals(beingJudged)) {
             somethingWrongWithIt = true;
         }
         writtenWhole(finding, tally);
-    }
-
-    /**
-     * Which family the API's answer belongs to: {@code 2xx} and the rest, or no answer at all.
-     *
-     * <p>By family rather than by exact code on purpose. As more kinds of fault are looked for, an
-     * exact-code list becomes a long tail of 401, 403, 404, 409, 422 that summarises nothing. The
-     * exact codes are still counted, and written beside this.
-     *
-     * <p>An attempt that got nothing back - a timeout, a closed connection, a reply that was not
-     * HTTP - has no status code, and is probably the worst thing an API can do. A count that only
-     * knew about codes would lose it, so it has a name of its own here.
-     */
-    private static String classOf(Interaction interaction) {
-        return interaction.statusCode().map(status -> (status / 100) + "xx").orElse("noReply");
     }
 
     /** Writes the whole attempt out, if this kind of fault on this operation still has room. */
@@ -470,6 +461,7 @@ public final class JsonReport implements RunListener {
         report.put("settings", settings());
         report.put("engine", engineStatistics());
         report.put("phases", phases());
+        report.put("timeline", timeline());
         report.put("replies", replies());
         report.put("serverErrors", serverErrors());
         report.put("faultsByCategory", faultsByCategory());
@@ -640,11 +632,7 @@ public final class JsonReport implements RunListener {
         Map<String, JsonValue> replies = new LinkedHashMap<>();
         replies.put("total", JsonValue.of(attempts));
         replies.put("withNothingWrong", JsonValue.of(attemptsWithNothingWrong));
-        Map<String, JsonValue> byClass = new LinkedHashMap<>();
-        repliesByClass.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> byClass.put(entry.getKey(), JsonValue.of(entry.getValue())));
-        replies.put("byClass", JsonValue.object(byClass));
+        replies.put("byClass", byClass(repliesByClass));
         replies.put("commonest", JsonValue.array(repliesByStatus.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
                 .limit(limits.commonestStatusCodesListed())
@@ -769,17 +757,43 @@ public final class JsonReport implements RunListener {
                     row.put("operations", JsonValue.of(phase.operations()));
                     row.put("operationsAnswering2xx",
                             JsonValue.of(phase.operationsAnsweredWithASuccess()));
-                    Map<String, JsonValue> byClass = new LinkedHashMap<>();
-                    phase.repliesByClass().forEach((family, count) ->
-                            byClass.put(family, JsonValue.of(count)));
-                    if (phase.noReply() > 0) {
-                        byClass.put("noReply", JsonValue.of(phase.noReply()));
-                    }
                     row.put("replies", JsonValue.object(Map.of("byClass",
-                            JsonValue.object(byClass))));
+                            byClass(phase.repliesByClass()))));
                     return (JsonValue) JsonValue.object(row);
                 })
                 .toList());
+    }
+
+    /**
+     * How the run went over the time it was given: when it began, how long it had, and what came
+     * back in each equal slice of that time, by family of status code.
+     *
+     * <p>What a report draws as a timeline, with the stretches above marked on it. The slices add up
+     * to {@code replies.byClass}: each reply is counted in the slice its request was sent in. Only
+     * the slices that began before the run ended are written, so a run stopped early is not drawn as
+     * one that went on sending nothing.
+     */
+    private JsonValue timeline() {
+        Map<String, JsonValue> written = new LinkedHashMap<>();
+        written.put("startedAt", JsonValue.of(timeline.startedAt().toString()));
+        written.put("budget", JsonValue.of(timeline.budget().toString()));
+        written.put("interval", JsonValue.of(timeline.interval().toString()));
+        written.put("intervals", JsonValue.array(timeline.intervals().stream()
+                .map(slice -> (JsonValue) JsonValue.object(Map.of("byClass", byClass(slice))))
+                .toList()));
+        return JsonValue.object(written);
+    }
+
+    /**
+     * Replies counted by family of status code, written in the order of the families - {@code 2xx}
+     * before {@code 4xx}, and no reply at all last - wherever the file counts them: for the whole
+     * run, for a stretch of it, for a slice of its time. One way of writing them, so that the counts
+     * of the parts can be laid beside the count of the whole.
+     */
+    private static JsonValue byClass(Map<String, Integer> counted) {
+        Map<String, JsonValue> byClass = new LinkedHashMap<>();
+        new TreeMap<>(counted).forEach((family, count) -> byClass.put(family, JsonValue.of(count)));
+        return JsonValue.object(byClass);
     }
 
     private JsonValue engineStatistics() {
@@ -806,7 +820,7 @@ public final class JsonReport implements RunListener {
         entry.put("curl", JsonValue.of(CurlCommand.of(finding.interaction().request())));
         finding.interaction().statusCode()
                 .ifPresent(status -> entry.put("status", JsonValue.of(status)));
-        entry.put("statusClass", JsonValue.of(classOf(finding.interaction())));
+        entry.put("statusClass", JsonValue.of(StatusClass.of(finding.interaction())));
         entry.put("interaction",
                 InteractionDocument.of(finding.interaction(), limits.mostBodyBytesKept()));
         return JsonValue.object(entry);

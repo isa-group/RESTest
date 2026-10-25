@@ -51,7 +51,7 @@ class ConsoleReportTest {
     void how_many_faults_reach_the_screen_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 2, 2, 5, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 2, 2, 5, 10, 10, 60));
 
         for (int found = 0; found < 6; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
@@ -76,7 +76,7 @@ class ConsoleReportTest {
         ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
                 CheckSettings.defaults(), introduction);
 
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
 
         assertThat(screen.toString()).isEqualTo("RESTest testing Pets at " + Runs.BASE
                 + System.lineSeparator() + System.lineSeparator() + introduction);
@@ -89,7 +89,7 @@ class ConsoleReportTest {
         ConsoleReport live = ConsoleReport.to(terminal, ReportSettings.defaults(),
                 CheckSettings.defaults(), "4 of 4 operations can be tested, seed 1, budget 1s" + System.lineSeparator());
 
-        live.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        live.on(Runs.started(Instant.EPOCH));
 
         assertThat(terminal.shown())
                 .describedAs("this report prints the count now, so sending it on its way is this "
@@ -104,7 +104,7 @@ class ConsoleReportTest {
         ConsoleReport report = ConsoleReport.to(screen, ReportSettings.defaults(),
                 CheckSettings.defaults(), "4 of 4 operations can be tested");
 
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
 
         assertThat(screen.toString().lines().toList())
@@ -250,7 +250,7 @@ class ConsoleReportTest {
     void how_many_details_are_printed_is_a_setting() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 2, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 5, 2, 10, 60));
 
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(25)));
 
@@ -288,7 +288,7 @@ class ConsoleReportTest {
     @Test
     @DisplayName("the end of a run says how much was done, what was found, and how much was idle")
     void the_summary_says_what_happened() {
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
         report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
                 Runs.attempt("GET /pets", "/pets", 500)));
         report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
@@ -310,7 +310,7 @@ class ConsoleReportTest {
                 io.restest.core.model.OperationId.of("POST /pets"), java.util.List.of());
         io.restest.core.execution.TestCase second = io.restest.core.execution.TestCase.of(
                 io.restest.core.model.OperationId.of("GET /pets/{petId}"), java.util.List.of());
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
         report.on(new RunEvent.PhaseStarted(Instant.EPOCH, "opening lap"));
         report.on(new RunEvent.TestCasePlanned(Instant.EPOCH, first));
         report.on(new RunEvent.TestCasePlanned(Instant.EPOCH, second));
@@ -331,7 +331,7 @@ class ConsoleReportTest {
     @Test
     @DisplayName("a run stopped from outside says so on the first line of its summary, and only then")
     void a_run_stopped_from_outside_says_so() {
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
         report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
                 Runs.attempt("GET /pets", "/pets", 200)));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine(),
@@ -388,7 +388,7 @@ class ConsoleReportTest {
     @DisplayName("the end of a run names every operation it could not try, with the reason, in the "
             + "order it was told of them, straight after the verdict it qualifies")
     void the_summary_names_the_operations_that_could_not_be_tested() {
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
         // Not in alphabetical order, so that an order made up on the way would show.
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
         report.on(skipped("filterPets", "its parameter 'filter' is written in the deepObject style"));
@@ -491,7 +491,7 @@ class ConsoleReportTest {
     void past_the_setting_the_operations_that_could_not_be_tested_are_counted() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 2, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 2, 10, 10, 60));
         for (String operation : List.of("addPet", "getPet", "updatePet", "deletePet", "listPets")) {
             report.on(skipped(operation, "the reason " + operation + " could not be tested"));
         }
@@ -513,7 +513,7 @@ class ConsoleReportTest {
     void told_to_name_none_the_count_and_the_report_are_still_given() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 0, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 50, 10, 0, 10, 10, 60));
         report.on(skipped("uploadPhoto", "its body can only be sent as multipart/form-data"));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
@@ -662,7 +662,7 @@ class ConsoleReportTest {
     @DisplayName("a list of values that could not be read is said again at the very end, after what "
             + "could not be tested, even of a run that sent nothing")
     void the_summary_repeats_the_lists_that_could_not_be_read() {
-        report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
+        report.on(Runs.started(Instant.EPOCH));
         report.on(new RunEvent.DictionaryRead(Instant.EPOCH, "fuzzing", "built in"));
         report.on(new RunEvent.DictionaryRefused(Instant.EPOCH, "ids.yaml",
                 "ids.yaml: what is written under 'GET /oops' is not an object"));
@@ -933,7 +933,7 @@ class ConsoleReportTest {
     void the_number_of_faults_is_the_limit_however_many_warnings_may_be_printed() {
         StringBuilder screen = new StringBuilder();
         ConsoleReport report = ConsoleReport.to(screen,
-                new ReportSettings(5, 1_000, 24L * 1024, 3, 100, 5, 10, 10));
+                new ReportSettings(5, 1_000, 24L * 1024, 3, 100, 5, 10, 10, 60));
 
         for (int found = 0; found < 8; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH,
