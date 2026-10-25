@@ -1347,8 +1347,8 @@ reads cannot disagree: an API that accepts connections and never answers has tho
 that never came counted against it, and is still `nothingAnswered`, ending with `3`, in the file as
 on the command line. The order of the questions is unchanged.
 
-**Why.** The HTML report planned next puts the verdict first, and shows only what
-`report.json` holds. Worked out in the page's JavaScript from the counts, it would have contradicted
+**Why.** The HTML report planned next shows the verdict, and shows only what `report.json`
+holds. Worked out in the page's JavaScript from the counts, it would have contradicted
 the exit code in exactly the cases above, with no test to catch it (maintainer, 25 October 2026).
 
 **What is still open.** The file is written before RESTest knows whether it went wrong itself, so a
