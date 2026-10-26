@@ -1,0 +1,35 @@
+{
+  "openapi" : "3.1.0",
+  "info" : { "title" : "Settings", "version" : "1.0.0" },
+  "paths" : {
+    "/settings" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "the settings",
+            "content" : {
+              "application/json" : { "schema" : { "$ref" : "#/components/schemas/Settings" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Settings" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/NotificationType",
+            "type" : "string"
+          }
+        }
+      },
+      "NotificationType" : {
+        "type" : "string",
+        "enum" : [ "ntfy", "gotify", "pushover" ]
+      }
+    }
+  }
+}

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.restest.core.event.RunEvent;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.SpecificationIssue;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsInEffect;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -131,6 +133,20 @@ class HtmlReportTest {
                 .map(found -> found.group(1)).toList())
                 .describedAs("whatever the page points to is inside it")
                 .allSatisfy(target -> assertThat(target).matches("(?s)(data:|#).*"));
+    }
+
+    @Test
+    @DisplayName("the page says what each part of the document it could not use cost an operation "
+            + "that was still tested")
+    void the_page_says_what_every_issue_cost() {
+        String page = HtmlReport.template();
+
+        Stream.of(SpecificationIssue.Effect.values())
+                .filter(effect -> effect != SpecificationIssue.Effect.OPERATION_SKIPPED
+                        && effect != SpecificationIssue.Effect.DOCUMENT)
+                .forEach(effect -> assertThat(page)
+                        .describedAs("the words the page gives '%s'", effect.word())
+                        .containsPattern("\\b" + effect.word() + ": ' \\("));
     }
 
     @Test

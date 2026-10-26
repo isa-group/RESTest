@@ -1,6 +1,6 @@
 # ADR-0012: The canonical model is immutable records and sealed types, and says so when it cannot represent something
 
-**Status:** Accepted, amended at M1.8, M2.1a and M2.1b, and on 17 October 2026
+**Status:** Accepted, amended at M1.8, M2.1a and M2.1b, and on 17 and 26 October 2026
 **Date:** 2026-09-12
 
 ## Context
@@ -144,6 +144,40 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
   detected somewhere first.
 
 ---
+
+## Amendment (26 October 2026): what no request can carry is left out, and said
+
+**Date:** 2026-10-26
+
+**A path parameter whose path has no place for it is left out of its operation, and a
+`SpecificationIssue` with a fifth effect, `LEFT_OUT`, says so.** The model refuses a place in a path
+with nothing to fill it, and accepts the converse: a path parameter whose name the path does not
+write as `{name}`. The request can still be assembled, so the operation is not lost. But that
+parameter is never sent, since a request's path is filled by writing each path parameter's value
+where its `{name}` stands. Kept, it was given values and changed on purpose like any other; the
+request then went out exactly as the API had already accepted it, and the API accepting it again was
+reported as `F206`, invalid data accepted. 2.2.0's release evaluation found this on scout-api, the
+only one of 98 documents read — the Web Fuzzing Dataset's 52 and the 46 of RESTest's corpus — that
+declares such a parameter, on three operations: 4,787 of the 9,181 `F206` of one run of it.
+
+**Left out by whoever reads the document, once the operation is built.** What makes an operation
+impossible to build — one parameter declared twice, a place in the path with nothing to fill it —
+costs it what it did before, and nothing is said of a parameter of an operation that cannot be read.
+The model itself is unchanged and still accepts such a parameter: refusing it there would cost the
+whole operation, which the reader would then skip. Leaving the parameter in and having one strategy
+not change it, as a strategy of kind `mutation` already does not change a property a reply alone
+carries, was weighed and set aside: the other strategies would still give it values, a value given to
+it would be remembered as one the API had accepted, and the document's mistake would go unsaid.
+
+**A fifth value, for the reason the rename got the fourth**: the effect is what says what an issue
+cost, and this one costs nothing a request ever carried. `DEGRADED` would say the operation was read
+in part, which keeps the checks of a status code and of a content type the document does not declare
+away from it; `DOCUMENT` carries no operation. `ApiModel.readInPart` does not count `LEFT_OUT`.
+
+**What changes in a run of such a document**: no strategy gives the parameter a value, so none is
+changed on purpose and none is remembered as accepted; a request with nothing else to change is not
+changed at all; and the screen, `documentIssues` in `report.json` and the page say what was left out
+and why, one line per operation.
 
 ## Amendment (17 October 2026): an operation renamed is not one read in part
 

@@ -18,6 +18,8 @@ package io.restest.cli;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.restest.cli.ARun.codesIn;
 import static io.restest.cli.ARun.operationsWith;
@@ -38,9 +40,11 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * A reply the document declares in a way RESTest could not read is not reported as one the
  * document leaves out, from the document to the report, and an operation RESTest read whole is held
- * to its document even when RESTest had to give it another name.
+ * to its document even when RESTest had to give it another name, or leave out of it a parameter no
+ * request could carry - which is then never broken on purpose and reported as accepted.
  *
- * <p>The stand-in answers 404 to everything. Its first document declares a 404 for one operation by
+ * <p>The stand-in answers 404 to everything except {@code GET /favourites}, which only the third
+ * document has, and which answers 200. Its first document declares a 404 for one operation by
  * pointing at a reply it never defines, which RESTest cannot read and says so before the run; and
  * it declares no 404 at all for the other. Only the second is a document that leaves the 404 out.
  *
@@ -48,6 +52,12 @@ import org.junit.jupiter.api.io.TempDir;
  * third by their method and path. The second also points at a reply that is never defined: that
  * is said of it, under its new name, and it is left alone. The first and the third declare no 404,
  * and both are reported.
+ *
+ * <p>The third document gives two operations an identifier their paths have no place for, which
+ * RESTest leaves out and says so. One of them is the stand-in's only operation that answers 200,
+ * whatever it is sent: nothing is broken on purpose in a request to it, since the identifier is the
+ * only thing such a request could have changed. The other answers 404, which it does not declare,
+ * and is reported: having nothing left out that a request could carry, it is held to its document.
  */
 class AReplyUnreadIsNotUndeclaredTest {
 
@@ -106,6 +116,39 @@ class AReplyUnreadIsNotUndeclaredTest {
               responses: {}
             """;
 
+    /** Two operations declaring an identifier that neither of their paths has a place for. */
+    private static final String AN_IDENTIFIER_WITH_NO_PLACE = """
+            openapi: 3.0.3
+            info:
+              title: Night animals
+              version: "1.0"
+            paths:
+              /favourites:
+                get:
+                  operationId: listFavourites
+                  parameters:
+                    - name: id
+                      in: path
+                      required: true
+                      schema:
+                        type: integer
+                  responses:
+                    "200":
+                      description: every favourite
+              /profile:
+                get:
+                  operationId: getProfile
+                  parameters:
+                    - name: id
+                      in: path
+                      required: true
+                      schema:
+                        type: integer
+                  responses:
+                    "200":
+                      description: the profile
+            """;
+
     private static WireMockServer api;
 
     @BeforeAll
@@ -113,6 +156,8 @@ class AReplyUnreadIsNotUndeclaredTest {
         api = new WireMockServer(options().dynamicPort());
         api.start();
         api.stubFor(any(anyUrl()).willReturn(aResponse().withStatus(404)));
+        // Added last, so that it is the one that answers there.
+        api.stubFor(get(urlPathEqualTo("/favourites")).willReturn(aResponse().withStatus(200)));
     }
 
     @AfterAll
@@ -164,5 +209,32 @@ class AReplyUnreadIsNotUndeclaredTest {
                         "renamed 'GET /moths' to stay unique");
         assertThat(codesIn(report)).containsExactly(920);
         assertThat(operationsWith(920, report)).containsExactlyInAnyOrder("listOwls", "GET /moths");
+    }
+
+    @Test
+    @DisplayName("an identifier a path has no place for is left out, and said, so that no request "
+            + "sent as it was accepted is reported as broken data accepted, and the operation is "
+            + "still held to its document")
+    void what_no_request_carries_is_left_out(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = ARun.run(AN_IDENTIFIER_WITH_NO_PLACE, api.baseUrl(), directory, screen);
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(answer)
+                .describedAs("an undeclared status code is a warning, which ends no run with 1 "
+                        + "unless asked; the run said:%n%s", screen)
+                .isZero();
+        assertThat(screen.toString())
+                .describedAs("what RESTest left out is said before the run")
+                .contains("paths./favourites.get: the path parameter 'id' has no '{id}' in the "
+                        + "path '/favourites', so no request can carry it; it is left out");
+        assertThat(codesIn(report)).containsExactly(920);
+        assertThat(operationsWith(920, report)).containsExactly("getProfile");
+        JsonValue.JsonArray issues =
+                (JsonValue.JsonArray) report.member("documentIssues").orElseThrow();
+        assertThat(issues.elements())
+                .extracting(issue -> ((JsonValue.JsonObject) issue).member("effect").orElseThrow())
+                .containsExactly(JsonValue.of("leftOut"), JsonValue.of("leftOut"));
     }
 }

@@ -307,7 +307,8 @@ footer{font-size:var(--fs-s);color:var(--tx2);display:flex;flex-wrap:wrap;gap:6p
   function swatch(c) { return KNOWN_CLASSES.indexOf(c) >= 0 ? 'c' + c : 'cother'; }
   var RANK = { error: 0, warning: 1, clean: 2, untested: 3, leftAlone: 4 };
   var ISSUE_COST = { degraded: ' (the operation was tested with less than the document holds)',
-    renamed: ' (the operation was tested under a name of RESTest\u2019s own)' };
+    renamed: ' (the operation was tested under a name of RESTest\u2019s own)',
+    leftOut: ' (the operation was tested with everything a request can carry)' };
 
   /** An element, its attributes, and its children; text is always text, never markup. */
   function h(tag, attrs) {

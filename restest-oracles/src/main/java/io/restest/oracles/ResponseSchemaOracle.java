@@ -41,7 +41,7 @@ import io.restest.core.oracle.Finding;
 import io.restest.core.oracle.WfcFault;
 import io.restest.core.oracle.WhyNotJudged;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -299,7 +299,9 @@ public final class ResponseSchemaOracle implements SaysWhyNot {
             // A reply RESTest was unable to check is not evidence that the API did anything wrong.
             return Verdict.couldNot(WhyNotJudged.SHAPE_UNUSABLE);
         }
-        List<String> details = new ArrayList<>();
+        // Each line once: a document that says one thing two ways - in OpenAPI 3.1, a kind written
+        // beside a pointer to a shape that says it too - has one wrong value break it twice.
+        Set<String> details = new LinkedHashSet<>();
         for (Error error : errors) {
             if ("writeOnly".equals(error.getKeyword())) {
                 // The same switch also objects to a write-only property that is there. The
@@ -316,7 +318,8 @@ public final class ResponseSchemaOracle implements SaysWhyNot {
             return Verdict.NOTHING;
         }
         return Verdict.of(mismatch(interaction, statusCode, contentType,
-                "the body does not match the shape the specification declares for it", details));
+                "the body does not match the shape the specification declares for it",
+                List.copyOf(details)));
     }
 
     /**

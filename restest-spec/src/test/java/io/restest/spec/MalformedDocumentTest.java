@@ -19,6 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.OperationId;
+import io.restest.core.model.Parameter;
+import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ObjectSchema;
@@ -559,6 +562,188 @@ class MalformedDocumentTest {
         assertThat(api.issues())
                 .anySatisfy(issue -> assertThat(issue.effect())
                         .isEqualTo(SpecificationIssue.Effect.OPERATION_SKIPPED));
+    }
+
+    @Test
+    @DisplayName("a path parameter its path has no place for is left out, and said, and the "
+            + "operation tested with the rest, a query parameter of the same name included")
+    void a_path_parameter_with_no_place_in_the_path_is_left_out(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /favourites:
+                    get:
+                      parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {type: integer}
+                        - name: id
+                          in: query
+                          schema: {type: integer}
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations()).singleElement().satisfies(operation ->
+                assertThat(operation.parameters()).extracting(Parameter::location)
+                        .containsExactly(ParameterLocation.QUERY));
+        assertThat(api.issues()).singleElement().satisfies(issue -> {
+            assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.LEFT_OUT);
+            assertThat(issue.operation()).contains(OperationId.of("GET /favourites"));
+            assertThat(issue.location()).isEqualTo("paths./favourites.get");
+            assertThat(issue.message()).contains("'id'", "'/favourites'");
+        });
+        assertThat(api.readInPart(OperationId.of("GET /favourites")))
+                .describedAs("everything a request can carry was read")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("a path parameter declared for every operation of a path with no place for it is "
+            + "left out of each, and said for each")
+    void a_path_level_parameter_with_no_place_is_left_out_of_every_operation(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /favourites:
+                    parameters:
+                      - name: id
+                        in: path
+                        required: true
+                        schema: {type: integer}
+                    get:
+                      responses: {'200': {description: ok}}
+                    post:
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations()).hasSize(2)
+                .allSatisfy(operation -> assertThat(operation.parameters()).isEmpty());
+        assertThat(api.issues())
+                .allSatisfy(issue -> assertThat(issue.effect())
+                        .isEqualTo(SpecificationIssue.Effect.LEFT_OUT))
+                .flatExtracting(issue -> issue.operation().stream().toList())
+                .containsExactly(OperationId.of("GET /favourites"),
+                        OperationId.of("POST /favourites"));
+    }
+
+    @Test
+    @DisplayName("a path parameter with no place, in an OpenAPI 2.0 document, is left out once the "
+            + "document is converted")
+    void a_path_parameter_with_no_place_in_a_2_0_document_is_left_out(@TempDir Path dir)
+            throws Exception {
+        // The shape a real API's document has, met in the release evaluation of 2.2.0.
+        ApiModel api = parse(dir, """
+                swagger: '2.0'
+                info: {title: t, version: '1'}
+                basePath: /v1
+                paths:
+                  /users/profile:
+                    get:
+                      parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          type: integer
+                          format: int64
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations()).singleElement().satisfies(operation ->
+                assertThat(operation.parameters()).isEmpty());
+        assertThat(api.issues()).extracting(SpecificationIssue::effect)
+                .containsExactly(SpecificationIssue.Effect.LEFT_OUT);
+    }
+
+    @Test
+    @DisplayName("a path parameter is told from its place by its exact name, as a request is filled")
+    void a_path_parameter_is_matched_to_its_place_by_its_exact_name(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /owners/{Id}:
+                    get:
+                      parameters:
+                        - name: Id
+                          in: path
+                          required: true
+                          schema: {type: integer}
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {type: integer}
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations()).singleElement().satisfies(operation ->
+                assertThat(operation.parameters()).extracting(Parameter::name)
+                        .containsExactly("Id"));
+        assertThat(api.issues()).singleElement().satisfies(issue -> {
+            assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.LEFT_OUT);
+            assertThat(issue.message()).contains("'id'");
+        });
+    }
+
+    @Test
+    @DisplayName("a path parameter with no place, beside a reference to nothing, costs each its own "
+            + "line and never the operation")
+    void a_path_parameter_with_no_place_beside_an_unresolved_one(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /favourites:
+                    get:
+                      parameters:
+                        - $ref: '#/components/parameters/Missing'
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {type: integer}
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations()).singleElement().satisfies(operation ->
+                assertThat(operation.parameters()).isEmpty());
+        assertThat(api.issues()).extracting(SpecificationIssue::effect)
+                .contains(SpecificationIssue.Effect.DEGRADED, SpecificationIssue.Effect.LEFT_OUT)
+                .doesNotContain(SpecificationIssue.Effect.OPERATION_SKIPPED);
+    }
+
+    @Test
+    @DisplayName("an operation that declares a path parameter twice is skipped as before, even when "
+            + "its path has no place for it")
+    void a_path_parameter_with_no_place_declared_twice_still_skips_the_operation(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /favourites:
+                    get:
+                      parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {type: integer}
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {type: string}
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations()).isEmpty();
+        assertThat(api.issues()).extracting(SpecificationIssue::effect)
+                .contains(SpecificationIssue.Effect.OPERATION_SKIPPED)
+                .doesNotContain(SpecificationIssue.Effect.LEFT_OUT);
     }
 
     private static Optional<JsonValue> defaultOf(ObjectSchema object, String name) {

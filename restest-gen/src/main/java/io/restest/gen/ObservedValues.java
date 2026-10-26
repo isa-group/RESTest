@@ -32,6 +32,7 @@ import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.HttpMethod;
+import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.CanonicalSchema;
@@ -405,7 +406,7 @@ public final class ObservedValues implements RunListener {
      */
     static Optional<String> fixedPartBefore(String path, String gap) {
         List<String> parts = partsOf(path);
-        int at = parts.indexOf("{" + gap + "}");
+        int at = parts.indexOf(Operation.placeOf(gap));
         return at > 0 && !isAGap(parts.get(at - 1)) ? Optional.of(parts.get(at - 1))
                 : Optional.empty();
     }
