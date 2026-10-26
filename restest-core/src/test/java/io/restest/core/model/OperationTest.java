@@ -155,6 +155,22 @@ class OperationTest {
     }
 
     @Test
+    @DisplayName("a request carries every parameter but one of the path that its path has no place "
+            + "for, matched by its exact name")
+    void what_a_request_carries() {
+        Parameter petId = Parameter.of("petId", ParameterLocation.PATH, true, StringSchema.of());
+        Parameter stray = Parameter.of("PetId", ParameterLocation.PATH, true, StringSchema.of());
+        Parameter limit = Parameter.of("petId", ParameterLocation.QUERY, false, StringSchema.of());
+        Operation operation = Operation.of(HttpMethod.GET, "/pets/{petId}",
+                List.of(petId, stray, limit));
+
+        assertThat(operation.carries(petId)).isTrue();
+        assertThat(operation.carries(stray)).isFalse();
+        assertThat(operation.carries(limit)).isTrue();
+        assertThat(Operation.placeOf("petId")).isEqualTo("{petId}");
+    }
+
+    @Test
     @DisplayName("one parameter declared twice in one location is refused, as one operation would be")
     void a_parameter_declared_twice_is_refused() {
         List<Parameter> twice = List.of(

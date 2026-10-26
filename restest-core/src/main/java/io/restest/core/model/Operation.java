@@ -136,10 +136,11 @@ public record Operation(
      * the engine would put {@code /pets/%7BpetId%7D} on the wire, the API would answer 404, and an
      * oracle would report a fault against an API that behaved correctly.
      *
-     * <p>The converse is left alone deliberately. A path parameter naming no template variable is
-     * junk in the document, but the request can still be assembled and sent, so it is read
-     * charitably rather than costing the operation - the same judgement as a path parameter the
-     * document forgot to mark required.
+     * <p>The converse is not refused here. A path parameter naming no template variable is junk in
+     * the document, but the request can still be assembled and sent, so it does not cost the
+     * operation - the same judgement as a path parameter the document forgot to mark required. It
+     * is never sent either ({@link #carries}), so whoever reads the document leaves it out, and says
+     * so ({@link SpecificationIssue.Effect#LEFT_OUT}).
      *
      * <p>Path-level parameters, which OpenAPI lets a document declare once for every operation under
      * a path, have to be merged into the operation before it is constructed. Getting that merge
@@ -232,6 +233,23 @@ public record Operation(
         return firstDeclaring(String.valueOf(statusCode))
                 .or(() -> firstDeclaring(ResponseModel.rangeOf(statusCode)))
                 .or(() -> firstDeclaring(ResponseModel.DEFAULT));
+    }
+
+    /**
+     * Where the value of a path parameter of this name goes in a path: {@code {petId}} for
+     * {@code petId}. A request's path is filled by writing each path parameter's value there.
+     */
+    public static String placeOf(String name) {
+        return "{" + Objects.requireNonNull(name, "name") + "}";
+    }
+
+    /**
+     * Whether a request to this operation can carry the parameter: every parameter can, except one
+     * of the path whose place the path does not hold, whose value would go nowhere.
+     */
+    public boolean carries(Parameter parameter) {
+        return parameter.location() != ParameterLocation.PATH
+                || path.contains(placeOf(parameter.name()));
     }
 
     /** The parameters that travel in the given location, in declaration order. */

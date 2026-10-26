@@ -38,6 +38,7 @@ class ResponseSchemaOracleTest {
     private static final OperationId KINDS = OperationId.of("GET /kinds");
     private static final OperationId RAW = OperationId.of("GET /raw");
     private static final OperationId UNSAID = OperationId.of("GET /unsaid");
+    private static final OperationId SETTINGS = OperationId.of("GET /settings");
     private static final String JSON = "application/json";
 
     private final ResponseSchemaOracle oracle = new ResponseSchemaOracle();
@@ -58,6 +59,20 @@ class ResponseSchemaOracleTest {
             assertThat(found.get(0).operation()).isEqualTo(ONE_PET);
             assertThat(found.get(0).details()).anySatisfy(detail ->
                     assertThat(detail).contains("/id").contains("integer"));
+        }
+
+        @Test
+        @DisplayName("a value that breaks one rule twice, by two ways the document says it, is "
+                + "described once")
+        void a_rule_broken_twice_at_one_place_is_described_once() {
+            List<Finding> found = oracle.judge(Attempts.answered(SETTINGS, "/settings", 200, JSON,
+                    "{\"type\": null}"), Specifications.settings31());
+
+            assertThat(found).hasSize(1);
+            assertThat(found.get(0).details()).containsExactly(
+                    "/type: null found, string expected",
+                    "/type: does not have a value in the enumeration "
+                            + "[\"ntfy\", \"gotify\", \"pushover\"]");
         }
 
         @Test

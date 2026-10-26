@@ -176,7 +176,7 @@ public final class RequestBuilder {
                         + "' in the path of " + operation.id() + " is empty, which would address a "
                         + "different resource instead of filling the gap");
             }
-            path = path.replace("{" + parameter.name() + "}", encode(written));
+            path = path.replace(Operation.placeOf(parameter.name()), encode(written));
         }
         return path;
     }

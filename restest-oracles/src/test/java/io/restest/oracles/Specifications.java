@@ -108,6 +108,18 @@ final class Specifications {
     }
 
     /**
+     * An API written as OpenAPI 3.1 whose reply has a member that points at a shared shape and says
+     * its kind beside the pointer as well, as documents written by some frameworks do. OpenAPI 3.1
+     * applies both, so one wrong value breaks the same rule twice.
+     */
+    static ApiModel settings31() {
+        Operation settings = Operation.of(HttpMethod.GET, "/settings")
+                .withResponses(List.of(ResponseModel.json("200", AnySchema.of())));
+        return ApiModel.of("Settings", "1.0.0", List.of(settings))
+                .withDocument(read("/settings-3.1.json"));
+    }
+
+    /**
      * An API written as OpenAPI 3.0 whose one reply sits at exactly the same place in its document
      * as {@link #kinds31()}'s does, and says something different about it.
      *

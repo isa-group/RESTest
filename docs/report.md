@@ -343,6 +343,7 @@ Every part of the document that could not be used as it is written, as the scree
 | `operationSkipped` | The operation it belongs to is not tested at all, and is under `skippedOperations` |
 | `degraded` | The operation is tested with less than the document holds |
 | `renamed` | The operation is tested with everything the document says, under a name of RESTest's own, because the document gives its name to another operation too |
+| `leftOut` | The operation is tested with everything a request to it can carry; what the document declares beyond that, a path parameter its path has no `{…}` for, is left out, since no request could send it |
 | `document` | It is about the document as a whole, not one operation |
 
 ### `keysNotGiven[]`

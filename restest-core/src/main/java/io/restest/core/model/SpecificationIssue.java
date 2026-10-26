@@ -30,7 +30,9 @@ import java.util.Optional;
  * <p>{@link Effect} tells apart "this operation is not being tested at all" from "it is being tested
  * with less information than the document actually contains" - a reader who cannot tell those apart
  * cannot properly judge the run - and both from "it is being tested with everything the document
- * says, under a name the document did not give it", which costs a reader only the name. The
+ * says, under a name the document did not give it", which costs a reader only the name, and from
+ * "it is being tested with everything a request can carry, without something the document declares
+ * that no request could", which costs nothing that was ever sent. The
  * operation identifier is kept for the same reason: a report that groups findings by operation can
  * show what could not be read about each one, right next to it.
  *
@@ -57,6 +59,12 @@ public record SpecificationIssue(
          * RESTest's own, because the document gives its name to another operation too.
          */
         RENAMED("renamed"),
+        /**
+         * The operation is being tested with everything a request to it can carry. What the
+         * document declares for it beyond that - a path parameter its path has no place for - is
+         * left out, since no request could ever send it.
+         */
+        LEFT_OUT("leftOut"),
         /** The problem is the document as a whole, not one operation. */
         DOCUMENT("document");
 
@@ -99,6 +107,12 @@ public record SpecificationIssue(
     public static SpecificationIssue renamed(String location, OperationId operation,
             String message) {
         return about(location, operation, message, Effect.RENAMED);
+    }
+
+    /** An operation being tested without something its document declares that no request carries. */
+    public static SpecificationIssue leftOut(String location, OperationId operation,
+            String message) {
+        return about(location, operation, message, Effect.LEFT_OUT);
     }
 
     private static SpecificationIssue about(String location, OperationId operation, String message,

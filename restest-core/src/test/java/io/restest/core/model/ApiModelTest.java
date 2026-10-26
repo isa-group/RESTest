@@ -244,7 +244,12 @@ class ApiModelTest {
         SpecificationIssue document = SpecificationIssue.document("info", "no version declared");
         SpecificationIssue renamed = SpecificationIssue.renamed("paths./cats.get",
                 OperationId.of("GET /cats"), "renamed to stay unique");
+        SpecificationIssue leftOut = SpecificationIssue.leftOut("paths./owners.get",
+                OperationId.of("GET /owners"), "the path parameter 'id' has no '{id}' in the path");
 
+        assertThat(leftOut.skipsAnOperation()).isFalse();
+        assertThat(leftOut.effect()).isEqualTo(SpecificationIssue.Effect.LEFT_OUT);
+        assertThat(leftOut.operation()).contains(OperationId.of("GET /owners"));
         assertThat(skipped.skipsAnOperation()).isTrue();
         assertThat(skipped.operation()).contains(deletePet);
         assertThat(degraded.skipsAnOperation()).isFalse();
@@ -255,7 +260,8 @@ class ApiModelTest {
         assertThat(document.operation()).isEmpty();
         assertThat(document.skipsAnOperation()).isFalse();
         assertThat(ApiModel.of("Pets", "1.0", List.of())
-                .withIssues(List.of(degraded, skipped, renamed, document)).unreadableOperations())
+                .withIssues(List.of(degraded, skipped, renamed, leftOut, document))
+                .unreadableOperations())
                 .describedAs("only what cost a whole operation, in the order it was found")
                 .containsExactly(skipped);
     }
@@ -263,11 +269,13 @@ class ApiModelTest {
     @Test
     @DisplayName("an operation is read in part only when something about it was set aside and the "
             + "operation kept, not when it was skipped whole, only given another name because the "
-            + "document gives its name to another operation too, or the issue was the document's")
+            + "document gives its name to another operation too, only rid of something no request "
+            + "could carry, or the issue was the document's")
     void an_operation_read_in_part() {
         OperationId listPets = OperationId.of("GET /pets");
         OperationId deletePet = OperationId.of("deletePet");
         OperationId listCats = OperationId.of("GET /cats");
+        OperationId listOwners = OperationId.of("GET /owners");
         ApiModel api = ApiModel.of("Pets", "1.0", List.of()).withIssues(List.of(
                 SpecificationIssue.renamed("paths./pets.get", listPets, "renamed to stay unique"),
                 SpecificationIssue.degraded("paths./pets.get", listPets,
@@ -275,6 +283,8 @@ class ApiModelTest {
                 SpecificationIssue.skipped("paths./pets/{id}.delete", deletePet,
                         "the schema does not resolve"),
                 SpecificationIssue.renamed("paths./cats.get", listCats, "renamed to stay unique"),
+                SpecificationIssue.leftOut("paths./owners.get", listOwners,
+                        "the path parameter 'id' has no '{id}' in the path '/owners'"),
                 SpecificationIssue.document("info", "no version declared")));
 
         assertThat(api.readInPart(listPets))
@@ -282,6 +292,9 @@ class ApiModelTest {
                 .isTrue();
         assertThat(api.readInPart(deletePet)).isFalse();
         assertThat(api.readInPart(listCats)).isFalse();
+        assertThat(api.readInPart(listOwners))
+                .describedAs("what no request could carry was never going to be judged")
+                .isFalse();
         assertThat(api.readInPart(OperationId.of("getPet"))).isFalse();
     }
 

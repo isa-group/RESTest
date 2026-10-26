@@ -63,6 +63,8 @@ import java.util.function.Function;
  * reported, because {@link io.restest.core.model.ApiModel} requires every identifier to be unique.
  * The name is settled before the operation is read, and the first operation read keeps it whether
  * or not it can be read, so that anything said about an operation names the operation it is about.
+ * A path parameter that names no place in its operation's path is neither: the operation is tested,
+ * the parameter, which no request could ever carry, is left out, and that is said.
  *
  * <p>A parameter, request body, response or header may itself be a {@code $ref} to a reusable
  * definition under {@code components}, and that definition may in turn be a {@code $ref} to another
@@ -196,8 +198,9 @@ final class OperationConverter {
             OperationId declared = declaredOrSynthesised(swaggerOperation, httpMethod.get(), path);
             OperationId id = claimName(declared, httpMethod.get(), path, taken);
             try {
-                Operation operation = buildOperation(httpMethod.get(), path, id, pathParameters,
+                Operation built = buildOperation(httpMethod.get(), path, id, pathParameters,
                         pathServers, swaggerOperation, components, location, issues);
+                Operation operation = withoutWhatNoRequestCarries(built, location, issues);
                 operations.add(operation);
                 if (!id.equals(declared)) {
                     issues.add(SpecificationIssue.renamed(location, id, "another operation is "
@@ -258,6 +261,27 @@ final class OperationConverter {
         return new Operation(id, method, path, servers, parameters, requestBody, responses, tags,
                 summary, description, deprecated,
                 SecurityConverter.requirement(swaggerOperation.getSecurity()));
+    }
+
+    /**
+     * The operation without the parameters no request to it could carry, each one said. Kept, such
+     * a parameter would be given values and broken on purpose, and the API accepting a request that
+     * never changed would be reported as the API accepting something wrong.
+     *
+     * <p>Done once the operation has been built, so that whatever makes an operation impossible to
+     * build costs it exactly what it did before.
+     */
+    private static Operation withoutWhatNoRequestCarries(Operation operation, String location,
+            List<SpecificationIssue> issues) {
+        operation.parameters().stream()
+                .filter(parameter -> !operation.carries(parameter))
+                .forEach(parameter -> issues.add(SpecificationIssue.leftOut(location,
+                        operation.id(), "the path parameter '" + parameter.name() + "' has no '"
+                                + Operation.placeOf(parameter.name()) + "' in the path '"
+                                + operation.path() + "', so no request can carry it; it is left "
+                                + "out")));
+        return operation.withParameters(
+                operation.parameters().stream().filter(operation::carries).toList());
     }
 
     /**

@@ -93,11 +93,6 @@ of its own. Whether you may test an API at all is not something any tool can che
   what each one sent before changing the API, and loosen the document where the API is right; or
   switch the check off for the run (`checks.invalidDataAccepted`;
   [the faults](faults.md#f206-invalid-data-accepted)).
-- **A path parameter the path has no place for gives a false `F206`.** A document can declare a path
-  parameter for an operation whose path has no `{…}` for it. RESTest breaks that parameter like any
-  other, the request goes out as the API had already accepted it, since the parameter has nowhere to
-  go, and its acceptance is reported. The line under the fault names the parameter; a path
-  parameter the address does not carry is this.
 - **The warnings written out on the screen are the first ten of any kind.** The screen writes out the
   first 50 faults whole (`report.faultsShownOnTheConsole`), of which at most ten may be warnings
   (`report.warningsShownOnTheConsole`), so that a 500 found after a flood of `F920` still reaches it.
