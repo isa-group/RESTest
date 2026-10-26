@@ -32,9 +32,9 @@ import java.util.Optional;
  * cannot properly judge the run - and both from "it is being tested with everything the document
  * says, under a name the document did not give it", which costs a reader only the name, and from
  * "it is being tested with everything a request can carry, without something the document declares
- * that no request could", which costs nothing that was ever sent. The
- * operation identifier is kept for the same reason: a report that groups findings by operation can
- * show what could not be read about each one, right next to it.
+ * that no request could", which costs nothing that was ever sent. The operation identifier is kept
+ * for the same reason: a report that groups findings by operation can show what could not be read
+ * about each one, right next to it.
  *
  * @param location where in the document the problem is, written the way the document is navigated:
  *     {@code paths./pets.get.parameters[2]}. Precise enough to open the file and look

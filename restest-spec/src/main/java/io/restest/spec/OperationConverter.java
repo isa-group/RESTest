@@ -63,7 +63,8 @@ import java.util.function.Function;
  * reported, because {@link io.restest.core.model.ApiModel} requires every identifier to be unique.
  * The name is settled before the operation is read, and the first operation read keeps it whether
  * or not it can be read, so that anything said about an operation names the operation it is about.
- * A path parameter that names no place in its operation's path is neither: the operation is tested,
+ * A path parameter that names no place in its operation's path is neither skipped nor renamed: the
+ * operation is tested,
  * the parameter, which no request could ever carry, is left out, and that is said.
  *
  * <p>A parameter, request body, response or header may itself be a {@code $ref} to a reusable

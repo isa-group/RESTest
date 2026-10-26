@@ -162,7 +162,7 @@ declares such a parameter, on three operations: 4,787 of the 9,181 `F206` of one
 
 **Left out by whoever reads the document, once the operation is built.** What makes an operation
 impossible to build — one parameter declared twice, a place in the path with nothing to fill it —
-costs it what it did before, and nothing is said of a parameter of an operation that is not tested.
+costs it what it did before, and nothing is said of a parameter of an operation that cannot be read.
 The model itself is unchanged and still accepts such a parameter: refusing it there would cost the
 whole operation, which the reader would then skip. Leaving the parameter in and having one strategy
 not change it, as a strategy of kind `mutation` already does not change a property a reply alone

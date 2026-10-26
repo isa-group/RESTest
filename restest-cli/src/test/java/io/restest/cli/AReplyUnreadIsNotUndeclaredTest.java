@@ -40,9 +40,11 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * A reply the document declares in a way RESTest could not read is not reported as one the
  * document leaves out, from the document to the report, and an operation RESTest read whole is held
- * to its document even when RESTest had to give it another name.
+ * to its document even when RESTest had to give it another name, or leave out of it a parameter no
+ * request could carry - which is then never broken on purpose and reported as accepted.
  *
- * <p>The stand-in answers 404 to everything. Its first document declares a 404 for one operation by
+ * <p>The stand-in answers 404 to everything except {@code GET /favourites}, which only the third
+ * document has, and which answers 200. Its first document declares a 404 for one operation by
  * pointing at a reply it never defines, which RESTest cannot read and says so before the run; and
  * it declares no 404 at all for the other. Only the second is a document that leaves the 404 out.
  *
