@@ -26,7 +26,7 @@ restest version
 
 ```
 RESTest 2.2.0
-Java 21.0.12.1 (Homebrew), Mac OS X 26.6.2 aarch64
+Java 21.0.13.0.2 (Homebrew), Mac OS X 27.0.1 aarch64
 ```
 
 The `restest` Homebrew installs always runs on that Java 21, whatever `JAVA_HOME` says; for RESTest on
