@@ -41,7 +41,8 @@ brew install isa-group/tap/restest
 
 It installs the latest release, and `brew upgrade restest` the next one; for a version of your
 choosing, use the image or the archive below. The `restest` it installs runs on that Java 21,
-whatever `JAVA_HOME` says.
+whatever `JAVA_HOME` says. With that Java, the first installation keeps about 625 MB on macOS and
+823 MB on Ubuntu 24.04.
 
 **With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 

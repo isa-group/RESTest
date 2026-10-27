@@ -129,7 +129,11 @@ organisation forbids deploy keys, a GitHub App does the same with no person behi
 ## Consequences
 
 - On macOS and Linux, `brew install isa-group/tap/restest` installs RESTest and the Java it runs on,
-  @SIZE@, and `brew upgrade` moves it to the latest release. Homebrew does not serve Windows.
+  and `brew upgrade` moves it to the latest release. Homebrew does not serve Windows. With every
+  formula they need, a first installation kept 625 MB on macOS and 823 MB on Ubuntu 24.04 in the
+  continuous integration of the pull request that brought this record, and 1,506 MB in Homebrew's own
+  Linux image, whose C library is older than Homebrew's: there Homebrew brings its own, and a
+  compiler with it.
 - The formula reaches the tap some minutes after the release is published, and not at all when its
   check fails: the tap stays as it was until the workflow is started again by hand. `release.yml`
   checked the formula with `brew style` and a `file://` address before the draft; `homebrew.yml`

@@ -16,7 +16,9 @@ brew install isa-group/tap/restest
 
 `isa-group/tap` is RESTest's own *tap*, the place Homebrew reads how to install it from, and Homebrew
 fetches it the first time. With the Java and what that Java needs, the first installation keeps
-@SIZE@; Homebrew lists what it installs as it goes. Then:
+about 625 MB on macOS and 823 MB on Ubuntu 24.04. On a Linux whose C library is older than
+Homebrew's, Homebrew brings its own, and a compiler with it, and the total comes to some 1.5 GB.
+Homebrew lists what it installs as it goes. Then:
 
 ```bash
 restest version
@@ -24,7 +26,7 @@ restest version
 
 ```
 RESTest 2.2.0
-Java 21.0.13.0.2 (Homebrew), Linux 7.0.14-linuxkit aarch64
+Java 21.0.12.1 (Homebrew), Mac OS X 26.6.2 aarch64
 ```
 
 The `restest` Homebrew installs always runs on that Java 21, whatever `JAVA_HOME` says; for RESTest on
