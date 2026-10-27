@@ -24,13 +24,24 @@ language and run anywhere.
 
 ### What you need
 
-Docker, or Java 21 or later, of which a plain Java runtime is enough. Building RESTest from its
-source needs a JDK 21 or later, and git.
+On macOS and Linux, Homebrew, which installs the Java RESTest runs on; or Docker; or Java 21 or
+later, of which a plain Java runtime is enough. Building RESTest from its source needs a JDK 21 or
+later, and git.
 
 ### Install
 
 Each way ends with `restest` as a command on your `PATH`, which the rest of this page, the manual,
 your scripts and a coding agent can all call.
+
+**With Homebrew**, on macOS and Linux, which installs a Java 21 for RESTest as well:
+
+```bash
+brew install isa-group/tap/restest
+```
+
+It installs the latest release, and `brew upgrade restest` the next one; for a version of your
+choosing, use the image or the archive below. The `restest` it installs runs on that Java 21,
+whatever `JAVA_HOME` says.
 
 **With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 

@@ -1,6 +1,6 @@
 # ADR-0032: A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher
 
-**Status:** Accepted, amended on 13 and 23 October 2026
+**Status:** Accepted, amended on 13, 23 and 27 October 2026
 **Date:** 2026-10-11
 
 ## Context
@@ -230,3 +230,17 @@ release was published, `docker pull ghcr.io/isa-group/restest:2.2.0` worked with
 the registry, for `linux/amd64` and `linux/arm64`. So the step that made it public is gone from
 `docs/ci.md`'s release steps; trying the installation from outside, with no one signed in, is still
 one of them, and would show a package that was not public.
+
+## Amendment (27 October 2026): Homebrew
+
+**Date:** 2026-10-27
+
+RESTest is also installed with Homebrew, from a tap of its own, by a formula that installs the
+archive as it is and calls its launcher, as §5 asks ([ADR-0040](0040-homebrew.md)). Three things
+above no longer hold as written. A workflow started by the publication, of the kind §2 considered
+and did not build for the image, exists for the tap alone; the image is still public from the
+tag. A tag does not freeze that formula, which is taken from the commit the
+workflow runs on (§3). And §6's check has a fourth way of starting RESTest, `--own-java`, for a
+command that brings its own Java. JReleaser, named above as the obvious way to publish to Homebrew,
+writes a formula whose command finds no Java when Homebrew's is the only one; ADR-0040 says why it
+was not used.

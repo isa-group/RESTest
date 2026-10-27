@@ -4,6 +4,8 @@
 #
 #   archive        compiles RESTest and assembles restest-<v>.zip and restest-<v>.tgz
 #   check-archive  unpacks them on Linux, macOS and Windows and checks their launchers
+#   check-homebrew fills in the Homebrew formula for the .tgz, and installs and checks it on macOS
+#                  and Linux; homebrew.yml puts it in the tap once the release is published
 #   image          builds the image on an amd64 and on an arm64 machine and checks each; on a tag,
 #                  pushes each one, as it was checked, as :<v>-amd64 and :<v>-arm64
 #   publish        on a tag only: joins the two into :<v>, checks it, moves :latest when this is the
@@ -186,6 +188,38 @@ jobs:
           export JAVA_HOME="$RUNNER_TEMP\\java home (x86)"
           .github/scripts/check-restest.sh "$VERSION" --launcher "$RUNNER_TEMP/with space (x86)/restest-$VERSION/bin/restest.cmd"
 
+  # The formula homebrew.yml will put in the tap, filled in for the archive just built and installed
+  # from it, so that a release whose formula fails is never drafted. ADR-0040.
+  check-homebrew:
+    name: Check the Homebrew formula on ${{ matrix.os }}
+    needs: archive
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      - name: Fetch the archives
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: archives
+          path: archives
+
+      - name: Fill in the formula for the archive
+        run: |
+          tgz="$PWD/archives/restest-$VERSION.tgz"
+          dist/homebrew/formula.sh "file://$tgz" "$(shasum -a 256 "$tgz" | cut -d ' ' -f 1)" > "$RUNNER_TEMP/restest.rb"
+
+      - name: Check the formula
+        run: .github/scripts/check-homebrew.sh "$RUNNER_TEMP/restest.rb" "$VERSION"
+
   image:
     name: Build and check the image for ${{ matrix.arch }}
     needs: archive
@@ -241,7 +275,7 @@ jobs:
 
   publish:
     name: Publish the image and draft the release
-    needs: [archive, check-archive, image]
+    needs: [archive, check-archive, check-homebrew, image]
     if: needs.archive.outputs.tag != ''
     runs-on: ubuntu-latest
     permissions:

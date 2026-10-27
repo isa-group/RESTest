@@ -27,6 +27,7 @@ setting is checked against another, which a schema cannot say.
 | In a checkout of the repository | `schemas/dictionary.schema.json` | `schemas/campaign.schema.json` |
 | In a release's archive | `restest-<version>/schemas/dictionary.schema.json` | `restest-<version>/schemas/campaign.schema.json` |
 | In the container image | `/opt/restest/schemas/dictionary.schema.json` | `/opt/restest/schemas/campaign.schema.json` |
+| Installed with Homebrew | `$(brew --prefix restest)/libexec/schemas/dictionary.schema.json` | `$(brew --prefix restest)/libexec/schemas/campaign.schema.json` |
 
 From 2.2.0 on, every release carries the schemas of the formats it reads, and each schema's address
 on the web is its file at that release's tag. Use the ones of the version you run: a later version
