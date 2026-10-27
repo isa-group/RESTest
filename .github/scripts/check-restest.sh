@@ -4,12 +4,15 @@
 # answers with RESTest's own exit codes, unchanged by whatever stands between the person and Java.
 #
 #     .github/scripts/check-restest.sh <version> --launcher <bin/restest, bin\restest.cmd, or a command>
+#     .github/scripts/check-restest.sh <version> --own-java <a command that brings its own Java>
 #     .github/scripts/check-restest.sh <version> --image <image>
 #     .github/scripts/check-restest.sh <version> --checkout <the ./restest of a checkout>
 #
-# --launcher is a release's own launcher, or anything that installs RESTest and puts a command on the
-# PATH; --image is a container image; --checkout is the shortcut at the root of a checkout, which is
-# checked for less, since it is not how RESTest is installed. Every one of them is checked for:
+# --launcher is a release's own launcher, or a command that starts it with the Java it finds;
+# --own-java is a command that starts RESTest on a Java of its own whatever Java the machine has, such
+# as the one Homebrew installs; --image is a container image; --checkout is the shortcut at the root
+# of a checkout, which is checked for less, since it is not how RESTest is installed. Every one of
+# them is checked for:
 #
 #   - `version` answering 0, its first line `RESTest <version>`, also with JAVA_TOOL_OPTIONS set;
 #   - an option that does not exist answering 2;
@@ -17,12 +20,13 @@
 #     version, and run.sqlite in the directory it was started from.
 #
 # A launcher and an image are also checked for answering 127 when there is no Java they can use - none
-# at all, or a JAVA_HOME with none in it, and a Java older than 21 when OLD_JAVA_HOME names one. A
-# launcher on macOS or Linux is also started through a symbolic link. An image, and a launcher in a
-# release's folder, are also checked for carrying the JSON Schemas of a dictionary and a plan, and
-# THIRD-PARTY.txt, the list of the libraries they carry with their licences. An image
-# is also checked for being stopped the way `docker stop` stops it: 143, and a report that says the run
-# was cut short.
+# at all, or a JAVA_HOME with none in it, and a Java older than 21 when OLD_JAVA_HOME names one; a
+# command with its own Java, for still answering 0 then. A launcher and a command with its own Java
+# are also started through a symbolic link, on macOS and Linux. An image, and a launcher in a release's
+# folder, are also checked for carrying the JSON Schemas of a dictionary and a plan, and
+# THIRD-PARTY.txt, the list of the libraries they carry with their licences. An image is also checked
+# for being stopped the way `docker stop` stops it: 143, and a report that says the run was cut
+# short.
 #
 # Plain sh, run from Git Bash on Windows. Leaves nothing behind.
 
@@ -31,7 +35,7 @@ set -eu
 # cd must go where it is told, not to a folder an exported CDPATH names.
 unset CDPATH
 
-usage="usage: check-restest.sh <version> --launcher|--image|--checkout <what>"
+usage="usage: check-restest.sh <version> --launcher|--own-java|--image|--checkout <what>"
 expected=${1:?$usage}
 mode=${2:?$usage}
 subject=${3:?$usage}
@@ -59,7 +63,7 @@ ok() {
 }
 
 case $mode in
-  --launcher | --checkout)
+  --launcher | --own-java | --checkout)
     # An absolute path, so that it still names the same file once the checks move into $work.
     case $subject in
       */* | *\\*) subject=$(cd "$(dirname "$subject")" && pwd)/$(basename "$subject") ;;
@@ -161,7 +165,7 @@ ok "a run where nothing answers ends with 3 and leaves report.json and run.sqlit
 
 [ "$mode" = --checkout ] && exit 0
 
-# --- What a launcher and an image are also checked for ---
+# --- What a launcher, a command with its own Java and an image are also checked for ---
 
 # The JSON Schemas travel with RESTest, so that whoever writes a dictionary or a plan finds them beside
 # the tool, and so does the list of the libraries it carries, with their licences: in the image, and
@@ -192,6 +196,16 @@ case $mode in
     ;;
 esac
 
+# A launcher and an image have no Java but the one they find, and say so with 127. A command with its
+# own Java runs on it, whatever JAVA_HOME and the PATH say.
+if [ "$mode" = --own-java ]; then
+  without_java=0
+  without_java_does="starts on its own Java"
+else
+  without_java=127
+  without_java_does="answers 127"
+fi
+
 case $mode in
   --image)
     # The image's Java is in /opt/java/openjdk and found only through JAVA_HOME and the PATH. An empty
@@ -216,23 +230,23 @@ case $mode in
     restest JAVA_HOME= PATH="$path" -- version
     ;;
 esac
-expect_status 127 "'version' with no Java"
-ok "with no Java it answers 127"
+expect_status "$without_java" "'version' with no Java"
+ok "with no Java it $without_java_does"
 
 no_java_here=$work/no-java-here
 [ "$windows" = yes ] && no_java_here=$(cygpath -w "$no_java_here")
 [ "$mode" = --image ] && no_java_here=/no-java-here
 restest JAVA_HOME="$no_java_here" -- version
-expect_status 127 "'version' with a JAVA_HOME that holds no Java"
-ok "with a JAVA_HOME that holds no Java it answers 127"
+expect_status "$without_java" "'version' with a JAVA_HOME that holds no Java"
+ok "with a JAVA_HOME that holds no Java it $without_java_does"
 
 if [ -n "${OLD_JAVA_HOME:-}" ]; then
   restest JAVA_HOME="$OLD_JAVA_HOME" -- version
-  expect_status 127 "'version' on the Java in $OLD_JAVA_HOME"
-  ok "on a Java older than 21 it answers 127"
+  expect_status "$without_java" "'version' on the Java in $OLD_JAVA_HOME"
+  ok "on a Java older than 21 it $without_java_does"
 fi
 
-if [ "$mode" = --launcher ] && [ "$windows" = no ]; then
+if [ "$mode" != --image ] && [ "$windows" = no ]; then
   mkdir "$work/elsewhere"
   ln -s "$subject" "$work/elsewhere/restest"
   subject=$work/elsewhere/restest

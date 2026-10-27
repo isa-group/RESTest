@@ -1,11 +1,13 @@
 # Continuous integration
 
 What runs, how to reproduce it locally, how to add a rule, and how a release is made. The decisions
-behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries) and ADR-0032 (releases).
+behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries), ADR-0032 (releases) and
+ADR-0040 (Homebrew).
 
-Two workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
+Three workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
 tag, and rehearses it on a pull request that touches how RESTest is packaged
-([Releases](#releases)). `ci.yml`'s triggers are pull requests against `master`, pushes to it,
+([Releases](#releases)); `homebrew.yml` writes the Homebrew formula into its tap once a release is
+published ([Homebrew](#homebrew)). `ci.yml`'s triggers are pull requests against `master`, pushes to it,
 and manual dispatch. A push to a `feat/*` branch with no open pull request runs
 nothing, which is deliberate: a branch under active development would otherwise spend nine runners
 per commit.
@@ -102,7 +104,7 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | `restest-oracles` scoring below 85%, on the `ubuntu-latest` / Java 25 row (`-Pmutation`) and whenever it is run by hand |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
-| How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs and in `release.yml` | the image or a launcher failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` when there is no Java it can use, `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan, or without `THIRD-PARTY.txt` |
+| How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs, in `release.yml` and, through `check-homebrew.sh`, in `homebrew.yml` | the image, a launcher or Homebrew's command failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` from a launcher or the image when there is no Java it can use — and anything but `0` from Homebrew's command, which brings its Java — and `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan, or without `THIRD-PARTY.txt`; Homebrew's formula failing `brew style` or, once a release is published, `brew audit --strict --online`, failing to install or its own test, or installing anything but the archive as it is |
 | Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedLinksTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; a relative link that leads nowhere |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
@@ -262,6 +264,17 @@ dist/assemble.sh target/dist --archives
 .github/scripts/check-restest.sh "$version" --checkout ./restest
 ```
 
+The Homebrew formula, as `release.yml` checks it, on a machine with Homebrew where RESTest is not
+installed with it already. It installs `openjdk@21` and what that needs, which stay, as do Homebrew
+updated and the Ruby gems `brew test` and `brew style` install; RESTest and the local tap it is
+installed from are removed again, and developer mode is turned off again if it was off:
+
+```bash
+tgz="$PWD/target/dist/restest-$version.tgz"
+dist/homebrew/formula.sh "file://$tgz" "$(shasum -a 256 "$tgz" | cut -d ' ' -f 1)" > restest.rb
+.github/scripts/check-homebrew.sh restest.rb "$version"
+```
+
 Worth knowing where the rules are actually looking. Under `verify` the reactor has reached
 `package`, so what the rules read is each module's **jar**, not its `target/classes` — only
 `mvn test` leaves them reading the directories. It matters now that the modules hold code: anything excluded from a
@@ -317,15 +330,17 @@ why it is made this way, is [ADR-0032](adr/0032-how-a-release-is-published.md).
 |---|---|---|
 | `archive` | Linux | Checks the tag against `pom.xml` and `master`, compiles RESTest, and assembles `restest-<v>.zip` and `restest-<v>.tgz` with `dist/assemble.sh` |
 | `check-archive` | Linux, macOS, Windows | Unpacks the archive into a folder with a space in its name and runs `check-restest.sh` on `bin/restest` — also through a symbolic link, also with Java 17 to be refused — and on Windows on `bin\restest.cmd`, with a `JAVA_HOME` that has a space in it |
+| `check-homebrew` | Linux, macOS | Fills in the Homebrew formula, `dist/homebrew/restest.rb`, for the `.tgz` and runs `check-homebrew.sh` on it: `brew style`, installed from a local tap, its own test, the folder it installs compared with the archive, and `check-restest.sh --own-java` on the command it installs |
 | `image` | an `amd64` and an `arm64` machine | Builds the image on each machine's own processor, runs `check-restest.sh` on it, and on a tag pushes that very image as `ghcr.io/isa-group/restest:<v>-amd64` or `-arm64` |
 | `publish` | Linux, on a tag only | Joins the two into `:<v>` in the registry, checks it as published, moves `:latest` when no higher version is tagged, and drafts the release with the archives and `checksums_sha256.txt` |
 
 The order is what keeps a broken release from being seen: nothing is pushed before it has been
-checked, the image a release names is made of the images that were checked, and the files appear only
-when the draft is published. A rerun of the same tag never replaces anything: an image already pushed
+checked, the image a release names is made of the images that were checked, the release is drafted
+only once the Homebrew formula for its archive installs and passes, and the files appear only when
+the draft is published. A rerun of the same tag never replaces anything: an image already pushed
 is left as it is, a draft keeps the files it has, and a published release is not touched. A pull
 request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow,
-`.gitattributes`, the root `pom.xml` or `restest-cli/pom.xml` rehearses the first three jobs and
+`.gitattributes`, the root `pom.xml` or `restest-cli/pom.xml` rehearses every job but `publish` and
 pushes nothing.
 
 When what failed is the workflow itself, `workflow_dispatch` makes the same release with the
@@ -342,14 +357,59 @@ The steps of every release, in order, each taken by a maintainer:
 2. **The pull request that prepares the release**: the version in every `pom.xml`; the version in the
    `$id` of both files in `schemas/`, which `PublishedSchemasTest` requires to equal it on a release;
    and the pages that name the version to install — the README's installation section and chapters 2
-   and 9 of the manual — with output from the image and the archive built from that commit.
+   and 9 of the manual — with output from the image and the archive built from that commit, and, for
+   chapter 2's Homebrew section, what `check-homebrew` prints in that pull request's run of
+   `release.yml`.
 3. **The tag**, pushed once that pull request is merged.
 4. **The draft**: its notes written, read, and the release published.
 5. **From outside**: the README's installation commands, run against the published release with no
-   one signed in to GitHub or to the registry.
+   one signed in to GitHub or to the registry. Publishing the release has started `homebrew.yml`
+   (below), which installs RESTest from the tap on macOS and Linux once it has written the formula
+   there; check that its run is green.
 6. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
    the `$id` of both schemas to the next release, since the schemas on `master` name the release
    being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
+
+### Homebrew
+
+`brew install isa-group/tap/restest` reads RESTest's formula from the repository
+`isa-group/homebrew-tap`, which holds that one file, `Formula/restest.rb`. The formula is kept here,
+as `dist/homebrew/restest.rb`, and `.github/workflows/homebrew.yml` writes it into the tap once a
+release is published, since Homebrew cannot download a draft's files.
+[ADR-0040](adr/0040-homebrew.md) says why it is done this way.
+
+| Job | Where | What it does |
+|---|---|---|
+| `formula` | Linux | Checks the tag, downloads the release's `checksums_sha256.txt` with no token, and fills in the formula with the archive's address and checksum, with `dist/homebrew/formula.sh` |
+| `check` | Linux, macOS | `check-homebrew.sh --online` on that formula |
+| `push` | Linux | Writes it into the tap — never over a higher version, and over the same version only when the formula changed — with the deploy key of the environment `homebrew-tap` |
+| `check-published` | Linux, macOS | Once `push` wrote something: `brew install isa-group/tap/restest`, as anybody would, and `check-restest.sh --own-java` on it |
+
+The formula and the scripts are those of the commit the workflow runs on; the archive is the
+release's. Starting it by hand — Actions → Homebrew → Run workflow, from `master`, with a tag — puts
+a release already published in the tap, one made before the workflow existed included, and is how a
+failed run is repeated. A pull request that changes the formula, its scripts or the workflow runs
+`formula` and `check` against the latest published release, and writes nothing. Runs that may write
+the tap wait for one another; GitHub keeps only one waiting, so three started within minutes of one
+another cancel the middle one, which is started again by hand.
+
+A tap holds one version. A fix to the formula of a version already in the tap reaches it by the next
+run for that version; when the fix changes what is installed, raise the formula's `revision` in the
+same commit, so that Homebrew installs it again where it is installed already.
+
+**Set up once**, by an owner of the organisation, before the workflow first runs:
+
+1. Create `isa-group/homebrew-tap`, public, with a README, so that it has a branch to write to.
+2. Make an SSH key with no passphrase (`ssh-keygen -t ed25519 -N '' -f homebrew-tap`), and add its
+   public half to that repository as a deploy key with write access.
+3. In this repository's settings, create the environment `homebrew-tap`, whose deployment branches
+   and tags are `master` and `v*` only, and add the private half to it — not to the repository's
+   secrets — as `HOMEBREW_TAP_KEY`. Then delete both files. An environment the workflow names that
+   does not exist yet is created without those limits, so it comes first.
+
+Where the organisation does not allow deploy keys, a GitHub App installed on the tap alone does the
+same. That changes `homebrew.yml`: a step that makes the App's token, and the tap's checkout given
+`token:` in place of `ssh-key:`.
 
 ## Dependency updates
 

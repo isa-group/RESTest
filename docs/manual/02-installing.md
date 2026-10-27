@@ -1,9 +1,35 @@
 # Installing RESTest
 
-RESTest comes three ways: as a container image, which needs nothing but Docker; as an archive, which
-needs nothing but Java; and as its source code, which you build yourself. All three run the same
-RESTest, and each ends with `restest` as a command on your `PATH`. Pick the one that suits what your
-machine already has, and skip the other two sections.
+RESTest comes four ways: with Homebrew, which brings the Java RESTest runs on; as a container image,
+which needs nothing but Docker; as an archive, which needs nothing but Java; and as its source code,
+which you build yourself. All four run the same RESTest, and each ends with `restest` as a command on
+your `PATH`. Pick the one that suits what your machine already has, and skip the other sections.
+
+## With Homebrew
+
+**What you need** is [Homebrew](https://brew.sh/), on macOS or Linux. It installs a Java 21 for
+RESTest, so you need no Java of your own:
+
+```bash
+brew install isa-group/tap/restest
+```
+
+`isa-group/tap` is RESTest's own *tap*, the place Homebrew reads how to install it from, and Homebrew
+fetches it the first time. With the Java and what that Java needs, the first installation keeps
+@SIZE@; Homebrew lists what it installs as it goes. Then:
+
+```bash
+restest version
+```
+
+```
+RESTest 2.2.0
+Java 21.0.13.0.2 (Homebrew), Linux 7.0.14-linuxkit aarch64
+```
+
+The `restest` Homebrew installs always runs on that Java 21, whatever `JAVA_HOME` says; for RESTest on
+a Java of your choosing, use [the archive](#with-java). Homebrew installs the latest release only:
+for a version of your choosing, use the image or the archive.
 
 ## With Docker
 
@@ -196,6 +222,7 @@ from that shell find it too.
 
 ## Updating
 
+- **Homebrew:** `brew upgrade restest` installs the latest release.
 - **Docker:** change `2.2.0` in the script to the version you want.
 - **The archive:** download and unpack the new one, and point the `PATH` at its `bin/`.
 - **The source:** from the root of the checkout, fetch the new release's tag, move to it, and build

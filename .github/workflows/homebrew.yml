@@ -1,0 +1,205 @@
+# Puts RESTest's Homebrew formula in isa-group/homebrew-tap once a release is published, so that
+# `brew install isa-group/tap/restest` installs it. ADR-0040 says why it is shaped this way;
+# docs/ci.md says how to use it.
+#
+#   formula          checks the tag, downloads the release's checksums as anybody would, and fills
+#                    in dist/homebrew/restest.rb with the .tgz's address and checksum
+#   check            installs that formula from a local tap on macOS and on Linux, and checks it
+#   push             writes it into the tap, never over a higher version
+#   check-published  installs RESTest from the tap as anybody would, and checks it once more
+#
+# The formula and the scripts are this commit's; the archive is the release's. So a run started by
+# hand from master puts in the tap a release made before this workflow existed.
+#
+# A pull request that touches the formula or its scripts runs the first two jobs against the latest
+# published release, and writes nothing.
+#
+# Every action is pinned to a commit SHA, with the version in a trailing comment, for the reasons
+# ci.yml gives.
+name: Homebrew
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The published release to put in the tap, such as v2.2.0
+        required: true
+  pull_request:
+    branches: [master]
+    paths:
+      - dist/homebrew/**
+      - .github/scripts/check-homebrew.sh
+      - .github/workflows/homebrew.yml
+
+# One run that may write to the tap at a time, never cancelled half-way, so that two never both read
+# the tap's version before either writes. A pull request's newer push supersedes its older one.
+concurrency:
+  group: homebrew-${{ github.event_name == 'pull_request' && github.ref || 'tap' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  RELEASES: https://github.com/isa-group/RESTest/releases
+
+jobs:
+  formula:
+    name: Fill in the formula
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.what.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The tag reaches the script through the environment and is checked before it is used: never
+      # pasted into a script, where a name chosen to be a command would run.
+      - name: Work out which release
+        id: what
+        env:
+          TAG: ${{ inputs.tag || github.event.release.tag_name || '' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --repo isa-group/RESTest --json tagName --jq .tagName)
+          fi
+          # The whole value, not each of its lines as grep would: a tag given by hand could hold a
+          # newline, and with it a second line of the job's outputs.
+          [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::$TAG is not a version tag such as v2.2.0"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      # With the release's own checksum, downloaded with no token: a release that is not public fails
+      # here. Homebrew checks the archive against it when the next job installs the formula.
+      - name: Fill in the formula
+        env:
+          TAG: ${{ steps.what.outputs.tag }}
+          VERSION: ${{ steps.what.outputs.version }}
+        run: |
+          mkdir formula
+          sha256=$(curl -fsSL "$RELEASES/download/$TAG/checksums_sha256.txt" \
+            | sed -n "s/^\([0-9a-f]*\)  restest-$VERSION\.tgz\$/\1/p")
+          [ -n "$sha256" ] \
+            || { echo "::error::checksums_sha256.txt of $TAG has no line for restest-$VERSION.tgz"; exit 1; }
+          dist/homebrew/formula.sh "$RELEASES/download/$TAG/restest-$VERSION.tgz" "$sha256" > formula/restest.rb
+
+      - name: Keep the formula
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: formula
+          path: formula/restest.rb
+          if-no-files-found: error
+          overwrite: true
+
+  check:
+    name: Check the formula on ${{ matrix.os }}
+    needs: formula
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      VERSION: ${{ needs.formula.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fetch the formula
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: formula
+          path: formula
+
+      - name: Check the formula
+        run: .github/scripts/check-homebrew.sh formula/restest.rb "$VERSION" --online
+
+  # The deploy key writes to isa-group/homebrew-tap and nothing else. It is kept in the environment
+  # homebrew-tap, which only master and version tags may use, so a workflow pushed to another branch
+  # cannot read it.
+  push:
+    name: Put the formula in the tap
+    needs: [formula, check]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: homebrew-tap
+    outputs:
+      pushed: ${{ steps.write.outputs.pushed }}
+    env:
+      VERSION: ${{ needs.formula.outputs.version }}
+    steps:
+      - name: Fetch the formula
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: formula
+          path: formula
+
+      - name: Check out the tap
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: isa-group/homebrew-tap
+          ssh-key: ${{ secrets.HOMEBREW_TAP_KEY }}
+          path: tap
+
+      # The tap holds one version, read from its formula's address; a tap with none holds a lower one.
+      # A version already there is written again only if its formula changed, which is how a fix to the
+      # formula reaches the tap; a lower one is never written over a higher.
+      - name: Write the formula, never over a higher version
+        id: write
+        working-directory: tap
+        run: |
+          current=
+          if [ -f Formula/restest.rb ]; then
+            current=$(sed -n 's,^ *url ".*/restest-\([^/]*\)\.tgz".*,\1,p' Formula/restest.rb)
+          fi
+          highest=$(printf '%s\n' "$current" "$VERSION" | sort -V | tail -n 1)
+          if [ "$highest" != "$VERSION" ]; then
+            echo "::notice::The tap holds RESTest $current, higher than $VERSION, and is left as it is"
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mkdir -p Formula
+          cp ../formula/restest.rb Formula/restest.rb
+          git add Formula/restest.rb
+          if git diff --cached --quiet; then
+            echo "::notice::The tap holds this very formula for RESTest $VERSION already"
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet --message "restest $VERSION"
+          git push --quiet origin HEAD
+          echo "pushed=yes" >> "$GITHUB_OUTPUT"
+
+  check-published:
+    name: Install from the tap on ${{ matrix.os }}
+    needs: [formula, push]
+    if: needs.push.outputs.pushed == 'yes'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      VERSION: ${{ needs.formula.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # GitHub's Linux machines carry Homebrew without putting it on the PATH, as check-homebrew.sh says.
+      - name: Install RESTest from the tap and check it
+        run: |
+          if ! command -v brew > /dev/null 2>&1 && [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          fi
+          brew install isa-group/tap/restest
+          .github/scripts/check-restest.sh "$VERSION" --own-java "$(brew --prefix)/bin/restest"

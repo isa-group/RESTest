@@ -159,7 +159,7 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 | Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |
-| How a release is made and what it carries: the image, the archives and their launchers | `docs/ci.md`, `docs/adr/0032-how-a-release-is-published.md`, `Dockerfile`, `dist/` |
+| How a release is made and what it carries: the image, the archives and their launchers, and the Homebrew formula | `docs/ci.md`, `docs/adr/0032-how-a-release-is-published.md`, `docs/adr/0040-homebrew.md`, `Dockerfile`, `dist/` |
 | How a change is proposed and reviewed | `CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md` |
 | The documents the evaluation platform may be named in | `BENCHMARK_MAY_BE_NAMED_IN` in `restest-arch-tests/src/test/java/io/restest/arch/SourceTreeRulesTest.java` |
 
