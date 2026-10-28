@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/isa-group/RESTest/v2.3.0/schemas/dictionary.schema.json",
+  "$id": "https://raw.githubusercontent.com/isa-group/RESTest/v2.4.0/schemas/dictionary.schema.json",
   "title": "RESTest dictionary",
   "description": "A list of values worth sending to one API, handed to RESTest with --dictionary and written in YAML or JSON. Every list sits under the operation it is for, and under the place in that operation's request its values go. RESTest checks what no schema can: that the operations and places exist in the API, and that the name is not 'fuzzing'.",
   "type": "object",
