@@ -85,13 +85,22 @@
         <okhttp.version>5.5.0</okhttp.version>
         <wiremock.version>3.13.2</wiremock.version>
         <sqlite.version>3.50.3.0</sqlite.version>
+        <!-- Jackson 2, every module of it at one version. RESTest's own JSON reading uses its
+             jackson-core; swagger-parser and swagger-core bring jackson-databind and the YAML and
+             date modules, and WireMock, a test dependency, brings its own. Managed through Jackson's
+             BOM below rather than left to Maven's mediation, which picks the nearest path: in
+             restest-cli that was WireMock's, so a release carried an older jackson-databind than
+             the one swagger-core asks for. -->
         <jackson.version>2.22.3</jackson.version>
-        <!-- Versioned separately from the rest of Jackson, and pinned here for a reason found the
-             hard way: the schema validator's own JSON library needs 2.22, while another path
-             through the tree asks for 2.20, and Maven's mediation picks the nearer one. The result
-             was a class missing at runtime in the one module that has every other module on its
-             class path. Same reasoning as snakeyaml below; a worse failure, because it only shows
-             up when everything is assembled. -->
+        <!-- Versioned separately from the rest of Jackson, shared by Jackson 2 and Jackson 3, and
+             pinned here for a reason found the hard way: the schema validator's own JSON library
+             needed 2.22 while another path through the tree asked for 2.20, and Maven's mediation
+             picked the nearer one. The result was a class missing at runtime in the one module that
+             has every other module on its class path. Both Jackson BOMs below name a version of it
+             now, and when two imported BOMs disagree the one written first wins without a word, so
+             it stays pinned: one written decision, which has to be the version both of them name.
+             Same reasoning as snakeyaml below; a worse failure, because it only shows up when
+             everything is assembled. -->
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <json-schema-validator.version>3.0.7</json-schema-validator.version>
         <!-- Jackson 3, a separate line under the tools.jackson group, which only the schema
@@ -190,9 +199,11 @@
                 <version>${sqlite.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
