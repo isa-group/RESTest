@@ -911,6 +911,59 @@ class RunLoopTest {
         assertThat(outcome.refusedLap()).describedAs("%s", outcome).isEmpty();
     }
 
+    @Test
+    @DisplayName("an opening lap whose slowest request comes back 401 after the lap went on still "
+            + "stops the run, once that answer is in, and the run gives back the room it held")
+    void a_slow_401_to_the_lap_stops_the_run_when_it_arrives() {
+        // The list of shelters takes longer than the lap waits for it, so the lap is over before it
+        // is answered and the run goes on sending; when the 401 comes, the next request is where
+        // the run stops. A slot taken for that request and not given back would leave the run
+        // waiting for an answer nobody owes it until the wait for stragglers ran out.
+        engine.answersWith(testCase -> Optional.of(401));
+        engine.takes(request -> request.url().endsWith("/shelters")
+                ? Duration.ofMillis(800) : Duration.ofMillis(1));
+
+        for (Duration patience : List.of(Duration.ofMillis(200), Duration.ZERO)) {
+            long began = System.nanoTime();
+            RunLoop.Outcome outcome = run(Duration.ofSeconds(30), withPatience(patience),
+                    listening -> { });
+            Duration took = Duration.ofNanos(System.nanoTime() - began);
+
+            assertThat(outcome.refusedLap())
+                    .describedAs("waiting %s for each step: %s", patience, outcome).isPresent();
+            assertThat(outcome.sent())
+                    .describedAs("the premise: it went on sending while it waited for the answer")
+                    .isGreaterThan(model.operations().size());
+            assertThat(took)
+                    .describedAs("it stopped once the answer was in, and waited for nothing it "
+                            + "was not owed")
+                    .isLessThan(PATIENT.minusSeconds(1));
+        }
+    }
+
+    @Test
+    @DisplayName("a run the API stopped, then stopped from outside while it waited for its last "
+            + "answers, says both")
+    void a_refused_run_stopped_from_outside_while_it_waits_says_both() {
+        // The lap is over before the list of shelters answers; everything sent after it takes
+        // seconds, so the run is waiting for those when the 401 arrives and it stops, and it is
+        // still waiting for them when it is stopped from outside.
+        engine.answersWith(testCase -> Optional.of(401));
+        engine.takes(request -> request.url().endsWith("/shelters") && engine.asked() <= 4
+                ? Duration.ofMillis(800)
+                : engine.asked() <= 4 ? Duration.ofMillis(1) : Duration.ofSeconds(4));
+
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                withPatience(Duration.ofMillis(200)), stoppedAfter(Duration.ofMillis(1600)),
+                listening -> { });
+
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isPresent();
+        assertThat(outcome.cutShort()).describedAs("%s", outcome).isTrue();
+        assertThat(outcome.stillOwed())
+                .describedAs("the requests sent after the lap were still on their way")
+                .isPositive();
+    }
+
     /** A run that begins with a first round, each step of which waits this long for the last. */
     private static ScheduleSettings withPatience(Duration patience) {
         return new ScheduleSettings(WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,

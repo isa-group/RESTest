@@ -270,7 +270,7 @@ the API did not stop. From a run handed a key the API would not take:
 |---|---|---|
 | `at` | moment | When the run decided to stop sending. The requests already on their way then were waited for, as at the end of a run's time, and are counted with the rest, whatever they brought back |
 | `lapRequests` | number | How many requests the opening lap sent, every one of them answered 401 |
-| `keysHeld` | list | Where each key the run held went, as [`keysNotGiven`](#keysnotgiven) writes a key nobody handed over, and never the key itself. Empty when it held none: the keys the document asks for are then under `keysNotGiven` |
+| `keysHeld` | list | Where each key the run held went, as [`keysNotGiven`](#keysnotgiven) writes a key nobody handed over, and never the key itself. Empty when it held none, or none that went with an operation it could test: the keys the document asks for and nobody handed over are under `keysNotGiven` |
 
 ### `unauthorized.keysHeld[]`
 

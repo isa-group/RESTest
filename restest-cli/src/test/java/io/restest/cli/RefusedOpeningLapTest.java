@@ -139,39 +139,37 @@ class RefusedOpeningLapTest {
     }
 
     @Test
-    @DisplayName("answered on many threads at once, a lap whose last answer is a 200 is never "
-            + "seen settled without that 200")
+    @DisplayName("a lap whose last answer is a 200, arriving while the question is asked over and "
+            + "over on another thread, is never seen settled without that 200")
     void the_last_answer_is_never_missed() throws InterruptedException {
-        // The deciding thread asks over and over while the answers arrive; whatever moment it asks
-        // at, a lap that is settled has been heard in full.
-        for (int attempt = 0; attempt < 200; attempt++) {
+        // Every request but one has come back 401; the last comes back 200 on a thread of its own
+        // while the deciding thread keeps asking. Were the 200 counted as settled before it was
+        // counted as something else, a question asked in between would see a lap refused whole.
+        for (int attempt = 0; attempt < 2_000; attempt++) {
             RefusedOpeningLap lap = RefusedOpeningLap.watching(true, CLOCK);
             int requests = 16;
             sendInTheLap(lap, requests);
             lap.lapIsOver();
-            CountDownLatch go = new CountDownLatch(1);
-            Thread[] answering = new Thread[requests];
-            for (int i = 0; i < requests; i++) {
-                int status = i == requests - 1 ? 200 : 401;
-                answering[i] = Thread.ofPlatform().start(() -> {
-                    try {
-                        go.await();
-                    } catch (InterruptedException stopped) {
-                        return;
-                    }
-                    lap.settled(Optional.of(status), true);
-                });
+            for (int i = 0; i < requests - 1; i++) {
+                lap.settled(Optional.of(401), true);
             }
+            CountDownLatch go = new CountDownLatch(1);
+            Thread last = Thread.ofPlatform().start(() -> {
+                try {
+                    go.await();
+                } catch (InterruptedException stopped) {
+                    return;
+                }
+                lap.settled(Optional.of(200), true);
+            });
             go.countDown();
-            Optional<Unauthorized> said = Optional.empty();
-            while (said.isEmpty() && anyAlive(answering)) {
+            Optional<Unauthorized> said = lap.refused();
+            while (said.isEmpty() && last.isAlive()) {
                 said = lap.refused();
             }
-            for (Thread thread : answering) {
-                thread.join();
-            }
-            said = said.isPresent() ? said : lap.refused();
-            assertThat(said).describedAs("attempt %d", attempt).isEmpty();
+            last.join();
+            assertThat(said.isPresent() ? said : lap.refused())
+                    .describedAs("attempt %d", attempt).isEmpty();
         }
     }
 
@@ -181,12 +179,4 @@ class RefusedOpeningLapTest {
         }
     }
 
-    private static boolean anyAlive(Thread[] threads) {
-        for (Thread thread : threads) {
-            if (thread.isAlive()) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

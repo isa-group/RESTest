@@ -817,21 +817,27 @@ final class RunCommand implements Callable<Integer> {
             if (askedFor.contains(scheme.getKey())) {
                 howToHandOver(scheme.getKey(), scheme.getValue(), credentials, keys)
                         .ifPresent(how::add);
-                aToken |= scheme.getValue() instanceof SecurityScheme.Other
+                aToken |= scheme.getValue() instanceof SecurityScheme.Other other
+                                && !isACertificate(other)
                         || scheme.getValue() instanceof SecurityScheme.Http http && isBearer(http);
             }
         }
+        // Whether the run was handed a key at all, which is not whether one was sent: a key that
+        // goes with none of the operations was handed over, and is said above.
+        boolean handedNone = credentials.placed().isEmpty();
         if (!how.isEmpty()) {
-            said.append(sent.isEmpty() ? " It was handed no key, and the document asks for "
+            said.append(handedNone ? " It was handed no key, and the document asks for "
                     : " The operations no key went with ask for ")
                     .append(String.join("; and ", how)).append(".");
             if (aToken) {
                 said.append(" RESTest does not yet sign in by itself to get a token.");
             }
-        } else if (sent.isEmpty()) {
-            said.append(" It was handed no key, and the document declares none it could be told "
-                    + "how to send: " + AuthGiven.OPTION + " 'header:<name>=<value>' sends one "
-                    + "with every request.");
+        } else if (handedNone) {
+            said.append(" It was handed no key, and the document declares "
+                    + (model.securitySchemes().isEmpty() ? "none" : "none RESTest can say how to "
+                            + "hand over")
+                    + ": " + AuthGiven.OPTION + " 'header:<name>=<value>' sends one with every "
+                    + "request.");
         }
         return said.toString();
     }
@@ -853,6 +859,10 @@ final class RunCommand implements Callable<Integer> {
                             ? "a bearer token (" + name + "): " + option + " gives it"
                             : "a user and password (" + name + ", HTTP " + http.scheme() + "): "
                                     + option + " gives them");
+            // A certificate the client presents goes in no header, and RESTest cannot present one.
+            case SecurityScheme.Other other when isACertificate(other) -> Optional.of(
+                    "a client certificate (" + name + ", " + other.type() + "), which RESTest "
+                            + "cannot present");
             case SecurityScheme.Other other -> CredentialPlan.heldAlready(A_BEARER_TOKEN)
                     .map(option -> "a token for " + name + " (" + other.type() + "): " + option
                             + " gives one you already have");
@@ -862,6 +872,11 @@ final class RunCommand implements Callable<Integer> {
 
     private static boolean isBearer(SecurityScheme.Http http) {
         return "bearer".equals(http.scheme());
+    }
+
+    /** Whether the document asks for a certificate the client presents: OpenAPI's mutualTLS. */
+    private static boolean isACertificate(SecurityScheme.Other other) {
+        return "mutualtls".equalsIgnoreCase(other.type());
     }
 
     /**

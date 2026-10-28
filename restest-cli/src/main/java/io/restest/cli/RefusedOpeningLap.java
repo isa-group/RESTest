@@ -33,7 +33,8 @@ import java.util.Optional;
  * <p>Anything else rules the stop out for the rest of the run, because it means the run can still
  * learn something: a reply that is not a 401 - an operation anybody may call, a 400 for a value the
  * API checks before it asks who is calling, a 500 - and a request of the lap that got no reply at
- * all, which is a fault in itself and may be an API still starting up. So is a 401 the run never
+ * all: one that never came in time is a fault of its own, and a connection refused or cut may be an
+ * API still starting up. So is a 401 the run never
  * hears because its time ran out first: the question is asked once, when the lap is over and every
  * one of its requests has been settled, and never again. A run without an opening lap never asks it.
  *

@@ -1,7 +1,7 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
 **Status:** Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11, 12, 19, 22, 25 and 28 October 2026
-**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12, 2026-10-19, 2026-10-22, 2026-10-28)
+**Date:** 2026-09-14 (amended 2026-09-15, 2026-09-18, 2026-09-22, 2026-09-23, 2026-09-30, 2026-10-01, 2026-10-11, 2026-10-12, 2026-10-19, 2026-10-22, 2026-10-25, 2026-10-28)
 
 ## Context
 
@@ -1391,12 +1391,15 @@ the report says the rest.
 **Why a number of its own, and why this is an addition.** The freeze lets a minor version add "a
 number for something that has none yet", and a run refused whole had none: it ended with whatever its
 findings said, which was `0`, or `1` when it reported every undeclared 401 (`F920`) and
-`checks.failOnWarnings` was on. `3` says nothing was tested, and a refused run had every request
+`checks.failOnWarnings` was on, or when the requests after its lap met an error. `3` says nothing was tested, and a refused run had every request
 answered; widening it would have changed what `3` means. No existing number changes meaning: `0`
 and `1` still say what a run that finished found, and a refused run did not finish.
 
 **What it costs, against 2.3.0.** A run whose whole opening lap the API answered 401 ended with `0`,
-or `1` with `checks.failOnWarnings`, and ends with `5`. "Anything that would break one waits for
+or `1` with `checks.failOnWarnings`, and ends with `5`. So does one that, refused whole in its lap,
+went on to meet an error in the requests it sent afterwards - a 500, or a reply that never came -
+and ended with `1`: the run now stops before those requests are sent, and the few already on their
+way when it stopped are counted, with what they found, under a number that says why it stopped. "Anything that would break one waits for
 3.0", says the freeze; what breaks here is a script reading `0` from a run that tested nothing an
 API would let it test, which was a wrong answer rather than a promise, and
 `schedule.stopWhenTheOpeningLapIsRefused=false` gives the old ending back to whoever relied on it.

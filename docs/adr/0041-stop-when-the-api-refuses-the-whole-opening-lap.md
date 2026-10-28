@@ -46,8 +46,14 @@ it asks who is calling, and a 500. Without its key, pay-publicapi answered 500 t
 
 **A request of the lap that got no reply rules it out too.** The connection may have been refused or
 cut, or the reply may never have come. An API that refuses the first connections while it starts up
-would otherwise be stopped on the few 401s that came after them. A reply that never came is a fault
-of its own (`F312`), and a run that met one goes on to end as it always has.
+would otherwise be stopped on the few 401s that came after them. A reply that never came in time is
+a fault of its own (`F312`), an error, and a run that met one goes on to end as it always has; a
+connection refused or cut is no fault, and such a run goes on as well, which is what an API still
+starting up needs.
+
+**The lap is the requests it sent.** An operation whose request could not be built is left out of
+the lap, so the lap is judged on the operations that were sent: a document of which only one
+operation could be built is stopped on that one operation's 401.
 
 **Asked once.** The question is asked when the lap is over and every one of its requests has
 settled: answered, or given up on by the engine. It is never asked again.
@@ -77,7 +83,8 @@ brought back.
 
 - **What it does.** It stops sending, waits for the answers it is owed as at the end of its time,
   writes what any run writes, and ends with `5`. The requests already on their way when it decided,
-  at most as many as may be in flight, are counted with the rest, whatever they bring back.
+  at most as many as may be waiting for an answer at once (`schedule.workAheadFactor` times
+  `engine.maxConcurrency`), are counted with the rest, whatever they bring back.
 - **The summary.** Its first line ends with `, stopped: the API answered 401 to every request of the
   opening lap`.
 - **The error stream.** A line there, before any other but the one for a run stopped from outside,

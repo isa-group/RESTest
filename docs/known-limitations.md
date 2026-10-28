@@ -24,8 +24,9 @@ current release: an entry leaves it in the release that lifts it, and that relea
   budget ends: one that loses its key part-way — revoked, expired, or taken away by something the
   run sent, such as signing out or changing its own password; one with no key against an API some
   of whose operations anybody may call; one answered 403 rather than 401; one answered with
-  redirections to a sign-in page rather than 401; and one with no opening lap, or whose lap never
-  ends because its budget or `schedule.requestsBeforeStopping` runs out first. A 401 the document
+  redirections to a sign-in page rather than 401; one a request of whose lap got no reply at all;
+  and one with no opening lap, or whose lap never ends because its budget or
+  `schedule.requestsBeforeStopping` runs out first. A 401 the document
   declares is not a fault, and one it leaves out is reported, `F920`, on every request; the summary
   at the end counts the replies by status. Try a new key with a short `--budget` first.
 - **A run does not stop when the API stops answering.** The limiter falls to one request in flight

@@ -98,6 +98,57 @@ class RefusedOpeningLapCommandTest {
                 get: {operationId: listShelters, responses: {'200': {description: every shelter}}}
             """;
 
+    /** One operation behind an API key, the other behind OAuth 2. */
+    private static final String A_KEY_AND_A_TOKEN = """
+            openapi: 3.0.3
+            info: {title: Shelter with two ways in, version: '1'}
+            paths:
+              /pets:
+                get:
+                  operationId: listPets
+                  security: [{shelterKey: []}]
+                  responses: {'200': {description: every pet}}
+              /shelters:
+                get:
+                  operationId: listShelters
+                  security: [{oauth: []}]
+                  responses: {'200': {description: every shelter}}
+            components:
+              securitySchemes:
+                shelterKey: {type: apiKey, name: X-Shelter-Key, in: header}
+                oauth:
+                  type: oauth2
+                  flows: {implicit: {authorizationUrl: 'https://example.com/authorize', scopes: {}}}
+            """;
+
+    /** The one operation asks for an API key and an OAuth 2 token together. */
+    private static final String A_KEY_WITH_A_TOKEN = """
+            openapi: 3.0.3
+            info: {title: Shelter asking for both, version: '1'}
+            security: [{shelterKey: [], oauth: []}]
+            paths:
+              /pets:
+                get: {operationId: listPets, responses: {'200': {description: every pet}}}
+            components:
+              securitySchemes:
+                shelterKey: {type: apiKey, name: X-Shelter-Key, in: header}
+                oauth:
+                  type: oauth2
+                  flows: {implicit: {authorizationUrl: 'https://example.com/authorize', scopes: {}}}
+            """;
+
+    private static final String A_CERTIFICATE = """
+            openapi: 3.1.0
+            info: {title: Shelter behind a certificate, version: '1'}
+            security: [{cert: []}]
+            paths:
+              /pets:
+                get: {operationId: listPets, responses: {'200': {description: every pet}}}
+            components:
+              securitySchemes:
+                cert: {type: mutualTLS}
+            """;
+
     private static WireMockServer api;
 
     private final StringWriter screen = new StringWriter();
@@ -169,9 +220,8 @@ class RefusedOpeningLapCommandTest {
         problems.getBuffer().setLength(0);
         assertThat(run(Map.of(), NO_SCHEME)).describedAs("%s", problems).isEqualTo(5);
         assertThat(problems.toString())
-                .contains("It was handed no key, and the document declares none it could be told "
-                        + "how to send: --auth 'header:<name>=<value>' sends one with every "
-                        + "request.");
+                .contains("It was handed no key, and the document declares none: --auth "
+                        + "'header:<name>=<value>' sends one with every request.");
     }
 
     @Test
@@ -197,6 +247,44 @@ class RefusedOpeningLapCommandTest {
                 new String(Files.readAllBytes(out().resolve("run.sqlite")),
                         StandardCharsets.ISO_8859_1)));
         assertThat(written).allSatisfy(text -> assertThat(text).doesNotContain(CORE));
+    }
+
+    @Test
+    @DisplayName("a key held for some operations is named, and what the others ask for is said "
+            + "beside it")
+    void a_key_held_and_one_missing_are_both_said() throws IOException {
+        assertThat(run(Map.of(), A_KEY_AND_A_TOKEN, "--auth", KEY)).describedAs("%s", problems)
+                .isEqualTo(5);
+        assertThat(problems.toString())
+                .contains("It held the key given with --auth, in the header X-Shelter-Key, and the "
+                        + "API refused it")
+                .contains("The operations no key went with ask for a token for oauth (oauth2): "
+                        + "--auth 'header:Authorization=Bearer <token>' gives one you already "
+                        + "have. RESTest does not yet sign in by itself to get a token.");
+    }
+
+    @Test
+    @DisplayName("a key that went with no operation is said never to have been sent, and the run "
+            + "is not told it was handed none")
+    void a_key_never_sent_is_not_a_key_never_given() throws IOException {
+        assertThat(run(Map.of(), A_KEY_WITH_A_TOKEN, "--auth", "shelterKey=" + KEY))
+                .describedAs("%s", problems).isEqualTo(5);
+        assertThat(problems.toString())
+                .contains("The key given with --auth was never sent: ")
+                .contains("The operations no key went with ask for ")
+                .doesNotContain("It was handed no key");
+    }
+
+    @Test
+    @DisplayName("a document that asks for a client certificate is told RESTest cannot present "
+            + "one, not to send a token")
+    void a_certificate_is_not_a_token() throws IOException {
+        assertThat(run(Map.of(), A_CERTIFICATE)).describedAs("%s", problems).isEqualTo(5);
+        assertThat(problems.toString())
+                .contains("It was handed no key, and the document asks for a client certificate "
+                        + "(cert, mutualTLS), which RESTest cannot present.")
+                .doesNotContain("Bearer")
+                .doesNotContain("sign in");
     }
 
     @Test

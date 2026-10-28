@@ -117,7 +117,7 @@ faults](faults.md#switching-a-check-off) says what else it changes, and what it 
 
 The two of these that are on by default are turned off with these files, the first for a campaign
 that keeps only what a program reads, the second for one that keeps sending to an API that refuses
-it, as RESTest did before 2.4.0:
+it, as RESTest did before it stopped such runs:
 
 **The page**
 

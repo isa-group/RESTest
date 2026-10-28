@@ -796,4 +796,4 @@ also decides when a run ends rather than what it sends
 ([ADR-0041](0041-stop-when-the-api-refuses-the-whole-opening-lap.md)). It is listed among the
 switches that are not levers, and the page of switches has a file that turns it off, since it is on
 by default. The rule has no number to put beside it: the stretch it judges is the opening lap, and
-401 is a fact of HTTP rather than a choice. One hundred and one settings in nine groups.
+401 is a fact of HTTP rather than a choice. One hundred and two settings in nine groups.
