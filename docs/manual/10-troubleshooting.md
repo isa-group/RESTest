@@ -104,13 +104,71 @@ Give the address without them, and a key with `--auth` ([chapter 8](08-an-api-th
 **`nothing can be written to …`.** The directory given with `--out`, or `restest-out/` by default,
 cannot be written to. Choose another with `--out`.
 
+## The API stopped the run: exit code `5`
+
+The summary's first line ends with `stopped: the API answered 401 to every request of the opening
+lap`, and the run ended long before its budget. Every operation was sent once, with the request it
+was likeliest to accept, and the API answered each one with `401 Unauthorized`: it refuses all of
+itself to a caller without a key it will take. Rather than send it the same refusal thousands of
+times a second until the budget ends, the run stopped sending there. The pet shop of [chapter
+8](08-an-api-that-asks-for-a-key.md), run against a stand-in that answers 401 to everything, ends
+like this, after its findings:
+
+```
+19 requests to 19 operations in 1.2s, 98% of it idle, stopped: the API answered 401 to every request of the opening lap
+  opening lap: 19 requests in 53ms, 0 of 19 operations answered 2xx
+  19 4xx
+no faults found
+restest: the API answered 401 to each of the 19 requests of the opening lap, so the run stopped sending after 1.2s of its 30s budget (schedule.stopWhenTheOpeningLapIsRefused). It was handed no key, and the document asks for a token for petstore_auth (oauth2): --auth 'header:Authorization=Bearer <token>' gives one you already have; and an API key (api_key, in the header api_key): --auth <key> gives it. RESTest does not yet sign in by itself to get a token.
+```
+
+The last line says what to do. A run that was handed no key is told how the document's is handed
+over; one that held a key is told where it went, and that the API refused it — check that it is the
+right one and that it has not expired. `report.json` has the same under
+[`unauthorized`](../report.md#unauthorized), and its `verdict` is `unauthorized`.
+
+A single reply other than 401 to the opening lap — an operation anybody may call, a `400` for a value
+the API checks before it asks who is calling, a `403` — or a request of it that got no reply, and the
+run goes on as usual: it can still learn something. To have a run the API refuses go on until its
+budget ends anyway, as an API that lets a caller in only after a while would need, turn the stop
+off:
+
+```bash
+restest run openapi.yaml --set schedule.stopWhenTheOpeningLapIsRefused=false
+```
+
+The stand-in is a few lines of Java, for trying the stop out without an API to hand:
+
+```java
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
+
+/** Answers 401 to every request, as an API does to a caller with no key it will take. */
+public class Refuse {
+    public static void main(String[] args) throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(8401), 0);
+        server.createContext("/", exchange -> {
+            exchange.sendResponseHeaders(401, -1);
+            exchange.close();
+        });
+        server.start();
+        System.out.println("answering 401 to every request at http://localhost:8401");
+    }
+}
+```
+
+Saved as `Refuse.java`, `java Refuse.java` starts it, and `--url http://localhost:8401` points a run
+at it.
+
 ## Almost every request is refused
 
 The summary line counting replies by class — `2xx`, `4xx`, `5xx` — is mostly `4xx`.
 
-**Nearly all `401` or `403`.** The API wants a key, and was not given one. The first lines of the run
-say whether the document declares one, and how to hand it over: see [chapter
-8](08-an-api-that-asks-for-a-key.md).
+**Nearly all `401` or `403`.** The API wants a key, and was not given one, or not one it takes. The
+first lines of the run say whether the document declares one, and how to hand it over: see [chapter
+8](08-an-api-that-asks-for-a-key.md). When even the opening lap was refused whole, the run stopped
+there, [as above](#the-api-stopped-the-run-exit-code-5); when some operations answer, it goes on and
+tests those.
 
 **Nearly all `404`.** The requests are going to the wrong place. `--url` given with a path uses that
 path instead of the one the document declares, so for the clinic, whose document declares

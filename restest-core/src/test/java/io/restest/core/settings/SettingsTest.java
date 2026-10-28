@@ -519,12 +519,12 @@ class SettingsTest {
 
             assertThatThrownBy(() -> new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                     Duration.ofSeconds(2), true, Duration.ofSeconds(-1), false, 1_000,
-                    Duration.ofSeconds(5), Duration.ofSeconds(1)))
+                    Duration.ofSeconds(5), Duration.ofSeconds(1), true))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("openingLapPatience cannot be negative");
             assertThatThrownBy(() -> new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                     Duration.ofSeconds(-1), true, Duration.ofSeconds(2), false, 1_000,
-                    Duration.ofSeconds(5), Duration.ofSeconds(1)))
+                    Duration.ofSeconds(5), Duration.ofSeconds(1), true))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("interruptGrace cannot be negative");
             assertThatThrownBy(() -> Settings.from(Map.of("schedule.requestsBeforeStopping", "0")))
@@ -533,7 +533,7 @@ class SettingsTest {
                     .hasMessageContaining("at least 1");
             assertThatThrownBy(() -> new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                     Duration.ofSeconds(2), true, Duration.ofSeconds(2), true, 10,
-                    Duration.ofSeconds(-1), Duration.ofSeconds(1)))
+                    Duration.ofSeconds(-1), Duration.ofSeconds(1), true))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("interruptWritingGrace cannot be negative");
         }
@@ -628,7 +628,7 @@ class SettingsTest {
                     .maxConcurrency()).isEqualTo(1);
             assertThat(from.withSchedule(new ScheduleSettings(3, 10, Duration.ofSeconds(1),
                     Duration.ofSeconds(2), true, Duration.ofSeconds(2), false, 1_000,
-                    Duration.ofSeconds(5), Duration.ofSeconds(1)))
+                    Duration.ofSeconds(5), Duration.ofSeconds(1), true))
                     .schedule().workAheadFactor()).isEqualTo(3);
             assertThat(from.withGeneration(GenerationSettings.defaults()).generation())
                     .isEqualTo(GenerationSettings.defaults());

@@ -159,7 +159,9 @@ public record Settings(
                 typed.lengthOfTime("schedule.interruptWritingGrace",
                         DEFAULTS.schedule.interruptWritingGrace()),
                 typed.lengthOfTime("schedule.interruptLookingGrace",
-                        DEFAULTS.schedule.interruptLookingGrace())));
+                        DEFAULTS.schedule.interruptLookingGrace()),
+                typed.yesOrNo("schedule.stopWhenTheOpeningLapIsRefused",
+                        DEFAULTS.schedule.stopWhenTheOpeningLapIsRefused())));
         GenerationSettings generation = group("generation", () -> new GenerationSettings(
                 typed.wholeNumber("generation.optionalNestingDepth",
                         DEFAULTS.generation.optionalNestingDepth()),
@@ -391,6 +393,8 @@ public record Settings(
             case "schedule.openingLap" -> String.valueOf(schedule.openingLap());
             case "schedule.openingLapPatience" ->
                     LengthOfTime.written(schedule.openingLapPatience());
+            case "schedule.stopWhenTheOpeningLapIsRefused" ->
+                    String.valueOf(schedule.stopWhenTheOpeningLapIsRefused());
             case "schedule.stopAfterRequests" -> String.valueOf(schedule.stopAfterRequests());
             case "schedule.requestsBeforeStopping" ->
                     String.valueOf(schedule.requestsBeforeStopping());

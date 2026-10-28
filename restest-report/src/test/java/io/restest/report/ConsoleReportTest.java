@@ -18,6 +18,7 @@ package io.restest.report;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.Unauthorized;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
@@ -343,6 +344,21 @@ class ConsoleReportTest {
                 .describedAs("what it found until then is said as it would have been")
                 .contains("no faults found");
         assertThat(lines).filteredOn(line -> line.contains("cut short")).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a run the API stopped by refusing its whole opening lap says so on the first line "
+            + "of its summary")
+    void a_run_the_api_refused_says_so() {
+        report.on(Runs.started(Instant.EPOCH));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 401)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(100), Runs.engine(),
+                false, Optional.of(new Unauthorized(Instant.EPOCH, 1))));
+
+        assertThat(screen.toString().lines().toList())
+                .contains("1 requests to 1 operations in 100ms, 30% of it idle, stopped: the API "
+                        + "answered 401 to every request of the opening lap");
     }
 
     @Test

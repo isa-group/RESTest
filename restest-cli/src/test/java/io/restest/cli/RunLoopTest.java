@@ -106,13 +106,17 @@ class RunLoopTest {
             WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
             WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), false,
             WITH_A_FIRST_ROUND.openingLapPatience(), false, 1_000,
-            WITH_A_FIRST_ROUND.interruptWritingGrace(), WITH_A_FIRST_ROUND.interruptLookingGrace());
+            WITH_A_FIRST_ROUND.interruptWritingGrace(), WITH_A_FIRST_ROUND.interruptLookingGrace(),
+            true);
 
     /** No limit on how many requests a run here may send: its budget alone ends it. */
     private static final long NO_CAP = Long.MAX_VALUE;
 
     private final ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
     private final ApiEngine engine = new ApiEngine();
+
+    /** Whether the runs here stop when the API answers 401 to the whole opening lap, as by default. */
+    private boolean watchTheLap = true;
 
     @AfterEach
     void stopTheEngine() {
@@ -351,7 +355,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, new StopFromOutside(), engine,
+                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, new StopFromOutside(),
+                    RefusedOpeningLap.watching(true), engine,
                     events);
         }
 
@@ -490,7 +495,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITH_A_FIRST_ROUND,
                     Instant.now().plusSeconds(3), InstantSource.system(), events::publish);
             RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
-                    PATIENT, GRACE, new StopFromOutside(), engine, events);
+                    PATIENT, GRACE, new StopFromOutside(),
+                    RefusedOpeningLap.watching(true), engine, events);
         }
 
         // The step straight after the list: the creation's body fills its name from the name
@@ -539,7 +545,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator, WITHOUT_A_FIRST_ROUND,
                     Instant.now().plus(BUDGET), InstantSource.system(), events::publish);
             RunLoop.run(scheduler, "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
-                    PATIENT, GRACE, new StopFromOutside(), engine, events);
+                    PATIENT, GRACE, new StopFromOutside(),
+                    RefusedOpeningLap.watching(true), engine, events);
         }
 
         // Each series by its creation's exchange, which every later step names first.
@@ -580,11 +587,7 @@ class RunLoopTest {
     void a_request_never_answered_holds_the_first_round_up_for_one_wait_at_most() {
         // The first request of the round - the list of pets - never comes back within the run.
         engine.takes(request -> engine.asked() <= 1 ? Duration.ofSeconds(30) : Duration.ofMillis(1));
-        ScheduleSettings patientForAFifth = new ScheduleSettings(
-                WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
-                WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), true,
-                Duration.ofMillis(200), false, 1_000, WITH_A_FIRST_ROUND.interruptWritingGrace(),
-                WITH_A_FIRST_ROUND.interruptLookingGrace());
+        ScheduleSettings patientForAFifth = withPatience(Duration.ofMillis(200));
 
         long began = System.nanoTime();
         RunLoop.Outcome outcome = run(Duration.ofMillis(2500), patientForAFifth, listening -> { });
@@ -679,11 +682,7 @@ class RunLoopTest {
     void a_stop_during_the_first_round_cuts_it_short() {
         // Every answer is slower than the round is willing to wait, so the round sits in a wait.
         engine.takes(request -> Duration.ofSeconds(20));
-        ScheduleSettings patient = new ScheduleSettings(WITH_A_FIRST_ROUND.workAheadFactor(),
-                ANNOUNCEMENTS_ALLOWED, WITH_A_FIRST_ROUND.stragglerGrace(),
-                WITH_A_FIRST_ROUND.interruptGrace(), true, Duration.ofSeconds(10), false, 1_000,
-                WITH_A_FIRST_ROUND.interruptWritingGrace(),
-                WITH_A_FIRST_ROUND.interruptLookingGrace());
+        ScheduleSettings patient = withPatience(Duration.ofSeconds(10));
         List<RunEvent.PhaseFinished> ended = new CopyOnWriteArrayList<>();
         StopFromOutside stop = stoppedAfter(Duration.ofMillis(400));
 
@@ -718,7 +717,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), WITHOUT_A_FIRST_ROUND,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
-                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, stop, engine, events);
+                    ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT, GRACE, stop,
+                    RefusedOpeningLap.watching(true), engine, events);
             Thread.sleep(1500);
             events.awaitDelivery(PATIENT);
         }
@@ -746,7 +746,8 @@ class RunLoopTest {
             org.assertj.core.api.Assertions.assertThatThrownBy(() -> RunLoop.run(scheduler,
                     "https://api.example", WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP, PATIENT,
                     GRACE,
-                    new StopFromOutside(), engine, events))
+                    new StopFromOutside(),
+                    RefusedOpeningLap.watching(true), engine, events))
                     .isInstanceOf(IllegalStateException.class);
             Thread.sleep(1200);
             events.awaitDelivery(PATIENT);
@@ -768,13 +769,207 @@ class RunLoopTest {
                     Instant.now().plusMillis(300), InstantSource.system(), events::publish);
             outcome = RunLoop.run(scheduler, "https://api.example", WORK_AHEAD,
                     ANNOUNCEMENTS_ALLOWED, NO_CAP, Duration.ofMillis(Long.MAX_VALUE),
-                    Duration.ofMillis(Long.MAX_VALUE), new StopFromOutside(), engine, events);
+                    Duration.ofMillis(Long.MAX_VALUE), new StopFromOutside(),
+                    RefusedOpeningLap.watching(true), engine, events);
         }
 
         assertThat(outcome.sent()).isPositive();
         assertThat(outcome.stillOwed())
                 .describedAs("every answer came back, so the endless wait ended when they had")
                 .isZero();
+    }
+
+    @Test
+    @DisplayName("a run whose every request of the opening lap is answered 401 stops sending once "
+            + "the lap is over, long before its time is up")
+    void a_run_refused_its_whole_opening_lap_stops_there() {
+        engine.answersWith(testCase -> Optional.of(401));
+
+        long began = System.nanoTime();
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), listening -> { });
+
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isPresent();
+        long lap = outcome.refusedLap().orElseThrow().lapRequests();
+        assertThat(lap).describedAs("one request for each operation")
+                .isEqualTo(model.operations().size());
+        assertThat(outcome.sent())
+                .describedAs("nothing after the lap but what the engine had already been handed")
+                .isLessThanOrEqualTo(lap + WORK_AHEAD);
+        assertThat(outcome.stillOwed())
+                .describedAs("the answers still owed were waited for, as at the end of a run")
+                .isZero();
+        assertThat(outcome.cutShort()).describedAs("nobody stopped it from outside").isFalse();
+        assertThat(Duration.ofNanos(System.nanoTime() - began))
+                .describedAs("thirty seconds were given")
+                .isLessThan(Duration.ofSeconds(10));
+    }
+
+    @Test
+    @DisplayName("one operation of the opening lap answered with anything but 401 keeps the run "
+            + "going until its time is up")
+    void one_operation_answered_otherwise_keeps_the_run_going() {
+        engine.answersWith(testCase -> Optional.of(
+                testCase.operation().value().equals("listShelters") ? 200 : 401));
+
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
+
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isEmpty();
+        assertThat(outcome.passes()).describedAs("it went round again and again").isGreaterThan(1);
+    }
+
+    @Test
+    @DisplayName("an operation of the opening lap that answers only after the lap has stopped "
+            + "waiting for it is still heard before the run decides, whatever the lap's patience")
+    void a_slow_answer_to_the_lap_is_heard_before_the_run_decides() {
+        // Everything is refused at once except the list of shelters, which anybody may read and
+        // which takes longer than the lap waits for it. Decided when the lap ended, the run would
+        // have stopped without hearing the one operation that would have let it in.
+        engine.answersWith(testCase -> Optional.of(
+                testCase.operation().value().equals("listShelters") ? 200 : 401));
+        engine.takes(request -> request.url().endsWith("/shelters")
+                ? Duration.ofMillis(800) : Duration.ofMillis(1));
+
+        for (Duration patience : List.of(Duration.ofMillis(200), Duration.ZERO)) {
+            ScheduleSettings impatient = withPatience(patience);
+
+            RunLoop.Outcome outcome = run(Duration.ofMillis(2000), impatient, listening -> { });
+
+            assertThat(outcome.refusedLap())
+                    .describedAs("waiting %s for each step: %s", patience, outcome).isEmpty();
+            assertThat(outcome.sent())
+                    .describedAs("and the run went on sending, waiting %s for each step", patience)
+                    .isGreaterThan(model.operations().size() + WORK_AHEAD);
+        }
+    }
+
+    @Test
+    @DisplayName("a request of the opening lap that gets no reply at all keeps the run going")
+    void a_lap_request_with_no_reply_keeps_the_run_going() {
+        engine.answersWith(testCase -> testCase.operation().value().equals("listShelters")
+                ? Optional.empty() : Optional.of(401));
+
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
+
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isEmpty();
+        assertThat(outcome.passes()).isGreaterThan(1);
+    }
+
+    @Test
+    @DisplayName("a run is never stopped this way without an opening lap, before its lap is over, "
+            + "or with the switch off")
+    void a_run_with_no_lap_over_is_never_stopped_this_way() {
+        engine.answersWith(testCase -> Optional.of(401));
+
+        RunLoop.Outcome noLap = run(BUDGET, WITHOUT_A_FIRST_ROUND, listening -> { });
+        assertThat(noLap.refusedLap()).describedAs("without a lap: %s", noLap).isEmpty();
+        assertThat(noLap.passes()).isGreaterThan(1);
+
+        RunLoop.Outcome smallerThanTheLap = run(Duration.ofSeconds(30), WORK_AHEAD,
+                ANNOUNCEMENTS_ALLOWED, 2, WITH_A_FIRST_ROUND, new StopFromOutside(),
+                listening -> { });
+        assertThat(smallerThanTheLap.refusedLap())
+                .describedAs("a run of two requests never ends its lap: %s", smallerThanTheLap)
+                .isEmpty();
+        assertThat(smallerThanTheLap.sent()).isEqualTo(2);
+
+        watchTheLap = false;
+        RunLoop.Outcome switchedOff = run(BUDGET, listening -> { });
+        assertThat(switchedOff.refusedLap()).describedAs("switched off: %s", switchedOff).isEmpty();
+        assertThat(switchedOff.passes()).isGreaterThan(1);
+    }
+
+    @Test
+    @DisplayName("an opening lap that nothing answered is a run nothing answered, not one the API "
+            + "refused")
+    void a_lap_nothing_answered_is_not_refused() {
+        engine.answersWith(testCase -> Optional.empty());
+
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
+
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isEmpty();
+        assertThat(outcome.nothingAnswered()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a run whose time runs out while the last request of its opening lap is on its way "
+            + "is not said to have been refused, even when that request comes back 401")
+    void a_lap_that_settles_after_the_time_is_up_did_not_stop_the_run() {
+        // Every answer is 401, but the list of shelters takes longer than the whole run: the lap is
+        // over, still waiting for it, when the time runs out, and it settles only while the run
+        // waits for its answers. The run spent its budget; the API did not stop it.
+        engine.answersWith(testCase -> Optional.of(401));
+        engine.takes(request -> request.url().endsWith("/shelters")
+                ? Duration.ofMillis(1500) : Duration.ofMillis(1));
+        ScheduleSettings impatient = withPatience(Duration.ofMillis(100));
+
+        RunLoop.Outcome outcome = run(Duration.ofMillis(800), impatient, listening -> { });
+
+        assertThat(outcome.stillOwed())
+                .describedAs("the premise: the slow requests were waited for, and came back: %s",
+                        outcome)
+                .isZero();
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an opening lap whose slowest request comes back 401 after the lap went on still "
+            + "stops the run, once that answer is in, and the run gives back the room it held")
+    void a_slow_401_to_the_lap_stops_the_run_when_it_arrives() {
+        // The list of shelters takes longer than the lap waits for it, so the lap is over before it
+        // is answered and the run goes on sending; when the 401 comes, the next request is where
+        // the run stops. A slot taken for that request and not given back would leave the run
+        // waiting for an answer nobody owes it until the wait for stragglers ran out.
+        engine.answersWith(testCase -> Optional.of(401));
+        engine.takes(request -> request.url().endsWith("/shelters")
+                ? Duration.ofMillis(800) : Duration.ofMillis(1));
+
+        for (Duration patience : List.of(Duration.ofMillis(200), Duration.ZERO)) {
+            long began = System.nanoTime();
+            RunLoop.Outcome outcome = run(Duration.ofSeconds(30), withPatience(patience),
+                    listening -> { });
+            Duration took = Duration.ofNanos(System.nanoTime() - began);
+
+            assertThat(outcome.refusedLap())
+                    .describedAs("waiting %s for each step: %s", patience, outcome).isPresent();
+            assertThat(outcome.sent())
+                    .describedAs("the premise: it went on sending while it waited for the answer")
+                    .isGreaterThan(model.operations().size());
+            assertThat(took)
+                    .describedAs("it stopped once the answer was in, and waited for nothing it "
+                            + "was not owed")
+                    .isLessThan(PATIENT.minusSeconds(1));
+        }
+    }
+
+    @Test
+    @DisplayName("a run the API stopped, then stopped from outside while it waited for its last "
+            + "answers, says both")
+    void a_refused_run_stopped_from_outside_while_it_waits_says_both() {
+        // The lap is over before the list of shelters answers; everything sent after it takes
+        // seconds, so the run is waiting for those when the 401 arrives and it stops, and it is
+        // still waiting for them when it is stopped from outside.
+        engine.answersWith(testCase -> Optional.of(401));
+        engine.takes(request -> request.url().endsWith("/shelters") && engine.asked() <= 4
+                ? Duration.ofMillis(800)
+                : engine.asked() <= 4 ? Duration.ofMillis(1) : Duration.ofSeconds(4));
+
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), WORK_AHEAD, ANNOUNCEMENTS_ALLOWED,
+                withPatience(Duration.ofMillis(200)), stoppedAfter(Duration.ofMillis(1600)),
+                listening -> { });
+
+        assertThat(outcome.refusedLap()).describedAs("%s", outcome).isPresent();
+        assertThat(outcome.cutShort()).describedAs("%s", outcome).isTrue();
+        assertThat(outcome.stillOwed())
+                .describedAs("the requests sent after the lap were still on their way")
+                .isPositive();
+    }
+
+    /** A run that begins with a first round, each step of which waits this long for the last. */
+    private static ScheduleSettings withPatience(Duration patience) {
+        return new ScheduleSettings(WITH_A_FIRST_ROUND.workAheadFactor(), ANNOUNCEMENTS_ALLOWED,
+                WITH_A_FIRST_ROUND.stragglerGrace(), WITH_A_FIRST_ROUND.interruptGrace(), true,
+                patience, false, 1_000, WITH_A_FIRST_ROUND.interruptWritingGrace(),
+                WITH_A_FIRST_ROUND.interruptLookingGrace(), true);
     }
 
     private RunLoop.Outcome run(Duration budget, java.util.function.Consumer<EventStream> setUp) {
@@ -814,7 +1009,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), schedule, Instant.now().plus(budget),
                     InstantSource.system(), events::publish);
             return RunLoop.run(scheduler, "https://api.example", workAhead, announcementsAllowed,
-                    mostRequests, PATIENT, GRACE, stop, engine, events);
+                    mostRequests, PATIENT, GRACE, stop,
+                    RefusedOpeningLap.watching(watchTheLap), engine, events);
         }
     }
 
@@ -838,7 +1034,8 @@ class RunLoopTest {
             Scheduler scheduler = new Scheduler(generator(), schedule,
                     Instant.now().plusSeconds(30), InstantSource.system(), events::publish);
             return RunLoop.run(scheduler, baseUrl, WORK_AHEAD, ANNOUNCEMENTS_ALLOWED, NO_CAP,
-                    PATIENT, GRACE, new StopFromOutside(), engine, events);
+                    PATIENT, GRACE, new StopFromOutside(),
+                    RefusedOpeningLap.watching(watchTheLap), engine, events);
         }
     }
 
@@ -919,6 +1116,10 @@ class RunLoopTest {
         private volatile Function<TestCase, String> replyBody = testCase -> "[]";
         private volatile boolean answers = true;
 
+        /** What each request is answered with, by what was asked: a status code, or no reply. */
+        private volatile Function<TestCase, Optional<Integer>> status =
+                testCase -> Optional.of(200);
+
         /** Which requests the engine loses, failing on the thread they are sent on. */
         private volatile java.util.function.Predicate<TestCase> loses = testCase -> false;
 
@@ -935,6 +1136,11 @@ class RunLoopTest {
         /** What the body of each reply says, by what was asked. Every reply is JSON. */
         void repliesWith(Function<TestCase, String> perTestCase) {
             this.replyBody = perTestCase;
+        }
+
+        /** The status code each request is answered with, by what was asked; none for no reply. */
+        void answersWith(Function<TestCase, Optional<Integer>> perTestCase) {
+            this.status = perTestCase;
         }
 
         /** How many requests have been asked for so far. */
@@ -981,12 +1187,13 @@ class RunLoopTest {
         }
 
         private Interaction reply(TestCase testCase, HttpRequestRecord request) {
-            if (!answers) {
+            Optional<Integer> code = status.apply(testCase);
+            if (!answers || code.isEmpty()) {
                 return Interaction.transportFailure(testCase, request,
                         "nothing was listening", Instant.EPOCH, Duration.ZERO);
             }
             return Interaction.answered(testCase, request,
-                    new HttpResponseRecord(StatusLine.of(200),
+                    new HttpResponseRecord(StatusLine.of(code.get()),
                             List.of(Header.of("Content-Type", "application/json")),
                             Optional.of(Payload.of(replyBody.apply(testCase)
                                     .getBytes(StandardCharsets.UTF_8), "application/json"))),

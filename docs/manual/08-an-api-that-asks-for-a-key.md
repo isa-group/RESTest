@@ -69,6 +69,16 @@ restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s \
 Give `--auth` more than once for several keys. RESTest does not sign in by itself, ask for a token or
 renew one: it sends what it is given.
 
+## When the API refuses the key
+
+An API that answers `401` to every request of the opening lap — the first round, which sends every
+operation once — refuses all of itself to the run, for want of a key or because the key is wrong.
+The run stops sending there, rather than spend its budget collecting the same refusal, ends with
+`5`, and says which key it held and where it went, or how the document's is handed over when it held
+none. [Chapter 10](10-troubleshooting.md#the-api-stopped-the-run-exit-code-5) shows such a run. An
+API that refuses only some of the operations, or answers `403`, is tested as usual: what it accepts
+is still worth testing.
+
 ## Keeping the key out of your shell's history
 
 A key typed on the command line stays in the shell's history. `RESTEST_AUTH` holds the same as one

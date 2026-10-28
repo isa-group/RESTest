@@ -18,6 +18,7 @@ package io.restest.report;
 import io.restest.core.auth.Place;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
+import io.restest.core.event.Unauthorized;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
@@ -170,14 +171,23 @@ public final class JsonReport implements RunListener {
      * @param settingsFile the file of settings as it was named on the command line, or nothing
      * @param stored whether every request and reply is being kept, in a file beside the report
      * @param keysNotGiven each key the document asks for that nobody handed over
+     * @param keysHeld where each key handed over goes, for the operations the run can test: said
+     *     beside a run the API refused, so that whoever reads it knows which key to look at
      */
     public record Invocation(Optional<String> plan, Optional<String> settingsFile, boolean stored,
-            List<KeyNotGiven> keysNotGiven) {
+            List<KeyNotGiven> keysNotGiven, List<Place> keysHeld) {
 
         public Invocation {
             Objects.requireNonNull(plan, "plan");
             Objects.requireNonNull(settingsFile, "settingsFile");
             keysNotGiven = List.copyOf(keysNotGiven);
+            keysHeld = List.copyOf(keysHeld);
+        }
+
+        /** The same, for a run handed no key. */
+        public Invocation(Optional<String> plan, Optional<String> settingsFile, boolean stored,
+                List<KeyNotGiven> keysNotGiven) {
+            this(plan, settingsFile, stored, keysNotGiven, List.of());
         }
 
         /** A run started with nothing beyond its settings: RESTest's own plan, kept nowhere. */
@@ -288,6 +298,7 @@ public final class JsonReport implements RunListener {
     private Duration elapsed = Duration.ZERO;
     private EngineStatistics engine = EngineStatistics.none();
     private boolean cutShort;
+    private Optional<Unauthorized> unauthorized = Optional.empty();
     private JsonValue written;
     private String text;
 
@@ -424,6 +435,7 @@ public final class JsonReport implements RunListener {
                 elapsed = finished.elapsed();
                 engine = finished.engine();
                 cutShort = finished.cutShort();
+                unauthorized = finished.unauthorized();
                 finish();
             }
             case RunEvent.TestCasePlanned ignored -> {
@@ -538,6 +550,7 @@ public final class JsonReport implements RunListener {
         // found until then, and every count below is to be read as that.
         report.put("cutShort", JsonValue.of(cutShort));
         report.put("verdict", JsonValue.of(verdict().word()));
+        report.put("unauthorized", unauthorizedStop());
         report.put("totals", totals());
         report.put("operations", operations());
         report.put("skippedOperations", skippedOperations());
@@ -632,8 +645,31 @@ public final class JsonReport implements RunListener {
      * whose requests were all left unanswered.
      */
     private Verdict verdict() {
-        return Verdict.of(cutShort, attempts, answered, faultsOf(Severity.ERROR),
-                faultsOf(Severity.WARNING), configuration.settings().checks().failOnWarnings());
+        return Verdict.of(Verdict.Stop.of(cutShort, unauthorized.isPresent()), attempts, answered,
+                faultsOf(Severity.ERROR), faultsOf(Severity.WARNING),
+                configuration.settings().checks().failOnWarnings());
+    }
+
+    /**
+     * Why the run stopped sending early, when the API answered 401 to every request of its opening
+     * lap: when it decided to, how many requests that lap sent, and where each key the run held went,
+     * written as {@link #keysNotGiven()} writes the keys nobody handed over. Never the key itself,
+     * which the report is never handed. Nothing at all when the API did not stop the run.
+     *
+     * <p>Said as it stood when the run decided: the requests still on their way then are waited for,
+     * as at the end of a run's time, and counted with the rest, whatever they bring back.
+     */
+    private JsonValue unauthorizedStop() {
+        return unauthorized.<JsonValue>map(stop -> {
+            Map<String, JsonValue> row = new LinkedHashMap<>();
+            row.put("at", JsonValue.of(stop.at().toString()));
+            row.put("lapRequests", JsonValue.of(stop.lapRequests()));
+            row.put("keysHeld", JsonValue.array(invocation.keysHeld().stream()
+                    .map(place -> (JsonValue) pair("in", JsonValue.of(place.where().reportWord()),
+                            "name", JsonValue.of(place.name())))
+                    .toList()));
+            return JsonValue.object(row);
+        }).orElse(JsonValue.NULL);
     }
 
     /**

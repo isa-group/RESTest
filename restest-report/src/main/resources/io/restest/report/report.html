@@ -1113,6 +1113,7 @@ footer{font-size:var(--fs-s);color:var(--tx2);display:flex;flex-wrap:wrap;gap:6p
     failedOnWarnings: ['1', 'err', 'only warnings were found, and checks.failOnWarnings makes them fail the run'],
     nothingTested: ['3', 'warn', 'nothing was tested: not one request went out'],
     nothingAnswered: ['3', 'warn', 'nothing was tested: the API answered none of the requests'],
+    unauthorized: ['5', 'warn', 'the run stopped sending early: the API answered 401 to every request of the opening lap, so it held no key the API would take'],
     stopped: ['130 or 143', 'warn', 'the run was stopped from outside: 130 for Ctrl-C, 143 for kill or docker stop']
   };
   function runSection() {

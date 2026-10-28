@@ -22,7 +22,7 @@ import io.restest.report.Verdict;
  *
  * <p>Whatever ran the command - a person, a build server, a script looping over several APIs - reads
  * this number before it reads anything else, and usually instead of reading anything else. So the
- * five values here are a promise to those callers rather than an implementation detail: changing
+ * six values here are a promise to those callers rather than an implementation detail: changing
  * what one of them means breaks somebody's pipeline silently, which is why they are written down in
  * one place with the reasoning attached.
  *
@@ -34,6 +34,12 @@ import io.restest.report.Verdict;
  * warnings as errors. Not being able to test anything at all, or breaking internally, are different
  * answers, because reacting to them by opening a bug report about the API would waste somebody's
  * afternoon.
+ *
+ * <p>A run the API itself stopped is another answer again. When the API refuses every request of
+ * the run's first round, for want of a key or because the key is wrong, the run stops sending rather
+ * than flood it with requests it will refuse, and ends with a number of its own: the API is not
+ * broken, and nothing went wrong in RESTest, but there is something to put right before the API can
+ * be tested.
  *
  * <p>An operation that had to be skipped is none of these. Documents are written by people about
  * software that has changed since, so skipping part of one is ordinary; the run says what it
@@ -82,6 +88,16 @@ final class ExitCode {
      * either 0 or 1.
      */
     static final int TOOL_FAILED = 4;
+
+    /**
+     * The API stopped the run before its time was up: it would not let the run test it. What the
+     * run found until then was printed and written, and the report's verdict says why it stopped.
+     * Today there is one reason, {@code unauthorized}: the API answered 401 to every request of the
+     * opening lap, so whatever key the run held, or not holding one, kept it out of the whole API.
+     * The number means the API stopped the run, whatever the reason, so that a later reason is a new
+     * word in the report rather than a new number.
+     */
+    static final int STOPPED_BY_THE_API = 5;
 
     /**
      * The run was stopped from outside with Ctrl-C, and wrote what it had found until then. This is
@@ -145,8 +161,9 @@ final class ExitCode {
         // script reads and the word a report says cannot disagree. A run stopped from outside was
         // answered above.
         boolean ran = outcome != null;
-        return of(Verdict.of(false, ran ? outcome.sent() : 0, ran ? outcome.answered() : 0,
-                errors, warnings, warningsFail));
+        return of(Verdict.of(Verdict.Stop.of(false, ran && outcome.refusedLap().isPresent()),
+                ran ? outcome.sent() : 0, ran ? outcome.answered() : 0, errors, warnings,
+                warningsFail));
     }
 
     /**
@@ -159,6 +176,7 @@ final class ExitCode {
     static int of(Verdict verdict) {
         return switch (verdict) {
             case STOPPED -> INTERRUPTED;
+            case UNAUTHORIZED -> STOPPED_BY_THE_API;
             case NOTHING_TESTED, NOTHING_ANSWERED -> NOTHING_TO_TEST;
             case ERRORS_FOUND, FAILED_ON_WARNINGS -> ERRORS_FOUND;
             case NO_ERRORS_FOUND -> NO_ERRORS;

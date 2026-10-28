@@ -1,6 +1,6 @@
 # ADR-0026: A run opens with every operation once, in five steps, and one part of the tool owns the clock
 
-**Status:** Accepted, amended at M10.3
+**Status:** Accepted, amended at M10.3, and on 28 October 2026
 **Date:** 2026-09-23
 
 ## Context
@@ -263,3 +263,15 @@ sends hands the answer to every step back to the scheduler. After the opening la
 a series goes before the ordinary turn, built with what the answer said. The scheduler still draws
 no number itself - which series a creation starts is drawn where requests are built, from numbers
 of their own - so with no series the ordinary rounds are what §1 says they are.
+
+## Amendment (28 October 2026): the lap also says whether the API refuses the run
+
+When every request of the opening lap is answered and every answer is 401, the run stops sending
+and ends with `5` ([ADR-0041](0041-stop-when-the-api-refuses-the-whole-opening-lap.md)): the lap is
+the one stretch of a run that sends every operation the request it is likeliest to accept, so it is
+what tells a refusal of the whole API from a refusal of one operation. Two things follow here. A run
+with no opening lap — `schedule.openingLap` off, or a plan that cannot build the likeliest request —
+is never stopped that way, so an experiment that turns the lap off against an API that refuses the
+run measures that stop as well as the lap. And the lap's patience, `schedule.openingLapPatience`, does
+not decide it: the question waits for every request of the lap to settle, so an operation slower than
+the lap's patience is still heard before the run decides.

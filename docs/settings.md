@@ -120,6 +120,8 @@ schedule:
   openingLap: true            # default
   # how long each step of that opening lap waits for the answers to the one before
   openingLapPatience: "2s"    # default
+  # whether a run stops sending once the API has answered 401 to every request of its opening lap
+  stopWhenTheOpeningLapIsRefused: true # default
   # whether a run stops once it has sent a set number of requests, before its budget is spent
   stopAfterRequests: false    # default
   # how many requests that is
@@ -411,6 +413,7 @@ spelling `--budget` takes.
 | `interruptGrace` | `2s` | how long a run stopped from outside waits for answers already asked for |
 | `openingLap` | `true` | whether a run starts by sending every operation once, the request likeliest to work |
 | `openingLapPatience` | `2s` | how long each step of that opening lap waits for the answers to the one before |
+| `stopWhenTheOpeningLapIsRefused` | `true` | whether a run stops sending once the API has answered 401 to every request of its opening lap |
 | `stopAfterRequests` | `false` | whether a run stops once it has sent a set number of requests, before its budget is spent |
 | `requestsBeforeStopping` | `1000` | how many requests that is |
 | `interruptWritingGrace` | `5s` | how long a run stopped from outside is then given to write what it found |

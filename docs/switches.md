@@ -105,7 +105,7 @@ No check decides what a run sends: switching one off changes which replies are c
 for a check that reports errors — or warnings, with `checks.failOnWarnings` on — the exit code. [The
 faults](faults.md#switching-a-check-off) says what else it changes, and what it does not.
 
-### And four that are not levers
+### And five that are not levers
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
@@ -113,15 +113,24 @@ faults](faults.md#switching-a-check-off) says what else it changes, and what it 
 | `engine.followRedirects` | `false` | Redirections | reports a redirection rather than following it. It decides what a 3XX answer means rather than turning off something a run could do without, which is why it is off by default and plays no part in an ablation |
 | `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, or when its budget is spent, whichever comes first, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
 | `report.html` | `true` | The page | writes no `report.html`, only `report.json`, for a run whose results only a program will read. It changes which files a run leaves, not what it sends or finds, so it plays no part in an ablation |
+| `schedule.stopWhenTheOpeningLapIsRefused` | `true` | A run the API refuses | goes on until its budget is spent when the API answers 401 to every request of the opening lap, rather than stopping there and ending with `5`. It changes when a run ends, not what it sends, so it plays no part in an ablation. It does nothing to a run that has no opening lap — `schedule.openingLap` off, or a plan that cannot build the request each operation is likeliest to accept — nor to one whose lap never ends, because its budget or `schedule.requestsBeforeStopping` runs out first: such a run is never stopped this way |
 
-The one of these that is on by default is turned off with this file, for a campaign that keeps only
-what a program reads:
+The two of these that are on by default are turned off with these files, the first for a campaign
+that keeps only what a program reads, the second for one that keeps sending to an API that refuses
+it, as RESTest did before it stopped such runs:
 
 **The page**
 
 ```yaml
 report:
   html: false
+```
+
+**A run the API refuses**
+
+```yaml
+schedule:
+  stopWhenTheOpeningLapIsRefused: false
 ```
 
 ## What leaving each one on costs

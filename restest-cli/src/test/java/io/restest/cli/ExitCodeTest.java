@@ -18,6 +18,7 @@ package io.restest.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.Unauthorized;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.report.HtmlReport;
 import io.restest.report.JsonReport;
@@ -222,7 +223,27 @@ class ExitCodeTest {
                 new Case("nothing answered, with a fault for every request", outcome(64, 0), 64,
                         0, false, Verdict.NOTHING_ANSWERED, ExitCode.NOTHING_TO_TEST),
                 new Case("stopped from outside", cutShort(32, 30, 0), 5, 0, false,
-                        Verdict.STOPPED, ExitCode.INTERRUPTED));
+                        Verdict.STOPPED, ExitCode.INTERRUPTED),
+                new Case("the whole opening lap refused, warnings told they fail it", refused(38,
+                        false), 0, 38, true, Verdict.UNAUTHORIZED, ExitCode.STOPPED_BY_THE_API),
+                new Case("the whole opening lap refused, with errors found on the way", refused(38,
+                        false), 2, 0, false, Verdict.UNAUTHORIZED, ExitCode.STOPPED_BY_THE_API),
+                new Case("the whole opening lap refused, then stopped from outside", refused(38,
+                        true), 0, 0, false, Verdict.STOPPED, ExitCode.INTERRUPTED));
+    }
+
+    @Test
+    @DisplayName("a run the API stopped by refusing its whole opening lap ends with 5, which is "
+            + "nothing else's number")
+    void a_run_the_api_stopped_ends_with_five() {
+        assertThat(ExitCode.of(refused(38, false), 0, 0, 0, 0, 38, false))
+                .isEqualTo(ExitCode.STOPPED_BY_THE_API).isEqualTo(5);
+        assertThat(ExitCode.of(refused(38, false), 1, 0, 0, 0, 0, false))
+                .describedAs("RESTest's own failure is still said first")
+                .isEqualTo(ExitCode.TOOL_FAILED);
+        assertThat(List.of(ExitCode.NO_ERRORS, ExitCode.ERRORS_FOUND, ExitCode.BAD_COMMAND_LINE,
+                ExitCode.NOTHING_TO_TEST, ExitCode.TOOL_FAILED, ExitCode.INTERRUPTED,
+                ExitCode.TERMINATED)).doesNotContain(ExitCode.STOPPED_BY_THE_API);
     }
 
     @ParameterizedTest(name = "{0}")
@@ -230,7 +251,8 @@ class ExitCodeTest {
     @DisplayName("the number agrees with the verdict worked out from the same counts, whenever "
             + "RESTest itself went right")
     void the_number_agrees_with_the_verdict(Case run) {
-        assertThat(Verdict.of(run.outcome().cutShort(), run.outcome().sent(),
+        assertThat(Verdict.of(Verdict.Stop.of(run.outcome().cutShort(),
+                run.outcome().refusedLap().isPresent()), run.outcome().sent(),
                 run.outcome().answered(), run.errors(), run.warnings(), run.warningsFail()))
                 .describedAs("the verdict a report writes")
                 .isEqualTo(run.says());
@@ -281,16 +303,23 @@ class ExitCodeTest {
     }
 
     private static RunLoop.Outcome outcome(long sent, long answered) {
-        return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, 0, Optional.empty(), false);
+        return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, 0, Optional.empty(), false,
+                Optional.empty());
     }
 
     private static RunLoop.Outcome lost(long sent, long answered, long lost) {
         return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, lost,
-                Optional.of(new StackOverflowError()), false);
+                Optional.of(new StackOverflowError()), false, Optional.empty());
+    }
+
+    private static RunLoop.Outcome refused(long lap, boolean thenCutShort) {
+        return new RunLoop.Outcome(lap, lap, 0, 0, 0, 0, 0, 0, Optional.empty(), thenCutShort,
+                Optional.of(new Unauthorized(Instant.now(), lap)));
     }
 
     private static RunLoop.Outcome cutShort(long sent, long answered, long lost) {
         return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, lost,
-                lost > 0 ? Optional.of(new StackOverflowError()) : Optional.empty(), true);
+                lost > 0 ? Optional.of(new StackOverflowError()) : Optional.empty(), true,
+                Optional.empty());
     }
 }

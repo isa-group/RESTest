@@ -17,10 +17,18 @@ current release: an entry leaves it in the release that lifts it, and that relea
   flight, sixteen at most by default (`engine.maxConcurrency`). The limiter halves it whenever a
   request goes unanswered and sends fewer as answers slow down, but no setting promises an API's
   owner a rate. Lowering `engine.maxConcurrency` is the nearest thing.
-- **A run does not stop when every request is refused.** If the API answers 401 or 403 to
-  everything, because a key is wrong or was revoked, the run goes on until its budget ends. A 401 the
-  document declares is not a fault, and one it leaves out is reported, `F920`, on every request; the
-  summary at the end counts the replies by status. Try a new key with a short `--budget` first.
+- **A run stops for a refused key only when the API refuses the whole opening lap.** When every
+  request of the opening lap is answered and every answer is 401, the run stops sending there, says
+  which key it held, or how the document's is handed over, and ends with `5`
+  ([`unauthorized`](report.md#unauthorized)). Every other run the API refuses goes on until its
+  budget ends: one that loses its key part-way — revoked, expired, or taken away by something the
+  run sent, such as signing out or changing its own password; one with no key against an API some
+  of whose operations anybody may call; one answered 403 rather than 401; one answered with
+  redirections to a sign-in page rather than 401; one a request of whose lap got no reply at all;
+  and one with no opening lap, or whose lap never ends because its budget or
+  `schedule.requestsBeforeStopping` runs out first. A 401 the document
+  declares is not a fault, and one it leaves out is reported, `F920`, on every request; the summary
+  at the end counts the replies by status. Try a new key with a short `--budget` first.
 - **A run does not stop when the API stops answering.** The limiter falls to one request in flight
   as unanswered requests pile up, and the run keeps trying until its budget ends. Keep `--budget` to
   what you are prepared to spend on an API that may go down. An API that still takes connections and

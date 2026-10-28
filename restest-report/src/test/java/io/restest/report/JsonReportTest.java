@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.restest.core.auth.Place;
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.Unauthorized;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.json.JsonText;
@@ -85,9 +86,10 @@ class JsonReportTest {
                 .containsExactly("title", "baseUrl");
         assertThat(report.members().keySet())
                 .describedAs("how the run was started beside what was tested; whether it was cut "
-                        + "short, and what it amounts to, before any number they qualify")
+                        + "short, what it amounts to and whether the API stopped it, before any "
+                        + "number they qualify")
                 .startsWith("tool", "faultCatalogue", "createdAt", "api", "run", "cutShort",
-                        "verdict", "totals");
+                        "verdict", "unauthorized", "totals");
         assertThat(report.members().keySet())
                 .describedAs("every operation, then what could not be tried, read or checked")
                 .containsSubsequence("operations", "skippedOperations", "documentIssues",
@@ -117,6 +119,47 @@ class JsonReportTest {
         assertThat(number(object(written, "totals"), "requests"))
                 .describedAs("and what it counts is what it found until then")
                 .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a run the API stopped by refusing its whole opening lap says when, how many "
+            + "requests that lap sent and where each key it held went, and ends as unauthorized; "
+            + "one stopped from outside as well is stopped, and still says it")
+    void a_run_the_api_refused_says_so() {
+        JsonValue.JsonObject ordinary = run(JsonReport.inMemory(fixedClock()));
+        assertThat(ordinary.member("unauthorized")).contains(JsonValue.NULL);
+
+        Unauthorized stop = new Unauthorized(WHEN, 2);
+        JsonValue.JsonObject refused = refusedRun(false, stop);
+        assertThat(text(refused, "verdict")).isEqualTo("unauthorized");
+        JsonValue.JsonObject block = object(refused, "unauthorized");
+        assertThat(block.members().keySet()).containsExactly("at", "lapRequests", "keysHeld");
+        assertThat(text(block, "at")).isEqualTo(WHEN.toString());
+        assertThat(number(block, "lapRequests")).isEqualTo(2);
+        assertThat(JsonText.write(block.member("keysHeld").orElseThrow()))
+                .isEqualTo("[{\"in\":\"header\",\"name\":\"X-Shelter-Key\"}]");
+        assertThat(refused.member("cutShort")).contains(JsonValue.of(false));
+
+        JsonValue.JsonObject both = refusedRun(true, stop);
+        assertThat(text(both, "verdict"))
+                .describedAs("stopped from outside while it waited for its last answers")
+                .isEqualTo("stopped");
+        assertThat(both.member("unauthorized")).isPresent().get()
+                .isNotEqualTo(JsonValue.NULL);
+    }
+
+    private static JsonValue.JsonObject refusedRun(boolean thenCutShort, Unauthorized stop) {
+        JsonReport report = JsonReport.inMemory(fixedClock(),
+                SettingsInEffect.of(Settings.defaults()),
+                new JsonReport.Invocation(Optional.empty(), Optional.empty(), false, List.of(),
+                        List.of(new Place(Place.Where.HEADER, "X-Shelter-Key"))));
+        report.on(Runs.started(WHEN));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 401)));
+        report.on(new RunEvent.InteractionCompleted(WHEN,
+                Runs.attempt("GET /pets/{petId}", "/pets/1", 401)));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(1), Runs.engine(),
+                thenCutShort, Optional.of(stop)));
+        return (JsonValue.JsonObject) report.document().orElseThrow();
     }
 
     @Test
