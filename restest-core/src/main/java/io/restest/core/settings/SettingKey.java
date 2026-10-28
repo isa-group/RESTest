@@ -199,6 +199,9 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "whether a run starts by sending every operation once, the request likeliest to work"),
             key("schedule", "openingLapPatience", SettingKind.LENGTH_OF_TIME,
                     "how long each step of that opening lap waits for the answers to the one before"),
+            key("schedule", "stopWhenTheOpeningLapIsRefused", SettingKind.YES_OR_NO,
+                    "whether a run stops sending once the API has answered 401 to every request "
+                            + "of its opening lap"),
             key("schedule", "stopAfterRequests", SettingKind.YES_OR_NO,
                     "whether a run stops once it has sent a set number of requests, before its "
                             + "budget is spent"),

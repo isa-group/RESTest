@@ -514,10 +514,14 @@ public final class ConsoleReport implements RunListener {
     private void summariseWhatWasSent(RunEvent.RunFinished finished) {
         // Said on the first line, the way a first round cut short is said on its own: everything
         // under it is then what the run found until it was stopped, not what its budget would have.
+        // A run the API stopped says so in the same place, for the same reason.
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
                 + Math.round(finished.engine().idleFraction() * 100) + "% of it idle"
-                + (finished.cutShort() ? ", cut short" : ""));
+                + (finished.cutShort() ? ", cut short" : "")
+                + (finished.unauthorized().isPresent()
+                        ? ", stopped: the API answered 401 to every request of the opening lap"
+                        : ""));
         if (attempts == 0) {
             // Not the same sentence as "no faults found", and the difference matters: a run that
             // asked the API nothing has no evidence that anything is right.

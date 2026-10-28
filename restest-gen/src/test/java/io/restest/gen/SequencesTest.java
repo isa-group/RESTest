@@ -395,7 +395,8 @@ class SequencesTest {
                         schedule.stragglerGrace(), schedule.interruptGrace(), schedule.openingLap(),
                         schedule.openingLapPatience(), schedule.stopAfterRequests(),
                         schedule.requestsBeforeStopping(), schedule.interruptWritingGrace(),
-                        schedule.interruptLookingGrace()))
+                        schedule.interruptLookingGrace(),
+                        schedule.stopWhenTheOpeningLapIsRefused()))
                 .withEngine(EngineSettings.defaults().withConcurrency(1, 1, 1))
                 .withSequences(only(Sequences.Shape.CREATE_TWICE));
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(PET_CLINIC, SEED,

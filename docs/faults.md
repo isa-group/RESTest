@@ -515,7 +515,8 @@ A run that ran to the end and found at least one error ends with `1`, and one th
 with `0`, so that a build server can go red when the API is broken. Warnings do not change that
 unless `checks.failOnWarnings` is on: then a run that found a warning ends with `1` too, as one that
 found an error. A run stopped from outside ends
-with `130` or `143`, and one in which RESTest itself went wrong with `4`, whatever they found. A run
+with `130` or `143`, one the API stopped by answering 401 to every request of its opening lap with
+`5`, and one in which RESTest itself went wrong with `4`, whatever they found. A run
 in which nothing at the address answered ends with `3`, even when it reported requests that got no
 reply in time: something that takes connections and never speaks HTTP does exactly that, so the run
 says how many such requests there were beside the address.

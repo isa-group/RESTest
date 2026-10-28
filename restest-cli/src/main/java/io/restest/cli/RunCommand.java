@@ -21,6 +21,7 @@ import io.restest.core.auth.CredentialedEngine;
 import io.restest.core.auth.Place;
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.Unauthorized;
 import io.restest.core.exec.EngineSettings;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.model.ApiModel;
@@ -53,6 +54,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.InstantSource;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -121,6 +123,11 @@ import picocli.CommandLine.Spec;
                         + "way, had to keep exchanges without their details, or broke outright - "
                         + "so what it printed may be incomplete. The message and the stack trace "
                         + "are what to report.",
+                ExitCode.STOPPED_BY_THE_API + ":The API stopped the run before its time was up: "
+                        + "it would not let the run test it. What the run found until then was "
+                        + "printed and written, and the verdict in report.json says why - today "
+                        + "always unauthorized: the API answered 401 to every request of the "
+                        + "opening lap, so the run needs a key it does not have.",
                 ExitCode.INTERRUPTED + ":The run was stopped with Ctrl-C. What it found until then "
                         + "was printed and written, and report.json says it was cut short - or "
                         + "the run says what it did not leave behind.",
@@ -156,6 +163,10 @@ final class RunCommand implements Callable<Integer> {
      */
     private record ReportFile(String word, String name) {
     }
+
+    /** What a token from OAuth 2 or OpenID Connect is sent as, once somebody holds one. */
+    private static final SecurityScheme.Http A_BEARER_TOKEN =
+            new SecurityScheme.Http("bearer", Optional.empty());
 
     private static final ReportFile THE_REPORT = new ReportFile("report", "report.json");
     private static final ReportFile THE_PAGE = new ReportFile("page", "report.html");
@@ -654,7 +665,9 @@ final class RunCommand implements Callable<Integer> {
                         new JsonReport.Invocation(
                                 Optional.ofNullable(campaignFile).map(Path::toString),
                                 Optional.ofNullable(settingsFile).map(Path::toString),
-                                keepTheRun, keysNotGiven(credentials, testable)));
+                                keepTheRun, keysNotGiven(credentials, testable),
+                                keysSent(credentials, idsOf(testable)).stream()
+                                        .flatMap(placed -> placed.places().stream()).toList()));
                 // The page is written from the JSON report's own text, so it goes around it and
                 // hands it every event, rather than being subscribed beside it.
                 drained.subscribe(reports.contains(THE_PAGE)
@@ -708,7 +721,10 @@ final class RunCommand implements Callable<Integer> {
                                     ? settings.schedule().requestsBeforeStopping()
                                     : Long.MAX_VALUE,
                             settings.howLongToWaitForStragglers(),
-                            settings.schedule().interruptGrace(), stop, sending, drained);
+                            settings.schedule().interruptGrace(), stop,
+                            RefusedOpeningLap.watching(
+                                    settings.schedule().stopWhenTheOpeningLapIsRefused()),
+                            sending, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
                     // this, the run's summary and its report file would both be missing, and the
@@ -716,7 +732,8 @@ final class RunCommand implements Callable<Integer> {
                     Instant finishedAt = Instant.now();
                     drained.publish(new RunEvent.RunFinished(finishedAt,
                             Duration.between(startedAt, finishedAt), sending.statistics(),
-                            outcome == null ? stop.asked() : outcome.cutShort()));
+                            outcome == null ? stop.asked() : outcome.cutShort(),
+                            outcome == null ? Optional.empty() : outcome.refusedLap()));
                 }
             }
         } finally {
@@ -748,9 +765,103 @@ final class RunCommand implements Callable<Integer> {
         Optional<Duration> stoppedAfter = outcome != null && outcome.cutShort()
                 ? stop.askedAt().map(at -> Duration.between(startedAt, at))
                 : Optional.empty();
+        Optional<String> refused = Optional.ofNullable(outcome)
+                .flatMap(RunLoop.Outcome::refusedLap)
+                .map(lap -> refusedLap(lap, startedAt, model, credentials, testable));
         explain(out, err, answer, outcome, address, directory, reports, runFile, ours, repeated,
-                hidden, stoppedAfter, settings.schedule().interruptGrace());
+                hidden, stoppedAfter, refused, settings.schedule().interruptGrace());
         return answer;
+    }
+
+    /**
+     * The sentence for a run the API stopped by answering 401 to every request of its opening lap:
+     * what happened, how soon the run stopped, and what to do about the key - the one it held, which
+     * the API refused, or the one the document asks for, which it was never handed, and how to hand
+     * it over.
+     */
+    private String refusedLap(Unauthorized lap, Instant startedAt, ApiModel model,
+            CredentialPlan credentials, List<Operation> testable) {
+        Set<OperationId> tested = idsOf(testable);
+        StringBuilder said = new StringBuilder("restest: the API answered 401 to "
+                + (lap.lapRequests() == 1 ? "the one request" : "each of the " + lap.lapRequests()
+                        + " requests")
+                + " of the opening lap, so the run stopped sending after "
+                + seconds(Duration.between(startedAt, lap.at())) + " of its " + human(budget)
+                + " budget (schedule.stopWhenTheOpeningLapIsRefused).");
+        List<CredentialPlan.Placed> sent = keysSent(credentials, tested);
+        for (CredentialPlan.Placed placed : credentials.placed()) {
+            if (sent.contains(placed)) {
+                said.append(" It held ").append(placed.named()).append(", in ")
+                        .append(inWords(placed.places())).append(", and the API refused it: check "
+                                + "that it is the right one and that it has not expired.");
+            } else {
+                // Never sent, so not what the API refused, and checking it would not help.
+                said.append(" ").append(capitalised(placed.named())).append(" was never sent: ")
+                        .append(placed.whyWithNone().orElse("the operations it would go with "
+                                + "cannot be tested")).append(".");
+            }
+        }
+        // The operations no key went with were refused for want of one: what they ask for, and how
+        // each is handed over.
+        Set<OperationId> withAKey = sent.stream().flatMap(placed -> placed.operations().stream())
+                .collect(Collectors.toSet());
+        Set<String> askedFor = testable.stream()
+                .filter(operation -> !withAKey.contains(operation.id()))
+                .map(model::securityFor).flatMap(Optional::stream)
+                .flatMap(requirement -> requirement.schemesNamed().stream())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        List<String> how = new ArrayList<>();
+        boolean aToken = false;
+        long keys = keySchemes(model);
+        for (Map.Entry<String, SecurityScheme> scheme : model.securitySchemes().entrySet()) {
+            if (askedFor.contains(scheme.getKey())) {
+                howToHandOver(scheme.getKey(), scheme.getValue(), credentials, keys)
+                        .ifPresent(how::add);
+                aToken |= scheme.getValue() instanceof SecurityScheme.Other
+                        || scheme.getValue() instanceof SecurityScheme.Http http && isBearer(http);
+            }
+        }
+        if (!how.isEmpty()) {
+            said.append(sent.isEmpty() ? " It was handed no key, and the document asks for "
+                    : " The operations no key went with ask for ")
+                    .append(String.join("; and ", how)).append(".");
+            if (aToken) {
+                said.append(" RESTest does not yet sign in by itself to get a token.");
+            }
+        } else if (sent.isEmpty()) {
+            said.append(" It was handed no key, and the document declares none it could be told "
+                    + "how to send: " + AuthGiven.OPTION + " 'header:<name>=<value>' sends one "
+                    + "with every request.");
+        }
+        return said.toString();
+    }
+
+    /**
+     * How a key the document declares is handed over, in words that end a sentence: what kind of key
+     * it is, the scheme's name, and the option that gives it. Nothing for a scheme that could not be
+     * read, nor for one whose header has to be worked out afresh for every request.
+     */
+    private static Optional<String> howToHandOver(String name, SecurityScheme scheme,
+            CredentialPlan credentials, long keySchemes) {
+        return switch (scheme) {
+            case SecurityScheme.ApiKey ignored -> credentials.missing().stream()
+                    .filter(missing -> missing.scheme().equals(name)).findFirst()
+                    .map(missing -> "an API key (" + name + ", in " + missing.place().described()
+                            + "): " + howToGive(missing, keySchemes) + " gives it");
+            case SecurityScheme.Http http -> CredentialPlan.heldAlready(http)
+                    .map(option -> isBearer(http)
+                            ? "a bearer token (" + name + "): " + option + " gives it"
+                            : "a user and password (" + name + ", HTTP " + http.scheme() + "): "
+                                    + option + " gives them");
+            case SecurityScheme.Other other -> CredentialPlan.heldAlready(A_BEARER_TOKEN)
+                    .map(option -> "a token for " + name + " (" + other.type() + "): " + option
+                            + " gives one you already have");
+            case SecurityScheme.Unreadable ignored -> Optional.empty();
+        };
+    }
+
+    private static boolean isBearer(SecurityScheme.Http http) {
+        return "bearer".equals(http.scheme());
     }
 
     /**
@@ -788,12 +899,16 @@ final class RunCommand implements Callable<Integer> {
             String address, Path directory, List<ReportFile> reports, Path runFile,
             OurOwnFailures ours,
             long repliesThatRepeatedAKey, UnaryOperator<String> hidden,
-            Optional<Duration> stoppedAfter, Duration interruptGrace) {
+            Optional<Duration> stoppedAfter, Optional<String> refused, Duration interruptGrace) {
         // First, because it says how to read everything else: a run stopped half-way reports half
         // a run, and nothing below is about the budget it was given.
         stoppedAfter.ifPresent(after -> err.println("restest: the run was stopped from outside "
                 + "after " + seconds(after) + " of its " + human(budget) + " budget; what is "
                 + "reported above, and in report.json, is what it found until then"));
+        // Next, for the same reason: a run the API stopped found what it found in a fraction of its
+        // budget, and the one thing to do about it is the key. Said whatever the run ends with,
+        // since a run stopped from outside while it waited for the last answers was both.
+        refused.ifPresent(err::println);
         if (outcome != null) {
             long notBuilt = outcome.notGenerated() + outcome.notAssembled();
             if (notBuilt > 0) {
@@ -1031,15 +1146,13 @@ final class RunCommand implements Callable<Integer> {
                         + placed.mask() + " in its place");
             }
         }
-        long keys = model.securitySchemes().values().stream()
-                .filter(SecurityScheme.ApiKey.class::isInstance).count();
+        long keys = keySchemes(model);
         for (CredentialPlan.Missing missing : credentials.missing()) {
             long asking = asking(missing, tested);
             if (asking == 0) {
                 continue;
             }
-            String option = AuthGiven.OPTION + " "
-                    + (keys == 1 ? "<key>" : asAShellWord(missing.scheme() + "=<key>"));
+            String option = howToGive(missing, keys);
             String which = "(" + missing.scheme() + ", in " + missing.place().described() + ")";
             if (missing.askedForNowhere()) {
                 out.println("  the document declares an API key it asks for on no operation "
@@ -1072,6 +1185,34 @@ final class RunCommand implements Callable<Integer> {
                         asking(missing, tested)))
                 .filter(key -> key.operations() > 0)
                 .toList();
+    }
+
+    /** The keys handed over that go with at least one of the operations the run can test. */
+    private static List<CredentialPlan.Placed> keysSent(CredentialPlan credentials,
+            Set<OperationId> tested) {
+        return credentials.placed().stream()
+                .filter(placed -> placed.operations().stream().anyMatch(tested::contains))
+                .toList();
+    }
+
+    /** How many API keys the document declares, which decides how a key given alone is read. */
+    private static long keySchemes(ApiModel model) {
+        return model.securitySchemes().values().stream()
+                .filter(SecurityScheme.ApiKey.class::isInstance).count();
+    }
+
+    /**
+     * How a missing key is handed over: alone, when the document declares only one API key, or
+     * named after its scheme when there are several to choose from.
+     */
+    private static String howToGive(CredentialPlan.Missing missing, long keySchemes) {
+        return AuthGiven.OPTION + " "
+                + (keySchemes == 1 ? "<key>" : asAShellWord(missing.scheme() + "=<key>"));
+    }
+
+    private static String capitalised(String text) {
+        return text.isEmpty() ? text
+                : Character.toUpperCase(text.charAt(0)) + text.substring(1);
     }
 
     /** How many of the operations that can be tested ask for a key nobody handed over. */

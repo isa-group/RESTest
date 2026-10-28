@@ -67,7 +67,7 @@ so records written from now on cite none.
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b, and on 17 October 2026 |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10, 12, 13 and 25 October 2026 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 and on 10, 17, 19 and 22 October 2026 |
-| [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11, 12, 19, 22 and 25 October 2026 |
+| [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7, M1.8, M2.7a, M2.10a, M11.1, M9.1, M11.3, M12.1a, M12.1c and M12.1b, in #314 and #344, and on 1, 11, 12, 19, 22, 25 and 28 October 2026 |
 | [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 and on 10, 12, 15, 17 and 22 October 2026 |
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed, amended at M9.1, M9.4 and M10.1 |
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted, amended on 10 October 2026 |
@@ -77,8 +77,8 @@ so records written from now on cite none.
 | [0022](0022-the-characters-a-value-is-made-of.md) | The characters a value is made of are read where its length already is, and the regular expressions are somebody else's | Accepted, amended at M9.6, at 2.1, and on 12 October 2026 |
 | [0023](0023-the-campaign-file.md) | A plan is an ordered list of named sources, and the order is the preference | Accepted, amended at M9.1, M10.1 and M10.3, and on 1, 12 and 13 October 2026; its §5 superseded by ADR-0034 |
 | [0024](0024-the-competition-version.md) | v2.0 is the version submitted to the 2027 competition, and what that leaves for 2.1 | Accepted, amended on 3, 4, 5, 11 and 12 October 2026 |
-| [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22 and 25 October 2026 |
-| [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 |
+| [0025](0025-settings.md) | The numbers somebody decided live in one settings object, layered from four sources, and never in the plan | Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22, 25 and 28 October 2026 |
+| [0026](0026-what-a-run-sends-first.md) | A run opens with every operation once, in five steps, and one part of the tool owns the clock | Accepted, amended at M10.3 and on 28 October 2026 |
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12, 13, 15 and 17 October 2026 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 and 13 October 2026 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 and 25 October 2026 |
@@ -93,3 +93,4 @@ so records written from now on cite none.
 | [0038](0038-how-a-run-went-over-time.md) | report.json says how a run went over the time it was given | Accepted, amended on 25 October 2026 |
 | [0039](0039-the-html-report.md) | The HTML report: one page beside report.json, drawn in the browser from the whole of it, fetching nothing | Accepted |
 | [0040](0040-homebrew.md) | RESTest is installed with Homebrew from a tap of its own, by a formula that brings its Java and is written into the tap once a release is published | Accepted |
+| [0041](0041-stop-when-the-api-refuses-the-whole-opening-lap.md) | A run stops sending when the API answers 401 to every request of its opening lap, and ends with `5` | Accepted |

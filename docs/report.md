@@ -84,7 +84,7 @@ some replies could not be checked; report.json names their operations:
 
 | Line | When | What it says |
 |---|---|---|
-| `<n> requests to <m> operations in <time>, <p>% of it idle` | Always | How much was sent, to how many operations, and for how long. *Idle* is the share of that time in which RESTest had no request in flight: time it spent on something other than testing. `, cut short` at the end means the run was stopped from outside before its budget ran out |
+| `<n> requests to <m> operations in <time>, <p>% of it idle` | Always | How much was sent, to how many operations, and for how long. *Idle* is the share of that time in which RESTest had no request in flight: time it spent on something other than testing. `, cut short` at the end means the run was stopped from outside before its budget ran out; `, stopped: the API answered 401 to every request of the opening lap` means the API refused the whole opening lap and the run stopped sending there, ending with `5` |
 | `nothing was tested` | Not one request was sent | In place of everything below. Not the same as `no faults found`: a run that asked the API nothing has no evidence that anything is right |
 | `opening lap: <n> requests in <time>, <k> of <m> operations answered 2xx` | The run began with its first round | Before anything is chosen by chance, every operation is sent once with the request it is most likely to accept. This line says how long that took and how many operations it got a success from; `opening lap, cut short:` means the budget ran out, or the run was stopped, before the round was over. [The first round of a run](campaign-format.md#the-first-round-of-a-run) |
 | `<n> 2xx, <n> 4xx, <n> 5xx, <n> no reply` | Always | How every request ended, by the first digit of the status code; `no reply` when nothing came back. If almost everything was refused (4xx), the requests were the problem rather than the API |
@@ -122,6 +122,10 @@ A few more lines go to the error stream, each beginning with `restest:`:
 
 - **that the run was stopped from outside**, and everything above is what it found until then — the
   run ends with `130` or `143`;
+- **that the API answered 401 to every request of the opening lap**, so the run stopped sending, after
+  how long, and what to do about the key: the one it held, which the API refused, or, when it held
+  none, how the one the document asks for is handed over with `--auth` — the run ends with `5`,
+  unless it was also stopped from outside;
 - **that some requests were never answered** and the run stopped waiting for them, so they are
   missing from the counts — said whatever the run ends with, `0` and `1` included;
 - **that some requests were lost by RESTest itself**, or **that a rule or a report broke** — the run
@@ -163,6 +167,7 @@ throughout:
 | `run` | object | How the run was started: which plan and which file of settings, and whether every request and reply was kept |
 | `cutShort` | `true` or `false` | `true` when the run was stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget ran out. Every number in the file is then what the run found until it was stopped |
 | `verdict` | text | What the run amounts to, in one word: whether it found errors, found none, or could not say. The number the command ends with follows from the same answer |
+| `unauthorized` | object or `null` | When the API answered 401 to every request of the opening lap and the run stopped sending there: when, how many requests that lap sent, and where each key the run held went. `null` for every other run |
 | `totals` | object | The run in twelve numbers |
 | `operations` | list | Every operation the document describes, with what happened to it and how its requests ended |
 | `skippedOperations` | list | Every operation the run could not test, each with the reason |
@@ -225,7 +230,8 @@ or a token, in an address for one, where nothing would know to hide it.
 ### `verdict`
 
 What the run amounts to, in one word. The questions are asked in this order, and the first that
-applies gives the word: a run stopped from outside was stopped, whatever it found until then; a run
+applies gives the word: a run stopped from outside was stopped, whatever it found until then; so was
+a run the API stopped by answering 401 to every request of its opening lap; a run
 that sent nothing, or was answered by nothing, tested nothing, so its faults say nothing about the
 API — an API that accepts connections and never answers is counted thousands of times as a reply
 that never came, and is still `nothingAnswered`; only then do errors, and warnings when
@@ -238,11 +244,40 @@ the number says it, with `4`. [The exit codes](command-line.md#exit-codes) gives
 | Word | Ends with | When |
 |---|---|---|
 | `stopped` | `130` or `143` | The run was stopped from outside before its time ran out |
+| `unauthorized` | `5` | The API answered 401 to every request of the opening lap, so the run stopped sending: it held no key the API would take. [`unauthorized`](#unauthorized) says when, and which key it held |
 | `nothingTested` | `3` | Not one request went out: none could be built from the document, or the time ran out before the first. The screen says which |
 | `nothingAnswered` | `3` | Requests went out and not one of them was answered |
 | `errorsFound` | `1` | At least one error was found in the API |
 | `failedOnWarnings` | `1` | No error, but warnings, and `checks.failOnWarnings` is on |
 | `noErrorsFound` | `0` | No error was found; there may have been warnings |
+
+### `unauthorized`
+
+Said when the API answered 401 — "who are you?" — to every request of the opening lap, and the run
+stopped sending there rather than spend its budget on the same refusal. The opening lap sends every
+operation once, each with the request it is likeliest to accept; when each of those requests was
+answered and every answer was 401, the API refused all of itself to the run, for want of a key or
+because the key is wrong, and the run ends with `5`. A request of the lap that got no reply, or any
+reply other than 401 — a 403 included — means the run can still learn something, and it goes on.
+`schedule.stopWhenTheOpeningLapIsRefused=false` lets such a run go on as well. `null` for every run
+the API did not stop. From a run handed a key the API would not take:
+
+```json
+"unauthorized": {"at": "2026-10-28T12:00:00.181Z", "lapRequests": 9, "keysHeld": [{"in": "header", "name": "Authorization"}]}
+```
+
+| Key | Value | What it says |
+|---|---|---|
+| `at` | moment | When the run decided to stop sending. The requests already on their way then were waited for, as at the end of a run's time, and are counted with the rest, whatever they brought back |
+| `lapRequests` | number | How many requests the opening lap sent, every one of them answered 401 |
+| `keysHeld` | list | Where each key the run held went, as [`keysNotGiven`](#keysnotgiven) writes a key nobody handed over, and never the key itself. Empty when it held none: the keys the document asks for are then under `keysNotGiven` |
+
+### `unauthorized.keysHeld[]`
+
+| Key | Value | What it says |
+|---|---|---|
+| `in` | text | Which part of a request the key went in, by the words [`keysNotGiven[].in`](#keysnotgivenin) lists |
+| `name` | text | The name it went under there |
 
 ### `totals`
 

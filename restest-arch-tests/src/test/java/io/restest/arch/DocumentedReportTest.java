@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -317,15 +318,68 @@ class DocumentedReportTest {
                         + "the parts of the report it is there to make a run write, so the page is "
                         + "not checked for them. The run printed:%n%s", run.screen())
                 .containsAll(THE_RUN_IS_MEANT_TO_WRITE);
-        assertThat(written).allSatisfy(key -> assertThat(explained.getOrDefault(parentOf(key),
-                        List.of()))
-                .describedAs("report.json has %s, and %s explains no %s under a heading naming "
-                        + "`%s`", key, REPORT_PAGE, nameOf(key), shownAs(parentOf(key)))
-                .contains(nameOf(key)));
+        everyOneIsExplained(written, explained);
         assertThat(((JsonValue.JsonObject) report).members().keySet())
                 .describedAs("the keys at the top of report.json, against the table under the "
                         + "heading %s", THE_TOP_OF_THE_FILE)
                 .containsExactlyElementsOf(explained.get(""));
+    }
+
+    @Test
+    @DisplayName("what a run the API refused writes about it in report.json is explained on the "
+            + "page too")
+    void what_a_refused_run_writes_is_on_the_page(@TempDir Path directory) throws IOException {
+        // The run above is never refused, so it writes nothing under `unauthorized`; this one is
+        // refused every request, holding a key so that where the key went is written as well.
+        Path document = directory.resolve("refused.yaml");
+        Files.writeString(document, """
+                openapi: 3.0.3
+                info: {title: Refused, version: '1'}
+                security: [{key: []}]
+                paths:
+                  /things:
+                    get: {operationId: listThings, responses: {'200': {description: things}}}
+                components:
+                  securitySchemes:
+                    key: {type: apiKey, name: X-Key, in: header}
+                """);
+        HttpServer api = HttpServer.create(
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        api.createContext("/", exchange -> {
+            try (exchange) {
+                exchange.sendResponseHeaders(401, -1);
+            }
+        });
+        api.start();
+        Path out = directory.resolve("out");
+        StringWriter screen = new StringWriter();
+        try {
+            int answer = Restest.run(new String[] {"run", document.toString(),
+                "--url", "http://127.0.0.1:" + api.getAddress().getPort(), "--budget", "10s",
+                "--auth", "not-the-key", "--out", out.toString()},
+                    new PrintWriter(screen, true), new PrintWriter(screen, true));
+            assertThat(answer).describedAs("the premise: the API refused the run; it said:%n%s",
+                    screen).isEqualTo(5);
+        } finally {
+            api.stop(0);
+        }
+
+        Set<String> written = new TreeSet<>();
+        keysIn(JsonText.read(Files.readString(out.resolve("report.json"))), "", written);
+        Map<String, List<String>> explained = keysOnThePage();
+        assertThat(written).contains("unauthorized.keysHeld[].name");
+        everyOneIsExplained(written.stream().filter(key -> key.startsWith("unauthorized."))
+                .toList(), explained);
+    }
+
+    /** Each of these keys of report.json is explained on the page, under the heading of its place. */
+    private static void everyOneIsExplained(Collection<String> keys,
+            Map<String, List<String>> explained) {
+        assertThat(keys).allSatisfy(key -> assertThat(explained.getOrDefault(parentOf(key),
+                        List.of()))
+                .describedAs("report.json has %s, and %s explains no %s under a heading naming "
+                        + "`%s`", key, REPORT_PAGE, nameOf(key), shownAs(parentOf(key)))
+                .contains(nameOf(key)));
     }
 
     @Test

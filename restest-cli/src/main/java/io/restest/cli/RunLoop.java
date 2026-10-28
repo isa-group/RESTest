@@ -17,6 +17,7 @@ package io.restest.cli;
 
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.Unauthorized;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.Interaction;
@@ -58,12 +59,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * <p>What to send next, and when the time is up, it does not decide. It asks the {@link Scheduler},
  * which holds the deadline and the order the operations go in, and does what it is told: send a
  * request for this operation, wait for the answers still owed, or stop. What it does decide for
- * itself is to stop early on its own evidence - a round in which nothing could be sent, or a run in
+ * itself is to stop early on its own evidence - a round in which nothing could be sent, a run in
  * which nothing is answered, whether because nothing is there or because RESTest itself is losing
- * the requests on the way. The one waiting it does on the scheduler's behalf is at the start
- * of a run, where the first round goes in steps and each step waits for the answers to the one
- * before - and even that wait has a limit, so one request the API never answers costs the run that
- * limit once rather than the whole budget.
+ * the requests on the way, and a run whose whole first round the API refused with 401, which
+ * {@link RefusedOpeningLap} keeps watch for. The one waiting it does on the scheduler's behalf is
+ * at the start of a run, where the first round goes in steps and each step waits for the answers
+ * to the one before - and even that wait has a limit, so one request the API never answers costs
+ * the run that limit once rather than the whole budget.
  *
  * <p>Some requests are steps of a short series about a thing the run has just created. The loop
  * hands what came back to every one of them to the scheduler the moment it arrives, before the slot
@@ -119,13 +121,16 @@ final class RunLoop {
      *     than the sending part simply handing back nothing
      * @param cutShort whether the run was stopped from outside before it had stopped waiting for
      *     its answers: what it did is then what it did until it was stopped
+     * @param refusedLap when the loop stopped sending because the API answered 401 to every request
+     *     of the opening lap, when it did and how many requests that lap sent
      */
     record Outcome(long sent, long answered, long noReplyInTime, long notGenerated,
             long notAssembled, long passes, long stillOwed, long lost,
-            Optional<Throwable> firstLoss, boolean cutShort) {
+            Optional<Throwable> firstLoss, boolean cutShort, Optional<Unauthorized> refusedLap) {
 
         Outcome {
             Objects.requireNonNull(firstLoss, "firstLoss");
+            Objects.requireNonNull(refusedLap, "refusedLap");
         }
 
         /** Whether requests went out and not one of them was ever answered. */
@@ -161,6 +166,9 @@ final class RunLoop {
      * @param interruptGrace how long to wait for them instead, from the moment the run is stopped
      *     from outside, when it is - whether that is before the deadline or while it waits after it
      * @param stop where the loop hears that it has been stopped from outside
+     * @param lap what says whether the API refused every request of the opening lap, once it is
+     *     over: when it did, the loop stops sending and waits for the answers it is owed, as at the
+     *     deadline
      * @param engine what sends them
      * @param events where everything that happens is announced
      * @return what the loop did with the time
@@ -168,7 +176,7 @@ final class RunLoop {
     static Outcome run(Scheduler scheduler, String baseUrl, int workAhead,
             int announcementsAllowedToPileUp, long mostRequests,
             Duration howLongToWaitForStragglers, Duration interruptGrace, StopFromOutside stop,
-            HttpEngine engine, EventStream events) {
+            RefusedOpeningLap lap, HttpEngine engine, EventStream events) {
         Objects.requireNonNull(scheduler, "scheduler");
         Objects.requireNonNull(baseUrl, "baseUrl");
         if (mostRequests < 1) {
@@ -178,6 +186,7 @@ final class RunLoop {
         Objects.requireNonNull(howLongToWaitForStragglers, "howLongToWaitForStragglers");
         Objects.requireNonNull(interruptGrace, "interruptGrace");
         Objects.requireNonNull(stop, "stop");
+        Objects.requireNonNull(lap, "lap");
         Objects.requireNonNull(engine, "engine");
         Objects.requireNonNull(events, "events");
         Instant deadline = scheduler.deadline();
@@ -197,6 +206,9 @@ final class RunLoop {
         // an answer to the next.
         Semaphore stepAnswered = new Semaphore(0);
         int sentInThisStep = 0;
+        // Set only where the loop stops because of it: a lap whose last request settles while a run
+        // that ran out of time waits for its answers did not stop that run.
+        Optional<Unauthorized> refused = Optional.empty();
 
         try {
             deciding:
@@ -235,14 +247,43 @@ final class RunLoop {
                         if (answers.nothingIsThere(workAhead)) {
                             break deciding;
                         }
+                        // The opening lap's answers are usually all in by now, since each of its
+                        // steps waited for the one before; when one is still on its way, the
+                        // question waits for it, asked again before every request below.
+                        if (end.ofTheOpeningLap()) {
+                            lap.lapIsOver();
+                            refused = lap.refused();
+                            if (refused.isPresent()) {
+                                break deciding;
+                            }
+                        }
                     }
                     case Scheduler.Step.Send send -> {
+                        // An ordinary request comes only once the lap is over, or when there was
+                        // none, and a run with no lap has its answer here.
+                        if (!send.inTheOpeningLap()) {
+                            lap.lapIsOver();
+                        }
+                        // Asked before the size of the run, so that a run the API refused says so
+                        // whatever else would have ended it at the same moment.
+                        refused = lap.refused();
+                        if (refused.isPresent()) {
+                            break deciding;
+                        }
                         // A run of a known size has sent what it was asked to: it stops asking,
                         // and goes on below to wait for the answers it is owed, as at a deadline.
                         if (sent >= mostRequests) {
                             break deciding;
                         }
                         if (!waitForASlot(slots, deadline, stop)) {
+                            break deciding;
+                        }
+                        // Asked again now that there is room: the room was made by an answer, and
+                        // that answer may be the last of the opening lap's. The slot goes back
+                        // unused, as it does for a run stopped from outside.
+                        refused = lap.refused();
+                        if (refused.isPresent()) {
+                            slots.release();
                             break deciding;
                         }
                         pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp,
@@ -275,7 +316,7 @@ final class RunLoop {
                                     testCase.get()));
                             send(engine, testCase.get(), request, slots,
                                     send.inTheOpeningLap() ? stepAnswered : null, answers, events,
-                                    scheduler);
+                                    scheduler, lap, send.inTheOpeningLap());
                             sent++;
                             if (send.inTheOpeningLap()) {
                                 sentInThisStep++;
@@ -309,7 +350,7 @@ final class RunLoop {
         boolean cutShort = stop.asked();
         return new Outcome(sent, answers.answered(), answers.noReplyInTime(), notGenerated,
                 notAssembled, passes, sent - settled, answers.lost(), answers.firstLoss(),
-                cutShort);
+                cutShort, refused);
     }
 
     /**
@@ -320,9 +361,17 @@ final class RunLoop {
      */
     private static void send(HttpEngine engine, TestCase testCase, HttpRequestRecord request,
             Semaphore slots, Semaphore alsoTell, Answers answers, EventStream events,
-            Scheduler scheduler) {
+            Scheduler scheduler, RefusedOpeningLap lap, boolean inTheLap) {
+        if (inTheLap) {
+            lap.sentInTheLap();
+        }
         try {
             engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
+                // First, and whatever happens next: before the slot and the step are given back,
+                // so that a loop that has just been let go on by either already knows what this
+                // request brought back.
+                lap.settled(wentWrong != null || interaction == null ? Optional.empty()
+                        : interaction.statusCode(), inTheLap);
                 try {
                     answers.ifStillListening(() -> {
                         if (wentWrong != null || interaction == null) {
@@ -352,6 +401,7 @@ final class RunLoop {
                 }
             });
         } catch (RuntimeException couldNotEvenBeStarted) {
+            lap.settled(Optional.empty(), inTheLap);
             slots.release();
             if (alsoTell != null) {
                 alsoTell.release();

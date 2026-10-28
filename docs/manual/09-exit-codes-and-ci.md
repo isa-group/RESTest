@@ -13,12 +13,16 @@ the details, is in [the exit codes](../command-line.md#exit-codes).
 | `2` | The command was wrong, or a plan, a settings file or a key it named could not be used. Nothing was sent |
 | `3` | Nothing was tested: the document could not be read or has no operation that can be tried, there is no address to send to — or `--url` gave one RESTest refuses — or nowhere to write the results, nothing answered, or the budget ran out first |
 | `4` | RESTest itself went wrong, so what it printed may be incomplete |
+| `5` | The API stopped the run before its time was up: today, by answering 401 to every request of the opening lap, so the run holds no key the API will take |
 | `130` | The run was stopped with Ctrl-C |
 | `143` | The run was stopped with `kill` or `docker stop` |
 
 Two things are worth seeing in that table. An error is `1` rather than `0`, so that a build goes red
 when the API is broken. And a run stopped from outside never ends with `0` or `1`, so that a run cut
-short never passes for one that finished.
+short never passes for one that finished. Nor does a run the API stopped: a build handed a key that
+has expired goes red with `5` in the time it takes to send every operation once, rather than
+spending its budget on refusals and passing with `0`. `report.json` says why in `verdict`,
+`unauthorized` today, and which key the run held.
 
 Two things are not in it. **A warning does not make `1` unless asked.** An error is the API failing
 at its job — falling over, never answering, accepting what its document forbids — and a warning the

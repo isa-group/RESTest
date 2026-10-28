@@ -381,8 +381,14 @@ public final class CredentialPlan {
      * How what an HTTP scheme asks for goes anyway, when the person already holds it: in the header
      * it travels in, given with its place, which sends it with every request. Nothing for a scheme
      * whose header has to be worked out afresh for every request, as a digest's is.
+     *
+     * <p>Said when a key typed alone cannot be placed, and when a run the API refused was handed
+     * nothing it could have sent.
+     *
+     * @param http the scheme the document declares
+     * @return the option, written as it would be typed, with a placeholder for the token
      */
-    private static Optional<String> heldAlready(SecurityScheme.Http http) {
+    public static Optional<String> heldAlready(SecurityScheme.Http http) {
         String how = AuthGiven.OPTION + " 'header:Authorization=";
         return switch (http.scheme().toLowerCase(Locale.ROOT)) {
             case "bearer" -> Optional.of(how + "Bearer <token>'");

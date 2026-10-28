@@ -17,6 +17,7 @@ package io.restest.report;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.report.Verdict.Stop;
 import java.util.Arrays;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,26 +25,39 @@ import org.junit.jupiter.api.Test;
 class VerdictTest {
 
     @Test
-    @DisplayName("the questions are asked in order: stopped, then nothing sent, then nothing "
-            + "answered, and only then errors and warnings")
+    @DisplayName("the questions are asked in order: stopped, then stopped by the API, then nothing "
+            + "sent, then nothing answered, and only then errors and warnings")
     void the_questions_are_asked_in_order() {
-        assertThat(Verdict.of(true, 0, 0, 9, 9, true)).isEqualTo(Verdict.STOPPED);
-        assertThat(Verdict.of(false, 0, 0, 9, 9, true)).isEqualTo(Verdict.NOTHING_TESTED);
-        assertThat(Verdict.of(false, 70_548, 0, 70_548, 0, false))
+        assertThat(Verdict.of(Stop.FROM_OUTSIDE, 0, 0, 9, 9, true)).isEqualTo(Verdict.STOPPED);
+        assertThat(Verdict.of(Stop.UNAUTHORIZED, 38, 38, 9, 9, true))
+                .describedAs("a run the API refused ends with that, whatever it found until then")
+                .isEqualTo(Verdict.UNAUTHORIZED);
+        assertThat(Verdict.of(Stop.NONE, 0, 0, 9, 9, true)).isEqualTo(Verdict.NOTHING_TESTED);
+        assertThat(Verdict.of(Stop.NONE, 70_548, 0, 70_548, 0, false))
                 .describedAs("an API that answered nothing found no errors in itself, however many "
                         + "unanswered requests were counted against it")
                 .isEqualTo(Verdict.NOTHING_ANSWERED);
-        assertThat(Verdict.of(false, 10, 10, 1, 9, false)).isEqualTo(Verdict.ERRORS_FOUND);
-        assertThat(Verdict.of(false, 10, 10, 0, 9, true)).isEqualTo(Verdict.FAILED_ON_WARNINGS);
-        assertThat(Verdict.of(false, 10, 10, 0, 9, false)).isEqualTo(Verdict.NO_ERRORS_FOUND);
-        assertThat(Verdict.of(false, 10, 1, 0, 0, false)).isEqualTo(Verdict.NO_ERRORS_FOUND);
+        assertThat(Verdict.of(Stop.NONE, 10, 10, 1, 9, false)).isEqualTo(Verdict.ERRORS_FOUND);
+        assertThat(Verdict.of(Stop.NONE, 10, 10, 0, 9, true)).isEqualTo(Verdict.FAILED_ON_WARNINGS);
+        assertThat(Verdict.of(Stop.NONE, 10, 10, 0, 9, false)).isEqualTo(Verdict.NO_ERRORS_FOUND);
+        assertThat(Verdict.of(Stop.NONE, 10, 1, 0, 0, false)).isEqualTo(Verdict.NO_ERRORS_FOUND);
     }
 
     @Test
     @DisplayName("each verdict has a word of its own")
     void each_verdict_has_a_word_of_its_own() {
         assertThat(Arrays.stream(Verdict.values()).map(Verdict::word))
-                .containsExactly("stopped", "nothingTested", "nothingAnswered", "errorsFound",
-                        "failedOnWarnings", "noErrorsFound");
+                .containsExactly("stopped", "unauthorized", "nothingTested", "nothingAnswered",
+                        "errorsFound", "failedOnWarnings", "noErrorsFound");
+    }
+
+    @Test
+    @DisplayName("a run stopped from outside while it waited for the answers its refused lap was "
+            + "still owed is stopped, and one stopped by nothing else is stopped by nothing")
+    void being_stopped_from_outside_wins() {
+        assertThat(Stop.of(true, true)).isEqualTo(Stop.FROM_OUTSIDE);
+        assertThat(Stop.of(true, false)).isEqualTo(Stop.FROM_OUTSIDE);
+        assertThat(Stop.of(false, true)).isEqualTo(Stop.UNAUTHORIZED);
+        assertThat(Stop.of(false, false)).isEqualTo(Stop.NONE);
     }
 }

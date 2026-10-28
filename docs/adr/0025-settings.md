@@ -1,6 +1,6 @@
 # ADR-0025: The numbers somebody decided live in one settings object, layered from four sources, and never in the plan
 
-**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22 and 25 October 2026
+**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22, 25 and 28 October 2026
 **Date:** 2026-09-22
 
 ## Context
@@ -788,3 +788,12 @@ the `timeline` of `report.json`, which says what came back in each
 limit on what is quoted, so zero does not mean none: it is at least one, and at most ten thousand,
 since every slice is written out, an empty one too. It has no switch, since it changes nothing a run
 sends. One hundred settings in nine groups.
+
+## Amendment (28 October 2026): a switch for the stop when the API refuses the whole opening lap
+
+`schedule.stopWhenTheOpeningLapIsRefused`, on by default, beside `schedule.stopAfterRequests`, which
+also decides when a run ends rather than what it sends
+([ADR-0041](0041-stop-when-the-api-refuses-the-whole-opening-lap.md)). It is listed among the
+switches that are not levers, and the page of switches has a file that turns it off, since it is on
+by default. The rule has no number to put beside it: the stretch it judges is the opening lap, and
+401 is a fact of HTTP rather than a choice. One hundred and one settings in nine groups.

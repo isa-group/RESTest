@@ -48,6 +48,12 @@ import java.util.Objects;
  * gets round to them. It can be switched off, and how long a step waits is bounded, so one request
  * the API never answers cannot hold the start of a run up.
  *
+ * <p>The last one is about a run that cannot get in. When the API answers every request of the
+ * opening lap with 401 - "who are you?" - it refuses the whole API to this run, for want of a key or
+ * because the key is wrong, and a run that went on would only send it the same refusal thousands of
+ * times a second until its time was up. So the run stops sending there, says so, and ends with a
+ * number of its own.
+ *
  * @param workAheadFactor how many requests may be waiting for an answer at once, as a multiple of
  *     the most the engine will ever have in flight. Above one, so the engine is never left with a
  *     free slot while the next request is still being invented
@@ -79,6 +85,9 @@ import java.util.Objects;
  * @param interruptLookingGrace how long such a run, when it ran out of time to write, gives its
  *     directory to say what is in it before saying that the directory did not answer. A directory
  *     answers at once, unless it is the reason the writing ran out of time
+ * @param stopWhenTheOpeningLapIsRefused whether a run stops sending once every request of its
+ *     opening lap has been answered, and every answer was 401. Off, such a run goes on until its
+ *     budget is spent. A run with no opening lap is never stopped this way
  */
 public record ScheduleSettings(
         int workAheadFactor,
@@ -90,11 +99,12 @@ public record ScheduleSettings(
         boolean stopAfterRequests,
         int requestsBeforeStopping,
         Duration interruptWritingGrace,
-        Duration interruptLookingGrace) {
+        Duration interruptLookingGrace,
+        boolean stopWhenTheOpeningLapIsRefused) {
 
     private static final ScheduleSettings DEFAULTS = new ScheduleSettings(2, 1_000,
             Duration.ofSeconds(10), Duration.ofSeconds(2), true, Duration.ofSeconds(2),
-            false, 1_000, Duration.ofSeconds(5), Duration.ofSeconds(1));
+            false, 1_000, Duration.ofSeconds(5), Duration.ofSeconds(1), true);
 
     public ScheduleSettings {
         Objects.requireNonNull(stragglerGrace, "stragglerGrace");

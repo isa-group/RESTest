@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Something that happened during a run, announced so that anyone interested can react.
@@ -299,17 +300,28 @@ public sealed interface RunEvent {
      *                 finished: before its time was up, or while it was still waiting for answers
      *                 to requests it had sent. What it reports is then what it found until it was
      *                 stopped
+     * @param unauthorized when the run stopped sending because the API answered 401 to every
+     *                 request of its opening lap, what it says about that; empty otherwise. A run
+     *                 can stop that way and then be stopped from outside while it waits for the
+     *                 answers still owed, and then both are said
      */
-    record RunFinished(Instant at, Duration elapsed, EngineStatistics engine, boolean cutShort)
-            implements RunEvent {
+    record RunFinished(Instant at, Duration elapsed, EngineStatistics engine, boolean cutShort,
+            Optional<Unauthorized> unauthorized) implements RunEvent {
         public RunFinished {
             Objects.requireNonNull(at, "at");
             Objects.requireNonNull(elapsed, "elapsed");
             Objects.requireNonNull(engine, "engine");
+            Objects.requireNonNull(unauthorized, "unauthorized");
             if (elapsed.isNegative()) {
                 throw new IllegalArgumentException("a run cannot take less time than none: "
                         + elapsed);
             }
+        }
+
+        /** A run that the API never stopped. */
+        public RunFinished(Instant at, Duration elapsed, EngineStatistics engine,
+                boolean cutShort) {
+            this(at, elapsed, engine, cutShort, Optional.empty());
         }
 
         /** A run that ended by itself, the way nearly every run does. */
