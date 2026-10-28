@@ -94,6 +94,13 @@
              up when everything is assembled. -->
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <json-schema-validator.version>3.0.7</json-schema-validator.version>
+        <!-- Jackson 3, a separate line under the tools.jackson group, which only the schema
+             validator brings in, and which reads every JSON reply it checks and the specification document.
+             Managed here, rather than left at whatever the validator asks for, so that a fix to it
+             is one line here and does not wait for a validator release: 3.0.7 asks for 3.2.1, which
+             has denial-of-service flaws fixed in 3.2.3. Each 3.x release names the
+             jackson-annotations it needs, and that has to stay the version pinned above. -->
+        <jackson3.version>3.2.3</jackson3.version>
         <!-- Builds a string that matches a regular expression, which is what a specification's
              `pattern` asks for. Carries no dependencies of its own, and takes the run's own seeded
              java.util.random.RandomGenerator, so a run built on it is still repeated exactly. -->
@@ -196,6 +203,13 @@
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${json-schema-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson3.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.github.curious-odd-man</groupId>
