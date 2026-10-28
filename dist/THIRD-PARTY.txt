@@ -29,13 +29,13 @@ Apache License, Version 2.0 - the text is in LICENSE
   lib/itu-1.14.0.jar                                                com.ethlo.time:itu
   lib/j2objc-annotations-3.1.jar                                    com.google.j2objc:j2objc-annotations
   lib/jackson-annotations-2.22.jar                                  com.fasterxml.jackson.core:jackson-annotations
-  lib/jackson-core-2.22.1.jar                                       com.fasterxml.jackson.core:jackson-core
-  lib/jackson-core-3.2.1.jar                                        tools.jackson.core:jackson-core
-  lib/jackson-databind-2.20.1.jar                                   com.fasterxml.jackson.core:jackson-databind
-  lib/jackson-databind-3.2.1.jar                                    tools.jackson.core:jackson-databind
-  lib/jackson-dataformat-yaml-2.22.0.jar                            com.fasterxml.jackson.dataformat:jackson-dataformat-yaml
-  lib/jackson-dataformat-yaml-3.2.1.jar                             tools.jackson.dataformat:jackson-dataformat-yaml
-  lib/jackson-datatype-jsr310-2.20.1.jar                            com.fasterxml.jackson.datatype:jackson-datatype-jsr310
+  lib/jackson-core-2.22.3.jar                                       com.fasterxml.jackson.core:jackson-core
+  lib/jackson-core-3.2.3.jar                                        tools.jackson.core:jackson-core
+  lib/jackson-databind-2.22.3.jar                                   com.fasterxml.jackson.core:jackson-databind
+  lib/jackson-databind-3.2.3.jar                                    tools.jackson.core:jackson-databind
+  lib/jackson-dataformat-yaml-2.22.3.jar                            com.fasterxml.jackson.dataformat:jackson-dataformat-yaml
+  lib/jackson-dataformat-yaml-3.2.3.jar                             tools.jackson.dataformat:jackson-dataformat-yaml
+  lib/jackson-datatype-jsr310-2.22.3.jar                            com.fasterxml.jackson.datatype:jackson-datatype-jsr310
   lib/jakarta.validation-api-2.0.2.jar                              jakarta.validation:jakarta.validation-api
   lib/joda-time-2.10.5.jar                                          joda-time:joda-time
   lib/json-schema-validator-3.0.7.jar                               com.networknt:json-schema-validator

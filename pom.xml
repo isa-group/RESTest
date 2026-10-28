@@ -85,15 +85,31 @@
         <okhttp.version>5.5.0</okhttp.version>
         <wiremock.version>3.13.2</wiremock.version>
         <sqlite.version>3.50.3.0</sqlite.version>
-        <jackson.version>2.22.1</jackson.version>
-        <!-- Versioned separately from the rest of Jackson, and pinned here for a reason found the
-             hard way: the schema validator's own JSON library needs 2.22, while another path
-             through the tree asks for 2.20, and Maven's mediation picks the nearer one. The result
-             was a class missing at runtime in the one module that has every other module on its
-             class path. Same reasoning as snakeyaml below; a worse failure, because it only shows
-             up when everything is assembled. -->
+        <!-- Jackson 2, every module of it at one version. RESTest's own JSON reading uses its
+             jackson-core; swagger-parser and swagger-core bring jackson-databind and the YAML and
+             date modules, and WireMock, a test dependency, brings its own. Managed through Jackson's
+             BOM below rather than left to Maven's mediation, which picks the nearest path: in
+             restest-cli that was WireMock's, so a release carried an older jackson-databind than
+             the one swagger-core asks for. -->
+        <jackson.version>2.22.3</jackson.version>
+        <!-- Versioned separately from the rest of Jackson, shared by Jackson 2 and Jackson 3, and
+             pinned here for a reason found the hard way: the schema validator's own JSON library
+             needed 2.22 while another path through the tree asked for 2.20, and Maven's mediation
+             picked the nearer one. The result was a class missing at runtime in the one module that
+             has every other module on its class path. Both Jackson BOMs below name a version of it
+             now, and when two imported BOMs disagree the one written first wins without a word, so
+             it stays pinned: one written decision, which has to be the version both of them name.
+             Same reasoning as snakeyaml below; a worse failure, because it only shows up when
+             everything is assembled. -->
         <jackson-annotations.version>2.22</jackson-annotations.version>
         <json-schema-validator.version>3.0.7</json-schema-validator.version>
+        <!-- Jackson 3, a separate line under the tools.jackson group, which only the schema
+             validator brings in, and which reads every JSON reply it checks and the specification document.
+             Managed here, rather than left at whatever the validator asks for, so that a fix to it
+             is one line here and does not wait for a validator release: 3.0.7 asks for 3.2.1, which
+             has denial-of-service flaws fixed in 3.2.3. Each 3.x release names the
+             jackson-annotations it needs, and that has to stay the version pinned above. -->
+        <jackson3.version>3.2.3</jackson3.version>
         <!-- Builds a string that matches a regular expression, which is what a specification's
              `pattern` asks for. Carries no dependencies of its own, and takes the run's own seeded
              java.util.random.RandomGenerator, so a run built on it is still repeated exactly. -->
@@ -183,9 +199,11 @@
                 <version>${sqlite.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -196,6 +214,13 @@
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${json-schema-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson3.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.github.curious-odd-man</groupId>
