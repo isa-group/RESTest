@@ -603,6 +603,32 @@ class MutationsTest {
                         .contains("which its pattern ^[a-z]+$ refuses");
             });
         }
+
+        @Test
+        @DisplayName("a long word is quoted cut between two characters, never inside an emoji")
+        void quoted_whole_characters() {
+            // Written as JSON, the quote and thirty-eight letters come first, so the fortieth
+            // character, where the quote stops, is the emoji - two halves in a Java string.
+            String word = "x".repeat(38) + "😀";
+            Operation find = Operation.of(HttpMethod.GET, "/moods", List.of(
+                            Parameter.of("mood", ParameterLocation.QUERY, true,
+                                    new StringSchema(SchemaMetadata.none().withEnumeration(
+                                            List.of(JsonValue.of(word))), Optional.empty(),
+                                            Optional.empty(), Optional.empty(), Optional.empty()))))
+                    .withId(OperationId.of("findMoods"));
+
+            List<TestCase> changed = changesIn(find, accepted(find,
+                    value("mood", ParameterLocation.QUERY, JsonValue.of(word))),
+                    "breakAnEnumeration");
+
+            assertThat(changed).extracting(each -> each.mutation().orElseThrow().description())
+                    .isNotEmpty()
+                    .allSatisfy(description -> assertThat(description.codePoints())
+                            .describedAs("half a character, which no file can hold")
+                            .noneMatch(point -> Character.getType(point) == Character.SURROGATE))
+                    .anySatisfy(description -> assertThat(description)
+                            .contains("\"" + "X".repeat(38) + "😀..."));
+        }
     }
 
     @Nested

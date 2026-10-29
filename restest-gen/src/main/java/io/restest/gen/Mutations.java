@@ -1291,10 +1291,16 @@ final class Mutations {
         return howMany + (howMany == 1 ? " item" : " items");
     }
 
+    /**
+     * The value as JSON, cut after so many characters. A character outside the most common ones,
+     * an emoji say, is two halves in a Java string, and cutting between them would leave half a
+     * character that no file can hold: the cut counts whole characters instead.
+     */
     private static String quoted(JsonValue value) {
         String written = JsonText.write(value);
-        return written.length() <= QUOTED_AT_MOST
-                ? written : written.substring(0, QUOTED_AT_MOST) + "...";
+        return written.codePointCount(0, written.length()) <= QUOTED_AT_MOST
+                ? written
+                : written.substring(0, written.offsetByCodePoints(0, QUOTED_AT_MOST)) + "...";
     }
 
     /**
