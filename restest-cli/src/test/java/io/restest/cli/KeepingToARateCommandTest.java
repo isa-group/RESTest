@@ -63,6 +63,15 @@ class KeepingToARateCommandTest {
 
     private static final Duration BUDGET = Duration.ofSeconds(2);
 
+    /**
+     * Ends a run with no rate after this many requests rather than at its budget: enough to show
+     * it went far faster than a rate would let it, without loading a small machine for the whole
+     * budget while other tests share it.
+     */
+    private static final List<String> A_FEW_HUNDRED = List.of(
+            "--set", "schedule.stopAfterRequests=true",
+            "--set", "schedule.requestsBeforeStopping=200");
+
     /** Ten requests a second: one every tenth of a second. */
     private static final Duration BETWEEN = Duration.ofMillis(100);
 
@@ -125,10 +134,10 @@ class KeepingToARateCommandTest {
     @DisplayName("with no rate named, the run goes as fast as the API answers and says nothing of a "
             + "rate")
     void no_rate_no_limit() throws IOException {
-        int answer = run();
+        int answer = run(A_FEW_HUNDRED.toArray(String[]::new));
 
         assertThat(answer).describedAs("%s%s", screen, problems).isZero();
-        assertThat(arrivals()).hasSizeGreaterThan((int) BUDGET.dividedBy(BETWEEN) * 5);
+        assertFasterThanTheRate(arrivals());
         assertThat(text(engine(), "idleKeepingToTheRate")).isEqualTo("PT0S");
         assertThat(screen.toString()).doesNotContain("keeping to the rate")
                 .doesNotContain("engine.mostRequestsPerMinute");
@@ -141,13 +150,23 @@ class KeepingToARateCommandTest {
         Path printed = Files.writeString(directory.resolve("settings.yaml"),
                 "engine:\n  limitTheRate: false\n  mostRequestsPerMinute: 600\n");
 
-        int answer = run("--settings", printed.toString(),
-                "--set", "engine.mostRequestsPerMinute=600");
+        List<String> arguments = new ArrayList<>(List.of("--settings", printed.toString(),
+                "--set", "engine.mostRequestsPerMinute=600"));
+        arguments.addAll(A_FEW_HUNDRED);
+        int answer = run(arguments.toArray(String[]::new));
 
         assertThat(answer).describedAs("%s%s", screen, problems).isZero();
         assertThat(screen.toString()).contains("  engine.mostRequestsPerMinute is 600, but "
                 + "engine.limitTheRate is false, so no rate is kept to");
-        assertThat(arrivals()).hasSizeGreaterThan((int) BUDGET.dividedBy(BETWEEN) * 5);
+        assertFasterThanTheRate(arrivals());
+    }
+
+    /** Two hundred requests in less time than ten a second would have taken for twenty. */
+    private static void assertFasterThanTheRate(List<Instant> arrivals) {
+        assertThat(arrivals).hasSize(200);
+        assertThat(Duration.between(arrivals.getFirst(), arrivals.getLast()))
+                .describedAs("at ten a second, two hundred requests take twenty seconds")
+                .isLessThan(BUDGET);
     }
 
     private int run(String... more) throws IOException {

@@ -923,10 +923,12 @@ class RunLoopTest {
         // The list of shelters takes longer than the lap waits for it, so the lap is over before it
         // is answered and the run goes on sending; when the 401 comes, the next request is where
         // the run stops. A slot taken for that request and not given back would leave the run
-        // waiting for an answer nobody owes it until the wait for stragglers ran out.
+        // waiting for an answer nobody owes it until the wait for stragglers ran out. Two seconds,
+        // so that the lap is over long before it even on a slow machine sharing its processors
+        // with other tests: at 0.8 s a Windows runner once finished the lap after the 401 came.
         engine.answersWith(testCase -> Optional.of(401));
         engine.takes(request -> request.url().endsWith("/shelters")
-                ? Duration.ofMillis(800) : Duration.ofMillis(1));
+                ? Duration.ofSeconds(2) : Duration.ofMillis(1));
 
         for (Duration patience : List.of(Duration.ofMillis(200), Duration.ZERO)) {
             long began = System.nanoTime();
