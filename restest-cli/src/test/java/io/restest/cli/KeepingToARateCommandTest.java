@@ -122,10 +122,12 @@ class KeepingToARateCommandTest {
         JsonValue.JsonObject timeline =
                 (JsonValue.JsonObject) ARun.report(out()).member("timeline").orElseThrow();
         Instant timeIsUp = Instant.parse(text(timeline, "startedAt")).plus(BUDGET);
+        // A request whose turn came just before the time was up may still leave a little after
+        // it, as late as a busy machine is in building it and sending it: a Windows runner once took
+        // 55 ms. One still waiting for its turn is dropped; kept, it would go a turn or more late.
         assertThat(sent.getLast())
-                .describedAs("whatever waited for its turn when the time was up was dropped, so "
-                        + "nothing went later than a whisker after it")
-                .isBefore(timeIsUp.plus(BETWEEN.dividedBy(4)));
+                .describedAs("nothing that waited for a turn went once the time was up")
+                .isBefore(timeIsUp.plus(BETWEEN));
         assertThat(Duration.parse(text(engine(), "idleKeepingToTheRate"))).isPositive();
         assertThat(screen.toString()).contains("keeping to the rate it was given)");
     }
