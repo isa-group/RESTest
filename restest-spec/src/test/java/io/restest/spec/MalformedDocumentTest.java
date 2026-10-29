@@ -270,6 +270,12 @@ class MalformedDocumentTest {
         assertThat(api.operations().get(0).responses()).hasSize(1);
         assertThat(api.issues()).hasSize(1);
         assertThat(api.issues().get(0).effect()).isEqualTo(SpecificationIssue.Effect.DEGRADED);
+        assertThat(api.issues().get(0).location())
+                .describedAs("said of the reply, not of the operation")
+                .isEqualTo("paths./widgets.get.responses.200 OK");
+        assertThat(api.readInPart(OperationId.of("GET /widgets")))
+                .describedAs("the reply it could not read may declare what looks undeclared")
+                .isTrue();
     }
 
     @Test
@@ -352,6 +358,9 @@ class MalformedDocumentTest {
         assertThat(api.operations().get(0).responses().get(0).headers()).isEmpty();
         assertThat(api.issues()).hasSize(1);
         assertThat(api.issues().get(0).effect()).isEqualTo(SpecificationIssue.Effect.DEGRADED);
+        assertThat(api.readInPart(OperationId.of("GET /widgets")))
+                .describedAs("a header it could not read hides no status code and no content type")
+                .isFalse();
     }
 
     @Test

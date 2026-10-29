@@ -89,12 +89,12 @@ class UndeclaredStatusOracleTest {
     private static final ApiModel API = ApiModel.of("Pets", "1.0.0", List.of(LIST_PETS, ADD_PET,
                     ADD_OWNER, LIST_VISITS, LIST_OWNERS, HEALTH, LIST_VETS, LIST_CLINICS,
                     LIST_KENNELS))
-            .withIssues(List.of(SpecificationIssue.degraded("paths./vets.get", LIST_VETS.id(),
-                    "the response '404' is a reference that does not resolve to anything the "
-                            + "document declares"),
-                    SpecificationIssue.degraded("paths./kennels.get", LIST_KENNELS.id(),
-                            "the response '200' is a reference that does not resolve to anything "
-                                    + "the document declares"),
+            .withIssues(List.of(SpecificationIssue.degraded("paths./vets.get.responses.404",
+                    LIST_VETS.id(), "the response '404' is a reference that does not resolve to "
+                            + "anything the document declares"),
+                    SpecificationIssue.degraded("paths./kennels.get.responses.200",
+                            LIST_KENNELS.id(), "the response '200' is a reference that does not "
+                                    + "resolve to anything the document declares"),
                     SpecificationIssue.renamed("paths./clinics.get", LIST_CLINICS.id(),
                             "renamed to stay unique")));
 

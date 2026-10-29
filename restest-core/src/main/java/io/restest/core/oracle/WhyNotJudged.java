@@ -61,11 +61,12 @@ public enum WhyNotJudged {
     NO_REPLY_DECLARED("noReplyDeclared", "the document declares no reply for the operation"),
 
     /**
-     * RESTest could not read everything the document says about the operation - a reply pointing
-     * at a shape it never defines, say - so what looks undeclared may be declared in the part that
-     * could not be read.
+     * RESTest could not read a reply the document declares for the operation - one given as a
+     * reference to a reply the document never defines, say - so what looks undeclared may be
+     * declared in the reply that could not be read.
      */
-    READ_IN_PART("readInPart", "RESTest could not read all the document says about the operation"),
+    READ_IN_PART("readInPart",
+            "RESTest could not read a reply the document declares for the operation"),
 
     /** The document declares the status code with no content type, describing it only in words. */
     NO_CONTENT_TYPE_DECLARED("noContentTypeDeclared",

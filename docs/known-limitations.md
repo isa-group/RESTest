@@ -138,9 +138,10 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **A reply the document declares in a form RESTest cannot read is reported as undeclared.** The
   library RESTest reads documents with drops a reply written as something other than an object —
   `"404": "not found"` — and says so before the run, without naming the operation. That operation's
-  404s are then `F920`, though the document meant to declare them. On an operation RESTest knows it
-  read only in part, such as one with a reply pointing at a shape the document never defines, a
-  status code it could not find among what it read is left alone, and counted under `notChecked`.
+  404s are then `F920`, though the document meant to declare them. On an operation one of whose
+  replies RESTest knows it could not read, such as one given as a reference to a reply the document
+  never defines, a status code it could not find among what it read is left alone, and counted
+  under `notChecked`.
 - **A body the document describes only in words is not checked against a type.** A reply with a body
   whose status code the document declares with no content type at all is left alone, whatever type
   it comes as, and counted under `notChecked`. A Swagger 2.0 document that names no type at all is

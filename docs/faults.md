@@ -319,16 +319,18 @@ and `default` included.
     counts each such reply as one this check could not judge (`noReplyDeclared`, under
     `notChecked` in `report.json`), unless the operation is one of those below, read in part,
     which comes first (`readInPart`).
-  - On an operation RESTest could not read in full, a status code it could not find among what it
-    read: a reply the document declares, and RESTest could not read — one that points at a shape the
-    document never defines, say — would otherwise look undeclared. The run lists what it could not
-    read before it starts, and counts each such reply as one this check could not judge
-    (`readInPart`). A status code it did read is held to as on any other operation. A reply the
-    library RESTest reads documents with drops on its own, such as one written as a word rather than
-    an object, is not known to be missing, and does look undeclared ([known
-    limitations](known-limitations.md#what-a-run-says)). An operation RESTest only had to call by
-    its method and path, because the document gives its name to an operation RESTest reads first,
-    is not one of these: the new name costs it nothing else.
+  - On an operation one of whose replies RESTest could not read, a status code it could not find
+    among what it read: a reply the document declares, and RESTest could not read — one given as a
+    reference to a reply the document never defines, say, or under a status code that is not one —
+    would otherwise look undeclared. The run lists what it could not read before it starts, and
+    counts each such reply as one this check could not judge (`readInPart`). A status code it did
+    read is held to as on any other operation. A reply the library RESTest reads documents with
+    drops on its own, such as one written as a word rather than an object, is not known to be
+    missing, and does look undeclared ([known limitations](known-limitations.md#what-a-run-says)).
+    Nothing else RESTest says it could not read hides a reply, so nothing else makes an operation one
+    of these: not a shape it does not fully understand, in a parameter, a request body or the body of
+    a reply it did read, not a header of a reply it could not read, and not a name of RESTest's own,
+    given because the document gives the operation's name to an operation RESTest reads first.
   - A reply to a request whose body RESTest sent, on purpose, under a media type the operation does
     not accept: a document is not expected to describe how an API refuses a body it never promised
     to take.
@@ -369,8 +371,8 @@ warning  Undeclared content type  (F921)
   - A document that declares `*/*`, which promises no type in particular — and is what a Swagger 2.0
     document that says nothing about types is read as, so such a reply counts as checked.
   - A server error, and a reply to a body sent under a media type the operation does not accept, as
-    for `F920`; and, on an operation RESTest could not read in full, a type it could not find among
-    what it read, counted as for `F920` (`readInPart`).
+    for `F920`; and, on an operation one of whose replies RESTest could not read, a type it could
+    not find among what it read, counted as for `F920` (`readInPart`).
 - **What the API wrote is quoted cut short.** The fault quotes the content type as the API sent it,
   cut at 100 characters, with anything that would move a terminal's cursor or change its colours,
   and invisible characters that would reorder or hide what is shown around them, replaced by `?`.

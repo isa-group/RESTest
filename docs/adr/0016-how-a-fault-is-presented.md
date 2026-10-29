@@ -442,6 +442,14 @@ scout-api no renamed operation is also one RESTest read in part, so the replay's
 two rules judge those eight operations as they are defined to; that what could not be read is said
 of the right operation is shown by RESTest's tests, not by this run.
 
+**A correction of 29 October: only a reply RESTest could not read leaves an operation alone.** That
+`F920` and `F921` leave alone any operation a `DEGRADED` issue names no longer holds either. A shape
+RESTest does not fully understand, in a parameter, a request body or the body of a reply it did
+read, hides no status code and no content type the operation declares, and such an operation is
+judged; only a reply the document declares and RESTest could not read at all still keeps it from
+both rules ([ADR-0012](0012-canonical-model.md)'s amendment of 29 October, with what it changes
+across 98 documents). The reason a reply gets for it, `readInPart`, now says so in its words too.
+
 ## Amendment (22 October 2026): what a person reads first
 
 **Date:** 2026-10-22
