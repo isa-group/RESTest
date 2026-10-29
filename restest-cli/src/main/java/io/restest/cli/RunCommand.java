@@ -724,6 +724,7 @@ final class RunCommand implements Callable<Integer> {
                             settings.schedule().interruptGrace(), stop,
                             RefusedOpeningLap.watching(
                                     settings.schedule().stopWhenTheOpeningLapIsRefused()),
+                            ToldToWait.watching(settings.schedule(), scheduler.deadline()),
                             sending, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
@@ -733,7 +734,8 @@ final class RunCommand implements Callable<Integer> {
                     drained.publish(new RunEvent.RunFinished(finishedAt,
                             Duration.between(startedAt, finishedAt), sending.statistics(),
                             outcome == null ? stop.asked() : outcome.cutShort(),
-                            outcome == null ? Optional.empty() : outcome.refusedLap()));
+                            outcome == null ? Optional.empty() : outcome.refusedLap(),
+                            outcome == null ? Optional.empty() : outcome.waited()));
                 }
             }
         } finally {
@@ -1119,8 +1121,10 @@ final class RunCommand implements Callable<Integer> {
         }
         // The seed has just been printed, and for this plan it promises less than it usually does.
         // Saying so here rather than leaving somebody to find out by running the same command
-        // twice and getting two different runs.
-        if (generator.dependsOnTheApisAnswers()) {
+        // twice and getting two different runs. A run that leaves alone what the API asks it to
+        // skips turns when and where the API says, so it is one of those too.
+        if (generator.dependsOnTheApisAnswers()
+                || configuration.settings().schedule().waitWhenToldTo()) {
             out.println("  what it sends depends on the API's own replies, so the seed alone does "
                     + "not repeat this run" + (keepTheRun ? "" : "; --store keeps what it sent"));
         }

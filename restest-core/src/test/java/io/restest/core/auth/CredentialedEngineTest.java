@@ -239,10 +239,22 @@ class CredentialedEngineTest {
                 .isEqualTo("java.lang.IllegalStateException: sent REDACTED-AUTH.header.X-API-Key");
     }
 
+    @Test
+    @DisplayName("a hold the API asked for reaches the engine behind the door")
+    void a_hold_is_passed_on() {
+        CredentialedEngine engine = new CredentialedEngine(api,
+                gather(listPets(), AuthGiven.typed("header:X-API-Key=" + KEY, 1)).plan());
+
+        engine.holdFor(Duration.ofSeconds(3));
+
+        assertThat(api.holds).containsExactly(Duration.ofSeconds(3));
+    }
+
     /** A stand-in for the engine that answers everything with 200 and remembers what it was sent. */
     private static class Recording implements HttpEngine {
 
         private final List<HttpRequestRecord> received = new ArrayList<>();
+        private final List<Duration> holds = new ArrayList<>();
         private final EngineStatistics statistics = new EngineStatistics(0, Duration.ZERO,
                 Duration.ZERO, Duration.ZERO, 0, 1);
         private String echo = "";
@@ -265,6 +277,15 @@ class CredentialedEngineTest {
                             echo.isEmpty() ? Optional.empty()
                                     : Optional.of(Payload.text(echo, "application/json"))),
                     Instant.now(), Duration.ZERO));
+        }
+
+        @Override
+        public void holdFor(Duration howLong) {
+            holds.add(howLong);
+        }
+
+        @Override
+        public void dropWhatIsHeld() {
         }
 
         @Override

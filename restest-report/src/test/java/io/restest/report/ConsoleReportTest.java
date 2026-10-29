@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.Unauthorized;
+import io.restest.core.event.Waited;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
@@ -359,6 +360,46 @@ class ConsoleReportTest {
         assertThat(screen.toString().lines().toList())
                 .contains("1 requests to 1 operations in 100ms, 30% of it idle, stopped: the API "
                         + "answered 401 to every request of the opening lap");
+    }
+
+    @Test
+    @DisplayName("a run told to wait says how much of its idle time the API asked for, and who was "
+            + "told, how often and for how long")
+    void a_run_told_to_wait_says_so() {
+        report.on(Runs.started(Instant.EPOCH));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 429)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(100), Runs.engine(),
+                false, Optional.empty(), Optional.of(new Waited(Duration.ofMillis(2500),
+                        new Waited.WholeApi(2, Duration.ofSeconds(3)), List.of(
+                                told("POST /tans", 9, 54260), told("GET /tans", 1, 1),
+                                told("GET /pets", 2, 7), told("DELETE /pets", 3, 0))))));
+
+        assertThat(screen.toString().lines().toList())
+                .contains("1 requests to 1 operations in 100ms, 30% of it idle (25% waiting as "
+                        + "the API asked)")
+                .contains("  told to wait: the whole API 2 times, 3.0s in all; POST /tans 9 "
+                        + "times, 1m 0s in all, 54260 turns skipped; GET /tans 1 time, 1m 0s in "
+                        + "all, 1 turn skipped; GET /pets 2 times, 1m 0s in all, 7 turns skipped; "
+                        + "and 1 more; the run's report names every one");
+    }
+
+    @Test
+    @DisplayName("a run never told to wait, or that does not wait when told to, says nothing about it")
+    void a_run_never_told_to_wait_says_nothing() {
+        report.on(Runs.started(Instant.EPOCH));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(100), Runs.engine(),
+                false, Optional.empty(), Optional.of(Waited.never())));
+
+        assertThat(screen.toString()).doesNotContain("told to wait").doesNotContain("as the API asked")
+                .contains("1 requests to 1 operations in 100ms, 30% of it idle\n");
+    }
+
+    private static Waited.ForOperation told(String operation, long times, long skipped) {
+        return new Waited.ForOperation(OperationId.of(operation), times, 0,
+                Duration.ofMinutes(1), skipped);
     }
 
     @Test

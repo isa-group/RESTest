@@ -351,6 +351,14 @@ class ARunCutShortTest {
         }
 
         @Override
+        public void holdFor(Duration howLong) {
+        }
+
+        @Override
+        public void dropWhatIsHeld() {
+        }
+
+        @Override
         public EngineStatistics statistics() {
             try {
                 Thread.sleep(stuckFor);

@@ -170,6 +170,153 @@ class ConcurrencyLimiterTest {
         waiting.join();
     }
 
+    @Test
+    @DisplayName("a hold gives no slot to anybody until it is over, however many are free")
+    void a_hold_gives_nothing_until_it_is_over() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        limiter.holdFor(Duration.ofMillis(300));
+        long before = System.nanoTime();
+
+        Took took = takeASlotElsewhere(limiter);
+
+        assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(took.got()).isTrue();
+        assertThat(Duration.ofNanos(System.nanoTime() - before))
+                .isGreaterThanOrEqualTo(Duration.ofMillis(250));
+    }
+
+    @Test
+    @DisplayName("a hold sends the limit to the floor, and quick answers during it earn nothing")
+    void a_hold_starts_again_from_the_floor() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 8, 16);
+        useEverySlot(limiter);
+        assertThat(limiter.limit()).isEqualTo(9);
+
+        limiter.holdFor(Duration.ofMillis(300));
+        Took took = takeASlotElsewhere(limiter);
+        took.waitingOutTheHold();
+        limiter.observe(FAST, false);
+        assertThat(limiter.limit()).describedAs("waiting out a hold is not running out of room")
+                .isEqualTo(1);
+
+        assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
+        limiter.release();
+        useEverySlot(limiter);
+        assertThat(limiter.limit()).describedAs("and it climbs again as it always does")
+                .isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("a shorter hold leaves a longer one in force")
+    void a_shorter_hold_changes_nothing() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        limiter.holdFor(Duration.ofMillis(400));
+        limiter.holdFor(Duration.ofMillis(10));
+
+        Took took = takeASlotElsewhere(limiter);
+
+        assertThat(took.done().await(200, TimeUnit.MILLISECONDS)).isFalse();
+        assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
+    }
+
+    @Test
+    @DisplayName("a longer hold moves the end of one in force later")
+    void a_longer_hold_extends_one_in_force() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        limiter.holdFor(Duration.ofMillis(50));
+        limiter.holdFor(Duration.ofMillis(500));
+        long before = System.nanoTime();
+
+        Took took = takeASlotElsewhere(limiter);
+
+        assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(Duration.ofNanos(System.nanoTime() - before))
+                .isGreaterThanOrEqualTo(Duration.ofMillis(450));
+    }
+
+    @Test
+    @DisplayName("what is held is dropped: a request waiting out a hold goes away without a slot, "
+            + "and one with no hold in force is untouched")
+    void what_is_held_is_dropped() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 1, 1);
+        limiter.holdFor(Duration.ofHours(1));
+        Took held = takeASlotElsewhere(limiter);
+        held.waitingOutTheHold();
+
+        limiter.dropWhatIsHeld();
+
+        assertThat(held.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(held.got()).isFalse();
+
+        ConcurrencyLimiter unheld = limiter(1, 1, 1);
+        unheld.acquire();
+        Took waiting = takeASlotElsewhere(unheld);
+        unheld.dropWhatIsHeld();
+        assertThat(waiting.done().await(200, TimeUnit.MILLISECONDS))
+                .describedAs("waiting for a slot, not for a hold").isFalse();
+        unheld.release();
+        assertThat(waiting.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(waiting.got()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a request waiting out a hold when the engine closes goes away without a slot")
+    void closing_lets_a_held_request_go_without_a_slot() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        limiter.holdFor(Duration.ofHours(1));
+        Took took = takeASlotElsewhere(limiter);
+        assertThat(took.done().await(100, TimeUnit.MILLISECONDS)).isFalse();
+
+        limiter.close();
+
+        assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(took.got()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a hold longer than anything a clock counts is still a hold, never a failure")
+    void a_hold_of_centuries_is_a_hold() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        limiter.holdFor(Duration.ofSeconds(Long.MAX_VALUE));
+        Took took = takeASlotElsewhere(limiter);
+
+        assertThat(took.done().await(100, TimeUnit.MILLISECONDS)).isFalse();
+        limiter.close();
+        assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
+    }
+
+    /** A slot being taken on a thread of its own: whether it was, once it is done trying. */
+    private record Took(CountDownLatch done, AtomicBoolean took, Thread thread) {
+
+        boolean got() {
+            return took.get();
+        }
+
+        /** Returns once the thread is waiting, with a time limit, as it does out a hold. */
+        void waitingOutTheHold() {
+            while (thread.getState() != Thread.State.TIMED_WAITING) {
+                Thread.onSpinWait();
+            }
+        }
+    }
+
+    private static Took takeASlotElsewhere(ConcurrencyLimiter limiter) {
+        CountDownLatch done = new CountDownLatch(1);
+        AtomicBoolean took = new AtomicBoolean();
+        Thread thread = Thread.ofVirtual().unstarted(() -> {
+            try {
+                took.set(limiter.acquire());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                done.countDown();
+            }
+        });
+        Took taking = new Took(done, took, thread);
+        thread.start();
+        return taking;
+    }
+
     /** Fills every slot, reports one quick answer, and hands the slots back. */
     private static void useEverySlot(ConcurrencyLimiter limiter) throws InterruptedException {
         int slots = limiter.limit();

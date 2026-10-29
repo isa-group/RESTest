@@ -150,7 +150,9 @@ public final class OkHttpEngine implements HttpEngine {
         Objects.requireNonNull(request, "request");
         refuseIfClosed();
         try {
-            return CompletableFuture.supplyAsync(() -> send(testCase, request), requests);
+            // Accepted now, so not refused later: a request handed over just before the engine closes
+            // comes back as one that never went out, rather than failing on its own thread.
+            return CompletableFuture.supplyAsync(() -> sendAccepted(testCase, request), requests);
         } catch (RejectedExecutionException e) {
             // close() from another thread, between the check above and here.
             throw new IllegalStateException(
@@ -163,6 +165,11 @@ public final class OkHttpEngine implements HttpEngine {
         Objects.requireNonNull(testCase, "testCase");
         Objects.requireNonNull(request, "request");
         refuseIfClosed();
+        return sendAccepted(testCase, request);
+    }
+
+    /** Sends a request this engine has already accepted, whether or not it has closed since. */
+    private Interaction sendAccepted(TestCase testCase, HttpRequestRecord request) {
         WireCapture.Slot slot = new WireCapture.Slot(request);
         Request outgoing;
         try {
@@ -175,7 +182,12 @@ public final class OkHttpEngine implements HttpEngine {
         }
 
         try {
-            limiter.acquire();
+            if (!limiter.acquire()) {
+                activity.requestNeverSent();
+                return Interaction.transportFailure(testCase, request,
+                        "the run stopped sending before this request went out", Instant.now(),
+                        Duration.ZERO);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             activity.requestNeverSent();
@@ -207,6 +219,16 @@ public final class OkHttpEngine implements HttpEngine {
         return activity.snapshot(limiter.limit());
     }
 
+    @Override
+    public void holdFor(Duration howLong) {
+        limiter.holdFor(Objects.requireNonNull(howLong, "howLong"));
+    }
+
+    @Override
+    public void dropWhatIsHeld() {
+        limiter.dropWhatIsHeld();
+    }
+
     /** How many connections the engine is holding open for the requests still to come. */
     int connectionsKept() {
         return client.connectionPool().connectionCount();
@@ -217,6 +239,9 @@ public final class OkHttpEngine implements HttpEngine {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
+        // A request still waiting for a slot - held because the API asked for quiet, say - is not
+        // sent once the run is over.
+        limiter.close();
         requests.shutdown();
         client.dispatcher().executorService().shutdown();
         client.connectionPool().evictAll();

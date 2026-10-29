@@ -306,6 +306,66 @@ class OkHttpEngineTest {
     }
 
     @Test
+    @DisplayName("a held engine sends nothing until the hold is over, then sends what it was given")
+    void a_held_engine_sends_nothing_until_the_hold_is_over() throws Exception {
+        api.stubFor(get(urlEqualTo("/widgets")).willReturn(aResponse().withStatus(200)));
+        engine.holdFor(java.time.Duration.ofMillis(400));
+
+        var reply = engine.sendAsync(Requests.testCase(HttpMethod.GET, "/widgets"),
+                Requests.get(url("/widgets")));
+
+        Thread.sleep(200);
+        assertThat(api.getAllServeEvents()).describedAs("held: nothing has reached the API")
+                .isEmpty();
+        assertThat(reply.get(5, java.util.concurrent.TimeUnit.SECONDS).statusCode()).contains(200);
+        assertThat(api.getAllServeEvents()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("what is held is dropped on request, never reaching the API, while a request not "
+            + "held is sent as usual")
+    void what_is_held_is_dropped() throws Exception {
+        api.stubFor(get(urlEqualTo("/widgets")).willReturn(aResponse().withStatus(200)));
+        engine.holdFor(java.time.Duration.ofHours(1));
+        var held = engine.sendAsync(Requests.testCase(HttpMethod.GET, "/widgets"),
+                Requests.get(url("/widgets")));
+
+        engine.dropWhatIsHeld();
+
+        assertThat(held.get(5, java.util.concurrent.TimeUnit.SECONDS).statusCode()).isEmpty();
+        assertThat(api.getAllServeEvents()).isEmpty();
+
+        OkHttpEngine unheld = new OkHttpEngine();
+        try {
+            unheld.dropWhatIsHeld();
+            assertThat(unheld.send(Requests.testCase(HttpMethod.GET, "/widgets"),
+                    Requests.get(url("/widgets"))).statusCode())
+                    .describedAs("nothing was held, so nothing is dropped").contains(200);
+        } finally {
+            unheld.close();
+        }
+    }
+
+    @Test
+    @DisplayName("a request held when the engine closes never reaches the API, and says so")
+    void a_request_held_when_the_engine_closes_is_never_sent() throws Exception {
+        api.stubFor(get(urlEqualTo("/widgets")).willReturn(aResponse().withStatus(200)));
+        engine.holdFor(java.time.Duration.ofHours(1));
+        var reply = engine.sendAsync(Requests.testCase(HttpMethod.GET, "/widgets"),
+                Requests.get(url("/widgets")));
+
+        engine.close();
+
+        Interaction never = reply.get(5, java.util.concurrent.TimeUnit.SECONDS);
+        assertThat(never.isAnswered()).isFalse();
+        assertThat(never.statusCode()).isEmpty();
+        assertThat(never.outcome().toString())
+                .contains("the run stopped sending before this request went out");
+        assertThat(api.getAllServeEvents()).isEmpty();
+        assertThat(engine.statistics().requestsSent()).isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("an address that is not an address is reported, counted, and nothing is sent")
     void an_unusable_address_is_reported_rather_than_thrown() {
         Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/widgets"),

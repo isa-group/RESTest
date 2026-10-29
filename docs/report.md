@@ -41,7 +41,7 @@ RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/a
 | `<k> of them ask for an API key that was not given (<scheme>, in <where>): --auth <key> gives it` | The document asks for a key and none was given | Those operations will most likely be refused, and how to hand the key over. [Handing over a key or a token](command-line.md#handing-over-a-key-or-a-token) has the forms `--auth` takes |
 | `the document declares an API key it asks for on no operation (<scheme>, in <where>): --auth <key> sends it with <k> of them` | The document declares a key without saying which operations need it | That a key given with `--auth` would go with every operation |
 | `<n> left alone by the plan` | The plan's filter set operations aside | Operations the plan keeps the run away from, on purpose: [Which operations a run may touch](campaign-format.md#which-operations-a-run-may-touch) |
-| `what it sends depends on the API's own replies, so the seed alone does not repeat this run` | The plan draws on what the API returned, or changes accepted requests, or sends series | Running the same command again makes a similar run rather than the same one. `--store` keeps the run you had. [Getting the seed back](switches.md#getting-the-seed-back) has the files that make a run repeatable from its seed |
+| `what it sends depends on the API's own replies, so the seed alone does not repeat this run` | The plan draws on what the API returned, or changes accepted requests, or sends series, or the run leaves alone what the API asks it to (`schedule.waitWhenToldTo`) | Running the same command again makes a similar run rather than the same one. `--store` keeps the run you had. [Getting the seed back](switches.md#getting-the-seed-back) has the files that make a run repeatable from its seed |
 | `<n> setting(s) are not what RESTest does by default; --print-settings lists them with where each came from` | A setting was changed, by a file, the environment or `--set` — counting those worked out from it, such as the longest wait for a whole request once `engine.readTimeout` is changed | That the run is not configured the way RESTest ships, so that a setting given through an environment variable is not invisible. `report.json` lists every setting under `settings` |
 | `<n> part(s) of the document could not be read:` | Some of the document could not be read | Up to five of the problems, then how many more. An operation a problem was in is tested with what could be read, or, when nothing could be built from it, not tested and named at the end. One whose name the document gives to an operation RESTest reads first is called by its method and path, which costs it nothing else |
 
@@ -84,7 +84,7 @@ some replies could not be checked; report.json names their operations:
 
 | Line | When | What it says |
 |---|---|---|
-| `<n> requests to <m> operations in <time>, <p>% of it idle` | Always | How much was sent, to how many operations, and for how long. *Idle* is the share of that time in which RESTest had no request in flight: time it spent on something other than testing. `, cut short` at the end means the run was stopped from outside before its budget ran out; `, stopped: the API answered 401 to every request of the opening lap` means the API refused the whole opening lap and the run stopped sending there, ending with `5` |
+| `<n> requests to <m> operations in <time>, <p>% of it idle` | Always | How much was sent, to how many operations, and for how long. *Idle* is the share of that time in which RESTest had no request in flight: time it spent on something other than testing. ` (<q>% waiting as the API asked)` after it says how much of that share was the API's asking rather than the tool's: time in which nothing was sent because the API answered 429, or 503 with `Retry-After` ([`toldToWait`](#toldtowait)). `, cut short` at the end means the run was stopped from outside before its budget ran out; `, stopped: the API answered 401 to every request of the opening lap` means the API refused the whole opening lap and the run stopped sending there, ending with `5` |
 | `nothing was tested` | Not one request was sent | In place of everything below. Not the same as `no faults found`: a run that asked the API nothing has no evidence that anything is right |
 | `opening lap: <n> requests in <time>, <k> of <m> operations answered 2xx` | The run began with its first round | Before anything is chosen by chance, every operation is sent once with the request it is most likely to accept. This line says how long that took and how many operations it got a success from; `opening lap, cut short:` means the budget ran out, or the run was stopped, before the round was over. [The first round of a run](campaign-format.md#the-first-round-of-a-run) |
 | `<n> 2xx, <n> 4xx, <n> 5xx, <n> no reply` | Always | How every request ended, by the first digit of the status code; `no reply` when nothing came back. If almost everything was refused (4xx), the requests were the problem rather than the API |
@@ -92,6 +92,7 @@ some replies could not be checked; report.json names their operations:
 | `<n> of them changed one thing in a request the API had accepted` | The plan changes accepted requests | Requests that are an accepted one with exactly one thing broken. [Changing one thing in a request that worked](campaign-format.md#changing-one-thing-in-a-request-that-worked) |
 | `<n> of them were steps of <s> series about a thing the run created: <kind> <n>, …` | The plan sends series | Requests sent as steps of a short series after a creation — delete it and read it again, create it twice — counted by the kind of series. Creations meant to begin one that the API did not accept are counted after a `;`. [Series of requests around a thing the run created](campaign-format.md#series-of-requests-around-a-thing-the-run-created) |
 | `<k> creation(s) meant to begin a series about a thing the run created were not accepted, so no series began` | The plan sends series and none began | The API refused every creation a series would have started from |
+| `told to wait: the whole API <n> times, <time> in all; <operation> <n> times, <time> in all, <k> turns skipped; …` | The API answered 429, or 503 with `Retry-After` | Who the API asked the run to leave alone, how often and for how long: the whole API first, when nothing at all was sent, then up to three operations, each with how many of its turns were skipped while it waited, then how many more. [`toldToWait`](#toldtowait) has every one |
 | `<a> operation(s) answered 500, <b> answered some 5xx` | Some reply was a 5xx | How many *operations* the API fell over on, rather than how many replies: a run spends its whole budget, so one broken operation asked six hundred times is six hundred broken replies. This is the number worth quoting |
 | `no faults found` | Always, when something was sent and nothing was found | The verdict, when it is clean. A run in which nothing at the address answered says it too, and then says why on the error stream and ends with `3`: a run that was answered by nothing has found nothing wrong only because it heard nothing |
 | `<n> errors, on <m> operations:` and two lines per kind | Some fault was an error | How many errors, on how many operations, then each kind as `<count> x <title>  (F<code>)`, with what to look at on the line under it. Errors are what end a run with `1`. [Errors and warnings](faults.md#errors-and-warnings) says which kinds are which |
@@ -168,6 +169,7 @@ throughout:
 | `cutShort` | `true` or `false` | `true` when the run was stopped from outside — Ctrl-C, `kill`, `docker stop` — before its budget ran out. Every number in the file is then what the run found until it was stopped |
 | `verdict` | text | What the run amounts to, in one word: whether it found errors, found none, or could not say. The number the command ends with follows from the same answer |
 | `unauthorized` | object or `null` | When the API answered 401 to every request of the opening lap and the run stopped sending there: when, how many requests that lap sent, and where each key the run held went. `null` for every other run |
+| `toldToWait` | object or `null` | What the API asked the run to leave alone, and for how long: each operation answered 429, or 503 with `Retry-After`, and the waits of the whole API. `null` when `schedule.waitWhenToldTo` is off |
 | `totals` | object | The run in twelve numbers |
 | `operations` | list | Every operation the document describes, with what happened to it and how its requests ended |
 | `skippedOperations` | list | Every operation the run could not test, each with the reason |
@@ -278,6 +280,52 @@ the API did not stop. From a run handed a key the API would not take:
 |---|---|---|
 | `in` | text | Which part of a request the key went in, by the words [`keysNotGiven[].in`](#keysnotgivenin) lists |
 | `name` | text | The name it went under there |
+
+### `toldToWait`
+
+What the API asked the run to leave alone. An API asked too much answers 429, "too many requests",
+or 503 with a `Retry-After` header saying when to ask again. The operation whose request drew it is
+then sent nothing for as long as the header says — or, when it says nothing that can be read, for
+`schedule.firstGuessedWait`, doubled each time the same operation is told again up to
+`schedule.longestGuessedWait` — while every other operation goes on. When a second operation is told
+to wait while another still waits, the limit is the whole API's, and nothing at all is sent until its
+wait is over: what had been handed to the part that sends is held back too, and it then starts again
+from one request at a time; what it still holds when the run stops sending is never sent, and is
+counted under `noReply`. The request that drew the answer is not sent again; the operation's next
+turn after the wait builds a new one. Every length is counted up to the moment the run stopped
+sending, and a wait that began after it is not counted. `null` when `schedule.waitWhenToldTo` is off.
+From a minute's run of an API whose one operation had spent its quota for the hour, and answered
+429 without saying for how long:
+
+```json
+"toldToWait": {"idle": "PT0S", "wholeApi": {"times": 0, "waited": "PT0S"}, "operations": [{"operation": "createTeleTan", "times": 12, "stated": 0, "waited": "PT41S", "turnsSkipped": 57728}]}
+```
+
+A run that waits when told to and never was writes
+`{"idle": "PT0S", "wholeApi": {"times": 0, "waited": "PT0S"}, "operations": []}`.
+
+| Key | Value | What it says |
+|---|---|---|
+| `idle` | length of time | How much of the run's idle time — the [engine's](#engine) `idle` — came while it waited as the API asked: the whole API waiting, or every operation it could send waiting. The rest is the tool's own |
+| `wholeApi` | object | How often and how long nothing at all was sent |
+| `operations` | list | Each operation that was told to wait, in the order they first were |
+
+### `toldToWait.wholeApi`
+
+| Key | Value | What it says |
+|---|---|---|
+| `times` | number | How many waits of the whole API began |
+| `waited` | length of time | How long they lasted, in all |
+
+### `toldToWait.operations[]`
+
+| Key | Value | What it says |
+|---|---|---|
+| `operation` | text | The operation, by the name the document gives it |
+| `times` | number | How many waits it was given. The refusals of requests already on their way when a wait began begin no other |
+| `stated` | number | How many of them lasted as long as the API said in `Retry-After`; the others were guessed |
+| `waited` | length of time | How long they lasted, in all |
+| `turnsSkipped` | number | How many times its turn came while it waited, and nothing was sent. A turn that came while the whole API waited is not counted here: nothing at all was sent then |
 
 ### `totals`
 
@@ -523,7 +571,7 @@ line. [The settings](settings.md) lists them.
 |---|---|---|
 | `requestsSent` | number | Requests that went out |
 | `wallClock` | length of time | How long the engine was running |
-| `idle` | length of time | How much of that it had no request in flight |
+| `idle` | length of time | How much of that it had no request in flight. Part of it may be quiet the API asked for, which [`toldToWait.idle`](#toldtowait) says |
 | `idleFraction` | number | The same as a share, from `0` to `1`, to three decimals |
 | `meanResponseTime` | length of time | How long the API took to answer, on average |
 | `peakConcurrency` | number | The most requests that were in flight at once |

@@ -244,6 +244,22 @@ public final class Scheduler {
         }
     }
 
+    /**
+     * Tells the scheduler that a step it proposed will not be sent, and nothing was built for it:
+     * the API asked for its operation to be left alone for a while.
+     *
+     * <p>A step of a series is then handed back as one that could not be built, so that the series
+     * goes on without it or ends, and never repeats a step that never went out. An ordinary request
+     * needs nothing: the next turn of its operation builds a new one.
+     *
+     * @param send the step that will not be sent
+     */
+    public void notSent(Step.Send send) {
+        Objects.requireNonNull(send, "send");
+        send.continuation().ifPresent(continuation ->
+                ready.add(new Ready.NotBuilt(continuation.next)));
+    }
+
     /** A series ready for whatever comes after a step. */
     private sealed interface Ready {
 

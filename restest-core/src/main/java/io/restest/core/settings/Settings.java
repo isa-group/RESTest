@@ -161,7 +161,12 @@ public record Settings(
                 typed.lengthOfTime("schedule.interruptLookingGrace",
                         DEFAULTS.schedule.interruptLookingGrace()),
                 typed.yesOrNo("schedule.stopWhenTheOpeningLapIsRefused",
-                        DEFAULTS.schedule.stopWhenTheOpeningLapIsRefused())));
+                        DEFAULTS.schedule.stopWhenTheOpeningLapIsRefused()),
+                typed.yesOrNo("schedule.waitWhenToldTo", DEFAULTS.schedule.waitWhenToldTo()),
+                typed.lengthOfTime("schedule.firstGuessedWait",
+                        DEFAULTS.schedule.firstGuessedWait()),
+                typed.lengthOfTime("schedule.longestGuessedWait",
+                        DEFAULTS.schedule.longestGuessedWait())));
         GenerationSettings generation = group("generation", () -> new GenerationSettings(
                 typed.wholeNumber("generation.optionalNestingDepth",
                         DEFAULTS.generation.optionalNestingDepth()),
@@ -395,6 +400,10 @@ public record Settings(
                     LengthOfTime.written(schedule.openingLapPatience());
             case "schedule.stopWhenTheOpeningLapIsRefused" ->
                     String.valueOf(schedule.stopWhenTheOpeningLapIsRefused());
+            case "schedule.waitWhenToldTo" -> String.valueOf(schedule.waitWhenToldTo());
+            case "schedule.firstGuessedWait" -> LengthOfTime.written(schedule.firstGuessedWait());
+            case "schedule.longestGuessedWait" ->
+                    LengthOfTime.written(schedule.longestGuessedWait());
             case "schedule.stopAfterRequests" -> String.valueOf(schedule.stopAfterRequests());
             case "schedule.requestsBeforeStopping" ->
                     String.valueOf(schedule.requestsBeforeStopping());

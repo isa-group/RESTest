@@ -1,6 +1,6 @@
 # ADR-0025: The numbers somebody decided live in one settings object, layered from four sources, and never in the plan
 
-**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22, 25 and 28 October 2026
+**Status:** Accepted, amended at M11.1, M9.1, M10.1, M10.3, M8.5, M11.2, M12.1b, M9.5, M9.6, M9.7, M10.4-M10.7 and M9.8-M9.9, at 2.1, and on 1, 12, 13, 14, 15, 17, 22, 25, 28 and 29 October 2026
 **Date:** 2026-09-22
 
 ## Context
@@ -797,3 +797,19 @@ also decides when a run ends rather than what it sends
 switches that are not levers, and the page of switches has a file that turns it off, since it is on
 by default. The rule has no number to put beside it: the stretch it judges is the opening lap, and
 401 is a fact of HTTP rather than a choice. One hundred and two settings in nine groups.
+
+## Amendment (29 October 2026): a switch and two numbers for an API that asks the run to wait
+
+`schedule.waitWhenToldTo`, on by default, with `schedule.firstGuessedWait` (`1s`) and
+`schedule.longestGuessedWait` (`1m`) beside it ([ADR-0042](0042-wait-when-told-to-wait.md)). An
+operation the API answers 429, or 503 with `Retry-After`, is left alone for as long as the API says,
+or, when it does not say, for the first of the two numbers, doubled each time it is told again up to
+the second; the whole API once a second operation is told while another waits. They are in
+`schedule.*`, beside the stop of 28 October, because the loop that decides what to send decides the
+wait; `engine.*` holds what the HTTP engine itself reads. The switch is listed among the switches that
+are not levers: it is a courtesy to the API rather than a way of finding more, so it plays no part in
+an ablation, and it changes what is sent only against an API that asks to wait. Since which turns it
+skips depends on when the API asked, the file for getting the seed back turns it off, and a run with
+it on says under its seed that the seed alone does not repeat it. A first wait of no time is refused,
+since an API that does not say how long would be asked again at once, and so is a ceiling below the
+first wait. One hundred and five settings in nine groups.

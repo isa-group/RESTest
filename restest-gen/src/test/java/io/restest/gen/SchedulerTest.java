@@ -112,7 +112,7 @@ class SchedulerTest {
     void no_patience_means_no_waiting() {
         ScheduleSettings impatient = new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                 Duration.ofSeconds(2), true, Duration.ZERO, false, 1_000, Duration.ofSeconds(5),
-                Duration.ofSeconds(1), true);
+                Duration.ofSeconds(1), true, true, Duration.ofSeconds(1), Duration.ofSeconds(60));
         Scheduler scheduler = scheduler(PETS, impatient, Duration.ofMinutes(1));
 
         assertThat(steps(scheduler, 5)).containsExactly("send listPets (first round)",
@@ -293,6 +293,34 @@ class SchedulerTest {
     }
 
     @Test
+    @DisplayName("a step of a series that will not be sent is handed back unbuilt, and is never "
+            + "repeated by a step after it")
+    void a_step_not_sent_is_handed_back_unbuilt() {
+        Scheduler scheduler = aSeriesScheduler(Duration.ofMinutes(1));
+        scheduler.next();
+        Scheduler.Step.Send creation = (Scheduler.Step.Send) scheduler.next();
+        TestCase first = scheduler.testCaseFor(creation).orElseThrow();
+        scheduler.heard(first, Optional.of(created(first)));
+        Scheduler.Step.Send again = (Scheduler.Step.Send) scheduler.next();
+        assertThat(again.continuation()).isPresent();
+
+        scheduler.notSent(again);
+
+        assertThat(steps(scheduler, 2)).containsExactly("send listPets", "end of a round");
+    }
+
+    @Test
+    @DisplayName("an ordinary request that will not be sent changes nothing about what comes next")
+    void an_ordinary_request_not_sent_changes_nothing() {
+        Scheduler scheduler = aSeriesScheduler(Duration.ofMinutes(1));
+        Scheduler.Step.Send read = (Scheduler.Step.Send) scheduler.next();
+
+        scheduler.notSent(read);
+
+        assertThat(steps(scheduler, 1)).containsExactly("send addPet");
+    }
+
+    @Test
     @DisplayName("a run with nothing it can attempt is refused rather than going round nothing")
     void nothing_to_attempt_is_not_a_run() {
         ApiModel empty = ApiModel.of("Nothing", "1.0", List.of());
@@ -366,6 +394,6 @@ class SchedulerTest {
     private static ScheduleSettings withoutAFirstRound() {
         return new ScheduleSettings(2, 1_000, Duration.ofSeconds(10),
                 Duration.ofSeconds(2), false, Duration.ofSeconds(2), false, 1_000,
-                Duration.ofSeconds(5), Duration.ofSeconds(1), true);
+                Duration.ofSeconds(5), Duration.ofSeconds(1), true, true, Duration.ofSeconds(1), Duration.ofSeconds(60));
     }
 }

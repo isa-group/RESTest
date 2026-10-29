@@ -101,6 +101,16 @@ public final class CredentialedEngine implements HttpEngine {
         return inner.statistics();
     }
 
+    @Override
+    public void holdFor(Duration howLong) {
+        inner.holdFor(howLong);
+    }
+
+    @Override
+    public void dropWhatIsHeld() {
+        inner.dropWhatIsHeld();
+    }
+
     /**
      * How many exchanges had to be kept without their details because the keys could not be picked
      * out of them. It should always be nought, and a run says so if it is not.

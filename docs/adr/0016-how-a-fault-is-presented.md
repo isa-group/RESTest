@@ -1,6 +1,6 @@
 # ADR-0016: A fault is identified by its catalogue number, described in our own words, and classified twice
 
-**Status:** Accepted, amended at M1.10 and on 10, 12, 15, 17 and 22 October 2026
+**Status:** Accepted, amended at M1.10 and on 10, 12, 15, 17, 22 and 29 October 2026
 **Date:** 2026-09-15
 
 ## Context
@@ -467,3 +467,14 @@ It is what decides how a run ends, and every row of `report.json` that counts fa
 ([ADR-0037](0037-errors-and-warnings.md)). A reply that is both an error and a warning — a request
 broken on purpose, accepted with a status code the document does not declare — is one of each, as it
 was two faults before.
+
+## Amendment (29 October 2026): a reply that asks the run to wait, now that it waits
+
+The amendment of 15 October said a 503 that carries `Retry-After` is reported like any other, and
+that until RESTest waited when told to, a 503 its own pace provoked would be reported too. It now
+waits ([ADR-0042](0042-wait-when-told-to-wait.md)): the operation that drew a 429, or a 503 with
+`Retry-After`, is left alone for as long as the API asks. Nothing changes in how such a reply is
+reported. A 503 is still `F121`, and a 429 the document does not declare still `F920`: the API did
+answer it, and the document did leave it out. There are few such replies once the run waits — one
+for each wait, and those already on their way when it began — rather than one for every request the
+run's pace provoked.

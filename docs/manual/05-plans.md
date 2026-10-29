@@ -98,10 +98,11 @@ others.
 ### A run that the seed repeats
 
 A run prints its **seed**, the number every choice it makes by chance comes from. `--seed` with the
-same number makes the same choices. But three things in the plan RESTest carries make a run depend on
-the API's answers as well — the `observed` source, the changes to accepted requests and the series —
-so with them the seed makes a similar run rather than the same one. [Getting the seed
-back](../switches.md#getting-the-seed-back) has the plan and the settings that leave all three out,
+same number makes the same choices. But four things make a run depend on the API's answers as well —
+the `observed` source, the changes to accepted requests and the series, in the plan RESTest carries,
+and leaving alone an operation the API asks to be left alone (`schedule.waitWhenToldTo`) — so with
+them the seed makes a similar run rather than the same one. [Getting the seed
+back](../switches.md#getting-the-seed-back) has the plan and the settings that leave all four out,
 and with them `--seed` repeats a run exactly. `--store`, which keeps the run you actually had, is
 usually the better record.
 

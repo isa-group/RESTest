@@ -211,6 +211,94 @@ as a fault, `F121`, which a run whose pace is to blame can stop with
 `--set checks.noReplyInTime=false` stops. An API that is simply slow gets longer to answer with
 `--set engine.readTimeout=2m`. [Chapter 7](07-settings.md) has more.
 
+## The API asks the run to wait
+
+The summary's first line gives, after the idle share, how much of it was `waiting as the API asked`,
+and a line under the replies starts `told to wait:`. The API answered some requests with `429 Too
+Many Requests`, or with `503` and a `Retry-After` header, which is how an API asks a caller to slow
+down. RESTest then sends nothing to that operation for as long as the header says, or, when it says
+nothing, for a second that doubles each time the operation is told again, up to a minute; the other
+operations go on. When a second operation is told to wait while another still waits, the limit is
+the whole API's, and nothing at all is sent until the wait is over. The pet shop of [chapter
+8](08-an-api-that-asks-for-a-key.md), run for 20 seconds against a stand-in that lets 20 requests a
+second through and asks for a second's quiet after that (below),
+
+```bash
+restest run https://petstore3.swagger.io/api/v3/openapi.json --url http://localhost:8429 --budget 20s
+```
+
+begins its summary like this:
+
+```
+541 requests to 19 operations in 20.0s, 99% of it idle (91% waiting as the API asked)
+  opening lap: 19 requests in 181ms, 19 of 19 operations answered 2xx
+  381 2xx, 148 4xx, 12 no reply
+  46 of them were pushing at the API with values nobody sensible would send, which accounts for some of the 148 refusals above
+  86 of them changed one thing in a request the API had accepted
+  38 of them were steps of 23 series about a thing the run created: createTwice 30, putTwice 2, deleteTwice 3, readAfterDelete 2, safeGet 1; 8 creation(s) meant to begin one were not accepted
+  told to wait: the whole API 19 times, 18.1s in all; addPet 8 times, 7.1s in all, 0 turns skipped; findPetsByStatus 7 times, 6.1s in all, 0 turns skipped; findPetsByTags 7 times, 7.0s in all, 0 turns skipped; and 16 more; the run's report names every one
+```
+
+Nearly all of the run was spent waiting, as the API asked, and the idle share says so: the brackets
+are the API's doing, not the tool's. The `12 no reply` are requests RESTest had already handed over
+when the last wait began, held back and never sent once the run's time was up. `report.json` names every operation under
+[`toldToWait`](../report.md#toldtowait). Each 429 the document does not declare is still a warning,
+*Undeclared status code* (`F920`), and each 503 an error (`F121`); there are few of them once the run
+waits. Against a quota that lasts longer than the run — so many creations an hour — that operation is
+simply tried again once a minute while the others are tested. To send to such an API as RESTest did
+before it waited, turn the waiting off:
+
+```bash
+restest run openapi.yaml --set schedule.waitWhenToldTo=false
+```
+
+The stand-in is a few lines of Java:
+
+```java
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+
+/** Lets 20 requests a second through and asks for a second's quiet after that. */
+public class Limit {
+    private static long second, inThisSecond, quietUntil;
+
+    public static void main(String[] args) throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(8429), 0);
+        server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        server.createContext("/", exchange -> {
+            long now = System.currentTimeMillis();
+            boolean let;
+            synchronized (Limit.class) {
+                if (now / 1000 != second) {
+                    second = now / 1000;
+                    inThisSecond = 0;
+                }
+                let = now >= quietUntil && ++inThisSecond <= 20;
+                if (!let && now >= quietUntil) {
+                    quietUntil = now + 1000;
+                }
+            }
+            if (let) {
+                byte[] body = "[]".getBytes();
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
+            } else {
+                exchange.getResponseHeaders().add("Retry-After", "1");
+                exchange.sendResponseHeaders(429, -1);
+            }
+            exchange.close();
+        });
+        server.start();
+        System.out.println("letting 20 requests a second through at http://localhost:8429");
+    }
+}
+```
+
+Saved as `Limit.java`, `java Limit.java` starts it, and `--url http://localhost:8429` points a run at
+it.
+
 ## The run left data behind
 
 It did: RESTest creates, changes and deletes whatever the document says it can. Point it at a copy

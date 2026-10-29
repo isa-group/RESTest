@@ -122,6 +122,12 @@ schedule:
   openingLapPatience: "2s"    # default
   # whether a run stops sending once the API has answered 401 to every request of its opening lap
   stopWhenTheOpeningLapIsRefused: true # default
+  # whether an operation the API answers 429, or 503 with Retry-After, is left alone for as long as the API asks
+  waitWhenToldTo: true        # default
+  # how long it is left alone the first time the API does not say, doubled each time it is told again
+  firstGuessedWait: "1s"      # default
+  # the longest that doubling goes
+  longestGuessedWait: "1m"    # default
   # whether a run stops once it has sent a set number of requests, before its budget is spent
   stopAfterRequests: false    # default
   # how many requests that is
@@ -414,6 +420,9 @@ spelling `--budget` takes.
 | `openingLap` | `true` | whether a run starts by sending every operation once, the request likeliest to work |
 | `openingLapPatience` | `2s` | how long each step of that opening lap waits for the answers to the one before |
 | `stopWhenTheOpeningLapIsRefused` | `true` | whether a run stops sending once the API has answered 401 to every request of its opening lap |
+| `waitWhenToldTo` | `true` | whether an operation the API answers 429, or 503 with Retry-After, is left alone for as long as the API asks |
+| `firstGuessedWait` | `1s` | how long it is left alone the first time the API does not say, doubled each time it is told again |
+| `longestGuessedWait` | `1m` | the longest that doubling goes |
 | `stopAfterRequests` | `false` | whether a run stops once it has sent a set number of requests, before its budget is spent |
 | `requestsBeforeStopping` | `1000` | how many requests that is |
 | `interruptWritingGrace` | `5s` | how long a run stopped from outside is then given to write what it found |

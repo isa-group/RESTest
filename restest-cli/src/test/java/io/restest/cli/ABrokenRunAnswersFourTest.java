@@ -296,6 +296,14 @@ class ABrokenRunAnswersFourTest {
         }
 
         @Override
+        public void holdFor(Duration howLong) {
+        }
+
+        @Override
+        public void dropWhatIsHeld() {
+        }
+
+        @Override
         public EngineStatistics statistics() {
             return real.statistics();
         }
@@ -342,6 +350,14 @@ class ABrokenRunAnswersFourTest {
                         StatusLine.of(200), List.of(), Optional.empty()),
                         answered.sentAt(), answered.elapsed());
             });
+        }
+
+        @Override
+        public void holdFor(Duration howLong) {
+        }
+
+        @Override
+        public void dropWhatIsHeld() {
         }
 
         @Override

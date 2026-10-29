@@ -19,6 +19,7 @@ import io.restest.core.auth.Place;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
 import io.restest.core.event.Unauthorized;
+import io.restest.core.event.Waited;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
@@ -99,7 +100,9 @@ import java.util.stream.Stream;
  * have can be told from one made with them.
  *
  * <p>It says whether the run was stopped from outside before it finished - with Ctrl-C, say - since
- * every number in it is then what the run found until it was stopped. And it is never half there:
+ * every number in it is then what the run found until it was stopped. It says what the API asked
+ * the run to leave alone, and for how long, so that time the run spent sending nothing because the
+ * API asked is never read as the tool's own slowness. And it is never half there:
  * it is written in full under another name and then given its own, so a file called by the report's
  * name is always a whole report.
  *
@@ -299,6 +302,7 @@ public final class JsonReport implements RunListener {
     private EngineStatistics engine = EngineStatistics.none();
     private boolean cutShort;
     private Optional<Unauthorized> unauthorized = Optional.empty();
+    private Optional<Waited> waited = Optional.empty();
     private JsonValue written;
     private String text;
 
@@ -436,6 +440,7 @@ public final class JsonReport implements RunListener {
                 engine = finished.engine();
                 cutShort = finished.cutShort();
                 unauthorized = finished.unauthorized();
+                waited = finished.waited();
                 finish();
             }
             case RunEvent.TestCasePlanned ignored -> {
@@ -551,6 +556,7 @@ public final class JsonReport implements RunListener {
         report.put("cutShort", JsonValue.of(cutShort));
         report.put("verdict", JsonValue.of(verdict().word()));
         report.put("unauthorized", unauthorizedStop());
+        report.put("toldToWait", toldToWait());
         report.put("totals", totals());
         report.put("operations", operations());
         report.put("skippedOperations", skippedOperations());
@@ -669,6 +675,33 @@ public final class JsonReport implements RunListener {
                             "name", JsonValue.of(place.name())))
                     .toList()));
             return JsonValue.object(row);
+        }).orElse(JsonValue.NULL);
+    }
+
+    /**
+     * What the API asked the run to leave alone, and for how long: how much of the run's idle time
+     * that accounted for, how often and how long nothing at all was sent, and each operation that
+     * was told to wait, in the order they first were. Nothing at all when the run does not wait when
+     * told to; a run that does and never was says so with zeros and no operation.
+     */
+    private JsonValue toldToWait() {
+        return waited.<JsonValue>map(said -> {
+            Map<String, JsonValue> block = new LinkedHashMap<>();
+            block.put("idle", JsonValue.of(said.idle().toString()));
+            block.put("wholeApi", pair("times", JsonValue.of(said.wholeApi().times()),
+                    "waited", JsonValue.of(said.wholeApi().waited().toString())));
+            block.put("operations", JsonValue.array(said.operations().stream()
+                    .map(each -> {
+                        Map<String, JsonValue> row = new LinkedHashMap<>();
+                        row.put("operation", JsonValue.of(each.operation().value()));
+                        row.put("times", JsonValue.of(each.times()));
+                        row.put("stated", JsonValue.of(each.stated()));
+                        row.put("waited", JsonValue.of(each.waited().toString()));
+                        row.put("turnsSkipped", JsonValue.of(each.turnsSkipped()));
+                        return (JsonValue) JsonValue.object(row);
+                    })
+                    .toList()));
+            return JsonValue.object(block);
         }).orElse(JsonValue.NULL);
     }
 

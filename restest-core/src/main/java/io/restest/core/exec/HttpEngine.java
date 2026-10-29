@@ -18,6 +18,7 @@ package io.restest.core.exec;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -78,10 +79,33 @@ public interface HttpEngine extends AutoCloseable {
     EngineStatistics statistics();
 
     /**
+     * Sends nothing more for this long, because the API asked to be left alone.
+     *
+     * <p>Requests already handed over and not yet sent wait until then; those already in flight come
+     * back as usual. Afterwards the engine starts again from the fewest requests in flight it allows
+     * and climbs as it always does, since the API that asked has just shown it cannot take what it
+     * was being sent. A hold that ends sooner than one already in force changes nothing.
+     *
+     * @param howLong how long to send nothing, from now
+     */
+    void holdFor(Duration howLong);
+
+    /**
+     * Never sends what it is holding back because the API asked to be left alone: each such request
+     * comes back at once as one that never went out.
+     *
+     * <p>For when a run stops sending while the API still asks for quiet - its time is up, or it
+     * was stopped - so that nothing reaches the API after that. Requests not held are untouched,
+     * and so is a hold that has already ended.
+     */
+    void dropWhatIsHeld();
+
+    /**
      * Releases the connections and threads the engine is holding.
      *
      * <p>Closing does not throw, and closing twice is harmless. Requests still in flight are given
-     * no special treatment: a caller that wants their answers waits for them first.
+     * no special treatment: a caller that wants their answers waits for them first. A request handed
+     * over and still waiting to be sent is not sent: it comes back as one that never went out.
      */
     @Override
     void close();
