@@ -526,7 +526,7 @@ those, `F920` and `F921`.
 | `shapeUnusable` | shape | The document gives a shape RESTest cannot use: one pointing at another file, at something the document does not define, or round in a circle, one with a pattern the checker cannot read, or a document that could not be kept to check against |
 | `keyHidden` | shape | A key handed over with `--auth` came back in the body and was hidden there, and the body could then no longer be read as JSON, so what is wrong with it may be the hiding's doing |
 | `noReplyDeclared` | status code | The document declares no reply at all for the operation, so it promised none |
-| `readInPart` | status code, content type | RESTest could not read all the document says about the operation — a reply pointing at a shape it never defines, say — and what came back is not among what it could read, so it may be declared in the part it could not. What it could read is held to as on any other operation |
+| `readInPart` | status code, content type | RESTest could not read a reply the document declares for the operation — one given as a reference to a reply it never defines, say — and what came back is not among what it could read, so it may be declared in the reply it could not. What it could read is held to as on any other operation |
 | `noContentTypeDeclared` | content type | The document declares the status code with no content type, describing that reply only in words |
 
 ### `dictionaries`

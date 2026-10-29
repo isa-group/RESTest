@@ -83,10 +83,10 @@ class UndeclaredContentTypeOracleTest {
     private static final ApiModel API = ApiModel.of("Pets", "1.0.0",
                     List.of(ADD_PET, LIST_OWNERS, LIST_VETS, LIST_VISITS, LIST_CLINICS,
                             LIST_KENNELS))
-            .withIssues(List.of(SpecificationIssue.degraded("paths./visits.get", LIST_VISITS.id(),
-                    "the response '400' could not be represented"),
-                    SpecificationIssue.degraded("paths./kennels.get", LIST_KENNELS.id(),
-                            "the response '200' could not be represented"),
+            .withIssues(List.of(SpecificationIssue.degraded("paths./visits.get.responses.400",
+                    LIST_VISITS.id(), "the response '400' could not be represented"),
+                    SpecificationIssue.degraded("paths./kennels.get.responses.200",
+                            LIST_KENNELS.id(), "the response '200' could not be represented"),
                     SpecificationIssue.renamed("paths./clinics.get", LIST_CLINICS.id(),
                             "renamed to stay unique")));
 

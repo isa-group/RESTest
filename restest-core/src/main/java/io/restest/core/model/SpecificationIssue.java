@@ -37,7 +37,9 @@ import java.util.Optional;
  * about each one, right next to it.
  *
  * @param location where in the document the problem is, written the way the document is navigated:
- *     {@code paths./pets.get.parameters[2]}. Precise enough to open the file and look
+ *     {@code paths./pets.get.parameters[2]}. Precise enough to open the file and look. A reply that
+ *     could not be read at all is located at the reply itself, {@code paths./pets.get.responses.404},
+ *     and nothing else is: that is how {@link ApiModel#readInPart} tells it apart
  * @param message what could not be used and why, in a sentence a reader of the report can act on
  * @param operation the operation it concerns, absent when the problem is the document as a whole
  * @param effect what it cost us
@@ -97,7 +99,11 @@ public record SpecificationIssue(
         return about(location, operation, message, Effect.OPERATION_SKIPPED);
     }
 
-    /** An operation being tested with less than the document says. */
+    /**
+     * An operation being tested with less than the document says. When what was set aside is one of
+     * its replies, whole, the location is that reply's, {@code paths./pets.get.responses.404}; for
+     * anything else, a part of a reply included, it is somewhere else.
+     */
     public static SpecificationIssue degraded(String location, OperationId operation,
             String message) {
         return about(location, operation, message, Effect.DEGRADED);

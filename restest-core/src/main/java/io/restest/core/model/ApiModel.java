@@ -69,6 +69,12 @@ public record ApiModel(
         Map<String, SecurityScheme> securitySchemes,
         Optional<SecurityRequirement> security) {
 
+    /**
+     * What comes before the status code in the location of one of an operation's replies, written
+     * the way a {@link SpecificationIssue} writes one: {@code paths./pets.get.responses.404}.
+     */
+    private static final String A_REPLY = ".responses.";
+
     public ApiModel {
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(version, "version");
@@ -170,21 +176,34 @@ public record ApiModel(
     }
 
     /**
-     * Whether the document says something about this operation that could not be read, though the
-     * operation itself could: a reply pointing at a shape the document never defines, say.
+     * Whether a reply the document declares for this operation could not be read, though the
+     * operation itself could: a reply given as a reference to one the document never defines, say.
      *
-     * <p>Such an operation is tested with what could be read. Anything that would judge it by what
-     * the document leaves out has to know, since what could not be read may be what it is looking
-     * for. An operation that only had to be given another name, because the document gives its name
-     * to another operation too, was read whole, and is not one of these.
+     * <p>Such an operation is tested with what could be read. Anything that would judge a reply by
+     * what the document leaves out - a status code, a content type - has to know, since the reply
+     * that could not be read may be the very one that declares it. Nothing else set aside about an
+     * operation hides a reply it declares: not a parameter or a request body of a shape RESTest does
+     * not fully understand, not such a shape inside a reply that was read, and not a name of
+     * RESTest's own, given because the document gives the operation's name to another one too.
      *
      * @param operation the operation, by its identifier
-     * @return whether reading it set something aside
+     * @return whether reading it set aside a reply it declares
      */
     public boolean readInPart(OperationId operation) {
         Objects.requireNonNull(operation, "operation");
         return issues.stream().anyMatch(issue -> issue.effect() == SpecificationIssue.Effect.DEGRADED
-                && issue.operation().filter(operation::equals).isPresent());
+                && issue.operation().filter(operation::equals).isPresent()
+                && atAReply(issue.location()));
+    }
+
+    /**
+     * Whether a location is one of an operation's replies itself, and not a place inside one such
+     * as {@code paths./pets.get.responses.404.headers.X-Rate}: a status code, which holds no dot,
+     * ends it.
+     */
+    private static boolean atAReply(String location) {
+        int at = location.lastIndexOf(A_REPLY);
+        return at >= 0 && location.indexOf('.', at + A_REPLY.length()) < 0;
     }
 
     /** Every operation using the given method, in document order. */

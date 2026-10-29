@@ -267,19 +267,25 @@ class ApiModelTest {
     }
 
     @Test
-    @DisplayName("an operation is read in part only when something about it was set aside and the "
+    @DisplayName("an operation is read in part only when a reply it declares was set aside and the "
             + "operation kept, not when it was skipped whole, only given another name because the "
             + "document gives its name to another operation too, only rid of something no request "
-            + "could carry, or the issue was the document's")
+            + "could carry, set aside something other than a reply, or the issue was the document's")
     void an_operation_read_in_part() {
         OperationId listPets = OperationId.of("GET /pets");
         OperationId deletePet = OperationId.of("deletePet");
         OperationId listCats = OperationId.of("GET /cats");
         OperationId listOwners = OperationId.of("GET /owners");
+        OperationId addPet = OperationId.of("addPet");
         ApiModel api = ApiModel.of("Pets", "1.0", List.of()).withIssues(List.of(
                 SpecificationIssue.renamed("paths./pets.get", listPets, "renamed to stay unique"),
-                SpecificationIssue.degraded("paths./pets.get", listPets,
+                SpecificationIssue.degraded("paths./pets.get.responses.404", listPets,
                         "the response '404' is a reference that does not resolve"),
+                SpecificationIssue.degraded("paths./pets.post", addPet,
+                        "this operation's data includes a shape RESTest does not fully understand "
+                                + "yet"),
+                SpecificationIssue.degraded("paths./pets.post.responses.201.headers.Location",
+                        addPet, "the header 'Location' is a reference that does not resolve"),
                 SpecificationIssue.skipped("paths./pets/{id}.delete", deletePet,
                         "the schema does not resolve"),
                 SpecificationIssue.renamed("paths./cats.get", listCats, "renamed to stay unique"),
@@ -294,6 +300,11 @@ class ApiModelTest {
         assertThat(api.readInPart(listCats)).isFalse();
         assertThat(api.readInPart(listOwners))
                 .describedAs("what no request could carry was never going to be judged")
+                .isFalse();
+        assertThat(api.readInPart(addPet))
+                .describedAs("a shape it could not read, in a request or inside a reply it did "
+                        + "read, and a part of a reply it could not read, hide no reply it "
+                        + "declares")
                 .isFalse();
         assertThat(api.readInPart(OperationId.of("getPet"))).isFalse();
     }

@@ -513,17 +513,23 @@ final class OperationConverter {
         }
         List<ResponseModel> converted = new ArrayList<>();
         responses.forEach((status, response) -> {
+            // A reply that cannot be read is said of the reply itself, not of the operation: that
+            // is how the model tells it from anything else set aside, which leaves every reply the
+            // operation declares where the checks of a status code and a content type can see it.
+            String reply = location + ".responses." + status;
             boolean wasReference = response != null && response.get$ref() != null;
             ApiResponse resolved = resolveResponse(response, components);
             if (resolved == null) {
                 if (wasReference) {
-                    issues.add(SpecificationIssue.degraded(location, operationId, "the response '"
+                    issues.add(SpecificationIssue.degraded(reply, operationId, "the response '"
                             + status + "' is a reference that does not resolve to anything the "
                             + "document declares"));
                 }
                 return;
             }
             Map<String, CanonicalSchema> content = convertContent(resolved.getContent(), components);
+            // A header that cannot be read leaves the reply's status code and content types where
+            // the checks can see them, so it is not said of the reply as a whole.
             Map<String, HeaderModel> headers = convertHeaders(resolved.getHeaders(), components,
                     operationId, location, issues);
             try {
@@ -532,7 +538,7 @@ final class OperationConverter {
             } catch (IllegalArgumentException e) {
                 // A malformed response - most often an unusable status key - costs only itself: the
                 // operation is still testable against whatever it does answer correctly.
-                issues.add(SpecificationIssue.degraded(location, operationId,
+                issues.add(SpecificationIssue.degraded(reply, operationId,
                         "the response '" + status + "' could not be represented: " + message(e)));
             }
         });

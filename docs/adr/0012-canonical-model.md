@@ -1,6 +1,6 @@
 # ADR-0012: The canonical model is immutable records and sealed types, and says so when it cannot represent something
 
-**Status:** Accepted, amended at M1.8, M2.1a and M2.1b, and on 17 and 26 October 2026
+**Status:** Accepted, amended at M1.8, M2.1a and M2.1b, and on 17, 26 and 29 October 2026
 **Date:** 2026-09-12
 
 ## Context
@@ -144,6 +144,51 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
   detected somewhere first.
 
 ---
+
+## Amendment (29 October 2026): only a reply that could not be read makes an operation read in part
+
+**Date:** 2026-10-29
+
+**`ApiModel.readInPart` counts a `DEGRADED` issue only when it is about one of the operation's
+replies, whole, and the reader says which ones are by where it puts them: a reply it cannot read is
+located at the reply itself, `paths./pets.get.responses.404`, rather than at the operation.** The
+checks of a status code and of a content type the document does not declare leave alone an
+operation read in part, since a reply the document declares and RESTest could not read would
+otherwise look undeclared. Until now every `DEGRADED` issue counted, and most hide no reply: a parameter, a request
+body or the body of a reply built from a shape RESTest does not fully understand — a
+`discriminator`, a shape the document never defines — is read with less than the document holds,
+but every status code and content type the operation declares is still read. Such an operation lost
+both checks with nothing missing from its replies. Of the 3,627 operations in the 98 documents read
+for the amendment of 26 October, 378, in 12 documents, counted as read in part; 4 do now, all in
+catwatch, which declares a reply under the status code `0`. On ohsome-api 126 of 134 operations were
+left alone, and on jasper 59 of 61.
+
+**Where the issue is, rather than what it cost**, because the two kinds cost the same: the operation
+is tested with less than the document holds, which is what `DEGRADED` says. Three other answers
+were weighed:
+
+- **A sixth effect, for a reply that could not be read.** It would say two things in one field, the
+  cost and the place, and it would change the word `report.json` has written since 2.2.0 for the
+  very issues the two checks were built around.
+- **A field on the issue naming the part of the operation it is about.** The location already says
+  where an issue is, which is what it is for, and the field would change the constructor of a record
+  `restest-core` publishes, as the amendment of 17 October declined to.
+- **Counting whatever is inside a reply too**: a shape not understood in its body, a header given as
+  a reference that leads nowhere. Neither hides a status code or a content type, which is all the
+  two checks look for; the check of a body against its shape has a reason of its own for a shape it
+  cannot use, `shapeUnusable`.
+
+**A location counts only when it is a reply itself**: what follows its last `.responses.` is a
+status code, which holds no dot. An issue placed later inside a reply — a header's, at
+`…responses.200.headers.X-Rate` — then does not count, and `SpecificationIssue` says where a reply
+that could not be read goes, for whoever else writes issues.
+
+**What changes in a run**: those operations are held to the status codes and content types they
+declare, and a reply they do not declare is reported as on any other operation; with
+`checks.failOnWarnings` on, such a run can now end with `1`. The screen, `documentIssues` in
+`report.json` and the page give a reply that could not be read its own location, and the words for
+`readInPart` on the screen, in `notChecked[].why` and on the page say that a reply the document
+declares could not be read.
 
 ## Amendment (26 October 2026): what no request can carry is left out, and said
 

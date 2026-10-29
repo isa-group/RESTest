@@ -41,11 +41,11 @@ import java.util.Optional;
  * </ul>
  *
  * <p>None of these is a reply a rule could not judge: there was nothing for it to judge. An
- * operation RESTest could read only in part - a reply pointing at a shape that does not exist, say -
- * is different, and each rule deals with it itself: what the part it read declares can still be
- * held to, while what looks undeclared may be declared in the part it could not read. An operation
- * RESTest only had to give another name, because the document gives its name to another operation
- * too, was read whole and is held to it like any other.
+ * operation one of whose replies RESTest could not read - one given as a reference to a reply the
+ * document never defines, say - is different, and each rule deals with it itself: what the replies
+ * it read declare can still be held to, while what looks undeclared may be declared in the reply it
+ * could not read. An operation RESTest only had to give another name, because the document gives
+ * its name to another operation too, was read whole and is held to it like any other.
  */
 final class HeldToTheDocument {
 

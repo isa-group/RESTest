@@ -58,6 +58,11 @@ import org.junit.jupiter.api.io.TempDir;
  * whatever it is sent: nothing is broken on purpose in a request to it, since the identifier is the
  * only thing such a request could have changed. The other answers 404, which it does not declare,
  * and is reported: having nothing left out that a request could carry, it is held to its document.
+ *
+ * <p>The fourth document builds a parameter of one operation, and the body of a reply of another,
+ * from a shape it never defines. RESTest says so before the run, and both operations are still held
+ * to the replies they declare, since every one of those was read: the 404 neither declares is
+ * reported.
  */
 class AReplyUnreadIsNotUndeclaredTest {
 
@@ -149,6 +154,38 @@ class AReplyUnreadIsNotUndeclaredTest {
                       description: the profile
             """;
 
+    /** A shape the document never defines, in a request of one operation and a reply of another. */
+    private static final String A_SHAPE_NEVER_DEFINED = """
+            openapi: 3.0.3
+            info:
+              title: Night animals
+              version: "1.0"
+            paths:
+              /moths:
+                get:
+                  operationId: listMoths
+                  parameters:
+                    - name: kind
+                      in: query
+                      schema:
+                        $ref: '#/components/schemas/NoSuchShape'
+                  responses:
+                    "200":
+                      description: every moth
+              /larks:
+                get:
+                  operationId: listLarks
+                  responses:
+                    "200":
+                      description: every lark
+                      content:
+                        application/json:
+                          schema:
+                            $ref: '#/components/schemas/NoSuchShape'
+            components:
+              schemas: {}
+            """;
+
     private static WireMockServer api;
 
     @BeforeAll
@@ -203,12 +240,37 @@ class AReplyUnreadIsNotUndeclaredTest {
                 .describedAs("what RESTest could not read, and the new names, are said before the "
                         + "run")
                 .contains(
-                        "paths./bats.get: the response '404' is a reference that does not resolve",
+                        "paths./bats.get.responses.404: the response '404' is a reference that "
+                                + "does not resolve",
                         "paths./bats.get: another operation is already called 'listOwls'; "
                                 + "renamed 'GET /bats' to stay unique",
                         "renamed 'GET /moths' to stay unique");
         assertThat(codesIn(report)).containsExactly(920);
         assertThat(operationsWith(920, report)).containsExactlyInAnyOrder("listOwls", "GET /moths");
+    }
+
+    @Test
+    @DisplayName("a shape RESTest cannot read, in a request or inside a reply it read, hides no "
+            + "reply the document declares, so a 404 it does not declare is reported")
+    void a_shape_it_cannot_read_hides_no_reply(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
+
+        int answer = ARun.run(A_SHAPE_NEVER_DEFINED, api.baseUrl(), directory, screen);
+
+        JsonValue.JsonObject report = report(directory.resolve("out"));
+        assertThat(answer)
+                .describedAs("an undeclared status code is a warning, which ends no run with 1 "
+                        + "unless asked; the run said:%n%s", screen)
+                .isZero();
+        assertThat(screen.toString())
+                .describedAs("what RESTest could not read is said before the run")
+                .contains("paths./moths.get: this operation's data includes a shape RESTest does "
+                                + "not fully understand yet",
+                        "paths./larks.get: this operation's data includes a shape RESTest does "
+                                + "not fully understand yet");
+        assertThat(codesIn(report)).containsExactly(920);
+        assertThat(operationsWith(920, report))
+                .containsExactlyInAnyOrder("listMoths", "listLarks");
     }
 
     @Test
