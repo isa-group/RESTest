@@ -198,8 +198,8 @@ operation of either waited.
 
 ## Alternatives considered
 
-- **Every request to the API waits, at the first 429.** This is what the plan's row first said, and
-  what every related tool that waits does. Against both APIs that answer
+- **Every request to the API waits, at the first 429.** This is what was first proposed, and what
+  every related tool that waits does. Against both APIs that answer
   429 it gives the table's first column.
 - **Every 503 waits, as a 429 does, with or without `Retry-After`.** A 503 says the API cannot answer
   now, most often because something behind it broke, while a 429 says the caller is going too fast.
@@ -207,7 +207,7 @@ operation of either waited.
   broken operations answer 503 together, so the whole API would wait, and its 4,807 requests and
   1,674 replies of 2xx would fall to 159 and 52; commafeed would send 459 fewer requests to the one
   operation that answers 503 when it cannot read the feed it was given. Those 503s are faults to
-  find, not requests to slow down. Kept as the plan's row said, and confirmed by the maintainer on
+  find, not requests to slow down. Kept as first proposed, and confirmed by the maintainer on
   29 October 2026: a 503 waits only when it says for how long.
 - **The guess goes back to the start only on a success, 2xx.** A 400 or a 404 is about the values
   RESTest made up, and an API may check those before it counts its quota, as cwa-verification's
@@ -249,10 +249,10 @@ operation of either waited.
 
 ## Still open
 
-- **13.2b, stopping a run that the whole API keeps asking to wait,** or that it asks to wait past the
+- **Stopping a run that the whole API keeps asking to wait,** or that it asks to wait past the
   end of its budget, with `5` and a verdict word of its own. None of the dataset's APIs asks its whole
   API to wait.
-- **13.2c, the IETF draft's `RateLimit` and `RateLimit-Policy` fields** (draft-ietf-httpapi-
+- **The IETF draft's `RateLimit` and `RateLimit-Policy` fields** (draft-ietf-httpapi-
   ratelimit-headers-11, May 2026), which would let a run stay inside an API's quota rather than find
   it by going over. None of the dataset's APIs sends them.
 - **The page.** It shows the idle share as before. A section for the waits is a change of layout,
