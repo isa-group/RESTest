@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.restest.core.auth.Place;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.Unauthorized;
+import io.restest.core.event.Waited;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Interaction;
 import io.restest.core.json.JsonText;
@@ -89,7 +90,7 @@ class JsonReportTest {
                         + "short, what it amounts to and whether the API stopped it, before any "
                         + "number they qualify")
                 .startsWith("tool", "faultCatalogue", "createdAt", "api", "run", "cutShort",
-                        "verdict", "unauthorized", "totals");
+                        "verdict", "unauthorized", "toldToWait", "totals");
         assertThat(report.members().keySet())
                 .describedAs("every operation, then what could not be tried, read or checked")
                 .containsSubsequence("operations", "skippedOperations", "documentIssues",
@@ -101,6 +102,32 @@ class JsonReportTest {
                 .containsSubsequence("phases", "timeline", "replies");
         assertThat(object(report, "timeline").members().keySet())
                 .containsExactly("startedAt", "budget", "interval", "intervals");
+    }
+
+    @Test
+    @DisplayName("a run told to wait says how much of its idle time that was, how often and how long "
+            + "the whole API waited, and each operation told to wait; one never told says so with "
+            + "zeros; one that does not wait when told says nothing")
+    void a_run_told_to_wait_says_who_and_for_how_long() {
+        assertThat(run(JsonReport.inMemory(fixedClock())).member("toldToWait"))
+                .describedAs("a run that does not wait when told to")
+                .contains(JsonValue.NULL);
+
+        JsonValue.JsonObject never = waitedRun(Waited.never());
+        assertThat(JsonText.write(never.member("toldToWait").orElseThrow()))
+                .isEqualTo("{\"idle\":\"PT0S\",\"wholeApi\":{\"times\":0,\"waited\":\"PT0S\"},"
+                        + "\"operations\":[]}");
+
+        JsonValue.JsonObject told = waitedRun(new Waited(Duration.ofMillis(2500),
+                new Waited.WholeApi(1, Duration.ofSeconds(3)),
+                List.of(new Waited.ForOperation(OperationId.of("POST /tans"), 9, 1,
+                        Duration.ofSeconds(57), 54260))));
+        assertThat(JsonText.write(told.member("toldToWait").orElseThrow()))
+                .isEqualTo("{\"idle\":\"PT2.5S\",\"wholeApi\":{\"times\":1,\"waited\":\"PT3S\"},"
+                        + "\"operations\":[{\"operation\":\"POST /tans\",\"times\":9,\"stated\":1,"
+                        + "\"waited\":\"PT57S\",\"turnsSkipped\":54260}]}");
+        assertThat(text(told, "verdict")).describedAs("waiting changes no verdict")
+                .isEqualTo(text(never, "verdict"));
     }
 
     @Test
@@ -745,6 +772,16 @@ class JsonReportTest {
         report.on(new RunEvent.FaultFound(WHEN, withAnError ? Runs.fellOver() : Runs.wrongShape(1)));
         report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine(), stopped));
         return text((JsonValue.JsonObject) report.document().orElseThrow(), "verdict");
+    }
+
+    /** A run of one answered request that said, at its end, what it waited. */
+    private static JsonValue.JsonObject waitedRun(Waited waited) {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        report.on(Runs.started(WHEN));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine(), false,
+                Optional.empty(), Optional.of(waited)));
+        return (JsonValue.JsonObject) report.document().orElseThrow();
     }
 
     private static JsonValue.JsonObject run(JsonReport report) {

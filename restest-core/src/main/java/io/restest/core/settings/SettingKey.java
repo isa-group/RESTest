@@ -202,6 +202,14 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
             key("schedule", "stopWhenTheOpeningLapIsRefused", SettingKind.YES_OR_NO,
                     "whether a run stops sending once the API has answered 401 to every request "
                             + "of its opening lap"),
+            key("schedule", "waitWhenToldTo", SettingKind.YES_OR_NO,
+                    "whether an operation the API answers 429, or 503 with Retry-After, is left "
+                            + "alone for as long as the API asks"),
+            key("schedule", "firstGuessedWait", SettingKind.LENGTH_OF_TIME,
+                    "how long it is left alone the first time the API does not say, doubled "
+                            + "each time it is told again"),
+            key("schedule", "longestGuessedWait", SettingKind.LENGTH_OF_TIME,
+                    "the longest that doubling goes"),
             key("schedule", "stopAfterRequests", SettingKind.YES_OR_NO,
                     "whether a run stops once it has sent a set number of requests, before its "
                             + "budget is spent"),

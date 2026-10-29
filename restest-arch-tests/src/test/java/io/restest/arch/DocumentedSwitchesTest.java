@@ -378,10 +378,16 @@ class DocumentedSwitchesTest {
         // every change to an accepted request off, and every series there is.
         Map<String, String> everythingThatListens = new TreeMap<>(allOff(series()));
         everythingThatListens.put("mutation.violations", "false");
+        everythingThatListens.put("schedule.waitWhenToldTo", "false");
         assertThat(valuesIn(fileUnder(THE_SEED)))
                 .describedAs("the file for getting the seed back is supposed to turn off every "
-                        + "change to an accepted request and every series")
+                        + "change to an accepted request, every series and the waits the API asks "
+                        + "for")
                 .isEqualTo(everythingThatListens);
+        assertThat(Settings.from(valuesIn(fileUnder(THE_SEED))).schedule().waitWhenToldTo())
+                .describedAs("a run that skips the turns the API asks it to skips them when the API "
+                        + "says, so its file has to turn that off too")
+                .isFalse();
 
         // Then by what a run does with it. Each half on its own is not enough, which is what makes
         // the file worth checking: the series left on, or the changes left on, and the run still

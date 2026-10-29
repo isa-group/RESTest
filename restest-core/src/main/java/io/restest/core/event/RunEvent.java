@@ -304,18 +304,27 @@ public sealed interface RunEvent {
      *                 request of its opening lap, what it says about that; empty otherwise. A run
      *                 can stop that way and then be stopped from outside while it waits for the
      *                 answers still owed, and then both are said
+     * @param waited   who the API asked the run to leave alone, how often and for how long; empty
+     *                 when the run does not wait when told to
      */
     record RunFinished(Instant at, Duration elapsed, EngineStatistics engine, boolean cutShort,
-            Optional<Unauthorized> unauthorized) implements RunEvent {
+            Optional<Unauthorized> unauthorized, Optional<Waited> waited) implements RunEvent {
         public RunFinished {
             Objects.requireNonNull(at, "at");
             Objects.requireNonNull(elapsed, "elapsed");
             Objects.requireNonNull(engine, "engine");
             Objects.requireNonNull(unauthorized, "unauthorized");
+            Objects.requireNonNull(waited, "waited");
             if (elapsed.isNegative()) {
                 throw new IllegalArgumentException("a run cannot take less time than none: "
                         + elapsed);
             }
+        }
+
+        /** A run that says nothing about waiting. */
+        public RunFinished(Instant at, Duration elapsed, EngineStatistics engine,
+                boolean cutShort, Optional<Unauthorized> unauthorized) {
+            this(at, elapsed, engine, cutShort, unauthorized, Optional.empty());
         }
 
         /** A run that the API never stopped. */

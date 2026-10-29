@@ -16,6 +16,7 @@
 package io.restest.report;
 
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.Waited;
 import io.restest.core.event.RunListener;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
@@ -518,6 +519,7 @@ public final class ConsoleReport implements RunListener {
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
                 + Math.round(finished.engine().idleFraction() * 100) + "% of it idle"
+                + idleTheApiAskedFor(finished)
                 + (finished.cutShort() ? ", cut short" : "")
                 + (finished.unauthorized().isPresent()
                         ? ", stopped: the API answered 401 to every request of the opening lap"
@@ -569,6 +571,9 @@ public final class ConsoleReport implements RunListener {
             write("  " + seriesNotBegun + " creation(s) meant to begin a series about a thing the "
                     + "run created were not accepted, so no series began");
         }
+        // After every line that counts "of them", which are the requests sent, and before the
+        // server errors: who the API asked to be left alone qualifies what was sent.
+        finished.waited().ifPresent(this::sayWhoWasToldToWait);
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "
                     + serverErrors.operationsAnsweringAny5xx() + " answered some 5xx");
@@ -626,6 +631,48 @@ public final class ConsoleReport implements RunListener {
 
     private static String label(FaultCategory category) {
         return "F" + category.code();
+    }
+
+    /**
+     * The part of the idle share the API asked for, in brackets after it, so that a reader does not
+     * take quiet the API asked for as the tool's own slowness; nothing when there was none.
+     */
+    private static String idleTheApiAskedFor(RunEvent.RunFinished finished) {
+        long wall = finished.engine().wallClock().toNanos();
+        return finished.waited()
+                .filter(said -> said.idle().isPositive() && wall > 0)
+                .map(said -> " (" + Math.round(said.idle().toNanos() * 100.0 / wall)
+                        + "% waiting as the API asked)")
+                .orElse("");
+    }
+
+    /**
+     * Who the API asked the run to leave alone, how often and for how long: the whole API first,
+     * when nothing at all was sent for a while, then the operations, the first three of them by
+     * name. Nothing when the API never asked.
+     */
+    private void sayWhoWasToldToWait(Waited said) {
+        List<String> who = new ArrayList<>();
+        if (said.wholeApi().times() > 0) {
+            who.add("the whole API " + times(said.wholeApi().times()) + ", "
+                    + readable(said.wholeApi().waited()) + " in all");
+        }
+        int named = Math.min(said.operations().size(), 3);
+        said.operations().subList(0, named).forEach(each -> who.add(each.operation().value() + " "
+                + times(each.times()) + ", " + readable(each.waited()) + " in all, "
+                + each.turnsSkipped() + (each.turnsSkipped() == 1 ? " turn" : " turns")
+                + " skipped"));
+        if (named < said.operations().size()) {
+            who.add("and " + (said.operations().size() - named) + " more; the run's report names "
+                    + "every one");
+        }
+        if (!who.isEmpty()) {
+            write("  told to wait: " + String.join("; ", who));
+        }
+    }
+
+    private static String times(long times) {
+        return times + (times == 1 ? " time" : " times");
     }
 
     /**

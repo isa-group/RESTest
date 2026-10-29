@@ -304,22 +304,22 @@ class ExitCodeTest {
 
     private static RunLoop.Outcome outcome(long sent, long answered) {
         return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, 0, Optional.empty(), false,
-                Optional.empty());
+                Optional.empty(), Optional.empty());
     }
 
     private static RunLoop.Outcome lost(long sent, long answered, long lost) {
         return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, lost,
-                Optional.of(new StackOverflowError()), false, Optional.empty());
+                Optional.of(new StackOverflowError()), false, Optional.empty(), Optional.empty());
     }
 
     private static RunLoop.Outcome refused(long lap, boolean thenCutShort) {
         return new RunLoop.Outcome(lap, lap, 0, 0, 0, 0, 0, 0, Optional.empty(), thenCutShort,
-                Optional.of(new Unauthorized(Instant.now(), lap)));
+                Optional.of(new Unauthorized(Instant.now(), lap)), Optional.empty());
     }
 
     private static RunLoop.Outcome cutShort(long sent, long answered, long lost) {
         return new RunLoop.Outcome(sent, answered, 0, 0, 0, 1, 0, lost,
                 lost > 0 ? Optional.of(new StackOverflowError()) : Optional.empty(), true,
-                Optional.empty());
+                Optional.empty(), Optional.empty());
     }
 }

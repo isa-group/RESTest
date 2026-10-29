@@ -127,8 +127,9 @@ one that fell over.
   this check such replies are only counted, under `serverErrors`. Where the surroundings are
   known to be unwell, switch the check off in one line (`checks.otherServerError`).
 - **A 503 that asks the run to wait is reported too.** An API that cannot keep up may answer 503
-  with a `Retry-After` header; RESTest does not wait yet ([known
-  limitations](known-limitations.md#pointed-at-somebody-elses-api)), so each such reply is a fault.
+  with a `Retry-After` header. RESTest then leaves the operation alone for that long
+  ([`toldToWait`](report.md#toldtowait)), so there are few such replies, and each is a fault like
+  any other 503.
 - **501 is `F205`'s**, as for `F100`, and a code of 600 or more is left alone, since it is no server
   error whatever its first digit.
 
@@ -331,9 +332,10 @@ and `default` included.
   - A reply to a request whose body RESTest sent, on purpose, under a media type the operation does
     not accept: a document is not expected to describe how an API refuses a body it never promised
     to take.
-- **A 429 that asks the run to slow down is reported too**, unless the document declares it: RESTest
-  does not wait yet ([known limitations](known-limitations.md#pointed-at-somebody-elses-api)), so each
-  such reply is a fault.
+- **A 429 that asks the run to slow down is reported too**, unless the document declares it. RESTest
+  then leaves the operation alone for as long as the API asks ([`toldToWait`](report.md#toldtowait)),
+  so there are few such replies; each one the document leaves out is still a reply it does not
+  declare.
 - **Too many to read?** Declare the replies the API really gives, or switch the check off in one line
   (`checks.undeclaredStatusCode`).
 

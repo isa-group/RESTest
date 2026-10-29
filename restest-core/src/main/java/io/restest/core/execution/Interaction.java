@@ -155,4 +155,22 @@ public record Interaction(
             case InteractionOutcome.TransportFailure ignored -> Optional.empty();
         };
     }
+
+    /**
+     * Every value the API sent under the given header name, compared without regard to case, in the
+     * order they arrived; none when nothing came back.
+     *
+     * <p>For the same reason as {@link #statusCode()}: the headers arrive with the status line, before
+     * the body, so a reply whose body broke off still said what its headers say - how long to wait
+     * before asking again, for one.
+     */
+    public List<String> responseHeaderValues(String name) {
+        Objects.requireNonNull(name, "name");
+        return switch (outcome) {
+            case InteractionOutcome.Answered answered -> answered.response().headerValues(name);
+            case InteractionOutcome.MalformedResponse malformed ->
+                    Headers.valuesOf(malformed.headers(), name);
+            case InteractionOutcome.TransportFailure ignored -> List.of();
+        };
+    }
 }

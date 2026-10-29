@@ -6,13 +6,27 @@ current release: an entry leaves it in the release that lifts it, and that relea
 
 ## Pointed at somebody else's API
 
-- **A run does not wait when the API asks it to.** A reply of 429, or of 503 with `Retry-After`, is
-  an ordinary answer: the header is not read and nothing pauses. A 429 is usually a quick answer, and
-  the engine's limiter judges only how long answers take, so a stream of 429s reads to it as room to
-  send more. Against an API that limits its callers, lower `engine.maxConcurrency`
-  ([the settings](settings.md)) before you start. A 503 the run's own pace provoked is reported as a
-  fault, `F121`, like any other; `checks.otherServerError=false` stops that
-  ([the faults](faults.md#f121-other-server-error)).
+- **A run waits when the API asks it to, but never stops for it.** An operation answered 429, or 503
+  with `Retry-After`, is sent nothing for as long as the API asks, and the whole API when a second
+  operation is told to wait while another waits ([`toldToWait`](report.md#toldtowait)). An API that
+  asks for a wait longer than the run has left is obeyed until the run's time is up, and the run then
+  ends with the number its findings give, not with one that says the API kept it waiting. What is
+  not done yet:
+  - the `RateLimit` and `RateLimit-Policy` fields an API may send to say how much of its quota is
+    left are not read, nor the `X-RateLimit-*` headers some APIs use: only `Retry-After` is;
+  - the request the API turned away is not sent again; the operation's next turn builds a new one;
+  - the requests for an operation already on their way when it is told to wait still go out, at most
+    `schedule.workAheadFactor` × `engine.maxConcurrency` of them; a wait of the whole API holds back
+    every one of them, and those it still holds when the run stops sending are never sent, and are
+    counted with the requests that got no reply;
+  - a limit over the whole API is only known as one once a second operation is told to wait, so each
+    of the first two operations draws a refusal of its own.
+
+  Each 429 the document does not declare is still a warning, `F920`, and each 503 a fault, `F121`,
+  like any other reply — there are few of them once the run waits. `schedule.waitWhenToldTo=false`
+  sends to such an API as RESTest did before it waited; against an API that limits its callers, a
+  lower `engine.maxConcurrency` ([the settings](settings.md)) still keeps the run further from its
+  limit.
 - **There is no ceiling on requests per second.** What bounds a run is the number of requests in
   flight, sixteen at most by default (`engine.maxConcurrency`). The limiter halves it whenever a
   request goes unanswered and sends fewer as answers slow down, but no setting promises an API's

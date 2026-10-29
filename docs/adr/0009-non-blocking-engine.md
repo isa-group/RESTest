@@ -1,6 +1,6 @@
 # ADR-0009: The engine never blocks on computation; idle time replaces a throughput floor
 
-**Status:** Accepted
+**Status:** Accepted, amended on 29 October 2026
 **Date:** 2026-09-11
 
 ## Context
@@ -55,3 +55,12 @@ says nothing about real APIs and does not pretend to.
 - **A fixed requests-per-minute floor.** Rejected: assumes knowledge of the API's latency.
 - **Measuring wall-clock throughput only.** Confounds our speed with the API's.
 - **Doing all expensive work up front, before testing.** Exactly what failed in 2026.
+
+## Amendment (29 October 2026): idle time the API asked for
+
+An API can ask a run to send nothing for a while — a 429, or a 503 with `Retry-After` — and a run now
+obeys it ([ADR-0042](0042-wait-when-told-to-wait.md)). Time spent that way is idle time: nothing is
+in flight. It is not the tool being slow, which is what idle time exists to catch, so a run says how
+much of its idle time came while it waited as the API asked, in `report.json`
+(`toldToWait.idle`) and in brackets after the idle share on the first line of its summary. The
+tool's own idleness is the rest.

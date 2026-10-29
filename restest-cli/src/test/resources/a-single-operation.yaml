@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: A Single Operation
+  version: 1.0.0
+  description: >
+    One operation and nothing else, for what a run does when that operation is all there is: when
+    the API asks for it to be left alone, there is nothing else to send.
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      responses:
+        "200":
+          description: every pet
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

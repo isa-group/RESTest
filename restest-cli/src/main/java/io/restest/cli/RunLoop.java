@@ -18,12 +18,14 @@ package io.restest.cli;
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.Unauthorized;
+import io.restest.core.event.Waited;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.TestCase;
 import io.restest.core.json.JsonException;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
 import io.restest.gen.RequestBuilder;
 import io.restest.gen.Scheduler;
 import java.time.Duration;
@@ -71,6 +73,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * hands what came back to every one of them to the scheduler the moment it arrives, before the slot
  * the request held is given back, so that the next step of that series is waiting by the time there
  * is room to send it.
+ *
+ * <p>An API that is asked too much can say so - 429, "too many requests", or 503 with a
+ * {@code Retry-After} - and {@link ToldToWait} keeps track of what it asked. An operation it asked
+ * to be left alone has its turns skipped until its wait is over: nothing is built for it and nothing
+ * is sent, while every other operation goes on. When the whole API asked for quiet, the loop sends
+ * nothing at all until it is over - the engine holds back what it already has - and then sends the
+ * request it was about to. A whole round in which every operation was waiting, or could not be
+ * built, is not gone round again at once: the loop sits it out until the soonest wait is over.
  *
  * <p>A run can also be stopped from outside - Ctrl-C, {@code kill}, a container being stopped - at
  * any moment, and {@link StopFromOutside} is where the loop hears it. It looks there between one
@@ -123,14 +133,18 @@ final class RunLoop {
      *     its answers: what it did is then what it did until it was stopped
      * @param refusedLap when the loop stopped sending because the API answered 401 to every request
      *     of the opening lap, when it did and how many requests that lap sent
+     * @param waited who the API asked the loop to leave alone, how often and for how long; empty
+     *     when the run does not wait when told to
      */
     record Outcome(long sent, long answered, long noReplyInTime, long notGenerated,
             long notAssembled, long passes, long stillOwed, long lost,
-            Optional<Throwable> firstLoss, boolean cutShort, Optional<Unauthorized> refusedLap) {
+            Optional<Throwable> firstLoss, boolean cutShort, Optional<Unauthorized> refusedLap,
+            Optional<Waited> waited) {
 
         Outcome {
             Objects.requireNonNull(firstLoss, "firstLoss");
             Objects.requireNonNull(refusedLap, "refusedLap");
+            Objects.requireNonNull(waited, "waited");
         }
 
         /** Whether requests went out and not one of them was ever answered. */
@@ -169,6 +183,7 @@ final class RunLoop {
      * @param lap what says whether the API refused every request of the opening lap, once it is
      *     over: when it did, the loop stops sending and waits for the answers it is owed, as at the
      *     deadline
+     * @param waits what keeps track of what the API asked to be left alone, and for how long
      * @param engine what sends them
      * @param events where everything that happens is announced
      * @return what the loop did with the time
@@ -176,7 +191,7 @@ final class RunLoop {
     static Outcome run(Scheduler scheduler, String baseUrl, int workAhead,
             int announcementsAllowedToPileUp, long mostRequests,
             Duration howLongToWaitForStragglers, Duration interruptGrace, StopFromOutside stop,
-            RefusedOpeningLap lap, HttpEngine engine, EventStream events) {
+            RefusedOpeningLap lap, ToldToWait waits, HttpEngine engine, EventStream events) {
         Objects.requireNonNull(scheduler, "scheduler");
         Objects.requireNonNull(baseUrl, "baseUrl");
         if (mostRequests < 1) {
@@ -187,6 +202,7 @@ final class RunLoop {
         Objects.requireNonNull(interruptGrace, "interruptGrace");
         Objects.requireNonNull(stop, "stop");
         Objects.requireNonNull(lap, "lap");
+        Objects.requireNonNull(waits, "waits");
         Objects.requireNonNull(engine, "engine");
         Objects.requireNonNull(events, "events");
         Instant deadline = scheduler.deadline();
@@ -197,7 +213,14 @@ final class RunLoop {
         Semaphore slots = new Semaphore(workAhead);
         Answers answers = new Answers();
         long sent = 0;
-        long sentInTheOrdinaryRounds = 0;
+        // Turns of the ordinary rounds that sent a request, or that skipped it because the API asked
+        // for its operation to be left alone: either shows the document has something to send.
+        long turnsInTheOrdinaryRounds = 0;
+        // Whether the current round sent anything, skipped a turn for a wait, or had a turn whose
+        // request could not be built.
+        boolean sentThisPass = false;
+        boolean skippedThisPass = false;
+        boolean unbuiltThisPass = false;
         long notGenerated = 0;
         long notAssembled = 0;
         long passes = 0;
@@ -234,8 +257,10 @@ final class RunLoop {
                             passes++;
                             // Nothing in this document could be sent even once in an ordinary
                             // round. Going round again would produce the same nothing until the
-                            // deadline, so stop and let the run say why.
-                            if (sentInTheOrdinaryRounds == 0) {
+                            // deadline, so stop and let the run say why. An operation the API
+                            // asked to be left alone is not one that cannot be sent: it is waited
+                            // for.
+                            if (turnsInTheOrdinaryRounds == 0) {
                                 break deciding;
                             }
                         }
@@ -257,6 +282,22 @@ final class RunLoop {
                                 break deciding;
                             }
                         }
+                        // A round that sent nothing because every operation in it was waiting, or
+                        // could not be built: going round again at once would only skip them all
+                        // again, as fast as the loop can turn, until the soonest wait is over. A
+                        // request that could not be built this time may be built the next, so a
+                        // round that had one looks again after a short while instead.
+                        if (!sentThisPass && skippedThisPass) {
+                            Optional<Instant> soonest = waits.soonestEnd();
+                            if (soonest.isPresent()) {
+                                Instant shortly = Instant.now().plus(LOOK_AGAIN_AFTER);
+                                sitOut(unbuiltThisPass && shortly.isBefore(soonest.get())
+                                        ? shortly : soonest.get(), deadline, stop, engine, waits);
+                            }
+                        }
+                        sentThisPass = false;
+                        skippedThisPass = false;
+                        unbuiltThisPass = false;
                     }
                     case Scheduler.Step.Send send -> {
                         // An ordinary request comes only once the lap is over, or when there was
@@ -275,33 +316,58 @@ final class RunLoop {
                         if (sent >= mostRequests) {
                             break deciding;
                         }
-                        if (!waitForASlot(slots, deadline, stop)) {
-                            break deciding;
-                        }
-                        // Asked again now that there is room: the room was made by an answer, and
-                        // that answer may be the last of the opening lap's. The slot goes back
-                        // unused, as it does for a run stopped from outside.
-                        refused = lap.refused();
-                        if (refused.isPresent()) {
+                        while (true) {
+                            if (!waitForASlot(slots, deadline, stop)) {
+                                break deciding;
+                            }
+                            // Asked again now that there is room: the room was made by an answer,
+                            // and that answer may be the last of the opening lap's. The slot goes
+                            // back unused, as it does for a run stopped from outside.
+                            refused = lap.refused();
+                            if (refused.isPresent()) {
+                                slots.release();
+                                break deciding;
+                            }
+                            pauseWhileTheReportsCatchUp(events, deadline,
+                                    announcementsAllowedToPileUp, stop);
+                            if (stop.asked()) {
+                                // Stopped while it paused. The slot goes back unused, so that the
+                                // wait below finds every slot that is owed nothing.
+                                slots.release();
+                                break deciding;
+                            }
+                            // Right before anything is built: the whole API asked for quiet. The
+                            // slot goes back unused while it is sat out, and this request waits
+                            // for room again once it is over.
+                            Optional<Instant> quiet = waits.wholeApiWaitsUntil();
+                            if (quiet.isEmpty()) {
+                                break;
+                            }
                             slots.release();
-                            break deciding;
+                            sitOut(quiet.get(), deadline, stop, engine, waits);
                         }
-                        pauseWhileTheReportsCatchUp(events, deadline, announcementsAllowedToPileUp,
-                                stop);
-                        if (stop.asked()) {
-                            // Stopped while it paused. The slot goes back unused, so that the wait
-                            // below finds every slot that is owed nothing.
+                        Operation operation = send.operation();
+                        // An operation the API asked to be left alone has its turn skipped. Asked
+                        // only now that there is room, which may have been made by the very answer
+                        // that asked; and nothing is built: a step of a series is handed back as
+                        // one that could not be, so that its series goes on without it or ends.
+                        if (!waits.mayBeSent(operation.id())) {
                             slots.release();
-                            break deciding;
+                            scheduler.notSent(send);
+                            skippedThisPass = true;
+                            if (!send.inTheOpeningLap()) {
+                                turnsInTheOrdinaryRounds++;
+                            }
+                            continue deciding;
                         }
 
-                        Operation operation = send.operation();
                         Optional<TestCase> testCase = scheduler.testCaseFor(send);
                         HttpRequestRecord request = testCase
                                 .map(planned -> assemble(operation, planned, baseUrl))
                                 .orElse(null);
                         if (request == null) {
                             slots.release();
+                            unbuiltThisPass = true;
                             if (testCase.isEmpty()) {
                                 notGenerated++;
                             } else {
@@ -316,12 +382,13 @@ final class RunLoop {
                                     testCase.get()));
                             send(engine, testCase.get(), request, slots,
                                     send.inTheOpeningLap() ? stepAnswered : null, answers, events,
-                                    scheduler, lap, send.inTheOpeningLap());
+                                    scheduler, lap, waits, send.inTheOpeningLap());
                             sent++;
+                            sentThisPass = true;
                             if (send.inTheOpeningLap()) {
                                 sentInThisStep++;
                             } else {
-                                sentInTheOrdinaryRounds++;
+                                turnsInTheOrdinaryRounds++;
                             }
                         }
                     }
@@ -334,10 +401,15 @@ final class RunLoop {
             throw broken;
         } finally {
             // However the deciding ended, a first round still going is announced as cut short, so
-            // the reports never hear of one that began and did not end.
+            // the reports never hear of one that began and did not end; and no wait begun from
+            // here on is counted.
             scheduler.stop();
+            waits.stoppedSending();
         }
 
+        // What the engine still holds because the API asked for quiet is never sent: the run has
+        // stopped sending, and the API is still asking. Only a wait of the whole API holds anything.
+        engine.dropWhatIsHeld();
         // The deadline stops us asking new questions, not listening to the answers we are owed.
         // Those requests were paid for and what came back is evidence; throwing it away would also
         // leave the run's stored file disagreeing with the number of requests it says it sent. A
@@ -350,7 +422,7 @@ final class RunLoop {
         boolean cutShort = stop.asked();
         return new Outcome(sent, answers.answered(), answers.noReplyInTime(), notGenerated,
                 notAssembled, passes, sent - settled, answers.lost(), answers.firstLoss(),
-                cutShort, refused);
+                cutShort, refused, waits.summary());
     }
 
     /**
@@ -361,7 +433,7 @@ final class RunLoop {
      */
     private static void send(HttpEngine engine, TestCase testCase, HttpRequestRecord request,
             Semaphore slots, Semaphore alsoTell, Answers answers, EventStream events,
-            Scheduler scheduler, RefusedOpeningLap lap, boolean inTheLap) {
+            Scheduler scheduler, RefusedOpeningLap lap, ToldToWait waits, boolean inTheLap) {
         if (inTheLap) {
             lap.sentInTheLap();
         }
@@ -380,6 +452,15 @@ final class RunLoop {
                             announce(interaction, answers, events);
                         }
                     });
+                    // Inside what gives the slot back whatever happens, and before it: an answer
+                    // asking for quiet is known before the loop is let go on, and the engine holds
+                    // what it already has at once.
+                    if (interaction != null) {
+                        Optional<Duration> hold = waits.settled(testCase.operation(), interaction);
+                        if (hold.isPresent()) {
+                            engine.holdFor(hold.get());
+                        }
+                    }
                 } finally {
                     try {
                         // Before the slot is given back, so that the next step of a series is
@@ -527,6 +608,28 @@ final class RunLoop {
                 Thread.currentThread().interrupt();
                 return;
             }
+        }
+    }
+
+    /**
+     * Sends nothing until the given moment, the deadline or a stop from outside, whichever comes
+     * first, and tells the waits how much of that time the engine had nothing at all in flight:
+     * idle time that was the API's asking, not the tool's.
+     */
+    private static void sitOut(Instant until, Instant deadline, StopFromOutside stop,
+            HttpEngine engine, ToldToWait waits) {
+        Instant end = until.isBefore(deadline) ? until : deadline;
+        Duration idleBefore = engine.statistics().idle();
+        try {
+            Duration left;
+            while (!stop.asked()
+                    && (left = Duration.between(Instant.now(), end)).compareTo(Duration.ZERO) > 0) {
+                Thread.sleep(Duration.ofNanos(aLookAtMost(left)));
+            }
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+        } finally {
+            waits.idleWhileWaiting(engine.statistics().idle().minus(idleBefore));
         }
     }
 

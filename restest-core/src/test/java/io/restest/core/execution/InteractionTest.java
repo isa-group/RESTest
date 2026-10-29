@@ -86,6 +86,27 @@ class InteractionTest {
     }
 
     @Test
+    @DisplayName("the headers of a reply are readable whether its body arrived whole or broke off")
+    void the_headers_are_readable_from_every_outcome() {
+        Interaction answered = Interaction.answered(TEST_CASE, REQUEST,
+                new HttpResponseRecord(StatusLine.of(429),
+                        List.of(Header.of("Retry-After", "30"), Header.of("retry-after", "60")),
+                        Optional.empty()),
+                Instant.now(), Duration.ZERO);
+        Interaction cutShort = Interaction.malformedResponse(TEST_CASE, REQUEST,
+                "declared Content-Length exceeds the bytes actually sent",
+                Optional.of(StatusLine.of(503)), List.of(Header.of("RETRY-AFTER", "5")),
+                Optional.empty(), Instant.now(), Duration.ZERO);
+        Interaction nothing = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "connection refused", Instant.now(), Duration.ZERO);
+
+        assertThat(answered.responseHeaderValues("retry-after")).containsExactly("30", "60");
+        // A reply cut short still said how long to wait: the headers came before the body.
+        assertThat(cutShort.responseHeaderValues("Retry-After")).containsExactly("5");
+        assertThat(nothing.responseHeaderValues("Retry-After")).isEmpty();
+    }
+
+    @Test
     @DisplayName("a malformed response keeps the whole status line when it parsed, not only the code")
     void a_malformed_response_keeps_what_did_parse() {
         StatusLine statusLine = new StatusLine(200, Optional.of("OK"), Optional.of("HTTP/1.1"));

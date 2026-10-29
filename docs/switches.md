@@ -105,7 +105,7 @@ No check decides what a run sends: switching one off changes which replies are c
 for a check that reports errors — or warnings, with `checks.failOnWarnings` on — the exit code. [The
 faults](faults.md#switching-a-check-off) says what else it changes, and what it does not.
 
-### And five that are not levers
+### And six that are not levers
 
 | Switch | By default | Part of | Off, a run… |
 |---|---|---|---|
@@ -114,10 +114,12 @@ faults](faults.md#switching-a-check-off) says what else it changes, and what it 
 | `schedule.stopAfterRequests` | `false` | A run of a known size | ends when its budget is spent. On, it ends once it has sent `schedule.requestsBeforeStopping` requests and their answers are in, or when its budget is spent, whichever comes first, which is how a short run is made the same on a slow machine as on a fast one. It changes when a run ends, not what it sends, so it plays no part in an ablation either |
 | `report.html` | `true` | The page | writes no `report.html`, only `report.json`, for a run whose results only a program will read. It changes which files a run leaves, not what it sends or finds, so it plays no part in an ablation |
 | `schedule.stopWhenTheOpeningLapIsRefused` | `true` | A run the API refuses | goes on until its budget is spent when the API answers 401 to every request of the opening lap, rather than stopping there and ending with `5`. It changes when a run ends, not what it sends, so it plays no part in an ablation. It does nothing to a run that has no opening lap — `schedule.openingLap` off, or a plan that cannot build the request each operation is likeliest to accept — nor to one whose lap never ends, because its budget or `schedule.requestsBeforeStopping` runs out first: such a run is never stopped this way |
+| `schedule.waitWhenToldTo` | `true` | An API that asks the run to wait | goes on sending to an operation the API answers 429, or 503 with `Retry-After`, as if it had answered anything else, and never holds back the whole API. On, such an operation is left alone for as long as the API says, or for a wait of `schedule.firstGuessedWait` doubling up to `schedule.longestGuessedWait` when it does not say, while the others go on; and when a second operation is told to wait while another waits, nothing at all is sent until the wait is over. It is a courtesy to the API rather than a way of finding more, so it plays no part in an ablation; it changes what is sent only against an API that asks to wait, and then which turns are skipped depends on when the API asked, which is why the file for [getting the seed back](#getting-the-seed-back) turns it off |
 
-The two of these that are on by default are turned off with these files, the first for a campaign
+The three of these that are on by default are turned off with these files, the first for a campaign
 that keeps only what a program reads, the second for one that keeps sending to an API that refuses
-it, as RESTest did before it stopped such runs:
+it, as RESTest did before it stopped such runs, and the third for one that sends to an API that asks
+to wait as RESTest did before it waited:
 
 **The page**
 
@@ -131,6 +133,13 @@ report:
 ```yaml
 schedule:
   stopWhenTheOpeningLapIsRefused: false
+```
+
+**An API that asks the run to wait**
+
+```yaml
+schedule:
+  waitWhenToldTo: false
 ```
 
 ## What leaving each one on costs
@@ -513,9 +522,10 @@ a run given none sends exactly what it sent before keys could be handed over.
 ## Getting the seed back
 
 A run is repeated by its `--seed` alone only when nothing it sends depends on what the API answered.
-Three things do, and all three are on in the tool as shipped: the memory of what the API returned,
-the changes to accepted requests, and the series. To get the seed back, hand over the plan above
-with `--campaign`, and this file with `--settings`:
+Four things do, and all four are on in the tool as shipped: the memory of what the API returned,
+the changes to accepted requests, the series, and leaving alone what the API asks to be left alone,
+which skips turns when and where the API says. To get the seed back, hand over the plan above with
+`--campaign`, and this file with `--settings`:
 
 ```yaml
 mutation:
@@ -528,11 +538,14 @@ sequences:
   putTwice: false
   safeGet: false
   createTwice: false
+
+schedule:
+  waitWhenToldTo: false
 ```
 
-The run says which it is, under the line that gives its seed. While any of the three is on, it
+The run says which it is, under the line that gives its seed. While any of the four is on, it
 prints `what it sends depends on the API's own replies, so the seed alone does not repeat this run`.
-Once all three are off, that line is gone.
+Once all four are off, that line is gone.
 
 ## Some with no switch, by choice
 

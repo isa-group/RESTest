@@ -16,8 +16,10 @@
 package io.restest.exec;
 
 import io.restest.core.exec.EngineSettings;
+import java.time.Duration;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.LongSupplier;
 
 /**
  * Decides how many requests the engine may have in flight at the same time, and changes its mind as
@@ -49,8 +51,17 @@ import java.util.concurrent.locks.ReentrantLock;
  * after another are no evidence that the API would have coped with sixteen at once, and a limiter
  * that grew on that evidence would arrive at a busy API already at full speed. Whenever the number
  * changes, that evidence is spent: it has to be earned again at the new size.
+ *
+ * <p>An API can also say so in words: "too many requests, leave me alone for a while". Then the
+ * engine is held: no slot is given to anybody until the time is up, whatever the number says, and
+ * the number falls to the floor, so that what follows the wait starts from one request at a time and
+ * earns its way back up. Requests waiting out a hold are not evidence that the engine ran out of
+ * room - the API asked for quiet - so they earn nothing.
  */
 final class ConcurrencyLimiter {
+
+    /** The longest hold that is counted: some seventy years, far beyond any run. */
+    private static final Duration LONGEST_HOLD = Duration.ofNanos(Long.MAX_VALUE / 4);
 
     /**
      * How much of the running average one answer replaces. A fifth: slow enough that a single odd
@@ -61,6 +72,7 @@ final class ConcurrencyLimiter {
 
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition slotFreed = lock.newCondition();
+    private final LongSupplier nanoTime;
     private final int minimum;
     private final int maximum;
 
@@ -72,7 +84,24 @@ final class ConcurrencyLimiter {
     private boolean ranOutOfSlots;
     private double usualResponseNanos;
 
+    /**
+     * Whether a hold may be in force, and until when no slot is given, on the clock below. The clock
+     * is read only while one may be, so that a run never held pays nothing for holds.
+     */
+    private boolean held;
+    private long heldUntil;
+    private boolean closed;
+
+    /** Whether a request waiting out a hold goes away without a slot rather than wait. */
+    private boolean dropTheHeld;
+
     ConcurrencyLimiter(EngineSettings settings) {
+        this(settings, System::nanoTime);
+    }
+
+    /** The same, telling the time of a hold by the given clock. */
+    ConcurrencyLimiter(EngineSettings settings, LongSupplier nanoTime) {
+        this.nanoTime = nanoTime;
         this.minimum = settings.minConcurrency();
         this.maximum = settings.maxConcurrency();
         this.slowdownFactor = settings.slowdownFactor();
@@ -80,22 +109,89 @@ final class ConcurrencyLimiter {
     }
 
     /**
-     * Waits until there is a slot, and takes it.
+     * Waits until there is a slot, and takes it - unless the engine is closed first.
      *
+     * @return whether a slot was taken; not when the engine was closed while this waited, or what
+     *     is held was dropped while this waited out a hold, and the request is then never sent
      * @throws InterruptedException if the caller is interrupted while waiting, which the engine
      *     turns into a failed interaction rather than losing
      */
-    void acquire() throws InterruptedException {
+    boolean acquire() throws InterruptedException {
         lock.lock();
         try {
-            while (inFlight >= limit) {
-                ranOutOfSlots = true;
-                slotFreed.await();
+            while (!closed) {
+                // Counted in the clock's own units, which go round rather than overflow.
+                long left = held ? heldUntil - nanoTime.getAsLong() : 0;
+                if (left > 0) {
+                    if (dropTheHeld) {
+                        return false;
+                    }
+                    slotFreed.awaitNanos(left);
+                    continue;
+                }
+                held = false;
+                if (inFlight >= limit) {
+                    ranOutOfSlots = true;
+                    slotFreed.await();
+                } else {
+                    inFlight++;
+                    if (inFlight == limit) {
+                        ranOutOfSlots = true;
+                    }
+                    return true;
+                }
             }
-            inFlight++;
-            if (inFlight == limit) {
-                ranOutOfSlots = true;
+            return false;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Gives no slot to anybody for this long, and starts again from the floor afterwards. A hold
+     * that would end sooner than one already in force leaves that one as it is.
+     *
+     * @param howLong how long to give nothing, from now
+     */
+    void holdFor(Duration howLong) {
+        long nanos = howLong.isNegative() ? 0
+                : (howLong.compareTo(LONGEST_HOLD) > 0 ? LONGEST_HOLD : howLong).toNanos();
+        lock.lock();
+        try {
+            long until = nanoTime.getAsLong() + nanos;
+            if (!held || until - heldUntil > 0) {
+                heldUntil = until;
             }
+            held = true;
+            limit = minimum;
+            ranOutOfSlots = false;
+            // Whoever is waiting for a slot now waits for the hold instead.
+            slotFreed.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Whoever is waiting out a hold, now or later, goes away without a slot, rather than wait for it
+     * to end. Whoever is waiting for a slot with no hold in force is untouched.
+     */
+    void dropWhatIsHeld() {
+        lock.lock();
+        try {
+            dropTheHeld = true;
+            slotFreed.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** Gives no slot to anybody ever again: whoever is waiting for one goes away without it. */
+    void close() {
+        lock.lock();
+        try {
+            closed = true;
+            slotFreed.signalAll();
         } finally {
             lock.unlock();
         }

@@ -54,6 +54,13 @@ import java.util.Objects;
  * times a second until its time was up. So the run stops sending there, says so, and ends with a
  * number of its own.
  *
+ * <p>The last three are about an API that asks the run to slow down. It answers 429, "too many
+ * requests", or 503 with a {@code Retry-After} header, and says how long to wait, or does not. The
+ * operation that drew the answer is then left alone for as long as the API says, or, when it does
+ * not say, for a wait that starts short and doubles each time the same operation is told again, up
+ * to a ceiling; every other operation goes on. When a second operation is told to wait while
+ * another still waits, the limit is the whole API's, and nothing at all is sent until it is over.
+ *
  * @param workAheadFactor how many requests may be waiting for an answer at once, as a multiple of
  *     the most the engine will ever have in flight. Above one, so the engine is never left with a
  *     free slot while the next request is still being invented
@@ -88,6 +95,14 @@ import java.util.Objects;
  * @param stopWhenTheOpeningLapIsRefused whether a run stops sending once every request of its
  *     opening lap has been answered, and every answer was 401. Off, such a run goes on until its
  *     budget is spent. A run with no opening lap is never stopped this way
+ * @param waitWhenToldTo whether an operation the API answers 429, or 503 with a {@code Retry-After}
+ *     header, is left alone for as long as the API asks, and the whole API when a second one is.
+ *     Off, such an answer is an answer like any other, and nothing waits
+ * @param firstGuessedWait how long an operation is left alone the first time the API asks without
+ *     saying for how long. A second: the shortest wait that clears a limit counted per second
+ * @param longestGuessedWait the longest such a wait becomes as it doubles. A minute: long enough to
+ *     clear a limit counted per minute in one wait, short enough that an operation whose quota is
+ *     spent for the hour is still tried once a minute
  */
 public record ScheduleSettings(
         int workAheadFactor,
@@ -100,11 +115,15 @@ public record ScheduleSettings(
         int requestsBeforeStopping,
         Duration interruptWritingGrace,
         Duration interruptLookingGrace,
-        boolean stopWhenTheOpeningLapIsRefused) {
+        boolean stopWhenTheOpeningLapIsRefused,
+        boolean waitWhenToldTo,
+        Duration firstGuessedWait,
+        Duration longestGuessedWait) {
 
     private static final ScheduleSettings DEFAULTS = new ScheduleSettings(2, 1_000,
             Duration.ofSeconds(10), Duration.ofSeconds(2), true, Duration.ofSeconds(2),
-            false, 1_000, Duration.ofSeconds(5), Duration.ofSeconds(1), true);
+            false, 1_000, Duration.ofSeconds(5), Duration.ofSeconds(1), true, true,
+            Duration.ofSeconds(1), Duration.ofSeconds(60));
 
     public ScheduleSettings {
         Objects.requireNonNull(stragglerGrace, "stragglerGrace");
@@ -112,6 +131,18 @@ public record ScheduleSettings(
         Objects.requireNonNull(openingLapPatience, "openingLapPatience");
         Objects.requireNonNull(interruptWritingGrace, "interruptWritingGrace");
         Objects.requireNonNull(interruptLookingGrace, "interruptLookingGrace");
+        Objects.requireNonNull(firstGuessedWait, "firstGuessedWait");
+        Objects.requireNonNull(longestGuessedWait, "longestGuessedWait");
+        if (firstGuessedWait.isNegative() || firstGuessedWait.isZero()) {
+            throw new IllegalArgumentException("firstGuessedWait must be longer than no time at "
+                    + "all, or an API that asks the run to wait without saying for how long would "
+                    + "be asked again at once: " + firstGuessedWait);
+        }
+        if (longestGuessedWait.compareTo(firstGuessedWait) < 0) {
+            throw new IllegalArgumentException("longestGuessedWait (" + longestGuessedWait + ") is "
+                    + "shorter than firstGuessedWait (" + firstGuessedWait + "), which the wait "
+                    + "starts at and only ever doubles from");
+        }
         if (requestsBeforeStopping < 1) {
             throw new IllegalArgumentException("requestsBeforeStopping must be at least 1, since a "
                     + "run that stops before its first request tests nothing: "

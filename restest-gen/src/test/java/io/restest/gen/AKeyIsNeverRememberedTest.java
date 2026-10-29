@@ -161,6 +161,14 @@ class AKeyIsNeverRememberedTest {
         }
 
         @Override
+        public void holdFor(Duration howLong) {
+        }
+
+        @Override
+        public void dropWhatIsHeld() {
+        }
+
+        @Override
         public EngineStatistics statistics() {
             return new EngineStatistics(0, Duration.ZERO, Duration.ZERO, Duration.ZERO, 0, 1);
         }
