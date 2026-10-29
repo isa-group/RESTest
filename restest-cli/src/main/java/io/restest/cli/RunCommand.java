@@ -30,6 +30,7 @@ import io.restest.core.model.OperationId;
 import io.restest.core.model.SecurityScheme;
 import io.restest.core.model.SpecificationIssue;
 import io.restest.core.settings.ScheduleSettings;
+import io.restest.core.settings.SettingKey;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsException;
 import io.restest.core.settings.SettingsInEffect;
@@ -153,6 +154,11 @@ import picocli.CommandLine.Spec;
                 "  restest run openapi.yaml --set engine.maxConcurrency=1",
                 "  restest run --print-settings > settings.yaml"})
 final class RunCommand implements Callable<Integer> {
+
+    /** The rate a run keeps to, and the switch that says whether it does. */
+    private static final SettingKey RATE = SettingKey.named("engine.mostRequestsPerMinute")
+            .orElseThrow();
+    private static final SettingKey LIMIT = SettingKey.named("engine.limitTheRate").orElseThrow();
 
     /** How many unreadable parts of a document to name before saying how many are left. */
     private static final int ISSUES_SHOWN = 5;
@@ -1137,6 +1143,16 @@ final class RunCommand implements Callable<Integer> {
         if (changed > 0) {
             out.println("  " + changed + " setting(s) are not what RESTest does by default; "
                     + "--print-settings lists them with where each came from");
+        }
+        // A rate somebody changed in a printed file, or gave over one, beside a switch the file
+        // still says is off, would let the run go as fast as it can while they believe they
+        // promised the rate. An untouched printed file names both and says nothing here.
+        EngineSettings engine = configuration.settings().engine();
+        if (!engine.limitTheRate() && (engine.mostRequestsPerMinute()
+                != EngineSettings.defaults().mostRequestsPerMinute()
+                || configuration.sourceOf(RATE).compareTo(configuration.sourceOf(LIMIT)) > 0)) {
+            out.println("  engine.mostRequestsPerMinute is " + engine.mostRequestsPerMinute()
+                    + ", but engine.limitTheRate is false, so no rate is kept to");
         }
         report(out, model.issues());
         out.println();

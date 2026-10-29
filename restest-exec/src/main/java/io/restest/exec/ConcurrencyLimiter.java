@@ -57,6 +57,14 @@ import java.util.function.LongSupplier;
  * the number falls to the floor, so that what follows the wait starts from one request at a time and
  * earns its way back up. Requests waiting out a hold are not evidence that the engine ran out of
  * room - the API asked for quiet - so they earn nothing.
+ *
+ * <p>The person running the tool can ask for a rate as well: at most so many requests a minute,
+ * which somebody testing another person's server can promise its owner. Then no two requests take a
+ * slot closer together than a minute divided by that number, however many slots are free - evenly,
+ * never a burst to catch up after a quiet spell. A request waiting for its turn holds no slot and,
+ * like one waiting out a hold, earns nothing. The limiter also counts the requests handed to the
+ * engine and not yet given a slot, so that it can say how long one more would wait for its turn;
+ * whoever builds requests can then build each when it can go, rather than long before.
  */
 final class ConcurrencyLimiter {
 
@@ -72,12 +80,21 @@ final class ConcurrencyLimiter {
 
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition slotFreed = lock.newCondition();
+
+    /**
+     * What a request waiting for its turn waits on: a condition of its own, so that a slot given back
+     * wakes a request that can take it rather than one that would only go back to waiting.
+     */
+    private final Condition turnComes = lock.newCondition();
     private final LongSupplier nanoTime;
     private final int minimum;
     private final int maximum;
 
     /** How much slower than the best answer so far counts as "the API is struggling". */
     private final double slowdownFactor;
+
+    /** The least time between two requests taking a slot, on the clock below; none when zero. */
+    private final long betweenRequests;
 
     private int limit;
     private int inFlight;
@@ -92,8 +109,21 @@ final class ConcurrencyLimiter {
     private long heldUntil;
     private boolean closed;
 
-    /** Whether a request waiting out a hold goes away without a slot rather than wait. */
+    /**
+     * Whether a request waiting out a hold, or waiting for its turn, goes away without a slot rather
+     * than wait.
+     */
     private boolean dropTheHeld;
+
+    /**
+     * When the next request may take a slot, while the rate is kept to. It starts at the moment the
+     * limiter is built, so that the first request goes at once wherever the clock happens to begin.
+     * Written under the lock, and read without it by whoever counts the engine's idle time.
+     */
+    private volatile long nextTurn;
+
+    /** How many requests have been handed to the engine and not yet given a slot, or gone. */
+    private int waitingToGo;
 
     ConcurrencyLimiter(EngineSettings settings) {
         this(settings, System::nanoTime);
@@ -106,13 +136,77 @@ final class ConcurrencyLimiter {
         this.maximum = settings.maxConcurrency();
         this.slowdownFactor = settings.slowdownFactor();
         this.limit = settings.initialConcurrency();
+        this.betweenRequests = settings.timeBetweenRequests().map(Duration::toNanos).orElse(0L);
+        this.nextTurn = nanoTime.getAsLong();
+    }
+
+    /**
+     * One more request has been handed to the engine and will ask for a slot. Said on the thread
+     * that handed it over, before the request leaves it, so that the next question about turns
+     * already counts it. Not counted when no rate is kept to, so that a run without one pays
+     * nothing for it.
+     */
+    void handedOver() {
+        if (betweenRequests == 0) {
+            return;
+        }
+        lock.lock();
+        try {
+            waitingToGo++;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** A request handed over will never ask for a slot: it could not be built, say. */
+    void notGoing() {
+        if (betweenRequests == 0) {
+            return;
+        }
+        lock.lock();
+        try {
+            waitingToGo--;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * When the next request may take a slot, on the clock this limiter was given: the moment it was
+     * built, for as long as no rate is kept to.
+     */
+    long nextTurn() {
+        return nextTurn;
+    }
+
+    /**
+     * How long a request handed over now would wait for its turn: until the next turn, and one turn
+     * more for each request handed over before it and not yet given a slot. Room among the requests
+     * in flight is not counted, since that depends on answers nobody can foresee.
+     *
+     * @return that wait, or none when no rate is kept to
+     */
+    Duration untilItsTurn() {
+        if (betweenRequests == 0) {
+            return Duration.ZERO;
+        }
+        lock.lock();
+        try {
+            long untilTheNext = Math.max(0, nextTurn - nanoTime.getAsLong());
+            long longest = LONGEST_HOLD.toNanos();
+            long theOthers = Math.min(waitingToGo, longest / betweenRequests) * betweenRequests;
+            return Duration.ofNanos(Math.min(longest, untilTheNext + theOthers));
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
      * Waits until there is a slot, and takes it - unless the engine is closed first.
      *
      * @return whether a slot was taken; not when the engine was closed while this waited, or what
-     *     is held was dropped while this waited out a hold, and the request is then never sent
+     *     is held was dropped while this waited out a hold or for its turn, and the request is then
+     *     never sent
      * @throws InterruptedException if the caller is interrupted while waiting, which the engine
      *     turns into a failed interaction rather than losing
      */
@@ -120,8 +214,11 @@ final class ConcurrencyLimiter {
         lock.lock();
         try {
             while (!closed) {
+                // Read only while a hold or a rate may make the time matter, so that a run with
+                // neither pays nothing for them.
+                long now = held || betweenRequests > 0 ? nanoTime.getAsLong() : 0;
                 // Counted in the clock's own units, which go round rather than overflow.
-                long left = held ? heldUntil - nanoTime.getAsLong() : 0;
+                long left = held ? heldUntil - now : 0;
                 if (left > 0) {
                     if (dropTheHeld) {
                         return false;
@@ -130,6 +227,17 @@ final class ConcurrencyLimiter {
                     continue;
                 }
                 held = false;
+                long untilTheTurn = betweenRequests > 0 ? nextTurn - now : 0;
+                if (untilTheTurn > 0) {
+                    if (dropTheHeld) {
+                        return false;
+                    }
+                    // Several may wake at once and the lock decides which takes the turn. With a
+                    // caller that builds each request when it can go there is hardly ever more than
+                    // one, so their order is not kept.
+                    turnComes.awaitNanos(untilTheTurn);
+                    continue;
+                }
                 if (inFlight >= limit) {
                     ranOutOfSlots = true;
                     slotFreed.await();
@@ -138,11 +246,20 @@ final class ConcurrencyLimiter {
                     if (inFlight == limit) {
                         ranOutOfSlots = true;
                     }
+                    if (betweenRequests > 0) {
+                        // From now, not from the turn that was due: a quiet spell is never made up
+                        // for with a burst.
+                        nextTurn = now + betweenRequests;
+                    }
                     return true;
                 }
             }
             return false;
         } finally {
+            // Counted only while a rate is kept to, as handing it over was.
+            if (betweenRequests > 0) {
+                waitingToGo--;
+            }
             lock.unlock();
         }
     }
@@ -173,14 +290,16 @@ final class ConcurrencyLimiter {
     }
 
     /**
-     * Whoever is waiting out a hold, now or later, goes away without a slot, rather than wait for it
-     * to end. Whoever is waiting for a slot with no hold in force is untouched.
+     * Whoever is waiting out a hold, or waiting for a turn that has not come, now or later, goes away
+     * without a slot rather than wait. Whoever is waiting only for a slot, with no hold in force and
+     * the turn already come, is untouched.
      */
     void dropWhatIsHeld() {
         lock.lock();
         try {
             dropTheHeld = true;
             slotFreed.signalAll();
+            turnComes.signalAll();
         } finally {
             lock.unlock();
         }
@@ -192,6 +311,7 @@ final class ConcurrencyLimiter {
         try {
             closed = true;
             slotFreed.signalAll();
+            turnComes.signalAll();
         } finally {
             lock.unlock();
         }

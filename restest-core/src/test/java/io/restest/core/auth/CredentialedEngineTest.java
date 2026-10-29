@@ -250,6 +250,16 @@ class CredentialedEngineTest {
         assertThat(api.holds).containsExactly(Duration.ofSeconds(3));
     }
 
+    @Test
+    @DisplayName("how long a request would wait for its turn is the engine behind the door's answer")
+    void the_wait_for_a_turn_is_passed_on() {
+        api.untilItsTurn = Duration.ofMillis(700);
+        CredentialedEngine engine = new CredentialedEngine(api,
+                gather(listPets(), AuthGiven.typed("header:X-API-Key=" + KEY, 1)).plan());
+
+        assertThat(engine.untilItsTurn()).isEqualTo(Duration.ofMillis(700));
+    }
+
     /** A stand-in for the engine that answers everything with 200 and remembers what it was sent. */
     private static class Recording implements HttpEngine {
 
@@ -259,6 +269,7 @@ class CredentialedEngineTest {
                 Duration.ZERO, Duration.ZERO, 0, 1);
         private String echo = "";
         private boolean closed;
+        private Duration untilItsTurn = Duration.ZERO;
 
         void echo(String body) {
             this.echo = body;
@@ -286,6 +297,11 @@ class CredentialedEngineTest {
 
         @Override
         public void dropWhatIsHeld() {
+        }
+
+        @Override
+        public Duration untilItsTurn() {
+            return untilItsTurn;
         }
 
         @Override

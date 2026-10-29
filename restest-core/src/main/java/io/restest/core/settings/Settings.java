@@ -134,6 +134,9 @@ public record Settings(
                 fewest,
                 typed.wholeNumber("engine.initialConcurrency", whereToStartWithin(fewest, most)),
                 most,
+                typed.yesOrNo("engine.limitTheRate", limitedOnceARateIsNamed(given)),
+                typed.wholeNumber("engine.mostRequestsPerMinute",
+                        DEFAULTS.engine.mostRequestsPerMinute()),
                 typed.number("engine.slowdownFactor",
                         BigDecimal.valueOf(DEFAULTS.engine.slowdownFactor())).doubleValue(),
                 typed.count("engine.maxRetainedResponseBytes",
@@ -320,6 +323,18 @@ public record Settings(
             Set.of("engine.initialConcurrency", "engine.callTimeout");
 
     /**
+     * Whether the rate is limited, when nobody said: yes once somebody named a rate.
+     *
+     * <p>{@code --set engine.mostRequestsPerMinute=300} is the line somebody types to promise an
+     * API's owner a rate, and it has to work as typed. A rate named and then ignored, because the
+     * switch was not named as well, would let the run go as fast as it can while whoever typed it
+     * believes the promise was made. The switch named outright still decides, either way.
+     */
+    private static boolean limitedOnceARateIsNamed(Map<String, String> given) {
+        return given.containsKey("engine.mostRequestsPerMinute") || DEFAULTS.engine.limitTheRate();
+    }
+
+    /**
      * Where the engine starts, when somebody moved the range and said nothing about the start.
      *
      * <p>{@code --set engine.maxConcurrency=1} is the answer to "my API falls over when asked two
@@ -384,6 +399,8 @@ public record Settings(
             case "engine.minConcurrency" -> String.valueOf(engine.minConcurrency());
             case "engine.initialConcurrency" -> String.valueOf(engine.initialConcurrency());
             case "engine.maxConcurrency" -> String.valueOf(engine.maxConcurrency());
+            case "engine.limitTheRate" -> String.valueOf(engine.limitTheRate());
+            case "engine.mostRequestsPerMinute" -> String.valueOf(engine.mostRequestsPerMinute());
             case "engine.slowdownFactor" -> written(engine.slowdownFactor());
             case "engine.maxRetainedResponseBytes" ->
                     String.valueOf(engine.maxRetainedResponseBytes());

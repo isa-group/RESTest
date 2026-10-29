@@ -93,6 +93,22 @@ used and where each came from.
 flight, and slows down by itself when the API does. An API that cannot take even that, or one you do
 not want loaded, gets one request at a time with `--set engine.maxConcurrency=1`.
 
+**Somebody else's API.** Against an API on your own machine RESTest sends thousands of requests a
+second. Whoever runs a staging server you were allowed to test usually wants a rate instead, and one
+line promises it:
+
+```bash
+restest run http://localhost:9966/petclinic/v3/api-docs --budget 30s --set engine.mostRequestsPerMinute=300
+```
+
+That is five requests a second, evenly spaced: never two closer than a fifth of a second, and never
+three hundred in the first seconds and then nothing. The quiet it makes is not RESTest being slow,
+and the first line of the summary says how much of the idle share it was:
+
+```
+145 requests to 43 operations in 30.0s, 85% of it idle (81% keeping to the rate it was given)
+```
+
 **A slow API.** RESTest waits thirty seconds for an answer once connected. For an API that takes
 longer, `--set engine.readTimeout=2m`. Lengths of time are written `500ms`, `30s`, `5m`, `2h`, or as
 a plain number of seconds.

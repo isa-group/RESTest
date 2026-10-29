@@ -376,6 +376,8 @@ class JsonReportTest {
         assertThat(number(engine, "requestsSent")).isEqualTo(20);
         assertThat(text(engine, "wallClock")).isEqualTo("PT10S");
         assertThat(text(engine, "idle")).isEqualTo("PT3S");
+        assertThat(text(engine, "idleKeepingToTheRate"))
+                .describedAs("an engine that kept to no rate").isEqualTo("PT0S");
         assertThat(number(engine, "peakConcurrency")).isEqualTo(4);
     }
 

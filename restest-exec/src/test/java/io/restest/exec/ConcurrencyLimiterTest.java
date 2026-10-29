@@ -16,14 +16,18 @@
 package io.restest.exec;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import io.restest.core.exec.EngineSettings;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Checks the rule that decides how many requests may be in flight, by telling the limiter how
@@ -285,6 +289,168 @@ class ConcurrencyLimiterTest {
         assertThat(took.done().await(5, TimeUnit.SECONDS)).isTrue();
     }
 
+    @Test
+    @DisplayName("with a rate, the first request goes at once and the next waits for its turn, "
+            + "however many slots are free")
+    void the_next_request_waits_for_its_turn() throws InterruptedException {
+        ConcurrencyLimiter limiter = paced(300);
+        long before = System.nanoTime();
+        assertThat(limiter.acquire()).isTrue();
+        assertThat(Duration.ofNanos(System.nanoTime() - before))
+                .isLessThan(Duration.ofMillis(150));
+
+        Took next = takeASlotElsewhere(limiter);
+
+        assertThat(next.done().await(100, TimeUnit.MILLISECONDS))
+                .describedAs("a fifth of a second between two requests").isFalse();
+        assertThat(next.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(next.got()).isTrue();
+        assertThat(Duration.ofNanos(System.nanoTime() - before))
+                .isGreaterThanOrEqualTo(Duration.ofMillis(190));
+    }
+
+    @Test
+    @DisplayName("a quiet spell is never made up for: after it, the requests are as far apart as "
+            + "ever")
+    void no_burst_after_a_quiet_spell() throws InterruptedException {
+        AtomicLong clock = new AtomicLong();
+        ConcurrencyLimiter limiter = new ConcurrencyLimiter(
+                EngineSettings.defaults().withMostRequestsPerMinute(300), clock::get);
+        goes(limiter);
+        limiter.release();
+        clock.addAndGet(Duration.ofMillis(600).toNanos());
+
+        assertThat(limiter.untilItsTurn()).describedAs("its turn came long ago").isZero();
+        goes(limiter);
+
+        assertThat(limiter.untilItsTurn())
+                .describedAs("two turns went unused, and neither is given back")
+                .isEqualTo(Duration.ofMillis(200));
+    }
+
+    @Test
+    @DisplayName("waiting for a turn is not running out of room, so it earns nothing")
+    void waiting_for_a_turn_earns_nothing() throws InterruptedException {
+        ConcurrencyLimiter limiter = new ConcurrencyLimiter(EngineSettings.defaults()
+                .withConcurrency(1, 2, 16).withMostRequestsPerMinute(1));
+        limiter.acquire();
+        Took next = takeASlotElsewhere(limiter);
+        next.waitingOutTheHold();
+
+        limiter.observe(FAST, false);
+
+        assertThat(limiter.limit()).describedAs("one slot of two was ever in use").isEqualTo(2);
+        limiter.close();
+    }
+
+    @Test
+    @DisplayName("a hold the API asks for while a request waits for its turn still holds it once "
+            + "the turn has come")
+    void a_hold_during_a_turn_still_holds() throws InterruptedException {
+        ConcurrencyLimiter limiter = paced(300);
+        long before = System.nanoTime();
+        limiter.acquire();
+        limiter.release();
+        Took next = takeASlotElsewhere(limiter);
+        next.waitingOutTheHold();
+
+        limiter.holdFor(Duration.ofMillis(600));
+
+        assertThat(next.done().await(400, TimeUnit.MILLISECONDS))
+                .describedAs("its turn came at a fifth of a second, inside the hold").isFalse();
+        assertThat(next.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(next.got()).isTrue();
+        assertThat(Duration.ofNanos(System.nanoTime() - before))
+                .isGreaterThanOrEqualTo(Duration.ofMillis(550));
+    }
+
+    @Test
+    @DisplayName("a request waiting for its turn when the engine closes goes away without a slot")
+    void closing_lets_a_request_waiting_for_its_turn_go() throws InterruptedException {
+        ConcurrencyLimiter limiter = paced(1);
+        limiter.acquire();
+        Took next = takeASlotElsewhere(limiter);
+        next.waitingOutTheHold();
+
+        limiter.close();
+
+        assertThat(next.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(next.got()).isFalse();
+    }
+
+    @Test
+    @DisplayName("once what is held is dropped, a request that would wait for its turn goes away "
+            + "without a slot, and one whose turn has come still goes")
+    void dropping_lets_a_request_waiting_for_its_turn_go() throws InterruptedException {
+        ConcurrencyLimiter limiter = paced(1);
+        limiter.acquire();
+        Took next = takeASlotElsewhere(limiter);
+        next.waitingOutTheHold();
+
+        limiter.dropWhatIsHeld();
+
+        assertThat(next.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(next.got()).isFalse();
+
+        ConcurrencyLimiter full = new ConcurrencyLimiter(EngineSettings.defaults()
+                .withoutConcurrency().withMostRequestsPerMinute(6000));
+        full.acquire();
+        Thread.sleep(50);
+        Took waiting = takeASlotElsewhere(full);
+        full.dropWhatIsHeld();
+        assertThat(waiting.done().await(200, TimeUnit.MILLISECONDS))
+                .describedAs("waiting for a slot, its turn already come").isFalse();
+        full.release();
+        assertThat(waiting.done().await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(waiting.got()).isTrue();
+    }
+
+    @Test
+    @DisplayName("how long one more request would wait counts the turns of those handed over "
+            + "before it")
+    void the_wait_for_a_turn_counts_those_before_it() throws InterruptedException {
+        AtomicLong clock = new AtomicLong(1_000);
+        ConcurrencyLimiter limiter = new ConcurrencyLimiter(
+                EngineSettings.defaults().withMostRequestsPerMinute(600), clock::get);
+        assertThat(limiter.untilItsTurn()).isZero();
+
+        limiter.handedOver();
+        assertThat(limiter.untilItsTurn())
+                .describedAs("its turn is now; one more would come a tenth of a second after it")
+                .isEqualTo(Duration.ofMillis(100));
+        assertThat(limiter.acquire()).isTrue();
+        limiter.handedOver();
+        limiter.handedOver();
+        assertThat(limiter.untilItsTurn()).isEqualTo(Duration.ofMillis(300));
+
+        clock.addAndGet(Duration.ofMillis(100).toNanos());
+        limiter.notGoing();
+        assertThat(limiter.untilItsTurn()).isEqualTo(Duration.ofMillis(100));
+
+        ConcurrencyLimiter unpaced = limiter(1, 4, 16);
+        unpaced.handedOver();
+        unpaced.acquire();
+        unpaced.handedOver();
+        assertThat(unpaced.untilItsTurn()).describedAs("no rate, no turns").isZero();
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {Long.MIN_VALUE + 5, -1, Long.MAX_VALUE - 5})
+    @DisplayName("wherever the clock begins, and when it goes round, the first request goes at "
+            + "once and the next waits a turn")
+    void the_first_turn_is_now_whatever_the_clock(long start) throws InterruptedException {
+        AtomicLong clock = new AtomicLong(start);
+        ConcurrencyLimiter limiter = new ConcurrencyLimiter(
+                EngineSettings.defaults().withMostRequestsPerMinute(600), clock::get);
+
+        goes(limiter);
+        assertThat(limiter.untilItsTurn()).isEqualTo(Duration.ofMillis(100));
+
+        clock.addAndGet(Duration.ofMillis(100).toNanos());
+        assertThat(limiter.untilItsTurn()).isZero();
+        goes(limiter);
+    }
+
     /** A slot being taken on a thread of its own: whether it was, once it is done trying. */
     private record Took(CountDownLatch done, AtomicBoolean took, Thread thread) {
 
@@ -361,6 +527,22 @@ class ConcurrencyLimiterTest {
         strict.observe(USUAL * 2, false);
 
         assertThat(strict.limit()).isEqualTo(3);
+    }
+
+    /**
+     * Hands a request over and gives it a slot, as the engine does, failing rather than hanging if
+     * it would have to wait: with a clock the test sets, a wait would never end.
+     */
+    private static void goes(ConcurrencyLimiter limiter) {
+        limiter.handedOver();
+        assertTimeoutPreemptively(Duration.ofSeconds(5),
+                () -> assertThat(limiter.acquire()).isTrue());
+    }
+
+    /** A limiter with room for sixteen in flight, kept to so many requests a minute. */
+    private static ConcurrencyLimiter paced(int perMinute) {
+        return new ConcurrencyLimiter(
+                EngineSettings.defaults().withMostRequestsPerMinute(perMinute));
     }
 
     private static ConcurrencyLimiter limiter(int minimum, int initial, int maximum) {

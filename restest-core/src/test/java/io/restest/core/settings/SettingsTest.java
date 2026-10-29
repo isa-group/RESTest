@@ -319,6 +319,51 @@ class SettingsTest {
                     .hasMessageContaining("1 to 4");
         }
 
+        @Test
+        @DisplayName("a rate is promised in one line: naming the most requests a minute limits the "
+                + "rate, unless the switch is named as well and says not to")
+        void naming_a_rate_limits_it() {
+            Settings promised = Settings.from(Map.of("engine.mostRequestsPerMinute", "300"));
+
+            assertThat(promised.engine().limitTheRate()).isTrue();
+            assertThat(promised.engine().timeBetweenRequests()).contains(Duration.ofMillis(200));
+
+            Settings notNow = Settings.from(Map.of(
+                    "engine.mostRequestsPerMinute", "300",
+                    "engine.limitTheRate", "false"));
+
+            assertThat(notNow.engine().limitTheRate()).isFalse();
+            assertThat(notNow.engine().mostRequestsPerMinute()).isEqualTo(300);
+        }
+
+        @Test
+        @DisplayName("the switch alone keeps to ten requests a second")
+        void the_switch_alone_keeps_to_ten_a_second() {
+            Settings limited = Settings.from(Map.of("engine.limitTheRate", "true"));
+
+            assertThat(limited.engine().timeBetweenRequests()).contains(Duration.ofMillis(100));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"0", "-5"})
+        @DisplayName("a rate of no requests is refused, saying that the switch is how the rate is "
+                + "left alone")
+        void a_rate_of_nothing_is_refused(String said) {
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.mostRequestsPerMinute", said)))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageStartingWith("engine: ")
+                    .hasMessageContaining("limitTheRate=false");
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"1.5", "ten", "99999999999"})
+        @DisplayName("a rate a minute is a whole number a machine can hold")
+        void a_rate_is_a_whole_number(String said) {
+            assertThatThrownBy(() -> Settings.from(Map.of("engine.mostRequestsPerMinute", said)))
+                    .isInstanceOf(SettingsException.class)
+                    .hasMessageContaining("engine.mostRequestsPerMinute");
+        }
+
         /**
          * The reason every value is applied before any of them is checked.
          *
@@ -611,11 +656,17 @@ class SettingsTest {
                 + "makes a printed file one the tool accepts")
         void every_setting_survives_the_round_trip(SettingKey key) {
             String written = Settings.defaults().written(key);
+            // Naming a rate is how a rate is promised, so it limits the rate even at the value it
+            // already had; the switch, named beside it, is how that is undone.
+            Settings expected = key.fullName().equals("engine.mostRequestsPerMinute")
+                    ? Settings.defaults().withEngine(Settings.defaults().engine()
+                            .withMostRequestsPerMinute(Integer.parseInt(written)))
+                    : Settings.defaults();
 
             assertThat(Settings.from(Map.of(key.fullName(), written)))
                     .describedAs("%s printed as '%s' did not read back as itself",
                             key.fullName(), written)
-                    .isEqualTo(Settings.defaults());
+                    .isEqualTo(expected);
         }
 
         @Test

@@ -17,10 +17,12 @@ package io.restest.core.exec;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * How the HTTP engine should behave while it sends requests: how long to wait, how many requests to
- * have in flight at once, how much of a large reply to keep, and what to call ourselves.
+ * have in flight at once and how often to send one, how much of a large reply to keep, and what to
+ * call ourselves.
  *
  * <p>{@link #defaults()} is meant to be usable against an unknown API with nobody having configured
  * anything, which is the tool's first design principle. Every value below says why it is what it is,
@@ -46,6 +48,15 @@ import java.util.Objects;
  * @param maxConcurrency the most requests the engine will ever have in flight. This is the promise
  *     that the tool stays a test tool and does not turn into a load generator against somebody's
  *     staging environment
+ * @param limitTheRate whether the engine keeps to a rate as well: never two requests closer
+ *     together than a minute divided by {@code mostRequestsPerMinute}. Off by default, because it
+ *     would slow every run to protect the few pointed at somebody else's server; on, it is what a
+ *     person can promise that server's owner
+ * @param mostRequestsPerMinute the most requests a minute while the rate is limited, sent evenly
+ *     rather than in bursts: 600 is one every tenth of a second, never six hundred in the first
+ *     seconds and then nothing. Ten a second by default, of the order of what APIs commonly allow
+ *     one client: slow enough for any staging server, quick enough to send every operation of an
+ *     API of thirty-five once in under four seconds
  * @param slowdownFactor how much slower than the best answer so far counts as "the API is
  *     struggling", at which point the engine keeps fewer requests in flight. Two is deliberately
  *     forgiving: normal APIs vary by more than a few percent, and reacting to that would leave the
@@ -67,6 +78,8 @@ public record EngineSettings(
         int minConcurrency,
         int initialConcurrency,
         int maxConcurrency,
+        boolean limitTheRate,
+        int mostRequestsPerMinute,
         double slowdownFactor,
         long maxRetainedResponseBytes,
         boolean followRedirects,
@@ -77,6 +90,8 @@ public record EngineSettings(
      * can count in milliseconds. A wait longer than that is refused rather than started.
      */
     public static final Duration LONGEST_WAIT = Duration.ofMillis(Integer.MAX_VALUE);
+
+    private static final long ONE_MINUTE_IN_NANOS = Duration.ofMinutes(1).toNanos();
 
     /** One mebibyte: generous for an API reply, small enough to hold thousands of them. */
     public static final long DEFAULT_MAX_RETAINED_RESPONSE_BYTES = 1024L * 1024L;
@@ -92,6 +107,8 @@ public record EngineSettings(
             1,
             4,
             16,
+            false,
+            600,
             2.0,
             DEFAULT_MAX_RETAINED_RESPONSE_BYTES,
             false,
@@ -128,6 +145,13 @@ public record EngineSettings(
                     + ") is outside the range the engine is allowed to use, " + minConcurrency
                     + " to " + maxConcurrency);
         }
+        if (mostRequestsPerMinute < 1) {
+            // Zero is what somebody tries for "no limit", and a number set to zero says nothing
+            // about switching: the switch is the way.
+            throw new IllegalArgumentException("mostRequestsPerMinute (" + mostRequestsPerMinute
+                    + ") must be at least 1; to send without a rate, set "
+                    + "engine.limitTheRate=false");
+        }
         if (!(slowdownFactor > 1) || !Double.isFinite(slowdownFactor)) {
             // The second half is not belt and braces. A number typed as 1e400 is larger than a
             // double can hold and arrives here as infinity, which satisfies "greater than 1" and
@@ -156,27 +180,27 @@ public record EngineSettings(
 
     public EngineSettings withConnectTimeout(Duration value) {
         return new EngineSettings(value, readTimeout, writeTimeout, callTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
-                followRedirects, userAgent);
+                initialConcurrency, maxConcurrency, limitTheRate, mostRequestsPerMinute,
+                slowdownFactor, maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     public EngineSettings withReadTimeout(Duration value) {
         return new EngineSettings(connectTimeout, value, writeTimeout, callTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
-                followRedirects, userAgent);
+                initialConcurrency, maxConcurrency, limitTheRate, mostRequestsPerMinute,
+                slowdownFactor, maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     public EngineSettings withWriteTimeout(Duration value) {
         return new EngineSettings(connectTimeout, readTimeout, value, callTimeout, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
-                followRedirects, userAgent);
+                initialConcurrency, maxConcurrency, limitTheRate, mostRequestsPerMinute,
+                slowdownFactor, maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     /** The longest one request may take; each of the three other waits has to fit inside it. */
     public EngineSettings withCallTimeout(Duration value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, value, minConcurrency,
-                initialConcurrency, maxConcurrency, slowdownFactor, maxRetainedResponseBytes,
-                followRedirects, userAgent);
+                initialConcurrency, maxConcurrency, limitTheRate, mostRequestsPerMinute,
+                slowdownFactor, maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     /**
@@ -189,8 +213,8 @@ public record EngineSettings(
      */
     public EngineSettings withConcurrency(int minimum, int initial, int maximum) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout, minimum,
-                initial, maximum, slowdownFactor, maxRetainedResponseBytes, followRedirects,
-                userAgent);
+                initial, maximum, limitTheRate, mostRequestsPerMinute, slowdownFactor,
+                maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     /** One request at a time, for an API too fragile to be asked two questions at once. */
@@ -198,29 +222,56 @@ public record EngineSettings(
         return withConcurrency(1, 1, 1);
     }
 
+    /**
+     * At most this many requests a minute, evenly spaced.
+     *
+     * @param value the most requests a minute, at least one
+     * @return settings that keep to that rate
+     */
+    public EngineSettings withMostRequestsPerMinute(int value) {
+        return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
+                minConcurrency, initialConcurrency, maxConcurrency, true, value, slowdownFactor,
+                maxRetainedResponseBytes, followRedirects, userAgent);
+    }
+
+    /**
+     * The least time between two requests the engine sends, while the rate is limited: a minute
+     * divided by {@link #mostRequestsPerMinute()}, so a minute at most and never nothing. Rounded up
+     * to the nanosecond, so that a minute never holds one request more than the rate.
+     *
+     * @return that time, or nothing when the rate is not limited
+     */
+    public Optional<Duration> timeBetweenRequests() {
+        return limitTheRate
+                ? Optional.of(Duration.ofNanos(
+                        (ONE_MINUTE_IN_NANOS + mostRequestsPerMinute - 1) / mostRequestsPerMinute))
+                : Optional.empty();
+    }
+
     /** How much slower than its best answer counts as the API struggling. Greater than one. */
     public EngineSettings withSlowdownFactor(double value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
-                minConcurrency, initialConcurrency, maxConcurrency, value, maxRetainedResponseBytes,
-                followRedirects, userAgent);
+                minConcurrency, initialConcurrency, maxConcurrency, limitTheRate,
+                mostRequestsPerMinute, value, maxRetainedResponseBytes, followRedirects, userAgent);
     }
 
     public EngineSettings withMaxRetainedResponseBytes(long value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
-                minConcurrency, initialConcurrency, maxConcurrency, slowdownFactor, value,
-                followRedirects, userAgent);
+                minConcurrency, initialConcurrency, maxConcurrency, limitTheRate,
+                mostRequestsPerMinute, slowdownFactor, value, followRedirects, userAgent);
     }
 
     public EngineSettings withFollowRedirects(boolean value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
-                minConcurrency, initialConcurrency, maxConcurrency, slowdownFactor,
-                maxRetainedResponseBytes, value, userAgent);
+                minConcurrency, initialConcurrency, maxConcurrency, limitTheRate,
+                mostRequestsPerMinute, slowdownFactor, maxRetainedResponseBytes, value, userAgent);
     }
 
     public EngineSettings withUserAgent(String value) {
         return new EngineSettings(connectTimeout, readTimeout, writeTimeout, callTimeout,
-                minConcurrency, initialConcurrency, maxConcurrency, slowdownFactor,
-                maxRetainedResponseBytes, followRedirects, value);
+                minConcurrency, initialConcurrency, maxConcurrency, limitTheRate,
+                mostRequestsPerMinute, slowdownFactor, maxRetainedResponseBytes, followRedirects,
+                value);
     }
 
     /**

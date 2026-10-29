@@ -37,6 +37,10 @@ import java.util.function.LongSupplier;
  * perfectly efficient. Time before the first request and time after the last answer are both time
  * the engine had nothing in flight and could have.
  *
+ * <p>When the engine keeps to a rate it was given, part of the idle time is that rate's doing: after
+ * each request goes out, the next may not go until its turn, and nothing the tool could do would fill
+ * that gap. That part is counted apart, so that a run held to a slow rate is not read as a slow tool.
+ *
  * <p>Where the time comes from is a parameter, so that the tests can hand it a clock they control
  * and assert exact numbers instead of sleeping and hoping.
  */
@@ -45,6 +49,9 @@ final class EngineActivity {
     private final LongSupplier nanoTime;
     private final long startedAt;
 
+    /** When the next request may go, by the rate the engine keeps to, on the clock above. */
+    private final LongSupplier nextTurn;
+
     private int inFlight;
     private int peakConcurrency;
     private long idleNanos;
@@ -52,10 +59,26 @@ final class EngineActivity {
     private long requestsSent;
     private long totalResponseNanos;
 
-    EngineActivity(LongSupplier nanoTime) {
+    /** How much of the idle time, so far, fell before a turn the rate had not yet given. */
+    private long idleKeepingToTheRateNanos;
+
+    /** The turn after the last request that went out: before it, nothing could have gone. */
+    private long turnAfterTheLast;
+
+    /**
+     * Keeps track of an engine from now on.
+     *
+     * @param nanoTime the clock
+     * @param nextTurn when the next request may go by the rate the engine keeps to, on the same
+     *     clock, asked as each request goes out; a moment already past for an engine that keeps to
+     *     no rate
+     */
+    EngineActivity(LongSupplier nanoTime, LongSupplier nextTurn) {
         this.nanoTime = nanoTime;
+        this.nextTurn = nextTurn;
         this.startedAt = nanoTime.getAsLong();
         this.idleSince = startedAt;
+        this.turnAfterTheLast = startedAt;
     }
 
     /** A request is about to go out; the engine stops being idle. */
@@ -63,9 +86,25 @@ final class EngineActivity {
         long now = nanoTime.getAsLong();
         if (inFlight == 0) {
             idleNanos += now - idleSince;
+            idleKeepingToTheRateNanos += beforeTheTurn(now);
+        }
+        // The later of the two: two requests going out together may say so in either order.
+        long turn = nextTurn.getAsLong();
+        if (turn - turnAfterTheLast > 0) {
+            turnAfterTheLast = turn;
         }
         inFlight++;
         peakConcurrency = Math.max(peakConcurrency, inFlight);
+    }
+
+    /**
+     * How much of the idle time from when it began to the given moment came before the rate allowed
+     * the next request: none when no rate is kept to, whose turn is always already past.
+     */
+    private long beforeTheTurn(long until) {
+        // Counted in the clock's own units, which go round rather than overflow.
+        long end = until - turnAfterTheLast < 0 ? until : turnAfterTheLast;
+        return Math.max(0, end - idleSince);
     }
 
     /**
@@ -106,8 +145,10 @@ final class EngineActivity {
         long now = nanoTime.getAsLong();
         long wallNanos = now - startedAt;
         long idle = idleNanos + (inFlight == 0 ? now - idleSince : 0);
+        long keepingToTheRate =
+                idleKeepingToTheRateNanos + (inFlight == 0 ? beforeTheTurn(now) : 0);
         return new EngineStatistics(requestsSent, Duration.ofNanos(wallNanos),
                 Duration.ofNanos(idle), Duration.ofNanos(totalResponseNanos), peakConcurrency,
-                concurrencyLimit);
+                concurrencyLimit, Duration.ofNanos(keepingToTheRate));
     }
 }

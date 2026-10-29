@@ -43,6 +43,10 @@ import java.util.Objects;
  * @param peakConcurrency the most requests that were ever in flight at the same moment
  * @param concurrencyLimit how many the engine was willing to have in flight at this moment, which
  *     moves up and down as the API turns out to be fast or slow
+ * @param idleKeepingToTheRate how much of the idle time came while the engine kept to the rate it
+ *     was given: the time after each request went out and before the next was allowed to, in which
+ *     nothing could have been sent however quick the tool was. Part of the idle time, never more;
+ *     none when no rate was given
  */
 public record EngineStatistics(
         long requestsSent,
@@ -50,12 +54,14 @@ public record EngineStatistics(
         Duration idle,
         Duration totalResponseTime,
         int peakConcurrency,
-        int concurrencyLimit) {
+        int concurrencyLimit,
+        Duration idleKeepingToTheRate) {
 
     public EngineStatistics {
         nonNegative(wallClock, "wallClock");
         nonNegative(idle, "idle");
         nonNegative(totalResponseTime, "totalResponseTime");
+        nonNegative(idleKeepingToTheRate, "idleKeepingToTheRate");
         if (requestsSent < 0) {
             throw new IllegalArgumentException("requestsSent cannot be negative: " + requestsSent);
         }
@@ -71,6 +77,18 @@ public record EngineStatistics(
             throw new IllegalArgumentException("idle time (" + idle + ") cannot exceed the wall "
                     + "clock (" + wallClock + "): it is part of it, not additional to it");
         }
+        if (idleKeepingToTheRate.compareTo(idle) > 0) {
+            throw new IllegalArgumentException("idle time kept to the rate ("
+                    + idleKeepingToTheRate + ") cannot exceed the idle time (" + idle + "): it is "
+                    + "part of it");
+        }
+    }
+
+    /** The statistics of an engine that keeps to no rate. */
+    public EngineStatistics(long requestsSent, Duration wallClock, Duration idle,
+            Duration totalResponseTime, int peakConcurrency, int concurrencyLimit) {
+        this(requestsSent, wallClock, idle, totalResponseTime, peakConcurrency, concurrencyLimit,
+                Duration.ZERO);
     }
 
     /** An engine that has not sent anything yet. */

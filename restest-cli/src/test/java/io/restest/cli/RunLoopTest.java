@@ -923,10 +923,12 @@ class RunLoopTest {
         // The list of shelters takes longer than the lap waits for it, so the lap is over before it
         // is answered and the run goes on sending; when the 401 comes, the next request is where
         // the run stops. A slot taken for that request and not given back would leave the run
-        // waiting for an answer nobody owes it until the wait for stragglers ran out.
+        // waiting for an answer nobody owes it until the wait for stragglers ran out. Two seconds,
+        // so that the lap is over long before it even on a slow machine sharing its processors
+        // with other tests: at 0.8 s a Windows runner once finished the lap after the 401 came.
         engine.answersWith(testCase -> Optional.of(401));
         engine.takes(request -> request.url().endsWith("/shelters")
-                ? Duration.ofMillis(800) : Duration.ofMillis(1));
+                ? Duration.ofSeconds(2) : Duration.ofMillis(1));
 
         for (Duration patience : List.of(Duration.ofMillis(200), Duration.ZERO)) {
             long began = System.nanoTime();
@@ -1119,6 +1121,27 @@ class RunLoopTest {
         assertThat(engine.holds).isEmpty();
         assertThat(engine.askedFor("getPet")).describedAs("%s", outcome)
                 .isGreaterThan(WORK_AHEAD * 2L);
+    }
+
+    @Test
+    @DisplayName("with a rate kept to, a request is built only once its turn has come, so the loop "
+            + "asks for no more than the rate allows and nothing waits inside the engine")
+    void a_request_is_built_when_its_turn_comes() {
+        Duration between = Duration.ofMillis(200);
+        engine.keepsTo(between);
+        engine.idleGrows = true;
+
+        RunLoop.Outcome outcome = run(BUDGET, WITHOUT_A_FIRST_ROUND, listening -> { });
+
+        assertThat(outcome.sent()).describedAs("%s", outcome)
+                .isBetween(2L, BUDGET.dividedBy(between) + 1);
+        assertThat(engine.shortestGap())
+                .describedAs("the loop waited for each turn rather than handing requests over to "
+                        + "wait for it, less what a busy machine's timers take away")
+                .isGreaterThan(between.dividedBy(2));
+        assertThat(outcome.waited().orElseThrow().idle())
+                .describedAs("quiet the rate made is not quiet the API asked for")
+                .isZero();
     }
 
     @Test
@@ -1353,6 +1376,26 @@ class RunLoopTest {
         /** From which request on the engine refuses to take any more, as a closed one does. */
         private volatile int refusesFrom = Integer.MAX_VALUE;
 
+        /** The least time between two requests, as an engine kept to a rate has; none when zero. */
+        private volatile Duration between = Duration.ZERO;
+
+        /**
+         * Whether the engine reports every moment since it was built as idle, so that a wait the
+         * loop wrongly counted as quiet the API asked for would show; otherwise it reports none.
+         */
+        private volatile boolean idleGrows = false;
+        private final long builtAt = System.nanoTime();
+
+        /** Keeps to a rate: says how long until the next request's turn, as a real engine does. */
+        void keepsTo(Duration gap) {
+            this.between = gap;
+        }
+
+        /** The shortest stretch between two requests asked for one after the other. */
+        Duration shortestGap() {
+            return Duration.ofNanos(gaps().min().orElse(Long.MAX_VALUE));
+        }
+
         void takes(Function<HttpRequestRecord, Duration> perRequest) {
             this.howLong = perRequest;
         }
@@ -1384,12 +1427,14 @@ class RunLoopTest {
 
         /** The longest stretch with no request asked for at all, between the first and the last. */
         Duration longestQuiet() {
+            return Duration.ofNanos(gaps().max().orElse(0));
+        }
+
+        /** Every stretch between two requests asked for one after the other, in nanoseconds. */
+        private java.util.stream.LongStream gaps() {
             List<Long> at = everySend.stream().map(Map.Entry::getValue).sorted().toList();
-            long longest = 0;
-            for (int i = 1; i < at.size(); i++) {
-                longest = Math.max(longest, at.get(i) - at.get(i - 1));
-            }
-            return Duration.ofNanos(longest);
+            return java.util.stream.IntStream.range(1, at.size())
+                    .mapToLong(i -> at.get(i) - at.get(i - 1));
         }
 
         @Override
@@ -1462,7 +1507,21 @@ class RunLoopTest {
         }
 
         @Override
+        public Duration untilItsTurn() {
+            if (between.isZero() || everySend.isEmpty()) {
+                return Duration.ZERO;
+            }
+            long lastSentAt = everySend.stream().mapToLong(Map.Entry::getValue).max().orElseThrow();
+            return Duration.ofNanos(Math.max(0, lastSentAt + between.toNanos() - System.nanoTime()));
+        }
+
+        @Override
         public EngineStatistics statistics() {
+            if (idleGrows) {
+                Duration since = Duration.ofNanos(System.nanoTime() - builtAt);
+                return new EngineStatistics(sent.get(), since, since,
+                        Duration.ofMillis(sent.get()), mostAtOnce.get(), WORK_AHEAD);
+            }
             return new EngineStatistics(sent.get(), Duration.ofSeconds(1), Duration.ZERO,
                     Duration.ofMillis(sent.get()), mostAtOnce.get(), WORK_AHEAD);
         }

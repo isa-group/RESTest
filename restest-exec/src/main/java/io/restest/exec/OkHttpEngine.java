@@ -78,7 +78,8 @@ import okhttp3.ResponseBody;
  *       goes with it - are consequently not part of the record when a reply arrived compressed.
  *   <li><strong>It keeps track of its own idleness.</strong> Every run can say what share of the time
  *       it had nothing in flight, which is the project's measure of whether the tool, rather than the
- *       API, is the slow one.
+ *       API, is the slow one - and, when it was given a rate to keep to, how much of that the rate
+ *       made.
  * </ul>
  *
  * <p>Two engines can run side by side in one program - two runs, two APIs, two sets of settings -
@@ -114,8 +115,8 @@ public final class OkHttpEngine implements HttpEngine {
     OkHttpEngine(EngineSettings settings, LongSupplier nanoTime) {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
-        this.activity = new EngineActivity(nanoTime);
-        this.limiter = new ConcurrencyLimiter(settings);
+        this.limiter = new ConcurrencyLimiter(settings, nanoTime);
+        this.activity = new EngineActivity(nanoTime, limiter::nextTurn);
         this.requests = Executors.newThreadPerTaskExecutor(
                 Thread.ofVirtual().name("restest-request-", 0).factory());
         this.client = new OkHttpClient.Builder()
@@ -149,12 +150,14 @@ public final class OkHttpEngine implements HttpEngine {
         Objects.requireNonNull(testCase, "testCase");
         Objects.requireNonNull(request, "request");
         refuseIfClosed();
+        limiter.handedOver();
         try {
             // Accepted now, so not refused later: a request handed over just before the engine closes
             // comes back as one that never went out, rather than failing on its own thread.
             return CompletableFuture.supplyAsync(() -> sendAccepted(testCase, request), requests);
         } catch (RejectedExecutionException e) {
             // close() from another thread, between the check above and here.
+            limiter.notGoing();
             throw new IllegalStateException(
                     "this engine is closed and cannot send anything else", e);
         }
@@ -165,6 +168,7 @@ public final class OkHttpEngine implements HttpEngine {
         Objects.requireNonNull(testCase, "testCase");
         Objects.requireNonNull(request, "request");
         refuseIfClosed();
+        limiter.handedOver();
         return sendAccepted(testCase, request);
     }
 
@@ -175,6 +179,7 @@ public final class OkHttpEngine implements HttpEngine {
         try {
             outgoing = build(request, slot);
         } catch (RuntimeException e) {
+            limiter.notGoing();
             activity.requestNeverSent();
             return Interaction.transportFailure(testCase, request,
                     "the request could not be assembled, so nothing was sent: " + reason(e),
@@ -227,6 +232,11 @@ public final class OkHttpEngine implements HttpEngine {
     @Override
     public void dropWhatIsHeld() {
         limiter.dropWhatIsHeld();
+    }
+
+    @Override
+    public Duration untilItsTurn() {
+        return limiter.untilItsTurn();
     }
 
     /** How many connections the engine is holding open for the requests still to come. */

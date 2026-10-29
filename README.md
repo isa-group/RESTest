@@ -305,9 +305,10 @@ restest run openapi.yaml --url http://localhost:8080 --set engine.maxConcurrency
 RESTEST_ENGINE_MAX_CONCURRENCY=1 restest run openapi.yaml --url http://localhost:8080
 ```
 
-That one is the answer to an API that falls over when it is asked two things at once. [The
-settings](docs/settings.md), and [the switches](docs/switches.md) — the settings that each turn off
-one thing a run does.
+That one is the answer to an API that falls over when it is asked two things at once;
+`--set engine.mostRequestsPerMinute=300` keeps a run to five requests a second, evenly spaced, for a
+server whose owner wants a rate. [The settings](docs/settings.md), and [the
+switches](docs/switches.md) — the settings that each turn off one thing a run does.
 
 **An API that asks for a key** refuses every request without it. `--auth` hands it over, and RESTest
 sends it where the document says, with the operations that ask for it:

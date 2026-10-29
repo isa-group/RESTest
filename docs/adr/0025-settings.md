@@ -813,3 +813,16 @@ skips depends on when the API asked, the file for getting the seed back turns it
 it on says under its seed that the seed alone does not repeat it. A first wait of no time is refused,
 since an API that does not say how long would be asked again at once, and so is a ceiling below the
 first wait. One hundred and five settings in nine groups.
+
+## Amendment (29 October 2026): a rate to keep to, and a switch a named rate turns on
+
+`engine.limitTheRate`, off by default, and `engine.mostRequestsPerMinute` (`600`) beside it
+([ADR-0043](0043-a-rate-to-keep-to.md)): at most that many requests a minute, never two closer than
+a minute divided by it. They are in `engine.*` because the HTTP engine keeps the turns. The switch
+is the first whose default follows whether another setting was named rather than its value: when
+nobody names it, it is on once a rate is named anywhere, and recorded as *worked out*, so that
+`--set engine.mostRequestsPerMinute=300` promises a rate in one line. It is not among the settings
+printed as comments, which follow other settings' values, so a printed file writes it out; a run
+whose rate is off while its number is not the default says so under its first lines. A rate of zero
+is refused, saying that the switch is how a rate is left alone. The switch is listed among those
+that are not levers. One hundred and seven settings in nine groups.
