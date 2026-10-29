@@ -98,6 +98,10 @@ engine:
   # initialConcurrency: 4     # default
   # the most requests ever in flight at once. 1 for a fragile API
   maxConcurrency: 16          # default
+  # whether the run keeps to mostRequestsPerMinute as well; on by itself once that is named
+  limitTheRate: false         # default
+  # the most requests a minute while the rate is limited, evenly spaced: 600 is one every tenth of a second
+  mostRequestsPerMinute: 600  # default
   # how much slower than its best answer so far counts as the API struggling
   slowdownFactor: 2           # default
   # how much of a reply body is kept in memory
@@ -404,6 +408,8 @@ spelling `--budget` takes.
 | `minConcurrency` | `1` | the fewest requests kept in flight, however badly the API behaves |
 | `initialConcurrency` | `4` | how many requests are in flight before anything is known about the API |
 | `maxConcurrency` | `16` | the most requests ever in flight at once. 1 for a fragile API |
+| `limitTheRate` | `false` | whether the run keeps to mostRequestsPerMinute as well; on by itself once that is named |
+| `mostRequestsPerMinute` | `600` | the most requests a minute while the rate is limited, evenly spaced: 600 is one every tenth of a second |
 | `slowdownFactor` | `2` | how much slower than its best answer so far counts as the API struggling |
 | `maxRetainedResponseBytes` | `1048576` | how much of a reply body is kept in memory |
 | `followRedirects` | `false` | whether a redirection is followed instead of being reported |
@@ -568,7 +574,7 @@ not.
 | `timelineIntervals` | `60` | how many equal intervals, up to 10000, the budget is cut into for the run over time in the report |
 | `html` | `true` | write report.html beside report.json: the same run, as a page to open in a browser |
 
-## Four things worth knowing
+## Five things worth knowing
 
 **A whole request is given twice the longest wait inside it.** `callTimeout` is the longest one
 request may take, from sending it to the last byte of its reply. It is what ends a reply that never
@@ -585,6 +591,27 @@ until somebody gives it, and `initialConcurrency` too, so a printed file with `r
 begin inside the range rather than a number of its own, so `--set engine.maxConcurrency=1` works as
 typed and gives you one request at a time. Naming a starting number outright that lies outside the
 range is still refused.
+
+**Naming a rate is how a rate is promised.** `limitTheRate` is off, and a run sends as fast as its
+requests in flight and the API's answers allow. `--set engine.mostRequestsPerMinute=300` turns it on
+by itself, recorded as *worked out*, so that one line is enough to promise an API's owner five
+requests a second. The requests go evenly, never two closer than a minute divided by that number —
+here a fifth of a second — and never a burst to make up for a quiet spell: not three hundred in the
+first seconds and then nothing. `limitTheRate: true` alone keeps to ten a second; `limitTheRate:
+false` named beside a rate leaves the rate alone. A printed file writes `limitTheRate: false` out, so
+changing only `mostRequestsPerMinute` in it keeps no rate, and the run says so under its first lines:
+
+```
+  engine.mostRequestsPerMinute is 300, but engine.limitTheRate is false, so no rate is kept to
+```
+
+The rate is kept where RESTest sends; the network on the way may bring two requests a little closer.
+The quiet it makes is not the tool being slow, and the summary says how much of the idle share it
+was. Against pet-clinic for 30 seconds at 300 a minute:
+
+```
+145 requests to 43 operations in 30.0s, 85% of it idle (81% keeping to the rate it was given)
+```
 
 **`roomAboveIt` is a width, not a ceiling.** When a description states no bounds for a number,
 RESTest invents one between `lowestNumber` and `lowestNumber + roomAboveIt`. When the description

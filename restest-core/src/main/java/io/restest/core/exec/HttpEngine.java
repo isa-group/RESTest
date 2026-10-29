@@ -91,14 +91,30 @@ public interface HttpEngine extends AutoCloseable {
     void holdFor(Duration howLong);
 
     /**
-     * Never sends what it is holding back because the API asked to be left alone: each such request
-     * comes back at once as one that never went out.
+     * Never sends what it is holding back because the API asked to be left alone, or because the
+     * rate it keeps to has not given it a turn yet: each such request comes back at once as one that
+     * never went out.
      *
-     * <p>For when a run stops sending while the API still asks for quiet - its time is up, or it
-     * was stopped - so that nothing reaches the API after that. Requests not held are untouched,
-     * and so is a hold that has already ended.
+     * <p>For when a run stops sending - its time is up, or it was stopped - so that nothing held back
+     * reaches the API after that. A request waiting only for room among those in flight is untouched,
+     * and so is one whose turn has come, and a hold that has already ended.
      */
     void dropWhatIsHeld();
+
+    /**
+     * How long a request handed over now would wait before the rate the engine keeps to lets it go,
+     * counting the turns of those handed over before it and not yet sent.
+     *
+     * <p>A caller that builds requests only when they can go keeps them from piling up inside the
+     * engine, built long before they are sent. Room among the requests in flight is not counted: that
+     * depends on answers nobody can foresee.
+     *
+     * @return that wait; nothing for an engine that keeps to no rate, which is what this answers
+     *     unless an engine says otherwise
+     */
+    default Duration untilItsTurn() {
+        return Duration.ZERO;
+    }
 
     /**
      * Releases the connections and threads the engine is holding.

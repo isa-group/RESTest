@@ -200,6 +200,26 @@ class SettingsFromEverywhereTest {
         }
 
         @Test
+        @DisplayName("and so does keeping to a rate, once a rate is named anywhere, and a switch "
+                + "named off over a file that names a rate still turns it off")
+        void a_named_rate_is_kept_to(@TempDir Path directory) throws Exception {
+            SettingKey limit = SettingKey.named("engine.limitTheRate").orElseThrow();
+
+            SettingsInEffect fromTheEnvironment = SettingsFromEverywhere.gather(Optional.empty(),
+                    Map.of("RESTEST_ENGINE_MOST_REQUESTS_PER_MINUTE", "300"), List.of());
+
+            assertThat(fromTheEnvironment.settings().engine().limitTheRate()).isTrue();
+            assertThat(fromTheEnvironment.sourceOf(limit)).isEqualTo(SettingSource.WORKED_OUT);
+
+            Path promised = fileSaying(directory, "engine:\n  mostRequestsPerMinute: 300\n");
+            SettingsInEffect notThisTime = SettingsFromEverywhere.gather(Optional.of(promised),
+                    Map.of(), List.of("engine.limitTheRate=false"));
+
+            assertThat(notThisTime.settings().engine().limitTheRate()).isFalse();
+            assertThat(notThisTime.sourceOf(limit)).isEqualTo(SettingSource.COMMAND_LINE);
+        }
+
+        @Test
         @DisplayName("and a value somebody did give says where they gave it, never worked out")
         void a_given_value_is_never_called_worked_out() {
             SettingsInEffect given = SettingsFromEverywhere.gather(Optional.empty(), Map.of(),

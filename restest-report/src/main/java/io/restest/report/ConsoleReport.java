@@ -519,7 +519,7 @@ public final class ConsoleReport implements RunListener {
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
                 + Math.round(finished.engine().idleFraction() * 100) + "% of it idle"
-                + idleTheApiAskedFor(finished)
+                + idleThatWasNotTheTools(finished)
                 + (finished.cutShort() ? ", cut short" : "")
                 + (finished.unauthorized().isPresent()
                         ? ", stopped: the API answered 401 to every request of the opening lap"
@@ -634,16 +634,29 @@ public final class ConsoleReport implements RunListener {
     }
 
     /**
-     * The part of the idle share the API asked for, in brackets after it, so that a reader does not
-     * take quiet the API asked for as the tool's own slowness; nothing when there was none.
+     * The parts of the idle share that were not the tool's own, in brackets after it - the quiet the
+     * API asked for, and the quiet the rate the run was given made - so that a reader does not take
+     * either for the tool's own slowness; nothing for a part that rounds to none.
      */
-    private static String idleTheApiAskedFor(RunEvent.RunFinished finished) {
+    private static String idleThatWasNotTheTools(RunEvent.RunFinished finished) {
         long wall = finished.engine().wallClock().toNanos();
-        return finished.waited()
-                .filter(said -> said.idle().isPositive() && wall > 0)
-                .map(said -> " (" + Math.round(said.idle().toNanos() * 100.0 / wall)
-                        + "% waiting as the API asked)")
-                .orElse("");
+        if (wall == 0) {
+            return "";
+        }
+        List<String> parts = new ArrayList<>();
+        finished.waited().ifPresent(said ->
+                addShare(parts, said.idle(), wall, "waiting as the API asked"));
+        addShare(parts, finished.engine().idleKeepingToTheRate(), wall,
+                "keeping to the rate it was given");
+        return parts.isEmpty() ? "" : " (" + String.join(", ", parts) + ")";
+    }
+
+    /** A part of the run's time as a whole percentage of it, said only when it is one. */
+    private static void addShare(List<String> parts, Duration part, long wallNanos, String what) {
+        long percent = Math.round(part.toNanos() * 100.0 / wallNanos);
+        if (percent > 0) {
+            parts.add(percent + "% " + what);
+        }
     }
 
     /**

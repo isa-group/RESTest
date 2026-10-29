@@ -1076,6 +1076,8 @@ public final class JsonReport implements RunListener {
         statistics.put("idle", JsonValue.of(engine.idle().toString()));
         statistics.put("idleFraction", JsonValue.of(BigDecimal.valueOf(
                 Math.round(engine.idleFraction() * 1000) / 1000.0)));
+        statistics.put("idleKeepingToTheRate",
+                JsonValue.of(engine.idleKeepingToTheRate().toString()));
         statistics.put("meanResponseTime", JsonValue.of(engine.meanResponseTime().toString()));
         statistics.put("peakConcurrency", JsonValue.of(engine.peakConcurrency()));
         statistics.put("concurrencyLimit", JsonValue.of(engine.concurrencyLimit()));

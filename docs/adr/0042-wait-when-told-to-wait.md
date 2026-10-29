@@ -1,6 +1,6 @@
 # ADR-0042: An operation the API asks to be left alone is left alone, and the whole API once a second one is
 
-**Status:** Accepted
+**Status:** Accepted, amended on 29 October 2026
 **Date:** 2026-10-29
 
 ## Context
@@ -261,3 +261,13 @@ operation of either waited.
   depends on the values RESTest invented — a wrong password — and a rule that reacts to an answer
   should not count such a refusal. Nothing here tells it apart: the sign-in operation is left alone
   for a while, as any other.
+
+## Amendment (29 October 2026): the hold and a rate to keep to
+
+A run can now be given a rate ([ADR-0043](0043-a-rate-to-keep-to.md)), which the engine keeps under
+the same lock as the hold: a hold of the whole API still comes first, and a turn the rate gives is
+waited for only once no hold is in force. The loop asks the engine how long a request would wait for
+its turn right after it asks whether the whole API waits, and sits that out as it sits out a wait of
+the whole API, without counting it as quiet the API asked for. `HttpEngine.dropWhatIsHeld()` also
+lets go a request waiting for a turn that has not come, so that, when the run stops sending, nothing
+the rate held back is sent either.

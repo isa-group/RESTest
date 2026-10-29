@@ -1122,6 +1122,27 @@ class RunLoopTest {
     }
 
     @Test
+    @DisplayName("with a rate kept to, a request is built only once its turn has come, so the loop "
+            + "asks for no more than the rate allows and nothing waits inside the engine")
+    void a_request_is_built_when_its_turn_comes() {
+        Duration between = Duration.ofMillis(200);
+        engine.keepsTo(between);
+        engine.idleGrows = true;
+
+        RunLoop.Outcome outcome = run(BUDGET, WITHOUT_A_FIRST_ROUND, listening -> { });
+
+        assertThat(outcome.sent()).describedAs("%s", outcome)
+                .isBetween(2L, BUDGET.dividedBy(between) + 1);
+        assertThat(engine.shortestGap())
+                .describedAs("the loop waited for each turn rather than handing requests over to "
+                        + "wait for it, less what a busy machine's timers take away")
+                .isGreaterThan(between.dividedBy(2));
+        assertThat(outcome.waited().orElseThrow().idle())
+                .describedAs("quiet the rate made is not quiet the API asked for")
+                .isZero();
+    }
+
+    @Test
     @DisplayName("a step of a series whose operation was told to wait is handed back unbuilt, and "
             + "the series goes on to its next step")
     void a_series_goes_on_past_a_step_left_alone() {
@@ -1353,6 +1374,26 @@ class RunLoopTest {
         /** From which request on the engine refuses to take any more, as a closed one does. */
         private volatile int refusesFrom = Integer.MAX_VALUE;
 
+        /** The least time between two requests, as an engine kept to a rate has; none when zero. */
+        private volatile Duration between = Duration.ZERO;
+
+        /**
+         * Whether the engine reports every moment since it was built as idle, so that a wait the
+         * loop wrongly counted as quiet the API asked for would show; otherwise it reports none.
+         */
+        private volatile boolean idleGrows = false;
+        private final long builtAt = System.nanoTime();
+
+        /** Keeps to a rate: says how long until the next request's turn, as a real engine does. */
+        void keepsTo(Duration gap) {
+            this.between = gap;
+        }
+
+        /** The shortest stretch between two requests asked for one after the other. */
+        Duration shortestGap() {
+            return Duration.ofNanos(gaps().min().orElse(Long.MAX_VALUE));
+        }
+
         void takes(Function<HttpRequestRecord, Duration> perRequest) {
             this.howLong = perRequest;
         }
@@ -1384,12 +1425,14 @@ class RunLoopTest {
 
         /** The longest stretch with no request asked for at all, between the first and the last. */
         Duration longestQuiet() {
+            return Duration.ofNanos(gaps().max().orElse(0));
+        }
+
+        /** Every stretch between two requests asked for one after the other, in nanoseconds. */
+        private java.util.stream.LongStream gaps() {
             List<Long> at = everySend.stream().map(Map.Entry::getValue).sorted().toList();
-            long longest = 0;
-            for (int i = 1; i < at.size(); i++) {
-                longest = Math.max(longest, at.get(i) - at.get(i - 1));
-            }
-            return Duration.ofNanos(longest);
+            return java.util.stream.IntStream.range(1, at.size())
+                    .mapToLong(i -> at.get(i) - at.get(i - 1));
         }
 
         @Override
@@ -1462,7 +1505,21 @@ class RunLoopTest {
         }
 
         @Override
+        public Duration untilItsTurn() {
+            if (between.isZero() || everySend.isEmpty()) {
+                return Duration.ZERO;
+            }
+            long lastSentAt = everySend.stream().mapToLong(Map.Entry::getValue).max().orElseThrow();
+            return Duration.ofNanos(Math.max(0, lastSentAt + between.toNanos() - System.nanoTime()));
+        }
+
+        @Override
         public EngineStatistics statistics() {
+            if (idleGrows) {
+                Duration since = Duration.ofNanos(System.nanoTime() - builtAt);
+                return new EngineStatistics(sent.get(), since, since,
+                        Duration.ofMillis(sent.get()), mostAtOnce.get(), WORK_AHEAD);
+            }
             return new EngineStatistics(sent.get(), Duration.ofSeconds(1), Duration.ZERO,
                     Duration.ofMillis(sent.get()), mostAtOnce.get(), WORK_AHEAD);
         }

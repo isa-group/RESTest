@@ -24,13 +24,24 @@ current release: an entry leaves it in the release that lifts it, and that relea
 
   Each 429 the document does not declare is still a warning, `F920`, and each 503 a fault, `F121`,
   like any other reply — there are few of them once the run waits. `schedule.waitWhenToldTo=false`
-  sends to such an API as RESTest did before it waited; against an API that limits its callers, a
-  lower `engine.maxConcurrency` ([the settings](settings.md)) still keeps the run further from its
-  limit.
-- **There is no ceiling on requests per second.** What bounds a run is the number of requests in
-  flight, sixteen at most by default (`engine.maxConcurrency`). The limiter halves it whenever a
-  request goes unanswered and sends fewer as answers slow down, but no setting promises an API's
-  owner a rate. Lowering `engine.maxConcurrency` is the nearest thing.
+  sends to such an API as RESTest did before it waited; against an API whose limit you know,
+  `engine.mostRequestsPerMinute` ([the settings](settings.md#five-things-worth-knowing)) set below it
+  keeps the run under it rather than finding it by going over.
+- **A rate is kept to only when it is given, for the whole run, and where RESTest sends.** By
+  default nothing bounds a run but its requests in flight, sixteen at most (`engine.maxConcurrency`),
+  and against a fast API that is thousands of requests a second. `engine.mostRequestsPerMinute`
+  keeps a run to that many a minute, evenly spaced. What it does not do:
+  - it is one rate for the whole API, not one per operation;
+  - it counts the requests of the test, not the one that fetches the document when its address is
+    given rather than a file;
+  - it is kept to where RESTest sends: the network on the way may bring two requests a little closer
+    together, most of all the first, behind the connection it opens;
+  - with `engine.followRedirects` on, which it is not by default, a redirection is followed within
+    the request that drew it, without waiting for a turn of its own;
+  - the requests already built and waiting for their turn when the run's time is up are never sent,
+    and are counted with the requests that got no reply; there is hardly ever more than one;
+  - the page shows the idle share without saying how much of it the rate made; the summary and
+    `report.json` (`idleKeepingToTheRate`, under `engine`) do.
 - **A run stops for a refused key only when the API refuses the whole opening lap.** When every
   request of the opening lap is answered and every answer is 401, the run stops sending there, says
   which key it held, or how the document's is handed over, and ends with `5`
@@ -70,7 +81,7 @@ of its own. Whether you may test an API at all is not something any tool can che
 - **Optional parameters and optional bodies share one number.** With
   `generation.optionalParametersBySize` off, each optional parameter is decided on a coin weighted by
   `generation.optionalBodyChance`, the same number that decides whether a request sends a body it
-  may leave out, so changing one changes the other ([the settings](settings.md#four-things-worth-knowing)).
+  may leave out, so changing one changes the other ([the settings](settings.md#five-things-worth-knowing)).
   Leave `optionalParametersBySize` on, which is the default, if you want to change only bodies.
 - **A value can be offered back to the operation that first used it.** A value an accepted request
   carried is offered to the other operations and not back to its own, but a value seen again replaces

@@ -111,6 +111,11 @@ public final class CredentialedEngine implements HttpEngine {
         inner.dropWhatIsHeld();
     }
 
+    @Override
+    public Duration untilItsTurn() {
+        return inner.untilItsTurn();
+    }
+
     /**
      * How many exchanges had to be kept without their details because the keys could not be picked
      * out of them. It should always be nought, and a run says so if it is not.

@@ -65,6 +65,25 @@ class EngineStatisticsTest {
     }
 
     @Test
+    @DisplayName("the idle time kept to a rate is part of the idle time, so it cannot exceed it")
+    void idle_kept_to_the_rate_cannot_exceed_idle() {
+        EngineStatistics kept = new EngineStatistics(10, Duration.ofSeconds(10),
+                Duration.ofSeconds(8), Duration.ofSeconds(2), 1, 4, Duration.ofSeconds(7));
+
+        assertThat(kept.idleKeepingToTheRate()).isEqualTo(Duration.ofSeconds(7));
+        assertThat(EngineStatistics.none().idleKeepingToTheRate())
+                .describedAs("an engine that keeps to no rate").isZero();
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new EngineStatistics(10, Duration.ofSeconds(10),
+                        Duration.ofSeconds(8), Duration.ofSeconds(2), 1, 4, Duration.ofSeconds(9)))
+                .withMessageContaining("cannot exceed the idle time");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new EngineStatistics(10, Duration.ofSeconds(10),
+                        Duration.ofSeconds(8), Duration.ofSeconds(2), 1, 4, Duration.ofSeconds(-1)))
+                .withMessageContaining("idleKeepingToTheRate");
+    }
+
+    @Test
     @DisplayName("negative counts and durations are refused")
     void negative_values_are_refused() {
         assertThatIllegalArgumentException()

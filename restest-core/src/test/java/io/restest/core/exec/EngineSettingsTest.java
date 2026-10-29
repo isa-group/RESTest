@@ -124,6 +124,41 @@ class EngineSettingsTest {
     }
 
     @Test
+    @DisplayName("the rate is not limited by default, and ten a second once it is")
+    void the_rate_is_not_limited_by_default() {
+        assertThat(EngineSettings.defaults().limitTheRate()).isFalse();
+        assertThat(EngineSettings.defaults().mostRequestsPerMinute()).isEqualTo(600);
+        assertThat(EngineSettings.defaults().timeBetweenRequests()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a rate a minute is a time between two requests: a minute divided by it")
+    void a_rate_is_a_time_between_requests() {
+        assertThat(EngineSettings.defaults().withMostRequestsPerMinute(600).timeBetweenRequests())
+                .contains(Duration.ofMillis(100));
+        assertThat(EngineSettings.defaults().withMostRequestsPerMinute(1).timeBetweenRequests())
+                .contains(Duration.ofMinutes(1));
+        assertThat(EngineSettings.defaults().withMostRequestsPerMinute(7).timeBetweenRequests())
+                .describedAs("rounded up to the nanosecond, so that the rate is never exceeded")
+                .contains(Duration.ofNanos(8_571_428_572L));
+        assertThat(EngineSettings.defaults().withMostRequestsPerMinute(Integer.MAX_VALUE)
+                .timeBetweenRequests())
+                .hasValueSatisfying(gap -> assertThat(gap).isPositive());
+    }
+
+    @Test
+    @DisplayName("a rate of no requests is refused, saying that the switch is how it is turned off")
+    void a_rate_of_nothing_is_refused() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EngineSettings.defaults().withMostRequestsPerMinute(0))
+                .withMessageContaining("mostRequestsPerMinute (0) must be at least 1")
+                .withMessageContaining("engine.limitTheRate=false");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EngineSettings.defaults().withMostRequestsPerMinute(-1))
+                .withMessageContaining("at least 1");
+    }
+
+    @Test
     @DisplayName("an engine that would keep nothing of a reply, or have no name, is refused")
     void empty_retention_and_blank_user_agent_are_refused() {
         assertThatIllegalArgumentException()

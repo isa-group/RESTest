@@ -1,6 +1,6 @@
 # ADR-0009: The engine never blocks on computation; idle time replaces a throughput floor
 
-**Status:** Accepted, amended on 29 October 2026
+**Status:** Accepted, amended twice on 29 October 2026
 **Date:** 2026-09-11
 
 ## Context
@@ -64,3 +64,12 @@ in flight. It is not the tool being slow, which is what idle time exists to catc
 much of its idle time came while it waited as the API asked, in `report.json`
 (`toldToWait.idle`) and in brackets after the idle share on the first line of its summary. The
 tool's own idleness is the rest.
+
+## Amendment (29 October 2026): idle time a rate made
+
+A run can be given a rate to keep to ([ADR-0043](0043-a-rate-to-keep-to.md)), and against a fast API
+most of its time is then spent with nothing in flight, waiting for the next turn. That is not the
+tool being slow either. The engine counts the idle time that falls after a request went out and
+before the next was allowed to, in which nothing could have been sent however quick the tool was,
+and a run says it in `report.json` (`idleKeepingToTheRate`, under `engine`) and in the same brackets after
+the idle share, beside the API's asking. The tool's own idleness is what is left.

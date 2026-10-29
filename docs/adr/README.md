@@ -61,7 +61,7 @@ so records written from now on cite none.
 | [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10, 19 and 25 October 2026 |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0, 3.0.x and 3.1.x | Accepted, amended at M0.2, in #303 and in #328, reversed at M1.2 |
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
-| [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted, amended on 29 October 2026 |
+| [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted, amended twice on 29 October 2026 |
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted, not yet built (14 October 2026) |
 | [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 and on 9 October 2026 |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b, and on 17 October 2026 |
@@ -94,4 +94,5 @@ so records written from now on cite none.
 | [0039](0039-the-html-report.md) | The HTML report: one page beside report.json, drawn in the browser from the whole of it, fetching nothing | Accepted |
 | [0040](0040-homebrew.md) | RESTest is installed with Homebrew from a tap of its own, by a formula that brings its Java and is written into the tap once a release is published | Accepted |
 | [0041](0041-stop-when-the-api-refuses-the-whole-opening-lap.md) | A run stops sending when the API answers 401 to every request of its opening lap, and ends with `5` | Accepted |
-| [0042](0042-wait-when-told-to-wait.md) | An operation the API asks to be left alone is left alone, and the whole API once a second one is | Accepted |
+| [0042](0042-wait-when-told-to-wait.md) | An operation the API asks to be left alone is left alone, and the whole API once a second one is | Accepted, amended on 29 October 2026 |
+| [0043](0043-a-rate-to-keep-to.md) | A run can be given a rate to keep to, in one line, and keeps to it evenly where it sends | Accepted |

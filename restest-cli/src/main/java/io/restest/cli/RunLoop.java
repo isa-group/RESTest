@@ -340,11 +340,21 @@ final class RunLoop {
                             // slot goes back unused while it is sat out, and this request waits
                             // for room again once it is over.
                             Optional<Instant> quiet = waits.wholeApiWaitsUntil();
-                            if (quiet.isEmpty()) {
+                            if (quiet.isPresent()) {
+                                slots.release();
+                                sitOut(quiet.get(), deadline, stop, engine, waits);
+                                continue;
+                            }
+                            // And the rate the engine keeps to: a request is built only when it can
+                            // go, rather than long before, to wait inside the engine for its turn
+                            // with values that were fresh when it was made. The engine counts the
+                            // idle time this makes itself.
+                            Duration untilItsTurn = engine.untilItsTurn();
+                            if (!untilItsTurn.isPositive()) {
                                 break;
                             }
                             slots.release();
-                            sitOut(quiet.get(), deadline, stop, engine, waits);
+                            sleepUntil(Instant.now().plus(untilItsTurn), deadline, stop);
                         }
                         Operation operation = send.operation();
                         // An operation the API asked to be left alone has its turn skipped. Asked
@@ -407,8 +417,8 @@ final class RunLoop {
             waits.stoppedSending();
         }
 
-        // What the engine still holds because the API asked for quiet is never sent: the run has
-        // stopped sending, and the API is still asking. Only a wait of the whole API holds anything.
+        // What the engine still holds because the API asked for quiet, or because the rate it keeps
+        // to has not given it a turn, is never sent: the run has stopped sending.
         engine.dropWhatIsHeld();
         // The deadline stops us asking new questions, not listening to the answers we are owed.
         // Those requests were paid for and what came back is evidence; throwing it away would also
@@ -618,8 +628,17 @@ final class RunLoop {
      */
     private static void sitOut(Instant until, Instant deadline, StopFromOutside stop,
             HttpEngine engine, ToldToWait waits) {
-        Instant end = until.isBefore(deadline) ? until : deadline;
         Duration idleBefore = engine.statistics().idle();
+        try {
+            sleepUntil(until, deadline, stop);
+        } finally {
+            waits.idleWhileWaiting(engine.statistics().idle().minus(idleBefore));
+        }
+    }
+
+    /** Sends nothing until the given moment, the deadline or a stop from outside. */
+    private static void sleepUntil(Instant until, Instant deadline, StopFromOutside stop) {
+        Instant end = until.isBefore(deadline) ? until : deadline;
         try {
             Duration left;
             while (!stop.asked()
@@ -628,8 +647,6 @@ final class RunLoop {
             }
         } catch (InterruptedException stopped) {
             Thread.currentThread().interrupt();
-        } finally {
-            waits.idleWhileWaiting(engine.statistics().idle().minus(idleBefore));
         }
     }
 

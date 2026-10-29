@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.Unauthorized;
 import io.restest.core.event.Waited;
+import io.restest.core.exec.EngineStatistics;
 import io.restest.core.execution.Intent;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
@@ -397,6 +398,39 @@ class ConsoleReportTest {
         // By line, so that the line's end is the line's end on every system.
         assertThat(screen.toString().lines().toList())
                 .contains("1 requests to 1 operations in 100ms, 30% of it idle");
+    }
+
+    @Test
+    @DisplayName("a run kept to a rate says how much of its idle time the rate made, beside what "
+            + "the API asked for")
+    void a_run_kept_to_a_rate_says_so() {
+        report.on(Runs.started(Instant.EPOCH));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(100),
+                new EngineStatistics(20, Duration.ofSeconds(10), Duration.ofSeconds(9),
+                        Duration.ofSeconds(1), 1, 4, Duration.ofSeconds(6)),
+                false, Optional.empty(), Optional.of(new Waited(Duration.ofSeconds(2),
+                        new Waited.WholeApi(1, Duration.ofSeconds(2)), List.of()))));
+
+        assertThat(screen.toString().lines().toList())
+                .contains("1 requests to 1 operations in 100ms, 90% of it idle (20% waiting as "
+                        + "the API asked, 60% keeping to the rate it was given)");
+    }
+
+    @Test
+    @DisplayName("and with only the rate to thank for its quiet, says only that")
+    void a_run_kept_only_to_a_rate_says_only_that() {
+        report.on(Runs.started(Instant.EPOCH));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(100),
+                new EngineStatistics(20, Duration.ofSeconds(10), Duration.ofSeconds(9),
+                        Duration.ofSeconds(1), 1, 4, Duration.ofSeconds(6))));
+
+        assertThat(screen.toString().lines().toList())
+                .contains("1 requests to 1 operations in 100ms, 90% of it idle (60% keeping to "
+                        + "the rate it was given)");
     }
 
     private static Waited.ForOperation told(String operation, long times, long skipped) {

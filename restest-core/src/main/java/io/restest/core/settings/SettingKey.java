@@ -177,6 +177,12 @@ public record SettingKey(String group, String name, SettingKind kind, String mea
                     "how many requests are in flight before anything is known about the API"),
             key("engine", "maxConcurrency", SettingKind.WHOLE_NUMBER,
                     "the most requests ever in flight at once. 1 for a fragile API"),
+            key("engine", "limitTheRate", SettingKind.YES_OR_NO,
+                    "whether the run keeps to mostRequestsPerMinute as well; on by itself once "
+                            + "that is named"),
+            key("engine", "mostRequestsPerMinute", SettingKind.WHOLE_NUMBER,
+                    "the most requests a minute while the rate is limited, evenly spaced: 600 "
+                            + "is one every tenth of a second"),
             key("engine", "slowdownFactor", SettingKind.NUMBER,
                     "how much slower than its best answer so far counts as the API struggling"),
             key("engine", "maxRetainedResponseBytes", SettingKind.WHOLE_NUMBER,
