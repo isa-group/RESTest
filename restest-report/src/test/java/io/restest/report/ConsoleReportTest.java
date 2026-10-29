@@ -393,8 +393,10 @@ class ConsoleReportTest {
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(100), Runs.engine(),
                 false, Optional.empty(), Optional.of(Waited.never())));
 
-        assertThat(screen.toString()).doesNotContain("told to wait").doesNotContain("as the API asked")
-                .contains("1 requests to 1 operations in 100ms, 30% of it idle\n");
+        assertThat(screen.toString()).doesNotContain("told to wait").doesNotContain("as the API asked");
+        // By line, so that the line's end is the line's end on every system.
+        assertThat(screen.toString().lines().toList())
+                .contains("1 requests to 1 operations in 100ms, 30% of it idle");
     }
 
     private static Waited.ForOperation told(String operation, long times, long skipped) {
