@@ -22,6 +22,8 @@ import io.restest.core.event.RunEvent;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.SpecificationIssue;
+import io.restest.core.oracle.Finding;
+import io.restest.core.oracle.WfcFault;
 import io.restest.core.settings.Settings;
 import io.restest.core.settings.SettingsInEffect;
 import java.io.IOException;
@@ -101,6 +103,25 @@ class HtmlReportTest {
         assertThat(Files.readString(json))
                 .describedAs("the reply is in the run, so the page is tested against it")
                 .contains("alert(1)");
+    }
+
+    @Test
+    @DisplayName("half a character in the run, which UTF-8 cannot hold, is written as a question "
+            + "mark, and both files are still written")
+    void half_a_character_is_written_as_a_question_mark(@TempDir Path directory)
+            throws IOException {
+        Path json = directory.resolve("report.json");
+        Path page = directory.resolve("report.html");
+        HtmlReport report = HtmlReport.around(JsonReport.to(json), page);
+        report.on(Runs.started(WHEN));
+        // The first half of an emoji, and nothing after it: what cutting a quote in the wrong
+        // place leaves.
+        report.on(new RunEvent.FaultFound(WHEN, Finding.of(WfcFault.HTTP_STATUS_500,
+                Runs.attempt("GET /pets", "/pets", 500), "sent x\uD83D... for q")));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(1), Runs.engine()));
+
+        assertThat(Files.readString(json)).contains("sent x?... for q");
+        assertThat(theRunIn(Files.readString(page))).contains("sent x?... for q");
     }
 
     @Test

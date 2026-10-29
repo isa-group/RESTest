@@ -15,9 +15,14 @@
  */
 package io.restest.report;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +66,14 @@ final class WholeFile {
     static void write(Path file, String what, Content content) {
         Path partial = whileBeingWritten(file);
         try {
-            try (Writer out = Files.newBufferedWriter(partial)) {
+            // Half a character - the first or last half of an emoji, say, from text cut in the
+            // wrong place - cannot be written in UTF-8. The writer Files hands out refuses it and
+            // takes the whole report with it; this one writes a question mark in its place.
+            CharsetEncoder utf8 = StandardCharsets.UTF_8.newEncoder()
+                    .onMalformedInput(CodingErrorAction.REPLACE)
+                    .onUnmappableCharacter(CodingErrorAction.REPLACE);
+            try (Writer out = new BufferedWriter(
+                    new OutputStreamWriter(Files.newOutputStream(partial), utf8))) {
                 content.writeTo(out);
             }
             try {
