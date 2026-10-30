@@ -126,7 +126,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <!-- Three libraries the OpenAPI parser and the HTTP client bring, pinned at the versions the
              release archive carries; the comment on them below says why. -->
-        <guava.version>33.5.0-jre</guava.version>
+        <guava.version>33.7.1-jre</guava.version>
         <commons-codec.version>1.19.0</commons-codec.version>
         <jetbrains-annotations.version>17.0.0</jetbrains-annotations.version>
         <!-- Properties so that dist/central.sh asks for these two plugins at the versions the build
