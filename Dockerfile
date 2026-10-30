@@ -25,7 +25,7 @@
 #
 # Nothing in it knows how the tool is measured.
 
-FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk@sha256:3ab7fc8d0b4ade8fef96903fb36767c1dbb4fd1535dcfad85b59c17afbbb5857 AS build
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk@sha256:83f4a7fc27df94dcc7b8de04d14cbbba8da14406f921e966969c3b09000aa507 AS build
 
 WORKDIR /src
 COPY . .
@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/root/.m2 \
  && dist/assemble.sh /dist \
  && mv /dist/restest-* /dist/restest
 
-FROM eclipse-temurin:21-jre@sha256:f37956012e0cb88400e5b3689aeae2d2d735364c1922ae2225536163b5a99f56
+FROM eclipse-temurin:21-jre@sha256:0b99b3376fbb50dbf9c0af8535fdd5b8eb0d3fdfc8b1e4967f383b6919f6901a
 
 COPY --from=build /dist/restest /opt/restest
 
