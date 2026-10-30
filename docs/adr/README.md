@@ -56,7 +56,7 @@ so records written from now on cite none.
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
 | [0002](0002-rewrite-not-refactor.md) | Rewrite rather than refactor; Apache-2.0; no 1.x source | Accepted |
 | [0003](0003-java-baseline.md) | Every module targets Java 21; toolchain on 25 | Accepted, amended at M0.2 |
-| [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 and on 14 October 2026 |
+| [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 and on 14 and 30 October 2026 |
 | [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b, M2.2, M10.3 and M11.3, and on 10 and 17 October 2026 |
 | [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4, M1.6, M1.7, M11.1, M9.1 and M11.3, and in #325, #327 and #334, and on 10, 19 and 25 October 2026 |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0, 3.0.x and 3.1.x | Accepted, amended at M0.2, in #303 and in #328, reversed at M1.2 |
@@ -84,7 +84,7 @@ so records written from now on cite none.
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 and 25 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
-| [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13, 23 and 27 October 2026 |
+| [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13, 23, 27 and 30 October 2026 |
 | [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place | Accepted, amended on 13 October 2026 |
 | [0034](0034-version-2-of-the-plans-format.md) | Version 2 of the plan's format: a strategy says its kind, a source has two forms, a group is a map of weights | Accepted |
 | [0035](0035-json-schemas-of-the-dictionary-and-the-plan.md) | The dictionary and the plan have published JSON Schemas, held to their readers | Accepted |
@@ -96,3 +96,4 @@ so records written from now on cite none.
 | [0041](0041-stop-when-the-api-refuses-the-whole-opening-lap.md) | A run stops sending when the API answers 401 to every request of its opening lap, and ends with `5` | Accepted |
 | [0042](0042-wait-when-told-to-wait.md) | An operation the API asks to be left alone is left alone, and the whole API once a second one is | Accepted, amended on 29 October 2026 |
 | [0043](0043-a-rate-to-keep-to.md) | A run can be given a rate to keep to, in one line, and keeps to it evenly where it sends | Accepted |
+| [0044](0044-maven-central.md) | RESTest's modules are on Maven Central as `es.us.isa.restest`, uploaded with a release and published there by a person; their POMs name exactly what the archive carries, and their Java code is no part of the promise | Accepted |

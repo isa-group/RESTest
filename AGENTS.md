@@ -25,7 +25,9 @@ designed so that such inputs make its results much better, and so that an agent 
 easily: they are plain files in formats the documentation describes, handed over on the command line.
 
 **Releases** are tagged `vX.Y.Z` on `master`. Semantic versioning: a fix is a patch, an addition a
-minor version.
+minor version. It covers what "What frozen means" in `docs/command-line.md` lists and Java 21
+bytecode, not the Java code of the modules, which a release also publishes on Maven Central and any
+version may change (ADR-0044).
 
 ## Language
 
@@ -143,6 +145,8 @@ that sees every module at once. See `docs/ci.md`.
 ./restest version                  # which RESTest and which Java
 ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
 dist/assemble.sh target/dist --archives          # a release's archives, from a built checkout
+./mvnw -q package -Pcentral -DskipTests -pl restest-cli -am && dist/central.sh target/central
+                                   # what a release uploads to Maven Central, and its check
 docker build --tag restest . && docker run --rm restest version   # the container image (needs Docker)
 ```
 
@@ -159,7 +163,7 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 | Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |
-| How a release is made and what it carries: the image, the archives and their launchers, and the Homebrew formula | `docs/ci.md`, `docs/adr/0032-how-a-release-is-published.md`, `docs/adr/0040-homebrew.md`, `Dockerfile`, `dist/` |
+| How a release is made and what it carries: the image, the archives and their launchers, the Homebrew formula, and the modules on Maven Central | `docs/ci.md`, `docs/adr/0032-how-a-release-is-published.md`, `docs/adr/0040-homebrew.md`, `docs/adr/0044-maven-central.md`, `Dockerfile`, `dist/` |
 | How a change is proposed and reviewed | `CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md` |
 | The documents the evaluation platform may be named in | `BENCHMARK_MAY_BE_NAMED_IN` in `restest-arch-tests/src/test/java/io/restest/arch/SourceTreeRulesTest.java` |
 

@@ -95,7 +95,7 @@ enforcement is listed under [Quality gates](#quality-gates).
 | 7 | The request loop is never blocked by computation; idle time is measured and reported | [ADR-0009](adr/0009-non-blocking-engine.md) |
 | 8 | Open formats in, open formats out | |
 | 9 | The tool runs standalone; evaluation harnesses live in a repository of their own, not in this one | [ADR-0011](adr/0011-evaluation-harness.md), amended at M1.9 |
-| 10 | Apache-2.0, semantic versioning, published on every tag | [ADR-0002](adr/0002-rewrite-not-refactor.md), [ADR-0032](adr/0032-how-a-release-is-published.md) |
+| 10 | Apache-2.0, semantic versioning, published on every tag | [ADR-0002](adr/0002-rewrite-not-refactor.md), [ADR-0032](adr/0032-how-a-release-is-published.md), [ADR-0044](adr/0044-maven-central.md) |
 
 ## Architecture
 

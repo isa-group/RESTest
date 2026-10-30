@@ -195,6 +195,11 @@ yet — because nothing written for 2.0 breaks when something is added. Anything
 waits for 3.0. What the tool prints for people to read, the wording of a summary or of this page, is
 not part of the promise and gets better whenever it can.
 
+Nor is RESTest's Java code: the modules a release carries in `lib/`, and publishes on Maven Central
+as `es.us.isa.restest`, may change, gain or lose a class, a method or a whole module in any version.
+They are there so that RESTest can be run, and a program that uses one as a library names the exact
+version it was written against ([ADR-0044](adr/0044-maven-central.md)).
+
 **One exception, in 2.2.0.** Faults became errors and warnings, and `0` and `1` changed with them:
 `1` had meant at least one fault, and means at least one error. Against 2.1.0 the difference is a
 run whose only faults are replies whose body is off the shape the document gives (`F200`), which

@@ -2,16 +2,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+             https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.restest</groupId>
+    <!-- The coordinates ADR-0002 chose, under the namespace RESTest 1.x is published in on Maven
+         Central as es.us.isa:restest. The Java packages stay io.restest. ADR-0044. -->
+    <groupId>es.us.isa.restest</groupId>
     <artifactId>restest</artifactId>
     <version>2.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>RESTest</name>
     <description>Black-box testing tool for REST APIs</description>
+    <!-- Every module's address too, and its <scm> below: the child.*.inherit.append.path attributes
+         on <project> and <scm> stop Maven adding the module's name to the end of each, which would
+         make the page Maven Central shows for restest-core link
+         https://github.com/isa-group/RESTest/restest-core, which does not exist. -->
     <url>https://github.com/isa-group/RESTest</url>
     <inceptionYear>2026</inceptionYear>
 
@@ -38,7 +45,9 @@
         </developer>
     </developers>
 
-    <scm>
+    <scm child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false"
+         child.scm.url.inherit.append.path="false">
         <connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
         <developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
         <url>https://github.com/isa-group/RESTest</url>
@@ -115,6 +124,15 @@
              java.util.random.RandomGenerator, so a run built on it is still repeated exactly. -->
         <rgxgen.version>3.0</rgxgen.version>
         <slf4j.version>2.0.17</slf4j.version>
+        <!-- Three libraries the OpenAPI parser and the HTTP client bring, pinned at the versions the
+             release archive carries; the comment on them below says why. -->
+        <guava.version>33.5.0-jre</guava.version>
+        <commons-codec.version>1.19.0</commons-codec.version>
+        <jetbrains-annotations.version>17.0.0</jetbrains-annotations.version>
+        <!-- Properties so that dist/central.sh asks for these two plugins at the versions the build
+             uses, rather than for whatever Maven finds newest. -->
+        <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+        <maven-help-plugin.version>3.5.2</maven-help-plugin.version>
         <pitest.version>1.30.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
 
@@ -251,6 +269,30 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
+            <!--
+                 Pinned at the versions the release archive carries, so that what it carries does
+                 not depend on a test library. Without a pin each came in at the version WireMock or
+                 Testcontainers asks for, nearer the top of restest-cli's tree than the OpenAPI
+                 parser that asks for an older one, and the POMs of the modules that do not have
+                 those test libraries would have named the parser's (ADR-0044 §3). dist/central.sh
+                 refuses a module whose libraries differ from restest-cli's, which is how the next
+                 one is found.
+            -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains-annotations.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -325,7 +367,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-help-plugin</artifactId>
+                    <version>${maven-help-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -346,15 +393,36 @@
                         </archive>
                     </configuration>
                 </plugin>
+                <!-- The sources and the Javadoc Maven Central asks for, each jar saying which RESTest
+                     it belongs to, as the jar plugin's above does. -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>3.4.0</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.12.0</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>1.8.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
@@ -493,6 +561,85 @@
                                 <restest.smoke.required>true</restest.smoke.required>
                             </systemPropertyVariables>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+          What Maven Central gets beside each module's jar, which dist/central.sh lays out and the
+          release workflow signs and uploads; a profile, so that the build everybody runs all day
+          writes no Javadoc. The POM Central gets is not pom.xml: dist/central.sh writes it from the
+          two files made here, the module's POM flattened, for its name, address, licence and the
+          rest with nothing inherited, and the list of libraries Maven resolved for the module, the
+          list that fills restest-cli's target/lib. ADR-0044 §3 says why the list is not left to
+          pom.xml's own dependencies, nor to flatten-maven-plugin.
+        -->
+        <profile>
+            <id>central</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sources-for-central</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>javadoc-for-central</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>pom-for-central</id>
+                                <!-- The goal binds to no phase of its own. -->
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>flatten</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <flattenMode>ossrh</flattenMode>
+                            <updatePomFile>false</updatePomFile>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <flattenedPomFilename>flattened-pom.xml</flattenedPomFilename>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>libraries-for-central</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>list</goal>
+                                </goals>
+                                <configuration>
+                                    <includeScope>runtime</includeScope>
+                                    <sort>true</sort>
+                                    <outputFile>${project.build.directory}/runtime-dependencies.txt</outputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
