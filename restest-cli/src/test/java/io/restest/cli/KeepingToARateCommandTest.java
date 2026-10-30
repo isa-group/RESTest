@@ -61,7 +61,23 @@ class KeepingToARateCommandTest {
                 get: {operationId: listOwners, responses: {'200': {description: every owner}}}
             """;
 
+    /**
+     * The time a run kept to the rate is first given, which pays for starting up as well as for
+     * sending: on a machine at ease, room for well over a dozen turns once it has started.
+     */
     private static final Duration BUDGET = Duration.ofSeconds(2);
+
+    /**
+     * The most time a run kept to the rate is given. A run that had too little time left once it
+     * had started up is run again with twice as much, up to this.
+     */
+    private static final Duration LONGEST = BUDGET.multipliedBy(4);
+
+    /**
+     * The time given to a run that its number of requests ends: only the ceiling a run that went
+     * wrong could not get past, as for the runs {@link ARun} starts.
+     */
+    private static final Duration CEILING = Duration.ofSeconds(30);
 
     /**
      * Ends a run with no rate after this many requests rather than at its budget: enough to show
@@ -106,10 +122,21 @@ class KeepingToARateCommandTest {
     @DisplayName("a rate named in one line is kept to: never two requests closer than a turn, none "
             + "after the run's time, and the quiet it made is said apart from the tool's own")
     void a_rate_named_in_one_line_is_kept_to() throws IOException {
-        int answer = run("--set", "engine.mostRequestsPerMinute=600", "--store");
+        // The budget pays for reading the document and starting up as well as for sending, and a
+        // busy Windows runner once spent four and a half seconds starting up, sending nothing in
+        // a budget of two. A run with no room for three turns between its first request and the
+        // end of its time says nothing about the rate either way, so it is run again with twice
+        // the time: a busy machine costs this test time, never its verdict, and everything below
+        // is checked on a run that had room.
+        Duration budget = BUDGET;
+        int answer = keepingToTheRate(budget);
+        while (turnsLeft(budget) < 3 && budget.compareTo(LONGEST) < 0) {
+            budget = budget.multipliedBy(2);
+            answer = keepingToTheRate(budget);
+        }
 
         assertThat(answer).describedAs("%s%s", screen, problems).isZero();
-        assertThat(arrivals()).hasSizeBetween(3, (int) BUDGET.dividedBy(BETWEEN) + 2);
+        assertThat(arrivals()).hasSizeBetween(3, (int) budget.dividedBy(BETWEEN) + 2);
         // Where RESTest sent them, which is where the rate is kept: at the API the first arrives
         // late, behind the connection it opens, and the next, sent a turn later, does not.
         List<Instant> sent = sentAt();
@@ -119,9 +146,7 @@ class KeepingToARateCommandTest {
                             + "between giving a request its turn and noting the moment it went")
                     .isGreaterThan(BETWEEN.dividedBy(2));
         }
-        JsonValue.JsonObject timeline =
-                (JsonValue.JsonObject) ARun.report(out()).member("timeline").orElseThrow();
-        Instant timeIsUp = Instant.parse(text(timeline, "startedAt")).plus(BUDGET);
+        Instant timeIsUp = timeIsUp(budget);
         // A request whose turn came just before the time was up may still leave a little after
         // it, as late as a busy machine is in building it and sending it: a Windows runner once took
         // 55 ms. One still waiting for its turn is dropped; kept, it would go a turn or more late.
@@ -136,7 +161,7 @@ class KeepingToARateCommandTest {
     @DisplayName("with no rate named, the run goes as fast as the API answers and says nothing of a "
             + "rate")
     void no_rate_no_limit() throws IOException {
-        int answer = run(A_FEW_HUNDRED.toArray(String[]::new));
+        int answer = run(CEILING, A_FEW_HUNDRED.toArray(String[]::new));
 
         assertThat(answer).describedAs("%s%s", screen, problems).isZero();
         assertFasterThanTheRate(arrivals());
@@ -155,7 +180,7 @@ class KeepingToARateCommandTest {
         List<String> arguments = new ArrayList<>(List.of("--settings", printed.toString(),
                 "--set", "engine.mostRequestsPerMinute=600"));
         arguments.addAll(A_FEW_HUNDRED);
-        int answer = run(arguments.toArray(String[]::new));
+        int answer = run(CEILING, arguments.toArray(String[]::new));
 
         assertThat(answer).describedAs("%s%s", screen, problems).isZero();
         assertThat(screen.toString()).contains("  engine.mostRequestsPerMinute is 600, but "
@@ -168,13 +193,38 @@ class KeepingToARateCommandTest {
         assertThat(arrivals).hasSize(200);
         assertThat(Duration.between(arrivals.getFirst(), arrivals.getLast()))
                 .describedAs("at ten a second, two hundred requests take twenty seconds")
-                .isLessThan(BUDGET);
+                .isLessThan(BETWEEN.multipliedBy(20));
     }
 
-    private int run(String... more) throws IOException {
+    /** A run kept to ten requests a second for this long, the only one the stand-in has seen. */
+    private int keepingToTheRate(Duration budget) throws IOException {
+        api.resetRequests();
+        screen.getBuffer().setLength(0);
+        problems.getBuffer().setLength(0);
+        return run(budget, "--set", "engine.mostRequestsPerMinute=600", "--store");
+    }
+
+    /**
+     * How many turns of the rate the last run had between its first request and the end of its
+     * time; none when it sent nothing.
+     */
+    private long turnsLeft(Duration budget) {
+        List<Instant> sent = sentAt();
+        return sent.isEmpty() ? 0
+                : Duration.between(sent.getFirst(), timeIsUp(budget)).dividedBy(BETWEEN);
+    }
+
+    /** When the last run's time was up: the moment it says it started, and its budget after. */
+    private Instant timeIsUp(Duration budget) {
+        JsonValue.JsonObject timeline =
+                (JsonValue.JsonObject) ARun.report(out()).member("timeline").orElseThrow();
+        return Instant.parse(text(timeline, "startedAt")).plus(budget);
+    }
+
+    private int run(Duration budget, String... more) throws IOException {
         Path file = Files.writeString(directory.resolve("openapi.yaml"), SHELTER);
         List<String> arguments = new ArrayList<>(List.of("run", file.toString(), "--url",
-                api.baseUrl(), "--budget", BUDGET.toMillis() + "ms", "--seed", "1", "--out",
+                api.baseUrl(), "--budget", budget.toMillis() + "ms", "--seed", "1", "--out",
                 out().toString()));
         arguments.addAll(List.of(more));
         PrintWriter outWriter = new PrintWriter(screen);

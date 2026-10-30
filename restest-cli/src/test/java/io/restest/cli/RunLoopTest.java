@@ -934,14 +934,22 @@ class RunLoopTest {
             long began = System.nanoTime();
             RunLoop.Outcome outcome = run(Duration.ofSeconds(30), withPatience(patience),
                     listening -> { });
-            Duration took = Duration.ofNanos(System.nanoTime() - began);
+            long ended = System.nanoTime();
 
             assertThat(outcome.refusedLap())
                     .describedAs("waiting %s for each step: %s", patience, outcome).isPresent();
             assertThat(outcome.sent())
                     .describedAs("the premise: it went on sending while it waited for the answer")
                     .isGreaterThan(model.operations().size());
-            assertThat(took)
+            // From the 401, not from the start of the run. Once it is in, the run waits only for
+            // the lists of shelters it sent before it, the last answered at most two seconds later
+            // and usually within a fraction of one; a slot not given back would hold it for the
+            // whole wait for stragglers. Measured from the start, the bound also had to cover the
+            // two seconds the answer takes and however long the run took to get going, and a
+            // Windows runner once needed more than what that left.
+            Duration afterThe401 =
+                    Duration.ofNanos(ended - engine.firstAnsweredSince("listShelters", began));
+            assertThat(afterThe401)
                     .describedAs("it stopped once the answer was in, and waited for nothing it "
                             + "was not owed")
                     .isLessThan(PATIENT.minusSeconds(1));
@@ -1346,6 +1354,10 @@ class RunLoopTest {
         private final java.util.Queue<Map.Entry<String, Long>> everySend =
                 new java.util.concurrent.ConcurrentLinkedQueue<>();
 
+        /** Every request answered, by operation and by the monotonic clock, in order. */
+        private final java.util.Queue<Map.Entry<String, Long>> everyAnswer =
+                new java.util.concurrent.ConcurrentLinkedQueue<>();
+
         /** Every hold the loop asked for. */
         private final List<Duration> holds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
@@ -1420,6 +1432,20 @@ class RunLoopTest {
             this.headers = perTestCase;
         }
 
+        /**
+         * When a request for this operation was first answered at or after the given moment, by
+         * the monotonic clock: the first answer of a run that began then, when one engine serves
+         * several runs one after the other.
+         */
+        long firstAnsweredSince(String operation, long since) {
+            return everyAnswer.stream()
+                    .filter(answer -> answer.getKey().equals(operation))
+                    .mapToLong(Map.Entry::getValue)
+                    .filter(at -> at >= since)
+                    .min()
+                    .orElseThrow();
+        }
+
         /** How many requests were asked for this operation. */
         long askedFor(String operation) {
             return everySend.stream().filter(send -> send.getKey().equals(operation)).count();
@@ -1467,6 +1493,7 @@ class RunLoopTest {
                     return;
                 }
                 firstAnswered.putIfAbsent(operation, System.nanoTime());
+                everyAnswer.add(Map.entry(operation, System.nanoTime()));
                 Interaction replied = reply(testCase, request, sentAt);
                 if (testCase.sequence().isPresent()) {
                     answeredAt.put(testCase, System.nanoTime());
