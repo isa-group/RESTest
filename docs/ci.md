@@ -354,7 +354,7 @@ this way, is [ADR-0032](adr/0032-how-a-release-is-published.md); Maven Central's
 | `check-archive` | Linux, macOS, Windows | Unpacks the archive into a folder with a space in its name and runs `check-restest.sh` on `bin/restest` — also through a symbolic link, also with Java 17 to be refused — and on Windows on `bin\restest.cmd`, with a `JAVA_HOME` that has a space in it |
 | `check-homebrew` | Linux, macOS | Fills in the Homebrew formula, `dist/homebrew/restest.rb`, for the `.tgz` and runs `check-homebrew.sh` on it: `brew style`, installed from a local tap, its own test, the folder it installs compared with the archive, and `check-restest.sh --own-java` on the command it installs |
 | `image` | an `amd64` and an `arm64` machine | Builds the image on each machine's own processor, runs `check-restest.sh` on it, and on a tag pushes that very image as `ghcr.io/isa-group/restest:<v>-amd64` or `-arm64` |
-| `central` | Linux, on a tag only, once a maintainer approves it | Signs what Maven Central gets with `sign-for-central.sh` and uploads it to the Central Portal, which validates it and publishes nothing; leaves it alone when Central has the version already ([Maven Central](#maven-central)) |
+| `central` | Linux, on a tag only, once a maintainer approves it | Signs what Maven Central gets with `sign-for-central.sh` and uploads it with `upload-to-central.sh` to the Central Portal, which validates it and publishes nothing; leaves it alone when Central has the version already ([Maven Central](#maven-central)) |
 | `publish` | Linux, on a tag only | Joins the two into `:<v>` in the registry, checks it as published, moves `:latest` when no higher version is tagged, and drafts the release with the archives and `checksums_sha256.txt` |
 
 The order is what keeps a broken release from being seen: nothing is pushed before it has been
@@ -459,24 +459,39 @@ only uploads them, and a person publishes them on the Portal ([ADR-0044](adr/004
 |---|---|---|
 | `dist/central.sh` | the `archive` job, and the `ubuntu-latest` / Java 25 row of `ci.yml` | Lays out, from the build the archives come from, `restest-cli` and every module it runs with, each with its jar, sources, Javadoc and POM and an `.md5` and a `.sha1` beside each, and checks them ([What Maven Central would get](#what-maven-central-would-get)) |
 | `.github/scripts/sign-for-central.sh` | the `central` job, with RESTest's key; the `archive` job on a pull request, with a key made for that run | Signs every file but the checksums, checks each signature, and zips the result into the bundle the Portal takes |
-| The upload | the `central` job | Sends the bundle as `USER_MANAGED`, waits up to half an hour for the Portal to validate it, and writes the deployment's id and each jar's SHA-256 on the run's page; fails, with the Portal's reasons, when the Portal refuses it |
+| `.github/scripts/upload-to-central.sh` | the `central` job, and by hand for the trial upload below | Sends the bundle as `USER_MANAGED`, waits up to half an hour for the Portal to validate it, and fails, with the Portal's reasons, when the Portal refuses it; the job then writes the deployment's name, its id and each jar's SHA-256 on the run's page |
 
 Each published POM names every library its module runs with, at the version the archive carries,
 and nothing below them; no parent POM is published. ADR-0044 §3 says why.
 
-**Set up once**, by the maintainer, before the first tag the workflow uploads for:
+**Set up once**, by the maintainer, before the first tag the workflow uploads for. None of the
+secrets below is ever written into a file of this repository, an issue or a chat:
 
 1. **The namespace.** An account of the Central Portal that can publish under `es.us.isa`, the
    namespace RESTest 1.x is published in: its *Namespaces* page lists it as verified. The account's
-   token can publish under every namespace the account can, so name whose account it is.
-2. **The token.** On the Portal, *Account*, *Generate User Token*: a username and a password, kept as
-   the secrets `CENTRAL_USERNAME` and `CENTRAL_PASSWORD` below.
-3. **The signing key**, made for RESTest's releases alone, on a machine with GnuPG
-   (`brew install gnupg` on a Mac), with a passphrase and an expiry:
+   token can publish under every namespace the account can - `es.us.isa` and the group's other
+   ones - so name whose account it is.
+2. **The signing key**, made for RESTest's releases alone, with GnuPG (`brew install gnupg` on a
+   Mac). A primary key that only certifies, and a signing subkey, which is all GitHub holds: should
+   that secret leak, the subkey is revoked and another one added, and RESTest's key keeps its
+   fingerprint.
 
    ```bash
-   gpg --quick-gen-key 'RESTest releases <address>' rsa4096 sign 3y
+   gpg --quick-gen-key 'RESTest releases <address>' rsa4096 cert 5y
    ```
+
+   ```bash
+   gpg --quick-add-key <fingerprint> rsa4096 sign 2y
+   ```
+
+   ```bash
+   gpg --list-keys --with-subkey-fingerprints <fingerprint>
+   ```
+
+   The first asks for a passphrase, which is `SIGNING_PASSPHRASE`, and prints the key's
+   fingerprint, forty hexadecimal digits; the third shows the subkey's, under the line marked
+   `[S]`. Then the public key goes to the two key servers the Portal checks signatures against, the
+   second of which answers with a link to confirm the address:
 
    ```bash
    gpg --keyserver keyserver.ubuntu.com --send-keys <fingerprint>
@@ -486,23 +501,30 @@ and nothing below them; no parent POM is published. ADR-0044 §3 says why.
    gpg --export <fingerprint> | curl -T - https://keys.openpgp.org
    ```
 
-   The Portal checks every signature against the public key servers; keys.openpgp.org answers with a
-   link to confirm the address. `gpg --armor --export-secret-keys <fingerprint>` prints what the
-   secret `SIGNING_KEY` holds, and the passphrase is `SIGNING_PASSPHRASE`. Keep the secret key and
-   the revocation certificate GnuPG wrote under `~/.gnupg/openpgp-revocs.d/` off any machine that
-   runs builds. Before the key expires, `gpg --quick-set-expire <fingerprint> 3y`, send it to both
-   servers again, and replace `SIGNING_KEY` with what the export prints then.
+   What `SIGNING_KEY` holds is the subkey alone, the `!` naming exactly that one:
+
+   ```bash
+   gpg --armor --export-secret-subkeys '<subkey fingerprint>!' > restest-signing-subkey.asc
+   ```
+
+   Keep `gpg --armor --export-secret-keys <fingerprint>` and the revocation certificate GnuPG wrote
+   under `~/.gnupg/openpgp-revocs.d/` off any machine that runs builds, and remove the exported file
+   once it is a secret. Before the subkey expires, `gpg --quick-set-expire <fingerprint> 2y
+   '<subkey fingerprint>'`, send the key to both servers again, and replace `SIGNING_KEY` with the
+   subkey exported again.
+3. **The token.** On the Portal, the account's page, *Generate User Token*: a username and a
+   password, which the Portal shows once, so it is made when it is about to be kept as the secrets
+   `CENTRAL_USERNAME` and `CENTRAL_PASSWORD` below.
 4. **The environment.** In this repository's settings, the environment `maven-central`: the
    maintainer as its required reviewer, the branch `master` and the tags `v*` - added as a tag rule,
    not a branch rule - as the only refs that may deploy to it, and the four secrets as its own, not
-   the repository's. As for Homebrew's, an
-   environment the workflow names that does not exist yet is created without those limits, so it
-   comes first.
+   the repository's. As for Homebrew's, an environment the workflow names that does not exist yet is
+   created without those limits, so it comes first.
 5. **Who may push a version tag.** A tag ruleset on `v*` that restricts creating, updating and
    deleting matching tags to the maintainers: a tag runs the tag's own `release.yml`, and the
    environment's limit to `v*` would not stop a tag pushed on a commit that never reached `master`.
-6. **One trial upload**, so that the first release is not the first time the Portal sees a bundle of
-   RESTest's. In a clone of its own, with a version that will never be published:
+6. **One trial upload**, with the scripts the `central` job runs and a version that will never be
+   published, so that the first tag runs nothing that has not run before. In a clone of its own:
 
    ```bash
    ./mvnw -q versions:set -DnewVersion=0.0.0-trial -DgenerateBackupPoms=false
@@ -512,21 +534,35 @@ and nothing below them; no parent POM is published. ADR-0044 §3 says why.
    ./mvnw -q package -Pcentral -DskipTests -pl restest-cli -am && dist/central.sh target/central
    ```
 
+   The passphrase and the token's two halves are typed, or pasted, where nothing shows them:
+
    ```bash
-   read -rs SIGNING_PASSPHRASE && export SIGNING_PASSPHRASE
+   printf 'Passphrase: '; read -rs SIGNING_PASSPHRASE; echo; export SIGNING_PASSPHRASE
    ```
 
    ```bash
-   SIGNING_KEY=$(gpg --armor --export-secret-keys <fingerprint>) \
+   SIGNING_KEY=$(cat restest-signing-subkey.asc) \
      .github/scripts/sign-for-central.sh target/central/maven-central trial.zip
    ```
 
    ```bash
-   unset SIGNING_PASSPHRASE
+   printf 'Token username: '; read -rs CENTRAL_USERNAME; echo; export CENTRAL_USERNAME
    ```
 
-   On the Portal, *Publish Component*, with `trial.zip`; wait until it says *Validated*, or read why
-   it failed, and then **drop** it. Never publish it.
+   ```bash
+   printf 'Token password: '; read -rs CENTRAL_PASSWORD; echo; export CENTRAL_PASSWORD
+   ```
+
+   ```bash
+   .github/scripts/upload-to-central.sh trial.zip 'RESTest trial'
+   ```
+
+   ```bash
+   unset SIGNING_PASSPHRASE CENTRAL_USERNAME CENTRAL_PASSWORD
+   ```
+
+   Once it says the deployment is `VALIDATED`, **drop** it on the Portal's *Deployments* page, or
+   read there why it failed. Never publish it.
 
 ## Dependency updates
 

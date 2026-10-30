@@ -105,10 +105,11 @@ which RESTest it is as every published jar does, so that an ordinary build write
 stamped into every jar so that a second run of the same tag builds the same jars, and runs
 `dist/assemble.sh` and `dist/central.sh` on that one build: the jars Central gets are the jars the
 next jobs check on Linux, macOS and Windows. A job of its own, `central`, signs them with
-`.github/scripts/sign-for-central.sh` and uploads them. The signing key, made for RESTest's releases
-alone, and the Portal's token are kept in the environment `maven-central`, which only `master` and
-version tags may use and which waits for a maintainer to approve the job; they never enter a Maven
-build. That job checks out its workflow's own commit, not the tag's, since what it uploads comes from
+`.github/scripts/sign-for-central.sh` and uploads them with `.github/scripts/upload-to-central.sh`.
+The signing key - a subkey made for signing RESTest's releases, whose primary key stays off any
+machine that runs builds, so that a leaked secret costs the subkey and not the key's fingerprint -
+and the Portal's token are kept in the environment `maven-central`, which only `master` and version
+tags may use and which waits for a maintainer to approve the job; they never enter a Maven build. That job checks out its workflow's own commit, not the tag's, since what it uploads comes from
 the archive job: a fault in the signing or the upload found at a tag is put right on `master`, and
 the release made again by hand, rather than in the next patch. A pull request rehearses the signing
 with a key made for that run.
@@ -147,10 +148,10 @@ it names exactly.
 - The root POM pins three more libraries, and a library that changes version in the tree fails
   `ci.yml` until the archive and the POMs agree again.
 - Set up once, by the maintainer: access to `es.us.isa` on the Portal and a token, which reaches every
-  namespace its account does; the signing key, on public key servers; the environment, its secrets
-  and its required reviewer; a rule on who may push a version tag; and one upload of a version never
-  to be published, validated and dropped, to see the Portal accept a bundle before the first release
-  depends on it.
+  namespace its account does; the signing key and its subkey, on public key servers; the
+  environment, its secrets and its required reviewer; a rule on who may push a version tag; and one
+  upload of a version never to be published, made by hand with the two scripts the job runs and
+  dropped once validated, so that the first tag runs nothing that has not run before.
 - On Central, `es/us/isa/restest/` is RESTest 1.x's folder, `es.us.isa:restest`, and the modules of
   `es.us.isa.restest` are folders inside it, beside 1.x's versions. Maven, Gradle and jbang ask for
   exact paths, so the two never meet, but a person browsing the folder sees both.

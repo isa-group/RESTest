@@ -321,7 +321,6 @@ jobs:
     timeout-minutes: 45
     env:
       VERSION: ${{ needs.archive.outputs.version }}
-      PORTAL: https://central.sonatype.com/api/v1/publisher
     steps:
       # This workflow's own commit, not the tag's: what is uploaded comes from the archive job, and on
       # a run started by hand the signing script is then master's, so a fault in it found at a tag is
@@ -354,54 +353,28 @@ jobs:
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
         run: .github/scripts/sign-for-central.sh maven-central "$RUNNER_TEMP/restest-$VERSION.zip"
 
-      # Inline rather than in a script of the tag's, for the reason the checkout above gives. The
-      # token is the base64 of the two secrets, which GitHub does not know to hide, so it is masked
-      # before it is used; and nothing here prints a request's headers. The upload is never repeated
-      # by curl, which could leave two deployments; asking for the state is. The deployment is named
+      # The same script the trial upload in docs/ci.md runs by hand, so that a tag runs nothing that has
+      # not run before; this commit's, for the reason the checkout above gives. The deployment is named
       # after this run, so that two runs of one tag leave two names on the Portal, not one twice.
       - name: Upload it, and wait until the Portal has validated it
+        id: upload
         if: steps.published.outputs.published != 'true'
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
         run: |
-          token=$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 -w 0)
-          echo "::add-mask::$token"
-          name="RESTest $VERSION run $GITHUB_RUN_ID"
-          id=$(curl --fail-with-body -sS --max-time 600 -X POST -H "Authorization: Bearer $token" \
-            -F "bundle=@$RUNNER_TEMP/restest-$VERSION.zip" \
-            "$PORTAL/upload?publishingType=USER_MANAGED&name=${name// /%20}") \
-            || { echo "::error::The Portal refused the upload: $id"; exit 1; }
-          [[ $id =~ ^[0-9a-f-]{36}$ ]] || { echo "::error::The Portal answered the upload with: $id"; exit 1; }
-          echo "Uploaded as deployment $id, named $name"
-          # Every ten seconds for half an hour. VALIDATED is what is waited for; PUBLISHING and
-          # PUBLISHED mean somebody has published it in the meantime. An answer that is not one is
-          # kept, to be shown if no answer ever is.
-          state=UNKNOWN
-          validated=
-          answer=
-          for _ in $(seq 180); do
-            sleep 10
-            answer=$(curl --fail-with-body -sS --max-time 60 --retry 3 --retry-all-errors -X POST \
-              -H "Authorization: Bearer $token" "$PORTAL/status?id=$id") || continue
-            state=$(jq -r .deploymentState <<< "$answer" 2> /dev/null) || continue
-            case $state in
-              VALIDATED | PUBLISHING | PUBLISHED) validated=yes; break ;;
-              FAILED)
-                echo "::error::The Portal refused RESTest $VERSION, deployment $id:"
-                jq .errors <<< "$answer"
-                exit 1
-                ;;
-            esac
-          done
-          [ -n "$validated" ] || {
-            echo "::error::Deployment $id is still $state after half an hour; the Portal last answered: $answer"
-            exit 1
-          }
+          .github/scripts/upload-to-central.sh "$RUNNER_TEMP/restest-$VERSION.zip" "RESTest $VERSION run $GITHUB_RUN_ID"
+
+      - name: Say what to publish
+        if: steps.published.outputs.published != 'true'
+        env:
+          ID: ${{ steps.upload.outputs.id }}
+          STATE: ${{ steps.upload.outputs.state }}
+        run: |
           {
             echo "### RESTest $VERSION on Maven Central"
             echo
-            echo "Deployment \`$id\`, named $name, is $state. Publish it at https://central.sonatype.com/publishing/deployments before publishing the release, keeping the deployment of the run that drafted it. Its jars:"
+            echo "Deployment \`$ID\`, named RESTest $VERSION run $GITHUB_RUN_ID, is $STATE. Publish it at https://central.sonatype.com/publishing/deployments before publishing the release, keeping the deployment of the run that drafted it. Its jars:"
             echo
             echo '```'
             (cd maven-central && find . -name '*.jar' | sort | xargs sha256sum)
