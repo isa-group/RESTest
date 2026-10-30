@@ -517,9 +517,10 @@ secrets below is ever written into a file of this repository, an issue or a chat
    once it is a secret. Before the subkey expires, `gpg --quick-set-expire <fingerprint> 2y
    '<subkey fingerprint>'`, send the key to both servers again, and replace `SIGNING_KEY` with the
    subkey exported again.
-3. **The token.** On the Portal, the account's page, *Generate User Token*: a username and a
-   password, which the Portal shows once, so it is made when it is about to be kept as the secrets
-   `CENTRAL_USERNAME` and `CENTRAL_PASSWORD` below.
+3. **The token.** On the Portal, *View User Tokens* in the account's menu, and a new token there,
+   named for what it is for: a username and a password, which the Portal shows once, so it is made
+   when it is about to be kept as the secrets `CENTRAL_USERNAME` and `CENTRAL_PASSWORD` below. When
+   it expires, the `central` job says so, and a new one replaces both secrets.
 4. **The environment.** In this repository's settings, the environment `maven-central`: the
    maintainer as its required reviewer, the branch `master` and the tags `v*` - added as a tag rule,
    not a branch rule - as the only refs that may deploy to it, and the four secrets as its own, not
