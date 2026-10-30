@@ -62,6 +62,17 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.java == '25'
         run: ./mvnw --batch-mode --no-transfer-progress -Pmutation verify -pl restest-oracles -am -Djacoco.skip=true
 
+      # What a release uploads to Maven Central, from one row only: the Javadoc, the sources and the
+      # POMs dist/central.sh lays out, and its check that a program depending on restest-cli gets
+      # exactly the libraries the release archive carries. On every pull request, because a Javadoc
+      # broken by an ordinary change, or a library that changed version, would otherwise be found at
+      # the tag, which never moves. About fifteen seconds.
+      - name: Check what Maven Central would get
+        if: matrix.os == 'ubuntu-latest' && matrix.java == '25'
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress -Dmaven.test.skip=true -Pcentral package -pl restest-cli -am
+          dist/central.sh target/central
+
       # Uploaded from one row only: nine identical reports would be noise.
       - name: Upload the coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.java == '25'

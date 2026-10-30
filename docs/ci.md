@@ -1,14 +1,14 @@
 # Continuous integration
 
 What runs, how to reproduce it locally, how to add a rule, and how a release is made. The decisions
-behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries), ADR-0032 (releases) and
-ADR-0040 (Homebrew).
+behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries), ADR-0032 (releases),
+ADR-0040 (Homebrew) and ADR-0044 (Maven Central).
 
 Three workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
-tag, and rehearses it on a pull request that touches how RESTest is packaged
-([Releases](#releases)); `homebrew.yml` writes the Homebrew formula into its tap once a release is
-published ([Homebrew](#homebrew)). `ci.yml`'s triggers are pull requests against `master`, pushes to it,
-and manual dispatch. A push to a `feat/*` branch with no open pull request runs
+tag, uploading RESTest's modules to Maven Central with it, and rehearses it on a pull request that
+touches how RESTest is packaged ([Releases](#releases)); `homebrew.yml` writes the Homebrew formula
+into its tap once a release is published ([Homebrew](#homebrew)). `ci.yml`'s triggers are pull
+requests against `master`, pushes to it, and manual dispatch. A push to a `feat/*` branch with no open pull request runs
 nothing, which is deliberate: a branch under active development would otherwise spend nine runners
 per commit.
 
@@ -103,6 +103,7 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 | Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference in any file of this repository, or in the name of one, outside the documents the rule names; one of those no longer needing to be named there; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | `restest-oracles` scoring below 85%, on the `ubuntu-latest` / Java 25 row (`-Pmutation`) and whenever it is run by hand |
+| What Maven Central gets | `dist/central.sh`, on the `ubuntu-latest` / Java 25 row and in `release.yml` | a module's Javadoc or sources that do not build; a file Central asks for missing, or a POM without a name; a module whose POM would name a library at another version than `restest-cli` runs with; a program depending on `restest-cli` getting any jar but those the release archive carries |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
 | How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs, in `release.yml` and, through `check-homebrew.sh`, in `homebrew.yml` | the image, a launcher or Homebrew's command failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` from a launcher or the image when there is no Java it can use — and anything but `0` from Homebrew's command, which brings its Java — and `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan, or without `THIRD-PARTY.txt`; Homebrew's formula failing `brew style` or, once a release is published, `brew audit --strict --online`, failing to install or its own test, or installing anything but the archive as it is |
 | Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedLinksTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; a relative link that leads nowhere |
@@ -163,6 +164,25 @@ deciding a document points at itself, where a character stops being one it can w
 address unchanged, and whether a media type carries a semicolon at all. Both sides of each behave
 the same way for every document anyone would write, and separating them would mean a test built
 around the exact number, which would assert the number rather than the behaviour.
+
+### What Maven Central would get
+
+The same row runs, after the build, what a release uploads to Maven Central
+([ADR-0044](adr/0044-maven-central.md)), short of signing and uploading it:
+
+```bash
+./mvnw --batch-mode --no-transfer-progress -Dmaven.test.skip=true -Pcentral package -pl restest-cli -am
+dist/central.sh target/central
+```
+
+The `central` profile, in the root `pom.xml`, adds each module's sources and Javadoc, its POM
+flattened, and the list of libraries Maven resolved for it; `dist/central.sh` lays them out as
+Central takes them and checks them, as the Gates table says. It takes about fifteen seconds. On
+every pull request, rather than in `release.yml`'s rehearsal alone, because a Javadoc an ordinary
+change breaks, or a library that moves to another version in the tree, would otherwise first be met
+at a tag, which never moves. When it refuses for a library, the fix is a version pinned in the root
+POM's `dependencyManagement`, as Guava, commons-codec and JetBrains annotations are, so that every
+module and the archive agree again.
 
 ### Why the rules are tested
 
@@ -323,31 +343,42 @@ same class, which is where to add one if you widen it again.
 
 A release is made from a version tag, `vX.Y.Z`, on a commit of `master` whose `pom.xml` says `X.Y.Z`.
 Pushing the tag starts `.github/workflows/release.yml`, which leaves everything the release carries
-in a **draft**; the notes are written there, and a person publishes it. What a release carries, and
-why it is made this way, is [ADR-0032](adr/0032-how-a-release-is-published.md).
+in a **draft**, and RESTest's modules on the Central Portal, validated and not published; the notes
+are written in the draft, and a person publishes both. What a release carries, and why it is made
+this way, is [ADR-0032](adr/0032-how-a-release-is-published.md); Maven Central's part is
+[ADR-0044](adr/0044-maven-central.md).
 
 | Job | Where | What it does |
 |---|---|---|
-| `archive` | Linux | Checks the tag against `pom.xml` and `master`, compiles RESTest, and assembles `restest-<v>.zip` and `restest-<v>.tgz` with `dist/assemble.sh` |
+| `archive` | Linux | Checks the tag against `pom.xml` and `master`, compiles RESTest with the `central` profile, assembles `restest-<v>.zip` and `restest-<v>.tgz` with `dist/assemble.sh`, and lays out what Maven Central gets with `dist/central.sh`, from the same build; on a pull request, rehearses its signing with a key made for that run |
 | `check-archive` | Linux, macOS, Windows | Unpacks the archive into a folder with a space in its name and runs `check-restest.sh` on `bin/restest` — also through a symbolic link, also with Java 17 to be refused — and on Windows on `bin\restest.cmd`, with a `JAVA_HOME` that has a space in it |
 | `check-homebrew` | Linux, macOS | Fills in the Homebrew formula, `dist/homebrew/restest.rb`, for the `.tgz` and runs `check-homebrew.sh` on it: `brew style`, installed from a local tap, its own test, the folder it installs compared with the archive, and `check-restest.sh --own-java` on the command it installs |
 | `image` | an `amd64` and an `arm64` machine | Builds the image on each machine's own processor, runs `check-restest.sh` on it, and on a tag pushes that very image as `ghcr.io/isa-group/restest:<v>-amd64` or `-arm64` |
+| `central` | Linux, on a tag only, once a maintainer approves it | Signs what Maven Central gets with `sign-for-central.sh` and uploads it to the Central Portal, which validates it and publishes nothing; leaves it alone when Central has the version already ([Maven Central](#maven-central)) |
 | `publish` | Linux, on a tag only | Joins the two into `:<v>` in the registry, checks it as published, moves `:latest` when no higher version is tagged, and drafts the release with the archives and `checksums_sha256.txt` |
 
 The order is what keeps a broken release from being seen: nothing is pushed before it has been
 checked, the image a release names is made of the images that were checked, the release is drafted
-only once the Homebrew formula for its archive installs and passes, and the files appear only when
-the draft is published. A rerun of the same tag never replaces anything: an image already pushed
-is left as it is, a draft keeps the files it has, and a published release is not touched. A pull
+only once the Homebrew formula for its archive installs and passes and the Central Portal has
+validated what Maven Central gets, and the files appear only when the draft is published. A Portal
+that is down holds back the draft, and the image's `:<v>` and `:latest` with it. A rerun of the same
+tag never replaces anything: an image already pushed is left as it is, a draft keeps the files it
+has, a version Maven Central has is not uploaded again, and a published release is not touched. A pull
 request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow,
-`.gitattributes`, the root `pom.xml` or `restest-cli/pom.xml` rehearses every job but `publish` and
-pushes nothing.
+`.gitattributes`, the root `pom.xml` or `restest-cli/pom.xml` rehearses every job but `central` and
+`publish`, and pushes nothing.
 
 When what failed is the workflow itself, `workflow_dispatch` makes the same release with the
 workflow as it is on `master`: Actions → Release → Run workflow, with the tag. Everything else it
-uses — the `Dockerfile`, `dist/`, `check-restest.sh` — is still the tag's. A tag is never moved or
-deleted; a fault in what the tag holds, or a draft that cannot be published as it is, is put right
-in the next patch.
+uses — the `Dockerfile`, `dist/`, `check-restest.sh` — is still the tag's, except in the `central`
+job, which takes what it uploads from the `archive` job and checks out the workflow's own commit, so
+that its signing and its upload are `master`'s. A tag is never moved or deleted; a fault in what the
+tag holds, or a draft that cannot be published as it is, is put right in the next patch. When the
+Portal refuses an upload for a reason of its own — a token it does not take, a key it cannot find on
+the key servers — put that right where it is and run the failed `central` job again from the run's
+page ("Re-run failed jobs"), which uploads the files of that same run. A tag made before Maven
+Central was, v2.3.0 or older, holds no `dist/central.sh`, so `master`'s workflow can no longer make
+its release again.
 
 The steps of every release, in order, each taken by a maintainer:
 
@@ -360,13 +391,20 @@ The steps of every release, in order, each taken by a maintainer:
    and 9 of the manual — with output from the image and the archive built from that commit, and, for
    chapter 2's Homebrew section, what `check-homebrew` prints in that pull request's run of
    `release.yml`.
-3. **The tag**, pushed once that pull request is merged.
-4. **The draft**: its notes written, read, and the release published.
-5. **From outside**: the README's installation commands, run against the published release with no
-   one signed in to GitHub or to the registry. Publishing the release has started `homebrew.yml`
-   (below), which installs RESTest from the tap on macOS and Linux once it has written the formula
-   there; check that its run is green.
-6. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
+3. **The tag**, pushed once that pull request is merged; then, when the run asks, approve the
+   `central` job (*Review deployments*).
+4. **The draft**: its notes written and read.
+5. **Maven Central**: on the Portal's [Deployments](https://central.sonatype.com/publishing/deployments)
+   page, publish the deployment `RESTest <v> run <run>` the `central` job named on the run's page, and
+   wait until the Portal says it is *Published*. Should two runs of the tag have left two validated
+   deployments, publish the one of the run that drafted the release and drop the other.
+6. **The release published**, once Maven Central has the version, since its notes may name it.
+7. **From outside**: the README's installation commands, run against the published release with no
+   one signed in to GitHub or to the registry, and
+   `https://repo1.maven.org/maven2/es/us/isa/restest/restest-cli/<v>/` answering. Publishing the
+   release has started `homebrew.yml` (below), which installs RESTest from the tap on macOS and Linux
+   once it has written the formula there; check that its run is green.
+8. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
    the `$id` of both schemas to the next release, since the schemas on `master` name the release
    being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
 
@@ -410,6 +448,85 @@ same commit, so that Homebrew installs it again where it is installed already.
 Where the organisation does not allow deploy keys, a GitHub App installed on the tap alone does the
 same. That changes `homebrew.yml`: a step that makes the App's token, and the tap's checkout given
 `token:` in place of `ssh-key:`.
+
+### Maven Central
+
+RESTest's eight modules are published as `es.us.isa.restest:<module>:<v>` through Sonatype's Central
+Portal, `central.sonatype.com`. Nothing published there can be changed or removed, so `release.yml`
+only uploads them, and a person publishes them on the Portal ([ADR-0044](adr/0044-maven-central.md)).
+
+| Step | Where | What it does |
+|---|---|---|
+| `dist/central.sh` | the `archive` job, and the `ubuntu-latest` / Java 25 row of `ci.yml` | Lays out, from the build the archives come from, `restest-cli` and every module it runs with, each with its jar, sources, Javadoc and POM and an `.md5` and a `.sha1` beside each, and checks them ([What Maven Central would get](#what-maven-central-would-get)) |
+| `.github/scripts/sign-for-central.sh` | the `central` job, with RESTest's key; the `archive` job on a pull request, with a key made for that run | Signs every file but the checksums, checks each signature, and zips the result into the bundle the Portal takes |
+| The upload | the `central` job | Sends the bundle as `USER_MANAGED`, waits up to half an hour for the Portal to validate it, and writes the deployment's id and each jar's SHA-256 on the run's page; fails, with the Portal's reasons, when the Portal refuses it |
+
+Each published POM names every library its module runs with, at the version the archive carries,
+and nothing below them; no parent POM is published. ADR-0044 §3 says why.
+
+**Set up once**, by the maintainer, before the first tag the workflow uploads for:
+
+1. **The namespace.** An account of the Central Portal that can publish under `es.us.isa`, the
+   namespace RESTest 1.x is published in: its *Namespaces* page lists it as verified. The account's
+   token can publish under every namespace the account can, so name whose account it is.
+2. **The token.** On the Portal, *Account*, *Generate User Token*: a username and a password, kept as
+   the secrets `CENTRAL_USERNAME` and `CENTRAL_PASSWORD` below.
+3. **The signing key**, made for RESTest's releases alone, on a machine with GnuPG
+   (`brew install gnupg` on a Mac), with a passphrase and an expiry:
+
+   ```bash
+   gpg --quick-gen-key 'RESTest releases <address>' rsa4096 sign 3y
+   ```
+
+   ```bash
+   gpg --keyserver keyserver.ubuntu.com --send-keys <fingerprint>
+   ```
+
+   ```bash
+   gpg --export <fingerprint> | curl -T - https://keys.openpgp.org
+   ```
+
+   The Portal checks every signature against the public key servers; keys.openpgp.org answers with a
+   link to confirm the address. `gpg --armor --export-secret-keys <fingerprint>` prints what the
+   secret `SIGNING_KEY` holds, and the passphrase is `SIGNING_PASSPHRASE`. Keep the secret key and
+   the revocation certificate GnuPG wrote under `~/.gnupg/openpgp-revocs.d/` off any machine that
+   runs builds. Before the key expires, `gpg --quick-set-expire <fingerprint> 3y`, send it to both
+   servers again, and replace `SIGNING_KEY` with what the export prints then.
+4. **The environment.** In this repository's settings, the environment `maven-central`: the
+   maintainer as its required reviewer, the branch `master` and the tags `v*` - added as a tag rule,
+   not a branch rule - as the only refs that may deploy to it, and the four secrets as its own, not
+   the repository's. As for Homebrew's, an
+   environment the workflow names that does not exist yet is created without those limits, so it
+   comes first.
+5. **Who may push a version tag.** A tag ruleset on `v*` that restricts creating, updating and
+   deleting matching tags to the maintainers: a tag runs the tag's own `release.yml`, and the
+   environment's limit to `v*` would not stop a tag pushed on a commit that never reached `master`.
+6. **One trial upload**, so that the first release is not the first time the Portal sees a bundle of
+   RESTest's. In a clone of its own, with a version that will never be published:
+
+   ```bash
+   ./mvnw -q versions:set -DnewVersion=0.0.0-trial -DgenerateBackupPoms=false
+   ```
+
+   ```bash
+   ./mvnw -q package -Pcentral -DskipTests -pl restest-cli -am && dist/central.sh target/central
+   ```
+
+   ```bash
+   read -rs SIGNING_PASSPHRASE && export SIGNING_PASSPHRASE
+   ```
+
+   ```bash
+   SIGNING_KEY=$(gpg --armor --export-secret-keys <fingerprint>) \
+     .github/scripts/sign-for-central.sh target/central/maven-central trial.zip
+   ```
+
+   ```bash
+   unset SIGNING_PASSPHRASE
+   ```
+
+   On the Portal, *Publish Component*, with `trial.zip`; wait until it says *Validated*, or read why
+   it failed, and then **drop** it. Never publish it.
 
 ## Dependency updates
 

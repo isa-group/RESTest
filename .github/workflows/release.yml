@@ -1,19 +1,24 @@
 # Makes a release of RESTest from a version tag: the container image, the two archives and their
-# checksums, every one of them checked before anything is published. ADR-0032 says why it is shaped
-# this way; docs/ci.md says how to use it.
+# checksums, and RESTest's modules on Maven Central, every one of them checked before anything is
+# published. ADR-0032 and ADR-0044 say why it is shaped this way; docs/ci.md says how to use it.
 #
-#   archive        compiles RESTest and assembles restest-<v>.zip and restest-<v>.tgz
+#   archive        compiles RESTest and assembles restest-<v>.zip and restest-<v>.tgz, and, from the
+#                  same build, lays out what Maven Central gets
 #   check-archive  unpacks them on Linux, macOS and Windows and checks their launchers
 #   check-homebrew fills in the Homebrew formula for the .tgz, and installs and checks it on macOS
 #                  and Linux; homebrew.yml puts it in the tap once the release is published
 #   image          builds the image on an amd64 and on an arm64 machine and checks each; on a tag,
 #                  pushes each one, as it was checked, as :<v>-amd64 and :<v>-arm64
-#   publish        on a tag only: joins the two into :<v>, checks it, moves :latest when this is the
-#                  highest version, and leaves a DRAFT release with the archives and the checksums.
-#                  A person writes its notes and publishes it.
+#   central        on a tag only, once a maintainer approves it: signs what Maven Central gets and
+#                  uploads it to the Central Portal, which validates it and publishes nothing. A person
+#                  publishes it there, before publishing the release.
+#   publish        on a tag only: joins the two images into :<v>, checks it, moves :latest when this
+#                  is the highest version, and leaves a DRAFT release with the archives and the
+#                  checksums. A person writes its notes and publishes it.
 #
-# A pull request that touches how RESTest is packaged runs everything but publish, and pushes nothing,
-# so a broken release is found before a tag is.
+# A pull request that touches how RESTest is packaged runs everything but central and publish, signs
+# what Maven Central would get with a key made for that run, and pushes nothing, so a broken release
+# is found before a tag is.
 #
 # Every action is pinned to a commit SHA, with the version in a trailing comment, for the reasons
 # ci.yml gives.
@@ -103,11 +108,41 @@ jobs:
           java-version: '25'
           cache: maven
 
+      # With the central profile, the build also makes what Maven Central asks for beside each jar,
+      # so that the jars Central gets are the ones the archives carry and the next jobs check. The
+      # timestamp of the commit in every jar makes a second run for the same tag build the same jars.
       - name: Build RESTest
-        run: ./mvnw --batch-mode --no-transfer-progress -Dmaven.test.skip=true package -pl restest-cli -am
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress -Dmaven.test.skip=true -Pcentral \
+            -Dproject.build.outputTimestamp="$(git log -1 --format=%cI)" package -pl restest-cli -am
 
       - name: Assemble the archives
         run: dist/assemble.sh target/dist --archives
+
+      - name: Lay out what Maven Central gets
+        run: dist/central.sh target/central
+
+      # On a pull request, the signing the central job does on a tag, with a key made for this run and
+      # thrown away with the runner, so that a fault in the script is found before a tag needs it. Its
+      # passphrase guards nothing, so it is written here.
+      - name: Rehearse the signing
+        if: github.event_name == 'pull_request'
+        run: |
+          export GNUPGHOME="$RUNNER_TEMP/rehearsal-gnupg"
+          mkdir -m 700 "$GNUPGHOME"
+          gpg --batch --pinentry-mode loopback --passphrase rehearsal \
+            --quick-gen-key 'RESTest rehearsal <rehearsal@invalid>' rsa4096 sign 1d
+          SIGNING_KEY=$(gpg --batch --pinentry-mode loopback --passphrase rehearsal --armor --export-secret-keys) \
+          SIGNING_PASSPHRASE=rehearsal \
+            .github/scripts/sign-for-central.sh target/central/maven-central "$RUNNER_TEMP/rehearsal.zip"
+
+      - name: Keep what Maven Central gets
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: maven-central
+          path: target/central/maven-central/
+          if-no-files-found: error
+          overwrite: true
 
       # The archives themselves, not the folder: an artifact keeps no file permissions, and the
       # launcher has to stay executable. What is checked next is what a release carries.
@@ -273,9 +308,111 @@ jobs:
             docker push --quiet "$IMAGE:$VERSION-$ARCH"
           fi
 
+  # The secrets it uses - RESTest's signing key and a token of the Central Portal - are kept in the
+  # environment maven-central, which only master and version tags may use and which waits for a
+  # maintainer to approve the job. Nothing it uploads is published: the Portal validates it and keeps
+  # it until a person publishes it there, or drops it. docs/ci.md says how all of it is set up.
+  central:
+    name: Upload to Maven Central
+    needs: [archive, check-archive, check-homebrew, image]
+    if: needs.archive.outputs.tag != ''
+    runs-on: ubuntu-latest
+    environment: maven-central
+    timeout-minutes: 45
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+      PORTAL: https://central.sonatype.com/api/v1/publisher
+    steps:
+      # This workflow's own commit, not the tag's: what is uploaded comes from the archive job, and on
+      # a run started by hand the signing script is then master's, so a fault in it found at a tag is
+      # put right on master rather than in the next patch.
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fetch what Maven Central gets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: maven-central
+          path: maven-central
+
+      # Nothing published there is replaced, and Central would refuse it anyway. repo1 shows a version
+      # once the Portal has published it; while the Portal is still publishing it, an upload is
+      # refused by the Portal itself, and the job is run again later.
+      - name: Leave it alone if Maven Central has this version already
+        id: published
+        run: |
+          if curl -fsS --max-time 60 --head --output /dev/null \
+              "https://repo1.maven.org/maven2/es/us/isa/restest/restest-cli/$VERSION/restest-cli-$VERSION.pom"; then
+            echo "Maven Central has RESTest $VERSION already, so nothing is uploaded" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sign it
+        if: steps.published.outputs.published != 'true'
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: .github/scripts/sign-for-central.sh maven-central "$RUNNER_TEMP/restest-$VERSION.zip"
+
+      # Inline rather than in a script of the tag's, for the reason the checkout above gives. The
+      # token is the base64 of the two secrets, which GitHub does not know to hide, so it is masked
+      # before it is used; and nothing here prints a request's headers. The upload is never repeated
+      # by curl, which could leave two deployments; asking for the state is. The deployment is named
+      # after this run, so that two runs of one tag leave two names on the Portal, not one twice.
+      - name: Upload it, and wait until the Portal has validated it
+        if: steps.published.outputs.published != 'true'
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+        run: |
+          token=$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 -w 0)
+          echo "::add-mask::$token"
+          name="RESTest $VERSION run $GITHUB_RUN_ID"
+          id=$(curl --fail-with-body -sS --max-time 600 -X POST -H "Authorization: Bearer $token" \
+            -F "bundle=@$RUNNER_TEMP/restest-$VERSION.zip" \
+            "$PORTAL/upload?publishingType=USER_MANAGED&name=${name// /%20}") \
+            || { echo "::error::The Portal refused the upload: $id"; exit 1; }
+          [[ $id =~ ^[0-9a-f-]{36}$ ]] || { echo "::error::The Portal answered the upload with: $id"; exit 1; }
+          echo "Uploaded as deployment $id, named $name"
+          # Every ten seconds for half an hour. VALIDATED is what is waited for; PUBLISHING and
+          # PUBLISHED mean somebody has published it in the meantime. An answer that is not one is
+          # kept, to be shown if no answer ever is.
+          state=UNKNOWN
+          validated=
+          answer=
+          for _ in $(seq 180); do
+            sleep 10
+            answer=$(curl --fail-with-body -sS --max-time 60 --retry 3 --retry-all-errors -X POST \
+              -H "Authorization: Bearer $token" "$PORTAL/status?id=$id") || continue
+            state=$(jq -r .deploymentState <<< "$answer" 2> /dev/null) || continue
+            case $state in
+              VALIDATED | PUBLISHING | PUBLISHED) validated=yes; break ;;
+              FAILED)
+                echo "::error::The Portal refused RESTest $VERSION, deployment $id:"
+                jq .errors <<< "$answer"
+                exit 1
+                ;;
+            esac
+          done
+          [ -n "$validated" ] || {
+            echo "::error::Deployment $id is still $state after half an hour; the Portal last answered: $answer"
+            exit 1
+          }
+          {
+            echo "### RESTest $VERSION on Maven Central"
+            echo
+            echo "Deployment \`$id\`, named $name, is $state. Publish it at https://central.sonatype.com/publishing/deployments before publishing the release, keeping the deployment of the run that drafted it. Its jars:"
+            echo
+            echo '```'
+            (cd maven-central && find . -name '*.jar' | sort | xargs sha256sum)
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   publish:
     name: Publish the image and draft the release
-    needs: [archive, check-archive, check-homebrew, image]
+    # After central, so that a release is drafted only once Maven Central holds what it will name;
+    # a Portal that is down holds the image's :<v> and :latest back with it.
+    needs: [archive, check-archive, check-homebrew, image, central]
     if: needs.archive.outputs.tag != ''
     runs-on: ubuntu-latest
     permissions:

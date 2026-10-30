@@ -1,6 +1,6 @@
 # ADR-0004: Multi-module structure with dependencies pointing inwards
 
-**Status:** Accepted, amended at M0.2 and on 14 October 2026
+**Status:** Accepted, amended at M0.2 and on 14 and 30 October 2026
 **Date:** 2026-09-11
 
 ## Context
@@ -107,3 +107,12 @@ say dependencies between parameters are not read.
 
 Considered and not taken: keeping the empty module. It costs a jar in every release and a line in
 every list of modules, and it says something about the tool that is not true yet.
+
+## Amendment (30 October 2026): what keeps `restest-arch-tests` off Maven Central
+
+**Date:** 2026-10-30
+
+The M0.2 amendment says that `maven.deploy.skip` keeps `restest-arch-tests` off Maven Central. Since
+[ADR-0044](0044-maven-central.md) a release never runs `mvn deploy`: `dist/central.sh` lays out
+`restest-cli` and the modules it runs with, and `restest-arch-tests`, on which nothing depends, is
+not among them. `maven.deploy.skip` still stops `mvn deploy` from publishing it anywhere.

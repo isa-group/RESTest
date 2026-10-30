@@ -1,6 +1,6 @@
 # ADR-0032: A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher
 
-**Status:** Accepted, amended on 13, 23 and 27 October 2026
+**Status:** Accepted, amended on 13, 23, 27 and 30 October 2026
 **Date:** 2026-10-11
 
 ## Context
@@ -244,3 +244,16 @@ workflow runs on (§3). And §6's check has a fourth way of starting RESTest, `-
 command that brings its own Java. JReleaser, named above as the obvious way to publish to Homebrew,
 writes a formula whose command finds no Java when Homebrew's is the only one; ADR-0040 says why it
 was not used.
+
+## Amendment (30 October 2026): Maven Central
+
+**Date:** 2026-10-30
+
+A release also carries RESTest's eight modules on Maven Central ([ADR-0044](0044-maven-central.md)).
+§1's table gains a row: `es.us.isa.restest:restest-*:<v>`, each module with its jar, its sources,
+its Javadoc and their signatures. §2's draft is made only once the Central Portal has validated what
+the release uploads there, and a person now publishes twice - the deployment on the Portal first,
+then the release - with an approval of the upload before either. The jars Central gets come from the
+build the archives are assembled from, and are checked with them. §3 holds on Central too: a version
+Central has is never uploaded again, and nothing published there is replaced. §5 is unchanged:
+nothing on Central starts RESTest.
