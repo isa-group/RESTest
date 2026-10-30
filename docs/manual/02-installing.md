@@ -54,7 +54,7 @@ docker run --rm ghcr.io/isa-group/restest:2.4.0 version
 
 ```
 RESTest 2.4.0
-Java 21.0.12.1 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
+Java 21.0.13 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 ```
 
 A run reads its document and its other files from a folder, and writes its report into it. Inside

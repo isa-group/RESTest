@@ -97,7 +97,7 @@ However it was installed, `restest version` says which RESTest and which Java yo
 
 ```
 RESTest 2.4.0
-Java 21.0.12.1 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
+Java 21.0.13 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 ```
 
 ### Your first run
