@@ -507,6 +507,11 @@ secrets below is ever written into a file of this repository, an issue or a chat
    gpg --armor --export-secret-subkeys '<subkey fingerprint>!' > restest-signing-subkey.asc
    ```
 
+   That it holds the subkey alone shows only in a keyring that holds nothing else, as the job's
+   does: imported there, `gpg --homedir <empty folder> --list-secret-keys` lists `sec#`, the `#`
+   saying the primary's secret is not there. `gpg --show-keys` asks the machine's own keyring
+   instead, which still holds the primary's secret, and lists `sec` either way.
+
    Keep `gpg --armor --export-secret-keys <fingerprint>` and the revocation certificate GnuPG wrote
    under `~/.gnupg/openpgp-revocs.d/` off any machine that runs builds, and remove the exported file
    once it is a secret. Before the subkey expires, `gpg --quick-set-expire <fingerprint> 2y
