@@ -92,7 +92,7 @@ jobs:
           java-version: '21'
 
       - name: Get RESTest
-        run: curl -fsSL https://github.com/isa-group/RESTest/releases/download/v2.3.0/restest-2.3.0.tgz | tar -xz
+        run: curl -fsSL https://github.com/isa-group/RESTest/releases/download/v2.4.0/restest-2.4.0.tgz | tar -xz
 
       - name: Wait for the API
         run: |
@@ -103,7 +103,7 @@ jobs:
           exit 1
 
       - name: Test the API
-        run: restest-2.3.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m
+        run: restest-2.4.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m
 
       - name: Keep the report
         if: always()
@@ -136,7 +136,7 @@ Some things to decide for your own build:
   warnings fail it too:
 
   ```bash
-  restest-2.3.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m --set checks.failOnWarnings=true
+  restest-2.4.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m --set checks.failOnWarnings=true
   ```
 
   The summary then says so under the warnings it found, and the run ends with `1`. From a run of the
@@ -156,7 +156,7 @@ Some things to decide for your own build:
   answering, a misspelt file — by treating `1` as a pass:
 
   ```bash
-  restest-2.3.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m || [ $? -eq 1 ]
+  restest-2.4.0/bin/restest run http://localhost:9966/petclinic/v3/api-docs --budget 2m || [ $? -eq 1 ]
   ```
 
 The [next chapter](10-troubleshooting.md) is about runs that do not do what you expected.

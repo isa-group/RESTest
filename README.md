@@ -47,7 +47,7 @@ whatever `JAVA_HOME` says. With that Java, the first installation keeps about 62
 **With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 
 ```bash
-docker run --rm ghcr.io/isa-group/restest:2.3.0 version
+docker run --rm ghcr.io/isa-group/restest:2.4.0 version
 ```
 
 A run reads its document and writes its report in the folder it is started from, which the
@@ -57,7 +57,7 @@ folder you are in lent to it, makes what is written there yours, hands over a ke
 
 ```bash
 mkdir -p ~/.local/bin
-printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.3.0 "$@"' > ~/.local/bin/restest
+printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.4.0 "$@"' > ~/.local/bin/restest
 chmod +x ~/.local/bin/restest
 export PATH="$HOME/.local/bin:$PATH"
 ```
@@ -71,17 +71,17 @@ cannot be reached that way; put `--network host` in the script in place of `--ad
 library it runs with:
 
 ```bash
-curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.3.0/restest-2.3.0.tgz
-tar -xzf restest-2.3.0.tgz
-export PATH="$PWD/restest-2.3.0/bin:$PATH"
+curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.4.0/restest-2.4.0.tgz
+tar -xzf restest-2.4.0.tgz
+export PATH="$PWD/restest-2.4.0/bin:$PATH"
 ```
 
-On Windows, unpack `restest-2.3.0.zip` and run `restest-2.3.0\bin\restest.cmd`.
+On Windows, unpack `restest-2.4.0.zip` and run `restest-2.4.0\bin\restest.cmd`.
 
 **From the source**, with a JDK 21 or later and git:
 
 ```bash
-git clone --branch v2.3.0 https://github.com/isa-group/RESTest.git
+git clone --branch v2.4.0 https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q install -DskipTests
 export PATH="$PWD:$PATH"
@@ -96,8 +96,8 @@ file, such as `~/.bashrc` or `~/.zshrc`, with the folder written out in full.
 However it was installed, `restest version` says which RESTest and which Java you have:
 
 ```
-RESTest 2.3.0
-Java 21.0.12.1 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
+RESTest 2.4.0
+Java 21.0.13 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 ```
 
 ### Your first run

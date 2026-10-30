@@ -395,7 +395,7 @@ Versions are pinned here and in the root POM, and the container image's two base
 | HTTP client | OkHttp — network interceptors give exact request and response capture | 5.5.0 |
 | Concurrency | Virtual threads | JDK 21+ |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
-| JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.1 |
+| JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.3 |
 | YAML reader for the files a person writes | `org.yaml:snakeyaml`, confined to `restest-core` and `restest-spec` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M11.1) | 2.6 |
 | Strings matching a regular expression | `com.github.curious-odd-man:rgxgen`, confined to `restest-gen` ([ADR-0022](adr/0022-the-characters-a-value-is-made-of.md)) | 3.0 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
