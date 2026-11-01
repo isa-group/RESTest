@@ -933,6 +933,27 @@ class RestestTest {
                 .contains("willing to have written to");
     }
 
+    @Test
+    @DisplayName("the help names the page a coding agent learns RESTest from")
+    void the_help_names_the_page_for_coding_agents() {
+        assertThat(run("--help")).isZero();
+        assertThat(screen.toString())
+                .describedAs("an agent given a tool it does not know reads its help first")
+                .contains("A coding agent learns to use RESTest from")
+                .contains(Restest.pageForCodingAgents(ToolVersion.describing()));
+    }
+
+    @Test
+    @DisplayName("the page named is the one of the version running, or of master for any other build")
+    void the_page_is_the_one_of_the_version_running() {
+        assertThat(Restest.pageForCodingAgents("2.5.0")).isEqualTo(
+                "https://github.com/isa-group/RESTest/blob/v2.5.0/docs/for-coding-agents.md");
+        assertThat(Restest.pageForCodingAgents("2.5.0-SNAPSHOT")).isEqualTo(
+                "https://github.com/isa-group/RESTest/blob/master/docs/for-coding-agents.md");
+        assertThat(Restest.pageForCodingAgents("unknown")).isEqualTo(
+                "https://github.com/isa-group/RESTest/blob/master/docs/for-coding-agents.md");
+    }
+
     private int run(String... arguments) {
         PrintWriter out = new PrintWriter(screen);
         PrintWriter err = new PrintWriter(problems);

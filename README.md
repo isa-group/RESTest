@@ -214,6 +214,17 @@ the run itself was not kept; pass --store to keep every request and reply
 [What a run leaves behind](docs/report.md) goes through every line and every key, and [The faults
 RESTest reports](docs/faults.md) says what each kind of fault means.
 
+### From a coding agent
+
+A coding agent — Claude Code, Codex, Copilot, Gemini CLI — runs RESTest for you, given one sentence:
+
+```
+Use RESTest to test the REST APIs you develop: https://github.com/isa-group/RESTest/blob/master/docs/for-coding-agents.md
+```
+
+[RESTest and coding agents](docs/for-coding-agents.md) says what the agent then does, and how to
+install the skill that teaches it.
+
 ## What a run does
 
 1. **It reads the document**, and sets aside what it cannot test — a file upload the API insists on,
@@ -350,8 +361,8 @@ integration.
 
 [`docs/`](docs/README.md) has a page for each subject: the command line, what a run leaves behind,
 the faults, the plan, dictionaries, the JSON Schemas of a dictionary and a plan, the settings, the
-switches and the known limitations — and, for working on RESTest itself, the design, continuous
-integration and the decision records.
+switches, coding agents and the known limitations — and, for working on RESTest itself, the design,
+continuous integration and the decision records.
 
 ## Contributing
 

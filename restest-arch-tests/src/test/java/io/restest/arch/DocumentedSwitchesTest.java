@@ -100,11 +100,11 @@ class DocumentedSwitchesTest {
             Pattern.MULTILINE);
 
     /** A setting named anywhere on the page, in a sentence as much as in a table. */
-    private static final Pattern NAMED = Pattern.compile(
+    static final Pattern NAMED = Pattern.compile(
             "\\b(" + String.join("|", SettingKey.groups()) + ")\\.([A-Za-z]+)\\b");
 
     /** What begins like the name of a setting and is not one: a file the page mentions. */
-    private static final Set<String> FILE_NAMES = Set.of("report.json");
+    static final Set<String> FILE_NAMES = Set.of("report.json");
 
     /** The idea the series are part of, and the label of the file that turns them off. */
     private static final String SERIES = "Series";

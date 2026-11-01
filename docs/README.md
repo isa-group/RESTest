@@ -16,6 +16,7 @@ what to look things up in afterwards.
 | [The JSON Schemas](schemas.md) | The schemas of a dictionary and a plan: where they are, and how an editor, a validator or a language model uses them |
 | [The settings](settings.md) | Every number that says how the tool behaves, with its default, and the three ways to change one |
 | [The switches](switches.md) | The settings that turn one thing a run does off, what leaving each on costs, and files that turn off a whole idea |
+| [RESTest and coding agents](for-coding-agents.md) | What to tell a coding agent so that it tests an API with RESTest, what it then does, and the skill that teaches it |
 | [Known limitations](known-limitations.md) | What RESTest does not do yet, or does in a way that may surprise you, and what to do about it |
 
 ## Building RESTest

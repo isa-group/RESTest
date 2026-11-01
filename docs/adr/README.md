@@ -98,3 +98,4 @@ so records written from now on cite none.
 | [0043](0043-a-rate-to-keep-to.md) | A run can be given a rate to keep to, in one line, and keeps to it evenly where it sends | Accepted |
 | [0044](0044-maven-central.md) | RESTest's modules are on Maven Central as `es.us.isa.restest`, uploaded with a release and published there by a person; their POMs name exactly what the archive carries, and their Java code is no part of the promise | Accepted |
 | [0045](0045-jbang.md) | RESTest is run with jbang from a catalog of the ISA group's own, whose alias names RESTest on Maven Central and is written once a release is published | Accepted |
+| [0046](0046-a-skill-for-coding-agents.md) | A skill in the open format of agent skills teaches a coding agent to use RESTest; it ships with every release as the JSON Schemas do, ends the page for coding agents word for word, and is held to the tool by a test | Accepted |

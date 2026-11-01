@@ -84,9 +84,11 @@ No exceptions.
   contributor shares: the conventions in `CONTRIBUTING.md`, the evidence about the product that ADRs
   and pull requests carry, and two files that any user of one coding agent reads — `CLAUDE.md`, which
   only imports this file, and `.claude/settings.json`, which only forbids a few dangerous commands.
-  The decision records, and the links in them to where an old plan is kept, are history: they may
-  say what was used then. The rule covers pull-request descriptions too, since a merge can carry
-  them into `master`'s history. See ADR-0030.
+  The skill in `skills/restest/` is not tooling of that kind but part of the product: it ships with
+  every release, for anyone's coding agent to use RESTest with, and no agent working on this
+  repository reads it from there (ADR-0046). The decision records, and the links in them to where an
+  old plan is kept, are history: they may say what was used then. The rule covers pull-request
+  descriptions too, since a merge can carry them into `master`'s history. See ADR-0030.
 - **Tuning numbers live in the settings, never in the campaign file, and every behaviour lever
   lands with a switch** (ADR-0025), so an experiment can turn it off without a code change. A
   constant that is a decision rather than a fact does not stay a constant when the code around it is
@@ -160,6 +162,7 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 | The command line and its exit codes, which a build checks against the tool | `docs/command-line.md` |
 | What the tool does not do yet | `docs/known-limitations.md` |
 | The JSON Schemas of a dictionary and a plan, which a test holds to RESTest's reader | `schemas/`, `docs/schemas.md` |
+| The skill that teaches a coding agent to use RESTest, which a test holds to the tool, and the page for coding agents that ends with it | `skills/restest/SKILL.md`, `docs/for-coding-agents.md` |
 | Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |

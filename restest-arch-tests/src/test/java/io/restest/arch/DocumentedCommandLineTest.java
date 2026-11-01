@@ -181,7 +181,7 @@ class DocumentedCommandLineTest {
     }
 
     /** An option as the help shows it: what it takes, if anything, and its default, if any. */
-    private record HelpedOption(String value, String defaultValue) {
+    record HelpedOption(String value, String defaultValue) {
     }
 
     /**
@@ -189,7 +189,7 @@ class DocumentedCommandLineTest {
      * options in: a line beginning with the option, and the lines under it indented further, which
      * are its description and end with its default when it has one.
      */
-    private static Map<String, HelpedOption> optionsIn(String helpText) {
+    static Map<String, HelpedOption> optionsIn(String helpText) {
         Pattern start = Pattern.compile("^ {2,6}(?:-[A-Za-z], )?(--[a-z-]+)(?:=(<[^>]+>))?(.*)$");
         Map<String, HelpedOption> options = new LinkedHashMap<>();
         String name = null;
@@ -228,7 +228,7 @@ class DocumentedCommandLineTest {
      * The lines of the help from the one beginning with a heading to the next blank line; from
      * where the options begin, for none.
      */
-    private static String section(String helpText, String heading) {
+    static String section(String helpText, String heading) {
         List<String> lines = helpText.lines().toList();
         int from = 0;
         if (heading.isEmpty()) {
@@ -262,7 +262,7 @@ class DocumentedCommandLineTest {
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    private static String helpFor(String... arguments) {
+    static String helpFor(String... arguments) {
         StringWriter written = new StringWriter();
         PrintWriter out = new PrintWriter(written);
         int answer = Restest.run(arguments, out, new PrintWriter(new StringWriter()));

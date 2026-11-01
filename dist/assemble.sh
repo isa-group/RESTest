@@ -6,8 +6,9 @@
 #     dist/assemble.sh <output-directory> [--archives]
 #
 # leaves <output-directory>/restest-<version>/ with bin/ (the two launchers), lib/ (RESTest and every
-# library it runs with), schemas/ (the JSON Schemas of a dictionary and a plan), LICENSE, NOTICE,
-# THIRD-PARTY.txt (every library in lib/, with its licence) and README.md; with --archives,
+# library it runs with), schemas/ (the JSON Schemas of a dictionary and a plan), skills/ (the skill
+# that teaches a coding agent to use RESTest), LICENSE, NOTICE, THIRD-PARTY.txt (every library in
+# lib/, with its licence) and README.md; with --archives,
 # restest-<version>.zip and restest-<version>.tgz beside it, which are what a release carries. The
 # container image runs it too, while it builds, so that the folder in the image and in the archives
 # is the same one.
@@ -59,6 +60,7 @@ mkdir -p "$out/$name/bin" "$out/$name/lib" "$out/$name/schemas"
 cp "$here/bin/restest" "$here/bin/restest.cmd" "$out/$name/bin/"
 cp "$jar" "$target"/lib/*.jar "$out/$name/lib/"
 cp "$root"/schemas/*.schema.json "$out/$name/schemas/"
+cp -R "$root/skills" "$out/$name/"
 cp "$root/LICENSE" "$root/NOTICE" "$here/THIRD-PARTY.txt" "$root/README.md" "$out/$name/"
 
 if [ "$archives" = --archives ]; then

@@ -272,3 +272,12 @@ needs, since jbang needs its own script's tools and itself; `--launcher` keeps t
 draft also waits for `check-jbang`, which runs the catalog for the version being released. Like
 Homebrew's formula, the catalog is written by a workflow started by the publication, and a tag does not
 freeze it (§3).
+
+## Amendment (1 November 2026): the skill for coding agents
+
+**Date:** 2026-11-01
+
+The archive's folder also carries `skills/restest/SKILL.md`, the skill that teaches a coding agent
+to use RESTest ([ADR-0046](0046-a-skill-for-coding-agents.md)), and so the image has it in
+`/opt/restest/skills/restest/` and Homebrew in its `libexec/skills/restest/`. `check-restest.sh`
+checks that the image, and a launcher in a release's folder, carry it, as it does the JSON Schemas.

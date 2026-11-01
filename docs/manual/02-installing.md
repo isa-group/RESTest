@@ -234,7 +234,9 @@ sha256sum --ignore-missing -c checksums_sha256.txt
 answers `restest-2.4.0.tgz: OK`; on macOS, write `shasum -a 256` in place of `sha256sum`.
 
 The folder `restest-2.4.0` holds `bin/`, with the command, `lib/`, with the libraries, `schemas/`,
-with the JSON Schemas of a dictionary and a plan ([chapter 6](06-dictionaries.md)), and the licences.
+with the JSON Schemas of a dictionary and a plan ([chapter 6](06-dictionaries.md)), `skills/`, with
+the skill that teaches a coding agent to use RESTest ([RESTest and coding
+agents](../for-coding-agents.md)), and the licences.
 It can live anywhere. This line puts its `bin/` on the `PATH`, which makes `restest` the command,
 from any folder:
 
