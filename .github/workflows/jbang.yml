@@ -1,15 +1,16 @@
 # Puts RESTest's version in its jbang catalog, isa-group/jbang-catalog, once a release is published, so
-# that `jbang restest@isa-group` runs it. ADR-0045 says why it is shaped this way; docs/ci.md says how
-# to use it.
+# that jbang runs it from the catalog's address on GitHub Pages,
+# https://isa-group.github.io/jbang-catalog/jbang-catalog.json. ADR-0045 says why it is shaped this way;
+# docs/ci.md says how to use it.
 #
 #   catalog          checks the tag and that Maven Central serves that version, fills in
 #                    dist/jbang/jbang-catalog.json with it, and downloads the release's archive as
 #                    anybody would
 #   check            runs check-jbang.sh on that catalog on Linux, macOS and Windows: jbang with no
 #                    Java, the jars against the archive's, and check-restest.sh on the command it installs
-#   push             writes RESTest's alias into the catalog, never over a higher version, and waits
-#                    until GitHub serves it
-#   check-published  runs check-jbang.sh once more, on the catalog as GitHub serves it
+#   push             writes RESTest's alias into the catalog, never over a higher version
+#   check-published  waits until GitHub Pages serves the new catalog, and runs check-jbang.sh on it
+#                    from there, on Linux: what it adds to check is the address, the same everywhere
 #
 # The catalog and the scripts are this commit's; the jars are Maven Central's. So a run started by hand
 # from master puts in the catalog a release made before this workflow existed.
@@ -209,7 +210,7 @@ jobs:
           git add jbang-catalog.json
           if git diff --cached --quiet; then
             echo "::notice::The catalog names RESTest $VERSION with this very alias already"
-            echo "pushed=no" >> "$GITHUB_OUTPUT"
+            echo "pushed=already" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git -c user.name="github-actions[bot]" \
@@ -218,32 +219,16 @@ jobs:
           git push --quiet origin HEAD
           echo "pushed=yes" >> "$GITHUB_OUTPUT"
 
-      # GitHub serves a repository's files through a cache that keeps them for up to five minutes. Waited
-      # for here, on one machine, rather than by each of the three that run it next.
-      - name: Wait until GitHub serves the new catalog
-        if: steps.write.outputs.pushed == 'yes'
-        run: |
-          for attempt in $(seq 20); do
-            if curl -fsSL https://raw.githubusercontent.com/isa-group/jbang-catalog/HEAD/jbang-catalog.json \
-                | grep -qF "\"es.us.isa.restest:restest-cli:$VERSION\""; then
-              exit 0
-            fi
-            sleep 30
-          done
-          echo "::error::After ten minutes GitHub still serves a catalog without RESTest $VERSION"
-          exit 1
-
+  # Also when the catalog held this very alias already, which is how a run whose check of the published
+  # catalog failed is made again; not when it held a higher version.
   check-published:
-    name: Run it from the catalog on ${{ matrix.os }}
+    name: Run it from the published catalog
     needs: [catalog, push]
-    if: needs.push.outputs.pushed == 'yes'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    if: needs.push.outputs.pushed == 'yes' || needs.push.outputs.pushed == 'already'
+    runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.catalog.outputs.version }}
+      PUBLISHED: https://isa-group.github.io/jbang-catalog/jbang-catalog.json
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -260,7 +245,20 @@ jobs:
           name: catalog
           path: fetched
 
-      - name: Run RESTest from the catalog, as anybody would, and check it
+      # GitHub Pages publishes a push to the catalog's repository within a minute or two, and its servers
+      # may keep the file they had for ten minutes more.
+      - name: Wait until GitHub Pages serves the new catalog
+        run: |
+          for attempt in $(seq 30); do
+            if curl -fsSL "$PUBLISHED" | grep -qF "\"es.us.isa.restest:restest-cli:$VERSION\""; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::After fifteen minutes $PUBLISHED still names no RESTest $VERSION"
+          exit 1
+
+      - name: Run RESTest from the published catalog, as anybody would, and check it
         env:
-          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 || env.JAVA_HOME_17_ARM64 }}
-        run: .github/scripts/check-jbang.sh isa-group "$VERSION" "fetched/archive/restest-$VERSION.tgz"
+          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: .github/scripts/check-jbang.sh "$PUBLISHED" "$VERSION" "fetched/archive/restest-$VERSION.tgz"

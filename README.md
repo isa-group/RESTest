@@ -47,18 +47,16 @@ whatever `JAVA_HOME` says. With that Java, the first installation keeps about 62
 **With jbang**, on macOS, Linux and Windows, which downloads a Java for RESTest when there is none:
 
 ```bash
-jbang app install restest@isa-group
+jbang app install restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json
 ```
 
-[jbang](https://www.jbang.dev/download/) runs RESTest from Maven Central, on the Java 21 or later it
+[jbang](https://www.jbang.dev/download/) runs RESTest from Maven Central, on the JDK 21 or later it
 finds, or on the newest Java, which it downloads, with one for itself, some 600 MB, on a machine with
 none. It runs the latest release, and reads the catalog that names it again twelve hours after it
-last did, or at once with `jbang --fresh restest@isa-group version`. The first `jbang app install`
-may add jbang's folder to the `PATH` in your shell's start-up files; [chapter 2 of the
-manual](docs/manual/02-installing.md#with-jbang) says what it changes. Before it asks GitHub, jbang
-looks for a catalog named `isa-group` in a `jbang-catalog.json` of the folder `restest` runs in, or
-of one above it: run it in projects you trust, or install it from the catalog's address,
-`restest@https://github.com/isa-group/jbang-catalog/blob/HEAD/jbang-catalog.json`.
+last did, or at once when `--fresh` follows `jbang`. The first `jbang app install` may add jbang's
+folder to the `PATH` in your shell's start-up files. [Chapter 2 of the
+manual](docs/manual/02-installing.md#with-jbang) says what it changes, and why the catalog is given
+by its address rather than as `restest@isa-group`.
 
 **With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 

@@ -7,10 +7,10 @@
 #
 #     .github/scripts/check-jbang.sh <catalog> <version> <restest-<version>.tgz> [<Maven repository>]
 #
-# The catalog is a jbang-catalog.json that dist/jbang/catalog.sh wrote, or a published catalog's name
-# as a person types it, isa-group. The Maven repository is a folder dist/central.sh laid out, for a
-# version Maven Central does not have yet: jbang then takes RESTest's modules from it and every other
-# library from Central, as it would once the version is published.
+# The catalog is a jbang-catalog.json that dist/jbang/catalog.sh wrote, or a published catalog's
+# https:// address, as a person types it. The Maven repository is a folder dist/central.sh laid out,
+# for a version Maven Central does not have yet: jbang then takes RESTest's modules from it and every
+# other library from Central, as it would once the version is published.
 #
 # What jbang writes goes into a folder of the check's own, removed when it ends: jbang itself, of the
 # version below, checked against its SHA-256; the Javas it downloads (JBANG_DIR); and the libraries
@@ -22,7 +22,9 @@
 # Path or JAVA_HOME changed.
 #
 # Plain sh, run from Git Bash on Windows, where jbang is run as cmd.exe and PowerShell run it. Prints
-# what `version` says on a machine with no Java, and the size of what jbang downloaded there.
+# what `version` says on a machine with no Java, and the size of what jbang downloaded there. The
+# temporary folder must hold no space in its path, which jbang's scripts would split where it passes
+# the home folder to jbang's Java; GitHub's machines' never does.
 
 set -eu
 
@@ -73,7 +75,11 @@ if [ -f "$catalog" ]; then
   catalog=$(native "$(cd "$(dirname "$catalog")" && pwd)/$(basename "$catalog")")
 else
   case $catalog in
-    *[!A-Za-z0-9-]* | '') fail "$catalog is neither a file nor the name of a catalog on GitHub" ;;
+    https://*/jbang-catalog.json) ;;
+    *) fail "$catalog is neither a file nor the https:// address of a jbang-catalog.json" ;;
+  esac
+  case $catalog in
+    *[!A-Za-z0-9._~:/%-]*) fail "$catalog holds a character an address of a catalog does not" ;;
   esac
 fi
 alias=restest@$catalog

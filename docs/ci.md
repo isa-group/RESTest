@@ -406,8 +406,9 @@ The steps of every release, in order, each taken by a maintainer:
    `https://repo1.maven.org/maven2/es/us/isa/restest/restest-cli/<v>/` answering. Publishing the
    release has started `homebrew.yml` and `jbang.yml` (below), which install RESTest from the tap on
    macOS and Linux, and run it from the catalog on Linux, macOS and Windows, once each has written
-   there; check that both runs are green, and that `jbang --fresh restest@isa-group version` says the
-   new version (`--fresh`, since jbang keeps a catalog it has read for twelve hours).
+   there; check that both runs are green, and that
+   `jbang --fresh restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json version` says
+   the new version (`--fresh`, since jbang keeps a catalog it has read for twelve hours).
 8. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
    the `$id` of both schemas to the next release, since the schemas on `master` name the release
    being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
@@ -576,9 +577,12 @@ secrets below is ever written into a file of this repository, an issue or a chat
 
 ### jbang
 
-`jbang restest@isa-group` reads RESTest's alias from the repository `isa-group/jbang-catalog`, whose
+`jbang restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json` reads RESTest's alias
+from the repository `isa-group/jbang-catalog`, as GitHub Pages publishes it, whose
 `jbang-catalog.json` names RESTest's command line on Maven Central at one version, with its main
-class, the option Java needs and Java 21 or later. The catalog is kept here, as
+class, the option Java needs and Java 21 or later. The documentation gives that address rather than
+`restest@isa-group`, which jbang first looks for in the folder it runs in, and on GitLab and Bitbucket
+when GitHub does not answer. The catalog is kept here, as
 `dist/jbang/jbang-catalog.json`, `dist/jbang/catalog.sh` fills in the version, and
 `.github/workflows/jbang.yml` writes the alias into the catalog once a release is published, since
 jbang can fetch only what Maven Central serves. `JbangAliasTest` keeps the alias starting RESTest as
@@ -589,31 +593,39 @@ the archive's launchers do. [ADR-0045](adr/0045-jbang.md) says why it is done th
 | `catalog` | Linux | Checks the tag and that Maven Central serves that version, fills in the catalog, and downloads the release's `.tgz` with no token, checked against its `checksums_sha256.txt` |
 | `check` | Linux, macOS, Windows | `check-jbang.sh` on that catalog, against Maven Central and the archive |
 | `push` | Linux | Writes RESTest's alias into the catalog — never over a higher version, over the same version only when the alias changed, and nothing else in the catalog — with the deploy key of the environment `jbang-catalog` |
-| `check-published` | Linux, macOS, Windows | Once `push` wrote something, and GitHub serves the new catalog: `check-jbang.sh isa-group`, as anybody types it |
+| `check-published` | Linux | Once `push` wrote the alias, or found it there already, and GitHub Pages serves the new catalog: `check-jbang.sh` with the catalog's address on GitHub Pages, as anybody types it |
 
 `.github/scripts/check-jbang.sh` runs a catalog with jbang 0.142.0, pinned by its SHA-256 in the
 script, in a folder of its own that it removes: jbang's Javas, its libraries, and the home folder its
 Java writes in. It checks that with no Java at all a jbang that has never run starts RESTest of that
 version; that `jbang app install` writes the command `restest`; that jbang runs RESTest on the
 archive's `lib/`, byte for byte; that the command passes `check-restest.sh --own-java`, on Windows as
-`cmd.exe` runs it, and through PowerShell, which runs the `.ps1` scripts instead; and that nothing
+`cmd.exe` runs it, and through Windows PowerShell, which runs the `.ps1` scripts instead; and that nothing
 wrote a shell's start-up file or, on Windows, changed the user's `Path` or `JAVA_HOME`. Moving jbang
 on is changing its version and checksum there.
 
 The catalog and the scripts are those of the commit the workflow runs on; the jars are Maven
 Central's. Starting it by hand — Actions → jbang → Run workflow, from `master`, with a tag — puts a
 release already published in the catalog, one made before the workflow existed included, and is how
-a failed run is repeated. A pull request that changes the catalog, its scripts or the workflow runs
-`catalog` and `check` against the latest published release, and writes nothing.
+a failed run is repeated: a run that finds the alias in the catalog already checks the published
+catalog again. A pull request that changes the catalog, its scripts or the workflow runs `catalog` and
+`check` against the latest published release, and writes nothing. The sizes chapter 2 gives for jbang
+are what `check` prints: `release.yml`'s `check-jbang` counts the sources and the Javadoc of what Maven
+Central gets among the libraries.
 
 **Set up once**, by an owner of the organisation, before the workflow first runs, as for the tap:
 
-1. Create `isa-group/jbang-catalog`, public, with a README, so that it has a branch to write to.
+1. Create `isa-group/jbang-catalog`, public, with a README, so that it has a branch to write to, and
+   turn on GitHub Pages for it, from that branch's root (*Settings* → *Pages*), which publishes it at
+   `https://isa-group.github.io/jbang-catalog/`.
 2. Make an SSH key with no passphrase (`ssh-keygen -t ed25519 -N '' -f jbang-catalog`), and add its
    public half to that repository as a deploy key with write access.
 3. In this repository's settings, create the environment `jbang-catalog`, whose deployment branches
    and tags are `master` and `v*` only, and add the private half to it as `JBANG_CATALOG_KEY`. Then
    delete both files.
+4. Since `restest@isa-group` reaches GitLab and Bitbucket when GitHub does not answer, make sure the
+   name `isa-group` is the ISA group's there too: on GitLab, where no such group existed on
+   1 November 2026, and on Bitbucket, where a workspace "ISA Group" did.
 
 ## Dependency updates
 

@@ -41,13 +41,13 @@ Java programs from Maven Central and downloads a Java when there is none, so you
 own:
 
 ```bash
-jbang app install restest@isa-group
+jbang app install restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json
 ```
 
-`restest@isa-group` is the alias `restest` in the ISA group's catalog, which says where RESTest is on
-Maven Central and how to start it: its main class, the option Java needs, and Java 21 or later. The
-command writes `restest` into jbang's folder, `~/.jbang/bin`, as `restest.cmd` and `restest.ps1` too
-on Windows. Then, in a new terminal:
+`restest@` and an address name the alias `restest` in the ISA group's catalog, which says where
+RESTest is on Maven Central and how to start it: its main class, the option Java needs, and Java 21
+or later. The command writes `restest` into jbang's folder, `~/.jbang/bin`, as `restest.cmd` and
+`restest.ps1` too on Windows. Then, in a new terminal:
 
 ```bash
 restest version
@@ -60,48 +60,51 @@ Java 27 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
 
 That is a machine with no Java, where jbang downloads two into `~/.jbang`: a Java 17 for jbang
 itself, and the newest Java for RESTest, some 600 MB together, as well as RESTest's libraries, 37 MB,
-into `~/.m2/repository`. On a machine with a JDK 21 or later, jbang downloads the libraries alone and
-runs RESTest on that Java. With `export JBANG_DEFAULT_JAVA_VERSION=21` before the first jbang command
-of all, jbang downloads one Java 21 for both, some 340 MB; it is then the Java jbang runs every
-program on, not only RESTest.
+into `~/.m2/repository`. On a machine with a JDK 21 or later — a JDK, which jbang looks for, not a
+plain Java runtime — jbang downloads the libraries alone and runs RESTest on that Java. With
+`JBANG_DEFAULT_JAVA_VERSION` set to `21` before the first jbang command of all — `export` it in a
+shell, `set` it in the Windows command prompt, `$env:` in PowerShell — jbang downloads one Java 21 for
+both, some 340 MB; it is then the Java jbang runs every program on, not only RESTest.
 
 **What the first `jbang app install` changes.** When `~/.jbang/bin` is not on the `PATH` yet, jbang
 adds it in your shell's start-up files — `~/.zshrc` and `~/.bash_profile` on macOS, `~/.bashrc` and
-`~/.zshrc` on Linux, the user's `Path` on Windows — which is why a new terminal is needed. On a machine
-with no Java it also sets `JAVA_HOME` there to the Java 17 it downloaded for itself, which [the
-archive](#with-java) refuses as too old. Remove those lines to undo it.
+`~/.zshrc` on Linux, and a file of its own, `~/.config/fish/conf.d/jbang.fish`, on both; the user's
+`Path` on Windows — which is why a new terminal is needed. On a machine with no Java it also sets
+`JAVA_HOME` there to the Java 17 it downloaded for itself, which [the archive](#with-java) refuses as
+too old. Remove those lines, and jbang's fish file, to undo it.
 
-**Without installing**, `jbang restest@isa-group` takes the place of `restest`:
+**In PowerShell**, typing `restest` runs `restest.ps1`, which a Windows that refuses to run scripts —
+a fresh one does — refuses; `restest.cmd` runs either way.
+
+**Without installing**, `jbang` and the alias take the place of `restest`:
 
 ```bash
-jbang restest@isa-group version
+jbang restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json version
 ```
 
 **Which version.** jbang runs the latest release. It reads the catalog again twelve hours after it
-last did, so a new release reaches you within a day of it, or at once with
-`jbang --fresh restest@isa-group version`. For a version of your choosing, use the image or the
-archive.
+last did, so a new release reaches you within a day of it, or at once when `--fresh` follows `jbang`.
+For a version of your choosing, use the image or the archive.
 
-**A catalog in your folder.** Before it asks GitHub, jbang looks for a catalog named `isa-group` in
-any `jbang-catalog.json` of the folder `restest` runs in, or of a folder above it, and uses that one
-if it finds it: a project's files could then decide what `restest` runs. Run it in projects you
-trust, or install it from the catalog's address, which jbang takes as it is:
-
-```bash
-jbang app install restest@https://github.com/isa-group/jbang-catalog/blob/HEAD/jbang-catalog.json
-```
+**Why the address, rather than `restest@isa-group`.** jbang also takes `restest@isa-group` for the
+same alias, but then looks for a catalog of that name first in any `jbang-catalog.json` of the folder
+it runs in, or of a folder above it, and, when GitHub does not answer with one, on GitLab and
+Bitbucket, where `isa-group` is not RESTest's: a project you test, or somebody else's account, could
+then decide what runs. It does the same with the catalog's address on github.com, which it turns back
+into `isa-group`. An address on GitHub Pages, which jbang does not take for GitHub's, it reads as it
+is.
 
 **When jbang itself fails** — it cannot reach Maven Central, say, or download a Java — it ends with
 `1`, `2`, `3` or `4`, numbers RESTest gives other meanings, says why in lines beginning `[jbang]`,
-and leaves no `report.json` ([the numbers RESTest does not
-choose](../command-line.md#numbers-restest-does-not-choose)).
+and leaves no `report.json`: one of those numbers with no report is jbang's, not RESTest's ([the
+numbers RESTest does not choose](../command-line.md#numbers-restest-does-not-choose)).
 
 **With a RESTest of your own build** installed by `./mvnw install` at the same version, jbang runs
 those jars rather than Maven Central's, with the libraries their build names. Remove
 `~/.m2/repository/es/us/isa/restest/`, which jbang fills again from Maven Central.
 
-`jbang app uninstall restest` removes the command; `~/.jbang` holds jbang's Javas, and
-`~/.m2/repository/es/us/isa/restest/` RESTest's jars.
+`jbang app uninstall restest` removes the command. `~/.jbang` holds jbang's Javas, and
+`~/.m2/repository` RESTest's libraries, beside whatever else Maven or jbang put there.
 
 ## With Docker
 
@@ -296,7 +299,7 @@ from that shell find it too.
 
 - **Homebrew:** `brew upgrade restest` installs the latest release.
 - **jbang:** nothing: it runs the latest release within twelve hours of it, or at once after
-  `jbang --fresh restest@isa-group version`.
+  `jbang --fresh restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json version`.
 - **Docker:** change `2.4.0` in the script to the version you want.
 - **The archive:** download and unpack the new one, and point the `PATH` at its `bin/`.
 - **The source:** from the root of the checkout, fetch the new release's tag, move to it, and build

@@ -12,10 +12,10 @@
 # --own-java is a command that starts RESTest on a Java of its own whatever Java the machine has, such
 # as the ones Homebrew and jbang install; --image is a container image; --checkout is the shortcut at
 # the root of a checkout, which is checked for less, since it is not how RESTest is installed. On
-# Windows a command ending in .cmd is run by cmd.exe, and one ending in .ps1 by PowerShell, with its
-# execution policy bypassed for that process alone - a Windows that refuses to run scripts refuses
-# jbang's own as well, and whoever runs jbang in PowerShell has allowed them. Every one of them is
-# checked for:
+# Windows a command ending in .cmd is run by cmd.exe, and one ending in .ps1 by Windows PowerShell,
+# powershell.exe, which every Windows has, with its execution policy bypassed for that process alone -
+# a Windows that refuses to run scripts refuses jbang's own as well, and whoever runs jbang in
+# PowerShell has allowed them. Every one of them is checked for:
 #
 #   - `version` answering 0, its first line `RESTest <version>`, also with JAVA_TOOL_OPTIONS set;
 #   - an option that does not exist answering 2;
@@ -232,6 +232,14 @@ else
   without_java_does="answers 127"
 fi
 
+# For a command with its own Java, 0 and its version: a 0 alone could come from something that never
+# started RESTest, as from a PowerShell script that left before running any program.
+expect_without_java() {
+  expect_status "$without_java" "$1"
+  [ "$mode" != --own-java ] || [ "$(first_line)" = "RESTest $expected" ] \
+    || fail "$1 answered 0 but did not say 'RESTest $expected'. $(said)"
+}
+
 case $mode in
   --image)
     # The image's Java is in /opt/java/openjdk and found only through JAVA_HOME and the PATH. An empty
@@ -260,19 +268,19 @@ case $mode in
     restest JAVA_HOME= PATH="$path" -- version
     ;;
 esac
-expect_status "$without_java" "'version' with no Java"
+expect_without_java "'version' with no Java"
 ok "with no Java it $without_java_does"
 
 no_java_here=$work/no-java-here
 [ "$windows" = yes ] && no_java_here=$(cygpath -w "$no_java_here")
 [ "$mode" = --image ] && no_java_here=/no-java-here
 restest JAVA_HOME="$no_java_here" -- version
-expect_status "$without_java" "'version' with a JAVA_HOME that holds no Java"
+expect_without_java "'version' with a JAVA_HOME that holds no Java"
 ok "with a JAVA_HOME that holds no Java it $without_java_does"
 
 if [ -n "${OLD_JAVA_HOME:-}" ]; then
   restest JAVA_HOME="$OLD_JAVA_HOME" -- version
-  expect_status "$without_java" "'version' on the Java in $OLD_JAVA_HOME"
+  expect_without_java "'version' on the Java in $OLD_JAVA_HOME"
   ok "on a Java older than 21 it $without_java_does"
 fi
 
