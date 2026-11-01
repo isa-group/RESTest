@@ -141,7 +141,11 @@ public final class OkHttpEngine implements HttpEngine {
                 // churn uses up the machine's local ports within seconds, and the requests that
                 // follow fail as if the API had not answered.
                 .connectionPool(new ConnectionPool(settings.maxConcurrency(), 5, TimeUnit.MINUTES))
+                // A connection is kept unless the API says it will close it, and an API that answers
+                // in HTTP/1.0 says so in a way the client does not hear.
+                .socketFactory(ConnectionsTheApiCloses.sockets())
                 .addNetworkInterceptor(new WireCapture())
+                .addNetworkInterceptor(new ConnectionsTheApiCloses())
                 .build();
     }
 
