@@ -84,7 +84,7 @@ so records written from now on cite none.
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 and 25 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
-| [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13, 23, 27 and 30 October 2026 |
+| [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13, 23, 27 and 30 October and 1 November 2026 |
 | [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place | Accepted, amended on 13 October 2026 |
 | [0034](0034-version-2-of-the-plans-format.md) | Version 2 of the plan's format: a strategy says its kind, a source has two forms, a group is a map of weights | Accepted |
 | [0035](0035-json-schemas-of-the-dictionary-and-the-plan.md) | The dictionary and the plan have published JSON Schemas, held to their readers | Accepted |
@@ -97,3 +97,4 @@ so records written from now on cite none.
 | [0042](0042-wait-when-told-to-wait.md) | An operation the API asks to be left alone is left alone, and the whole API once a second one is | Accepted, amended on 29 October 2026 |
 | [0043](0043-a-rate-to-keep-to.md) | A run can be given a rate to keep to, in one line, and keeps to it evenly where it sends | Accepted |
 | [0044](0044-maven-central.md) | RESTest's modules are on Maven Central as `es.us.isa.restest`, uploaded with a release and published there by a person; their POMs name exactly what the archive carries, and their Java code is no part of the promise | Accepted |
+| [0045](0045-jbang.md) | RESTest is run with jbang from a catalog of the ISA group's own, whose alias names RESTest on Maven Central and is written once a release is published | Accepted |

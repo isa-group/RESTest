@@ -1,0 +1,13 @@
+{
+  "aliases": {
+    "restest": {
+      "script-ref": "es.us.isa.restest:restest-cli:@VERSION@",
+      "description": "Black-box tests for REST APIs, from their OpenAPI document",
+      "main": "io.restest.cli.Restest",
+      "java": "21+",
+      "runtime-options": [
+        "--enable-native-access=ALL-UNNAMED"
+      ]
+    }
+  }
+}

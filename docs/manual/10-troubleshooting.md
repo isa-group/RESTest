@@ -9,9 +9,15 @@ When a run does not do what you expected, it nearly always says why, either in a
 the PATH`**, and the exit code `127`, from the command in the archive. It found no Java it can use:
 it takes the one `JAVA_HOME` names, and otherwise the first `java` on the `PATH`. Install Java 21
 or later, or point `JAVA_HOME` at one you have ([chapter 2](02-installing.md#with-java)), or install
-RESTest with Homebrew, whose command brings its own Java and never answers this
+RESTest with Homebrew or jbang, whose commands bring their own Java and never answer this
 ([chapter 2](02-installing.md#with-homebrew)). That `127` comes before RESTest starts, and says nothing
 about the API.
+
+**Lines beginning `[jbang]`**, and the exit code `1`, `2`, `3` or `4` with no `report.json`, from RESTest
+run with jbang. jbang itself failed before RESTest started: `1` when it could not fetch RESTest or a
+library from Maven Central, `2` when it could neither find nor download a Java, or found no catalog of
+the name it was given, `3` when it could not download its catalog. Those numbers say nothing about the
+API; the lines say what jbang could not reach ([chapter 2](02-installing.md#with-jbang)).
 
 **`RESTest has not been built in this checkout yet`**, and the exit code `127`. The `./restest`
 script of a checkout found nothing to run: no build of the version the checkout declares, which is

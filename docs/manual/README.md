@@ -12,7 +12,7 @@ here point to them rather than repeat them.
 
 1. [What RESTest is for](01-what-restest-is-for.md) — the problem it solves, what it finds, and what
    it does not.
-2. [Installing RESTest](02-installing.md) — with Homebrew, with Docker, with Java, or built from the
+2. [Installing RESTest](02-installing.md) — with Homebrew, with jbang, with Docker, with Java, or built from the
    source.
 3. [A first run](03-a-first-run.md) — a practice API on your own machine, and the first run against
    it.

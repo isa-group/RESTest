@@ -1,0 +1,264 @@
+# Puts RESTest's version in its jbang catalog, isa-group/jbang-catalog, once a release is published, so
+# that jbang runs it from the catalog's address on GitHub Pages,
+# https://isa-group.github.io/jbang-catalog/jbang-catalog.json. ADR-0045 says why it is shaped this way;
+# docs/ci.md says how to use it.
+#
+#   catalog          checks the tag and that Maven Central serves that version, fills in
+#                    dist/jbang/jbang-catalog.json with it, and downloads the release's archive as
+#                    anybody would
+#   check            runs check-jbang.sh on that catalog on Linux, macOS and Windows: jbang with no
+#                    Java, the jars against the archive's, and check-restest.sh on the command it installs
+#   push             writes RESTest's alias into the catalog, never over a higher version
+#   check-published  waits until GitHub Pages serves the new catalog, and runs check-jbang.sh on it
+#                    from there, on Linux: what it adds to check is the address, the same everywhere
+#
+# The catalog and the scripts are this commit's; the jars are Maven Central's. So a run started by hand
+# from master puts in the catalog a release made before this workflow existed.
+#
+# A pull request that touches the catalog or its scripts runs the first two jobs against the latest
+# published release, and writes nothing.
+#
+# Every action is pinned to a commit SHA, with the version in a trailing comment, for the reasons
+# ci.yml gives.
+name: jbang
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The published release to put in the catalog, such as v2.4.0
+        required: true
+  pull_request:
+    branches: [master]
+    paths:
+      - dist/jbang/**
+      - .github/scripts/check-jbang.sh
+      - .github/scripts/check-restest.sh
+      - .github/scripts/without-java.sh
+      - .github/workflows/jbang.yml
+
+# One run that may write to the catalog at a time, never cancelled half-way, so that two never both
+# read the catalog's version before either writes. A pull request's newer push supersedes its older one.
+concurrency:
+  group: jbang-${{ github.event_name == 'pull_request' && github.ref || 'catalog' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  RELEASES: https://github.com/isa-group/RESTest/releases
+
+jobs:
+  catalog:
+    name: Fill in the catalog
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.what.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The tag reaches the script through the environment and is checked before it is used: never
+      # pasted into a script, where a name chosen to be a command would run.
+      - name: Work out which release
+        id: what
+        env:
+          TAG: ${{ inputs.tag || github.event.release.tag_name || '' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --repo isa-group/RESTest --json tagName --jq .tagName)
+          fi
+          # The whole value, not each of its lines as grep would: a tag given by hand could hold a
+          # newline, and with it a second line of the job's outputs.
+          [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::$TAG is not a version tag such as v2.4.0"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      # A release is published once Maven Central has its version (docs/ci.md), but a catalog naming
+      # a version Central does not serve would fail everybody who ran it, so it is asked.
+      - name: Check that Maven Central serves this version
+        env:
+          VERSION: ${{ steps.what.outputs.version }}
+        run: |
+          curl -fsS --max-time 60 --head --output /dev/null \
+              "https://repo1.maven.org/maven2/es/us/isa/restest/restest-cli/$VERSION/restest-cli-$VERSION.pom" \
+            || { echo "::error::Maven Central does not serve RESTest $VERSION; run this again once it does"; exit 1; }
+
+      - name: Fill in the catalog
+        env:
+          VERSION: ${{ steps.what.outputs.version }}
+        run: |
+          mkdir catalog
+          dist/jbang/catalog.sh "$VERSION" > catalog/jbang-catalog.json
+
+      # With no token, and checked against the release's own checksum: a release that is not public
+      # fails here. The next jobs compare the jars jbang runs RESTest on with this archive's.
+      - name: Download the release's archive
+        env:
+          TAG: ${{ steps.what.outputs.tag }}
+          VERSION: ${{ steps.what.outputs.version }}
+        run: |
+          mkdir archive
+          curl -fsSL -o archive/checksums_sha256.txt "$RELEASES/download/$TAG/checksums_sha256.txt"
+          curl -fsSL -o "archive/restest-$VERSION.tgz" "$RELEASES/download/$TAG/restest-$VERSION.tgz"
+          (cd archive && sha256sum --ignore-missing -c checksums_sha256.txt | grep -qx "restest-$VERSION.tgz: OK") \
+            || { echo "::error::restest-$VERSION.tgz does not match the release's checksums_sha256.txt"; exit 1; }
+
+      - name: Keep the catalog and the archive
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: catalog
+          path: |
+            catalog/jbang-catalog.json
+            archive/restest-*.tgz
+          if-no-files-found: error
+          overwrite: true
+
+  check:
+    name: Check the catalog on ${{ matrix.os }}
+    needs: catalog
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      VERSION: ${{ needs.catalog.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # To be passed over: jbang starts RESTest on a Java 21 or later of its own.
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch the catalog and the archive
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: catalog
+          path: fetched
+
+      - name: Check the catalog
+        env:
+          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 || env.JAVA_HOME_17_ARM64 }}
+        run: |
+          .github/scripts/check-jbang.sh fetched/catalog/jbang-catalog.json "$VERSION" \
+            "fetched/archive/restest-$VERSION.tgz"
+
+  # The deploy key writes to isa-group/jbang-catalog and nothing else. It is kept in the environment
+  # jbang-catalog, which only master and version tags may use, so a workflow pushed to another branch
+  # cannot read it. This job runs nothing but jq and git.
+  push:
+    name: Put the alias in the catalog
+    needs: [catalog, check]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: jbang-catalog
+    outputs:
+      pushed: ${{ steps.write.outputs.pushed }}
+    env:
+      VERSION: ${{ needs.catalog.outputs.version }}
+    steps:
+      - name: Fetch the catalog
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: catalog
+          path: fetched
+
+      - name: Check out the catalog's repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: isa-group/jbang-catalog
+          ssh-key: ${{ secrets.JBANG_CATALOG_KEY }}
+          path: published
+
+      # Only RESTest's alias is written, so that anything else the group puts in its catalog stays. The
+      # catalog holds one version of RESTest, read from the alias's coordinates; a catalog with none
+      # holds a lower one. A version already there is written again only if its alias changed, which
+      # is how a fix to the alias reaches the catalog; a lower one is never written over a higher.
+      - name: Write the alias, never over a higher version
+        id: write
+        working-directory: published
+        run: |
+          current=
+          if [ -f jbang-catalog.json ]; then
+            current=$(jq -r '.aliases.restest."script-ref" // "" | sub("^es\\.us\\.isa\\.restest:restest-cli:"; "")' jbang-catalog.json)
+            jq --slurpfile new ../fetched/catalog/jbang-catalog.json '.aliases.restest = $new[0].aliases.restest' \
+              jbang-catalog.json > ../written.json
+          else
+            cp ../fetched/catalog/jbang-catalog.json ../written.json
+          fi
+          highest=$(printf '%s\n' "$current" "$VERSION" | sort -V | tail -n 1)
+          if [ "$highest" != "$VERSION" ]; then
+            echo "::notice::The catalog names RESTest $current, higher than $VERSION, and is left as it is"
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mv ../written.json jbang-catalog.json
+          git add jbang-catalog.json
+          if git diff --cached --quiet; then
+            echo "::notice::The catalog names RESTest $VERSION with this very alias already"
+            echo "pushed=already" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet --message "restest $VERSION"
+          git push --quiet origin HEAD
+          echo "pushed=yes" >> "$GITHUB_OUTPUT"
+
+  # Also when the catalog held this very alias already, which is how a run whose check of the published
+  # catalog failed is made again; not when it held a higher version.
+  check-published:
+    name: Run it from the published catalog
+    needs: [catalog, push]
+    if: needs.push.outputs.pushed == 'yes' || needs.push.outputs.pushed == 'already'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.catalog.outputs.version }}
+      PUBLISHED: https://isa-group.github.io/jbang-catalog/jbang-catalog.json
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch the archive
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: catalog
+          path: fetched
+
+      # GitHub Pages publishes a push to the catalog's repository within a minute or two, and its servers
+      # may keep the file they had for ten minutes more.
+      - name: Wait until GitHub Pages serves the new catalog
+        run: |
+          for attempt in $(seq 30); do
+            if curl -fsSL "$PUBLISHED" | grep -qF "\"es.us.isa.restest:restest-cli:$VERSION\""; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::After fifteen minutes $PUBLISHED still names no RESTest $VERSION"
+          exit 1
+
+      - name: Run RESTest from the published catalog, as anybody would, and check it
+        env:
+          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: .github/scripts/check-jbang.sh "$PUBLISHED" "$VERSION" "fetched/archive/restest-$VERSION.tgz"

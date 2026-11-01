@@ -2,12 +2,13 @@
 
 What runs, how to reproduce it locally, how to add a rule, and how a release is made. The decisions
 behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries), ADR-0032 (releases),
-ADR-0040 (Homebrew) and ADR-0044 (Maven Central).
+ADR-0040 (Homebrew), ADR-0044 (Maven Central) and ADR-0045 (jbang).
 
-Three workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
+Four workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
 tag, uploading RESTest's modules to Maven Central with it, and rehearses it on a pull request that
 touches how RESTest is packaged ([Releases](#releases)); `homebrew.yml` writes the Homebrew formula
-into its tap once a release is published ([Homebrew](#homebrew)). `ci.yml`'s triggers are pull
+into its tap once a release is published ([Homebrew](#homebrew)), and `jbang.yml` the release's
+version into RESTest's jbang catalog ([jbang](#jbang)). `ci.yml`'s triggers are pull
 requests against `master`, pushes to it, and manual dispatch. A push to a `feat/*` branch with no open pull request runs
 nothing, which is deliberate: a branch under active development would otherwise spend nine runners
 per commit.
@@ -353,15 +354,16 @@ this way, is [ADR-0032](adr/0032-how-a-release-is-published.md); Maven Central's
 | `archive` | Linux | Checks the tag against `pom.xml` and `master`, compiles RESTest with the `central` profile, assembles `restest-<v>.zip` and `restest-<v>.tgz` with `dist/assemble.sh`, and lays out what Maven Central gets with `dist/central.sh`, from the same build; on a pull request, rehearses its signing with a key made for that run |
 | `check-archive` | Linux, macOS, Windows | Unpacks the archive into a folder with a space in its name and runs `check-restest.sh` on `bin/restest` — also through a symbolic link, also with Java 17 to be refused — and on Windows on `bin\restest.cmd`, with a `JAVA_HOME` that has a space in it |
 | `check-homebrew` | Linux, macOS | Fills in the Homebrew formula, `dist/homebrew/restest.rb`, for the `.tgz` and runs `check-homebrew.sh` on it: `brew style`, installed from a local tap, its own test, the folder it installs compared with the archive, and `check-restest.sh --own-java` on the command it installs |
+| `check-jbang` | Linux | Fills in the jbang catalog, `dist/jbang/jbang-catalog.json`, for this version and runs `check-jbang.sh` on it, with RESTest's modules taken from what Maven Central gets and every other library from Central: with no Java at all, then the command `jbang app install` writes, its jars compared with the archive's, and `check-restest.sh --own-java` on it ([jbang](#jbang)) |
 | `image` | an `amd64` and an `arm64` machine | Builds the image on each machine's own processor, runs `check-restest.sh` on it, and on a tag pushes that very image as `ghcr.io/isa-group/restest:<v>-amd64` or `-arm64` |
 | `central` | Linux, on a tag only, once a maintainer approves it | Signs what Maven Central gets with `sign-for-central.sh` and uploads it with `upload-to-central.sh` to the Central Portal, which validates it and publishes nothing; leaves it alone when Central has the version already ([Maven Central](#maven-central)) |
 | `publish` | Linux, on a tag only | Joins the two into `:<v>` in the registry, checks it as published, moves `:latest` when no higher version is tagged, and drafts the release with the archives and `checksums_sha256.txt` |
 
 The order is what keeps a broken release from being seen: nothing is pushed before it has been
 checked, the image a release names is made of the images that were checked, the release is drafted
-only once the Homebrew formula for its archive installs and passes and the Central Portal has
-validated what Maven Central gets, and the files appear only when the draft is published. A Portal
-that is down holds back the draft, and the image's `:<v>` and `:latest` with it. A rerun of the same
+only once the Homebrew formula for its archive installs and passes, the jbang catalog runs it, and the
+Central Portal has validated what Maven Central gets, and the files appear only when the draft is
+published. A Portal that is down holds back the draft, and the image's `:<v>` and `:latest` with it. A rerun of the same
 tag never replaces anything: an image already pushed is left as it is, a draft keeps the files it
 has, a version Maven Central has is not uploaded again, and a published release is not touched. A pull
 request that changes `Dockerfile`, `.dockerignore`, `dist/`, `.github/scripts/`, the workflow,
@@ -376,9 +378,9 @@ that its signing and its upload are `master`'s. A tag is never moved or deleted;
 tag holds, or a draft that cannot be published as it is, is put right in the next patch. When the
 Portal refuses an upload for a reason of its own — a token it does not take, a key it cannot find on
 the key servers — put that right where it is and run the failed `central` job again from the run's
-page ("Re-run failed jobs"), which uploads the files of that same run. A tag made before Maven
-Central was, v2.3.0 or older, holds no `dist/central.sh`, so `master`'s workflow can no longer make
-its release again.
+page ("Re-run failed jobs"), which uploads the files of that same run. A tag made before the jbang
+catalog was, v2.4.0 or older, holds no `dist/jbang/`, and one made before Maven Central was, v2.3.0
+or older, no `dist/central.sh`, so `master`'s workflow can no longer make their releases again.
 
 The steps of every release, in order, each taken by a maintainer:
 
@@ -389,8 +391,8 @@ The steps of every release, in order, each taken by a maintainer:
    `$id` of both files in `schemas/`, which `PublishedSchemasTest` requires to equal it on a release;
    and the pages that name the version to install — the README's installation section and chapters 2
    and 9 of the manual — with output from the image and the archive built from that commit, and, for
-   chapter 2's Homebrew section, what `check-homebrew` prints in that pull request's run of
-   `release.yml`.
+   chapter 2's Homebrew and jbang sections, what `check-homebrew` and `check-jbang` print in that pull
+   request's run of `release.yml`.
 3. **The tag**, pushed once that pull request is merged; then, when the run asks, approve the
    `central` job (*Review deployments*).
 4. **The draft**: its notes written and read.
@@ -402,8 +404,11 @@ The steps of every release, in order, each taken by a maintainer:
 7. **From outside**: the README's installation commands, run against the published release with no
    one signed in to GitHub or to the registry, and
    `https://repo1.maven.org/maven2/es/us/isa/restest/restest-cli/<v>/` answering. Publishing the
-   release has started `homebrew.yml` (below), which installs RESTest from the tap on macOS and Linux
-   once it has written the formula there; check that its run is green.
+   release has started `homebrew.yml` and `jbang.yml` (below), which install RESTest from the tap on
+   macOS and Linux, and run it from the catalog on Linux, macOS and Windows, once each has written
+   there; check that both runs are green, and that
+   `jbang --fresh restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json version` says
+   the new version (`--fresh`, since jbang keeps a catalog it has read for twelve hours).
 8. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
    the `$id` of both schemas to the next release, since the schemas on `master` name the release
    being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
@@ -569,6 +574,59 @@ secrets below is ever written into a file of this repository, an issue or a chat
 
    Once it says the deployment is `VALIDATED`, **drop** it on the Portal's *Deployments* page, or
    read there why it failed. Never publish it.
+
+### jbang
+
+`jbang restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json` reads RESTest's alias
+from the repository `isa-group/jbang-catalog`, as GitHub Pages publishes it, whose
+`jbang-catalog.json` names RESTest's command line on Maven Central at one version, with its main
+class, the option Java needs and Java 21 or later. The documentation gives that address rather than
+`restest@isa-group`, which jbang first looks for in the folder it runs in, and on GitLab and Bitbucket
+when GitHub does not answer. The catalog is kept here, as
+`dist/jbang/jbang-catalog.json`, `dist/jbang/catalog.sh` fills in the version, and
+`.github/workflows/jbang.yml` writes the alias into the catalog once a release is published, since
+jbang can fetch only what Maven Central serves. `JbangAliasTest` keeps the alias starting RESTest as
+the archive's launchers do. [ADR-0045](adr/0045-jbang.md) says why it is done this way.
+
+| Job | Where | What it does |
+|---|---|---|
+| `catalog` | Linux | Checks the tag and that Maven Central serves that version, fills in the catalog, and downloads the release's `.tgz` with no token, checked against its `checksums_sha256.txt` |
+| `check` | Linux, macOS, Windows | `check-jbang.sh` on that catalog, against Maven Central and the archive |
+| `push` | Linux | Writes RESTest's alias into the catalog — never over a higher version, over the same version only when the alias changed, and nothing else in the catalog — with the deploy key of the environment `jbang-catalog` |
+| `check-published` | Linux | Once `push` wrote the alias, or found it there already, and GitHub Pages serves the new catalog: `check-jbang.sh` with the catalog's address on GitHub Pages, as anybody types it |
+
+`.github/scripts/check-jbang.sh` runs a catalog with jbang 0.142.0, pinned by its SHA-256 in the
+script, in a folder of its own that it removes: jbang's Javas, its libraries, and the home folder its
+Java writes in. It checks that with no Java at all a jbang that has never run starts RESTest of that
+version; that `jbang app install` writes the command `restest`; that jbang runs RESTest on the
+archive's `lib/`, byte for byte; that the command passes `check-restest.sh --own-java`, on Windows as
+`cmd.exe` runs it, and through Windows PowerShell, which runs the `.ps1` scripts instead; and that nothing
+wrote a shell's start-up file or, on Windows, changed the user's `Path` or `JAVA_HOME`. Moving jbang
+on is changing its version and checksum there.
+
+The catalog and the scripts are those of the commit the workflow runs on; the jars are Maven
+Central's. Starting it by hand — Actions → jbang → Run workflow, from `master`, with a tag — puts a
+release already published in the catalog, one made before the workflow existed included, and is how
+a failed run is repeated: a run that finds the alias in the catalog already checks the published
+catalog again. A pull request that changes the catalog, its scripts or the workflow runs `catalog` and
+`check` against the latest published release, and writes nothing. The sizes chapter 2 gives for jbang
+are what `check` prints: `release.yml`'s `check-jbang` counts the sources and the Javadoc of what Maven
+Central gets among the libraries.
+
+**Set up once**, by an owner of the organisation, before the workflow first runs, as for the tap:
+
+1. Create `isa-group/jbang-catalog`, public, with a README, so that it has a branch to write to, and
+   turn on GitHub Pages for it, from that branch's root (*Settings* → *Pages*), which publishes it at
+   `https://isa-group.github.io/jbang-catalog/`.
+2. Make an SSH key with no passphrase (`ssh-keygen -t ed25519 -N '' -f jbang-catalog`), and add its
+   public half to that repository as a deploy key with write access.
+3. In this repository's settings, create the environment `jbang-catalog`, whose deployment branches
+   and tags are `master` and `v*` only, and add the private half to it as `JBANG_CATALOG_KEY`. Then
+   delete both files.
+
+`restest@isa-group`, which the documentation never gives, reaches GitLab and Bitbucket when GitHub
+does not answer. On 1 November 2026 the name `isa-group` was taken on GitLab by somebody not known,
+and on Bitbucket by a workspace holding the ISA group's own old projects.
 
 ## Dependency updates
 
