@@ -1,6 +1,6 @@
 # ADR-0032: A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher
 
-**Status:** Accepted, amended on 13, 23, 27 and 30 October 2026
+**Status:** Accepted, amended on 13, 23, 27 and 30 October and 1 November 2026
 **Date:** 2026-10-11
 
 ## Context
@@ -257,3 +257,18 @@ then the release - with an approval of the upload before either. The jars Centra
 build the archives are assembled from, and are checked with them. §3 holds on Central too: a version
 Central has is never uploaded again, and nothing published there is replaced. §5 is unchanged:
 nothing on Central starts RESTest.
+
+## Amendment (1 November 2026): jbang
+
+**Date:** 2026-11-01
+
+RESTest is also run with jbang, from a catalog of the ISA group's own whose alias names RESTest on
+Maven Central ([ADR-0045](0045-jbang.md)). jbang cannot read the archive, so §5 no longer holds as
+written: the launchers stop being the one place that knows how RESTest starts. The alias says the main
+class, `--enable-native-access=ALL-UNNAMED` and Java 21 or later again, and `JbangAliasTest` fails
+whenever it and the two launchers disagree on any of them. §6's `--own-java` steps with no Java run
+with the `PATH` as it is, every `java` and `javac` taken out, rather than the five tools a launcher
+needs, since jbang needs its own script's tools and itself; `--launcher` keeps the five tools. §2's
+draft also waits for `check-jbang`, which runs the catalog for the version being released. Like
+Homebrew's formula, the catalog is written by a workflow started by the publication, and a tag does not
+freeze it (§3).

@@ -24,8 +24,8 @@ language and run anywhere.
 
 ### What you need
 
-On macOS and Linux, Homebrew, which installs the Java RESTest runs on; or Docker; or Java 21 or
-later, of which a plain Java runtime is enough. Building RESTest from its source needs a JDK 21 or
+On macOS and Linux, Homebrew, which installs the Java RESTest runs on; on any system, jbang, which
+downloads one; or Docker; or Java 21 or later, of which a plain Java runtime is enough. Building RESTest from its source needs a JDK 21 or
 later, and git.
 
 ### Install
@@ -43,6 +43,22 @@ It installs the latest release, and `brew upgrade restest` the next one; for a v
 choosing, use the image or the archive below. The `restest` it installs runs on that Java 21,
 whatever `JAVA_HOME` says. With that Java, the first installation keeps about 625 MB on macOS and
 823 MB on Ubuntu 24.04.
+
+**With jbang**, on macOS, Linux and Windows, which downloads a Java for RESTest when there is none:
+
+```bash
+jbang app install restest@isa-group
+```
+
+[jbang](https://www.jbang.dev/download/) runs RESTest from Maven Central, on the Java 21 or later it
+finds, or on the newest Java, which it downloads, with one for itself, some 600 MB, on a machine with
+none. It runs the latest release, and reads the catalog that names it again twelve hours after it
+last did, or at once with `jbang --fresh restest@isa-group version`. The first `jbang app install`
+may add jbang's folder to the `PATH` in your shell's start-up files; [chapter 2 of the
+manual](docs/manual/02-installing.md#with-jbang) says what it changes. Before it asks GitHub, jbang
+looks for a catalog named `isa-group` in a `jbang-catalog.json` of the folder `restest` runs in, or
+of one above it: run it in projects you trust, or install it from the catalog's address,
+`restest@https://github.com/isa-group/jbang-catalog/blob/HEAD/jbang-catalog.json`.
 
 **With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
 

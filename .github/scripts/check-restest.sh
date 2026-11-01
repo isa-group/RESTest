@@ -10,9 +10,12 @@
 #
 # --launcher is a release's own launcher, or a command that starts it with the Java it finds;
 # --own-java is a command that starts RESTest on a Java of its own whatever Java the machine has, such
-# as the one Homebrew installs; --image is a container image; --checkout is the shortcut at the root
-# of a checkout, which is checked for less, since it is not how RESTest is installed. Every one of
-# them is checked for:
+# as the ones Homebrew and jbang install; --image is a container image; --checkout is the shortcut at
+# the root of a checkout, which is checked for less, since it is not how RESTest is installed. On
+# Windows a command ending in .cmd is run by cmd.exe, and one ending in .ps1 by PowerShell, with its
+# execution policy bypassed for that process alone - a Windows that refuses to run scripts refuses
+# jbang's own as well, and whoever runs jbang in PowerShell has allowed them. Every one of them is
+# checked for:
 #
 #   - `version` answering 0, its first line `RESTest <version>`, also with JAVA_TOOL_OPTIONS set;
 #   - an option that does not exist answering 2;
@@ -21,7 +24,10 @@
 #
 # A launcher and an image are also checked for answering 127 when there is no Java they can use - none
 # at all, or a JAVA_HOME with none in it, and a Java older than 21 when OLD_JAVA_HOME names one; a
-# command with its own Java, for still answering 0 then. A launcher and a command with its own Java
+# command with its own Java, for still answering 0 then. "None at all" is, for a launcher, a PATH of
+# the five tools it uses, which also shows it needs no more; for a command with its own Java, the PATH
+# as it is with every java and javac taken out (without-java.sh), since such a command may need much
+# more - jbang's own script, and jbang itself. A launcher and a command with its own Java
 # are also started through a symbolic link, on macOS and Linux. An image, and a launcher in a release's
 # folder, are also checked for carrying the JSON Schemas of a dictionary and a plan, and
 # THIRD-PARTY.txt, the list of the libraries they carry with their licences. An image is also checked
@@ -39,6 +45,7 @@ usage="usage: check-restest.sh <version> --launcher|--own-java|--image|--checkou
 expected=${1:?$usage}
 mode=${2:?$usage}
 subject=${3:?$usage}
+here=$(cd "$(dirname "$0")" && pwd)
 
 case $(uname -s) in
   MINGW* | MSYS* | CYGWIN*) windows=yes ;;
@@ -70,6 +77,11 @@ case $mode in
       *) subject=$(command -v "$subject") || fail "no $subject on the PATH" ;;
     esac
     [ -f "$subject" ] || fail "$subject is not a file"
+    # What runs it on Windows, found now: the checks with no Java change the PATH.
+    case $subject in
+      *.cmd) cmd_exe=$(command -v cmd.exe) subject_for_windows=$(cygpath -w "$subject") ;;
+      *.ps1) powershell_exe=$(command -v powershell.exe) subject_for_windows=$(cygpath -w "$subject") ;;
+    esac
     ;;
   --image) ;;
   *) fail "$usage" ;;
@@ -91,34 +103,48 @@ DOCUMENT
 
 # Runs RESTest the way being checked, from $work, with the environment given before `--` changed:
 #     restest NAME=value ... -- argument ...
-# NAME= takes NAME out of the environment, except in a container, where it can only be emptied. The
-# values hold no spaces. Its output is in $work/stdout and $work/stderr, and its exit code in $status.
+# NAME= takes NAME out of the environment, except in a container, where it can only be emptied. A value
+# given to a container holds no spaces; one given to a command may, as a PATH on Windows does. Its
+# output is in $work/stdout and $work/stderr, and its exit code in $status.
 restest() {
-  docker_env=
-  env_options=
-  while [ "$1" != -- ]; do
-    docker_env="$docker_env -e $1"
-    case $1 in
-      *=) env_options="$env_options -u ${1%=}" ;;
-      *) env_options="$env_options $1" ;;
-    esac
-    shift
-  done
-  shift
   status=0
   case $mode in
     --image)
+      docker_env=
+      while [ "$1" != -- ]; do
+        docker_env="$docker_env -e $1"
+        shift
+      done
+      shift
       # shellcheck disable=SC2086
       docker run --rm --user "$(id -u):$(id -g)" -v "$work:/work" $docker_env "$subject" "$@" \
         > "$work/stdout" 2> "$work/stderr" || status=$?
       ;;
     *)
-      case $subject in
-        *.cmd) set -- "$(command -v cmd.exe)" //c "$(cygpath -w "$subject")" "$@" ;;
-        *) set -- "$subject" "$@" ;;
-      esac
-      # shellcheck disable=SC2086
-      (cd "$work" && env $env_options "$@") > "$work/stdout" 2> "$work/stderr" || status=$?
+      # The environment is changed inside the subshell, one quoted word at a time.
+      (
+        cd "$work"
+        while [ "$1" != -- ]; do
+          case $1 in
+            *=) unset "${1%=}" ;;
+            *) export "${1?}" ;;
+          esac
+          shift
+        done
+        shift
+        case $subject in
+          *.cmd) exec "$cmd_exe" //c "$subject_for_windows" "$@" ;;
+          *.ps1)
+            # Each argument between single quotes, which none of them holds. PowerShell hands on the
+            # number the program ended with only when asked to, through $LASTEXITCODE.
+            command="& '$subject_for_windows'"
+            for argument in "$@"; do command="$command '$argument'"; done
+            exec "$powershell_exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+              -Command "$command; exit \$LASTEXITCODE"
+            ;;
+          *) exec "$subject" "$@" ;;
+        esac
+      ) > "$work/stdout" 2> "$work/stderr" || status=$?
       ;;
   esac
 }
@@ -211,6 +237,10 @@ case $mode in
     # The image's Java is in /opt/java/openjdk and found only through JAVA_HOME and the PATH. An empty
     # JAVA_HOME is how a container unsets one.
     restest JAVA_HOME= PATH=/usr/sbin:/usr/bin:/sbin:/bin -- version
+    ;;
+  --own-java)
+    # Everything the command may need but Java.
+    restest JAVA_HOME= PATH="$("$here/without-java.sh" "$work/without-java")" -- version
     ;;
   *)
     if [ "$windows" = yes ]; then

@@ -7,6 +7,9 @@
 #   check-archive  unpacks them on Linux, macOS and Windows and checks their launchers
 #   check-homebrew fills in the Homebrew formula for the .tgz, and installs and checks it on macOS
 #                  and Linux; homebrew.yml puts it in the tap once the release is published
+#   check-jbang    fills in the jbang catalog for this version, and runs it on Linux from what Maven
+#                  Central gets; jbang.yml checks it on three systems and writes it once the release
+#                  is published
 #   image          builds the image on an amd64 and on an arm64 machine and checks each; on a tag,
 #                  pushes each one, as it was checked, as :<v>-amd64 and :<v>-arm64
 #   central        on a tag only, once a maintainer approves it: signs what Maven Central gets and
@@ -255,6 +258,52 @@ jobs:
       - name: Check the formula
         run: .github/scripts/check-homebrew.sh "$RUNNER_TEMP/restest.rb" "$VERSION"
 
+  # The catalog jbang.yml will write, for the version just built, run by jbang with RESTest's modules
+  # taken from what Maven Central gets and every other library from Central, so that a release jbang
+  # could not start is never drafted. On Linux alone: what depends on the build is the POMs and the
+  # jars, the same on every system, and jbang.yml checks the catalog on three systems before it writes
+  # it. ADR-0045.
+  check-jbang:
+    name: Check the jbang catalog
+    needs: archive
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      # To be passed over: jbang starts RESTest on a Java 21 or later of its own.
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch the archives
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: archives
+          path: archives
+
+      - name: Fetch what Maven Central gets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: maven-central
+          path: maven-central
+
+      - name: Fill in the catalog for this version
+        run: dist/jbang/catalog.sh "$VERSION" > "$RUNNER_TEMP/jbang-catalog.json"
+
+      - name: Check the catalog
+        env:
+          OLD_JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          .github/scripts/check-jbang.sh "$RUNNER_TEMP/jbang-catalog.json" "$VERSION" \
+            "archives/restest-$VERSION.tgz" maven-central
+
   image:
     name: Build and check the image for ${{ matrix.arch }}
     needs: archive
@@ -314,7 +363,7 @@ jobs:
   # it until a person publishes it there, or drops it. docs/ci.md says how all of it is set up.
   central:
     name: Upload to Maven Central
-    needs: [archive, check-archive, check-homebrew, image]
+    needs: [archive, check-archive, check-homebrew, check-jbang, image]
     if: needs.archive.outputs.tag != ''
     runs-on: ubuntu-latest
     environment: maven-central
@@ -385,7 +434,7 @@ jobs:
     name: Publish the image and draft the release
     # After central, so that a release is drafted only once Maven Central holds what it will name;
     # a Portal that is down holds the image's :<v> and :latest back with it.
-    needs: [archive, check-archive, check-homebrew, image, central]
+    needs: [archive, check-archive, check-homebrew, check-jbang, image, central]
     if: needs.archive.outputs.tag != ''
     runs-on: ubuntu-latest
     permissions:
