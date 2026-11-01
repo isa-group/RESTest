@@ -259,7 +259,19 @@ public final class Restest {
     private static CommandLine commandLine(PrintWriter out, PrintWriter err,
             Map<String, String> environment, Function<EngineSettings, HttpEngine> engines,
             StopsFromOutside stops) {
-        return new CommandLine(new Restest(), new StartedIn(environment, engines, stops))
+        CommandLine restest =
+                new CommandLine(new Restest(), new StartedIn(environment, engines, stops));
+        // The last lines of the help name the page a coding agent learns RESTest from, since an
+        // agent given a tool it does not know reads its help first. The page is the one of this
+        // version, which only the running program knows, so the lines are added here rather than
+        // written with the rest.
+        CommandLine.Model.UsageMessageSpec usage = restest.getCommandSpec().usageMessage();
+        List<String> footer = new ArrayList<>(List.of(usage.footer()));
+        footer.add("");
+        footer.add("A coding agent learns to use RESTest from");
+        footer.add("  " + pageForCodingAgents(ToolVersion.describing()));
+        usage.footer(footer.toArray(String[]::new));
+        return restest
                 .setOut(out)
                 .setErr(err)
                 // Plain text, on every machine. The command-line framework would otherwise colour
@@ -279,6 +291,18 @@ public final class Restest {
                 // and the two must not answer the same.
                 .setExecutionExceptionHandler(
                         (failure, command, parsed) -> saysItBroke(failure, err));
+    }
+
+    /**
+     * The address of the page that teaches a coding agent to use RESTest: the page as it was for a
+     * released version, and as it is now for any other build, which no release describes.
+     *
+     * @param version the version this copy of RESTest was built as, or {@code unknown}
+     * @return the page's address on the web
+     */
+    static String pageForCodingAgents(String version) {
+        String at = version.matches("\\d+\\.\\d+\\.\\d+") ? "v" + version : "master";
+        return "https://github.com/isa-group/RESTest/blob/" + at + "/docs/for-coding-agents.md";
     }
 
     /**

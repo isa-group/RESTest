@@ -309,7 +309,7 @@ class DocumentedReportTest {
         Run run = aRealRun(directory);
         JsonValue report = run.report();
 
-        Map<String, List<String>> explained = keysOnThePage();
+        Map<String, List<String>> explained = keysExplainedOn(reportPage);
         Set<String> written = new TreeSet<>();
         keysIn(report, "", written);
 
@@ -366,7 +366,7 @@ class DocumentedReportTest {
 
         Set<String> written = new TreeSet<>();
         keysIn(JsonText.read(Files.readString(out.resolve("report.json"))), "", written);
-        Map<String, List<String>> explained = keysOnThePage();
+        Map<String, List<String>> explained = keysExplainedOn(reportPage);
         assertThat(written).contains("unauthorized.keysHeld[].name");
         everyOneIsExplained(written.stream().filter(key -> key.startsWith("unauthorized."))
                 .toList(), explained);
@@ -405,7 +405,7 @@ class DocumentedReportTest {
 
     /** The table under the heading naming this place lists exactly these words, in this order. */
     private static void theTableUnder(String place, Stream<String> words) {
-        assertThat(keysOnThePage().get(place))
+        assertThat(keysExplainedOn(reportPage).get(place))
                 .describedAs("the table under the heading naming `%s` in %s", place, REPORT_PAGE)
                 .containsExactlyElementsOf(words.toList());
     }
@@ -526,7 +526,7 @@ class DocumentedReportTest {
      * of a written-out fault only some requests have - a change made to an accepted request, a step
      * of a series - are in the file whichever requests happened to fail first.
      */
-    private static Run aRealRun(Path directory) throws IOException {
+    static Run aRealRun(Path directory) throws IOException {
         Path document = directory.resolve("things.yaml");
         Files.writeString(document, THE_DOCUMENT);
         Path unreadable = directory.resolve("unreadable.yaml");
@@ -571,7 +571,7 @@ class DocumentedReportTest {
     }
 
     /** What a run wrote into its report, and what it printed. */
-    private record Run(JsonValue report, String screen) {
+    record Run(JsonValue report, String screen) {
     }
 
     /** What the small API answers. */
@@ -657,13 +657,16 @@ class DocumentedReportTest {
      * The keys the page explains, by the place in the file they belong to: the names in the first
      * column of each table between the heading for the top of the file and the next section, filed
      * under every place the heading above the table names in backticks. The top of the file is
-     * filed under the empty name.
+     * filed under the empty name. Other files that read {@code report.json}, and have to name only
+     * keys the page explains, ask it too.
+     *
+     * @param text the page's text
      */
-    private static Map<String, List<String>> keysOnThePage() {
+    static Map<String, List<String>> keysExplainedOn(String text) {
         Map<String, List<String>> explained = new HashMap<>();
         List<String> places = List.of();
         boolean inTheFile = false;
-        for (String line : reportPage.split("\n")) {
+        for (String line : text.split("\n")) {
             if (line.startsWith("## ")) {
                 inTheFile = line.equals("## " + THE_TOP_OF_THE_FILE);
                 places = inTheFile ? List.of("") : List.of();
@@ -716,12 +719,12 @@ class DocumentedReportTest {
         return kinds;
     }
 
-    private static String parentOf(String key) {
+    static String parentOf(String key) {
         int dot = key.lastIndexOf('.');
         return dot < 0 ? "" : key.substring(0, dot);
     }
 
-    private static String nameOf(String key) {
+    static String nameOf(String key) {
         return key.substring(key.lastIndexOf('.') + 1);
     }
 
@@ -729,7 +732,7 @@ class DocumentedReportTest {
         return place.isEmpty() ? "report.json" : place;
     }
 
-    private static String page(String fromTheRoot) {
+    static String page(String fromTheRoot) {
         return RepositoryRoot.read(RepositoryRoot.locate().resolve(fromTheRoot))
                 .replace("\r\n", "\n");
     }

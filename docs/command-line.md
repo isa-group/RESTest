@@ -19,7 +19,8 @@ means.
 
 Every command also takes `-h` or `--help`, and `restest`, `run` and `version` take `-V` or
 `--version`, which prints what `restest version` prints. `restest` on its own shows the list of
-commands and answers `2`, since it was asked to do nothing.
+commands and answers `2`, since it was asked to do nothing. `restest --help` ends by naming the page
+a coding agent learns RESTest from, [RESTest and coding agents](for-coding-agents.md).
 
 ## The options of `restest run`
 

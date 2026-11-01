@@ -194,16 +194,16 @@ ok "a run where nothing answers ends with 3 and leaves report.json and run.sqlit
 # --- What a launcher, a command with its own Java and an image are also checked for ---
 
 # The JSON Schemas travel with RESTest, so that whoever writes a dictionary or a plan finds them beside
-# the tool, and so does the list of the libraries it carries, with their licences: in the image, and
-# in a release's folder, known by this version's jar in the lib/ beside the launcher's bin/. A command
-# some installer puts on the PATH may live elsewhere, beside a lib/ of other programs', and is not
-# asked for them.
+# the tool, and so do the skill that teaches a coding agent to use it and the list of the libraries it
+# carries, with their licences: in the image, and in a release's folder, known by this version's jar
+# in the lib/ beside the launcher's bin/. A command some installer puts on the PATH may live
+# elsewhere, beside a lib/ of other programs', and is not asked for them.
 case $mode in
   --image)
     docker run --rm --entrypoint ls "$subject" /opt/restest/schemas/dictionary.schema.json \
-      /opt/restest/schemas/campaign.schema.json > /dev/null 2>&1 \
-      || fail "the image has no /opt/restest/schemas/ holding both JSON Schemas"
-    ok "the image carries the JSON Schemas in /opt/restest/schemas/"
+      /opt/restest/schemas/campaign.schema.json /opt/restest/skills/restest/SKILL.md > /dev/null 2>&1 \
+      || fail "the image lacks the JSON Schemas or the skill for coding agents in /opt/restest/"
+    ok "the image carries the JSON Schemas and the skill for coding agents in /opt/restest/"
     docker run --rm --entrypoint ls "$subject" /opt/restest/THIRD-PARTY.txt > /dev/null 2>&1 \
       || fail "the image has no /opt/restest/THIRD-PARTY.txt"
     ok "the image carries the list of its libraries in /opt/restest/THIRD-PARTY.txt"
@@ -216,6 +216,9 @@ case $mode in
           || fail "the release's folder has no schemas/$schema.schema.json"
       done
       ok "the release's folder carries the JSON Schemas in schemas/"
+      [ -f "$release/skills/restest/SKILL.md" ] \
+        || fail "the release's folder has no skills/restest/SKILL.md"
+      ok "the release's folder carries the skill for coding agents in skills/restest/"
       [ -f "$release/THIRD-PARTY.txt" ] || fail "the release's folder has no THIRD-PARTY.txt"
       ok "the release's folder carries the list of its libraries in THIRD-PARTY.txt"
     fi

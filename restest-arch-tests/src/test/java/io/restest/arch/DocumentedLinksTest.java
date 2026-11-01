@@ -54,7 +54,7 @@ class DocumentedLinksTest {
     private static final Pattern LINK = Pattern.compile("\\]\\(([^)\\s]+)\\)");
 
     /** A target that names a scheme - {@code https:}, {@code mailto:} - and so leaves the repository. */
-    private static final Pattern ANOTHER_SITE = Pattern.compile("^[A-Za-z][A-Za-z0-9+.-]*:.*");
+    static final Pattern ANOTHER_SITE = Pattern.compile("^[A-Za-z][A-Za-z0-9+.-]*:.*");
 
     /** A heading, one to six hashes and a space. */
     private static final Pattern HEADING = Pattern.compile("^#{1,6} (.*)$");
@@ -115,7 +115,7 @@ class DocumentedLinksTest {
     }
 
     /** The targets of a page's links, leaving out what is shown as code rather than as a link. */
-    private static List<String> linksIn(Path page) {
+    static List<String> linksIn(Path page) {
         List<String> targets = new ArrayList<>();
         boolean inCode = false;
         for (String line : lines(page)) {
