@@ -163,6 +163,12 @@ of its own. Whether you may test an API at all is not something any tool can che
   firewall that drops one without a word leaves a request sent on it unanswered, and RESTest reports
   it as `F312` once it stops waiting, although it reached nobody
   ([the faults](faults.md#f312-no-reply-in-time)).
+- **Over HTTPS, an API that answers in HTTP/1.0 loses every other request.** An API that answers in
+  HTTP/1.0 without asking to keep the connection closes it after every reply, as Python's
+  `http.server` does unless its `protocol_version` is `HTTP/1.1`. Over plain HTTP, RESTest opens a
+  new connection for the next request. Over HTTPS, it sends the next request on the connection the
+  API has closed, and that request is counted under `no reply`, although it reached nobody. An API
+  that answers in HTTP/1.1 is not affected.
 - **With redirections followed, a request the next address sits on is reported on the operation.**
   With `engine.followRedirects` on, which it is not by default, an operation that sends the request
   on to another address that takes it and never answers is reported as `F312`, and the `curl`
