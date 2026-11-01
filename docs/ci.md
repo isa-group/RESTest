@@ -623,9 +623,10 @@ Central gets among the libraries.
 3. In this repository's settings, create the environment `jbang-catalog`, whose deployment branches
    and tags are `master` and `v*` only, and add the private half to it as `JBANG_CATALOG_KEY`. Then
    delete both files.
-4. Since `restest@isa-group` reaches GitLab and Bitbucket when GitHub does not answer, make sure the
-   name `isa-group` is the ISA group's there too: on GitLab, where no such group existed on
-   1 November 2026, and on Bitbucket, where a workspace "ISA Group" did.
+
+`restest@isa-group`, which the documentation never gives, reaches GitLab and Bitbucket when GitHub
+does not answer. On 1 November 2026 the name `isa-group` was taken on GitLab by somebody not known,
+and on Bitbucket by a workspace holding the ISA group's own old projects.
 
 ## Dependency updates
 

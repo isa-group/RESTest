@@ -58,7 +58,14 @@ RESTest 2.4.0
 Java 27 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
 ```
 
-That is a machine with no Java, where jbang downloads two into `~/.jbang`: a Java 17 for jbang
+and on Windows, in the command prompt or in PowerShell:
+
+```
+RESTest 2.4.0
+Java 27 (Eclipse Adoptium), Windows Server 2025 10.0 amd64
+```
+
+Those are machines with no Java, where jbang downloads two into `~/.jbang`: a Java 17 for jbang
 itself, and the newest Java for RESTest, some 600 MB together, as well as RESTest's libraries, 37 MB,
 into `~/.m2/repository`. On a machine with a JDK 21 or later — a JDK, which jbang looks for, not a
 plain Java runtime — jbang downloads the libraries alone and runs RESTest on that Java. With

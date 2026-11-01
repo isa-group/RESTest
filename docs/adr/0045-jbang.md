@@ -27,9 +27,9 @@ What jbang 0.142.0's own code says (its scripts in `src/main/scripts/`, its Java
   Only then does it read `https://github.com/isa-group/jbang-catalog/blob/HEAD/jbang-catalog.json`,
   and when that answers with no catalog - before the catalog exists, or on a network that cannot reach
   GitHub - `gitlab.com/isa-group/jbang-catalog` and `bitbucket.org/isa-group/jbang-catalog` in turn
-  (`ImplicitCatalogRef`). On 1 November 2026 no group `isa-group` existed on GitLab, so anybody could
-  have made one, and a public workspace "ISA Group" had existed on Bitbucket since 2018, whose owner
-  this record does not know.
+  (`ImplicitCatalogRef`). On 1 November 2026 the name `isa-group` was taken on GitLab, by a group or
+  an account that is not public and that this record does not know; on Bitbucket a public workspace
+  "ISA Group" held three of the ISA group's own projects, last changed in 2013 and 2014.
 - A catalog's address on github.com, gitlab.com or bitbucket.org, `raw.githubusercontent.com`
   included, is turned back into its organisation's name (`Catalog.simplifyRef`) and looked for the same
   way. Any other `https://` address is read as it is, with neither the local lookup nor the other hosts
@@ -176,8 +176,7 @@ is not.
 - **`restest@isa-group` can run something else**: what a `jbang-catalog.json` in the folder it runs
   in, or above it, names, and, whenever GitHub does not answer with the catalog, what a catalog of
   `isa-group` on GitLab or Bitbucket names. The documentation gives the address on GitHub Pages, and
-  says why. Claiming `isa-group` on GitLab, and learning whose the workspace on Bitbucket is, are the
-  maintainer's.
+  says why. Who holds `isa-group` on GitLab is not known.
 - **A build of RESTest installed with `./mvnw install`** at a release's version puts that version's
   modules into `~/.m2/repository` with the build's own POMs, which name fewer libraries than the
   published ones; jbang then runs those, and fetches nothing from Central for them.
