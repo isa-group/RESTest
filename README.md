@@ -25,13 +25,14 @@ language and run anywhere.
 ### What you need
 
 On macOS and Linux, Homebrew, which installs the Java RESTest runs on; on any system, jbang, which
-downloads one; or Docker; or Java 21 or later, of which a plain Java runtime is enough. Building RESTest from its source needs a JDK 21 or
-later, and git.
+downloads one; or Docker; or Java 21 or later, of which a plain Java runtime is enough. Building
+RESTest from its source needs a JDK 21 or later, and git.
 
 ### Install
 
-Each way ends with `restest` as a command on your `PATH`, which the rest of this page, the manual,
-your scripts and a coding agent can all call.
+Homebrew, jbang and the archive end with `restest` as a command on your `PATH`, which the rest of
+this page, the manual, your scripts and a coding agent can all call. For Docker and a build from the
+source, [chapter 2 of the manual](docs/manual/02-installing.md) says how to have one.
 
 **With Homebrew**, on macOS and Linux, which installs a Java 21 for RESTest as well:
 
@@ -58,28 +59,17 @@ folder to the `PATH` in your shell's start-up files. [Chapter 2 of the
 manual](docs/manual/02-installing.md#with-jbang) says what it changes, and why the catalog is given
 by its address rather than as `restest@isa-group`.
 
-**With Docker** there is nothing to install: the image holds RESTest and the Java it runs on.
+**With Docker** there is nothing to install: the image holds RESTest and the Java it runs on. It is
+lent the folder you are in, which it sees as `/work`, so that it reads a document there and leaves
+its report beside it:
 
 ```bash
-docker run --rm ghcr.io/isa-group/restest:2.4.0 version
+docker run --rm -v "$PWD:/work" ghcr.io/isa-group/restest:2.4.0 version
 ```
 
-A run reads its document and writes its report in the folder it is started from, which the
-container sees as `/work`. These lines write a `restest` command that runs the image with the
-folder you are in lent to it, makes what is written there yours, hands over a key left in
-`RESTEST_AUTH`, and lets the container reach your own machine as `host.docker.internal`:
-
-```bash
-mkdir -p ~/.local/bin
-printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.4.0 "$@"' > ~/.local/bin/restest
-chmod +x ~/.local/bin/restest
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-Inside the container, `localhost` is the container itself: in an address you give `restest`, write
-`host.docker.internal` for your own machine. On Linux, an API that listens only on `127.0.0.1`
-cannot be reached that way; put `--network host` in the script in place of `--add-host=…`, and keep
-`localhost`.
+What you would give `restest` goes after the image's name. [Chapter 2 of the
+manual](docs/manual/02-installing.md#with-docker) says the rest: how to make that a `restest` command,
+how the container reaches an API on your own machine, and how what it writes stays yours on Linux.
 
 **With Java 21 or later**, from the archive every release carries, which holds RESTest and every
 library it runs with:
@@ -92,22 +82,23 @@ export PATH="$PWD/restest-2.4.0/bin:$PATH"
 
 On Windows, unpack `restest-2.4.0.zip` and run `restest-2.4.0\bin\restest.cmd`.
 
+An `export PATH=…` lasts as long as the terminal. To keep it, add the line to your shell's start-up
+file, such as `~/.bashrc` or `~/.zshrc`, with the folder written out in full.
+
 **From the source**, with a JDK 21 or later and git:
 
 ```bash
 git clone --branch v2.4.0 https://github.com/isa-group/RESTest.git
 cd RESTest
-./mvnw -q install -DskipTests
-export PATH="$PWD:$PATH"
+./mvnw -q package -DskipTests
+./restest version
 ```
 
 The first build downloads what RESTest is built from and takes a few minutes; the ones after it, less
-than one. On Windows, run it from Git Bash.
+than one. On Windows, run it from Git Bash. [Chapter 2](docs/manual/02-installing.md#from-the-source)
+says how to make `./restest` a command on your `PATH`.
 
-An `export PATH=…` lasts as long as the terminal. To keep it, add the line to your shell's start-up
-file, such as `~/.bashrc` or `~/.zshrc`, with the folder written out in full.
-
-However it was installed, `restest version` says which RESTest and which Java you have:
+However it was installed, `version` says which RESTest and which Java you have:
 
 ```
 RESTest 2.4.0
@@ -129,8 +120,8 @@ The shop takes a few seconds to start: once `curl -s http://localhost:8080/api/v
 pet, it is ready. Its image is built for Intel and AMD processors, so on a Mac with Apple silicon
 Docker runs it in emulation and warns that the platforms do not match. Its document gives its address
 as a path alone, `/api/v3`, which is why `--url` says where it is running. With RESTest's own Docker
-image, write `host.docker.internal` in place of `localhost` in the second command, as
-[Install](#install) says.
+image, the container has to reach the shop on your machine, which
+[chapter 2](docs/manual/02-installing.md#with-docker) says how to do.
 
 RESTest tests an operation that creates something by creating something, so a run leaves pets,
 orders and users behind. `docker rm -f petstore` and the same `docker run` give you a shop as good

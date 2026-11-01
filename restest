@@ -23,7 +23,7 @@ version=$("$here/dist/version.sh")
 jar="$target/restest-cli-$version.jar"
 if [ -z "$version" ] || [ ! -f "$jar" ] || [ ! -d "$target/lib" ]; then
   echo "RESTest has not been built in this checkout yet. Run:" >&2
-  echo "    ./mvnw -q install -DskipTests" >&2
+  echo "    ./mvnw -q package -DskipTests" >&2
   # A number the program itself never answers with, so "you have not built this" can never be
   # mistaken for "the tool found nothing" or "the tool broke".
   exit 127
