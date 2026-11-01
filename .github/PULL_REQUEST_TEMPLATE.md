@@ -29,7 +29,7 @@ Copy-paste commands from a clean checkout, with the real expected output underne
 on a laptop with only Java and git installed. Run them yourself first and paste the actual output.
 
     git fetch && git switch feat/format-aware-values
-    ./mvnw -q install -DskipTests
+    ./mvnw -q package -DskipTests
     ./restest run <the document> --url <the API's address> --budget 30s
 
     Expected:

@@ -106,8 +106,9 @@ is.
 and leaves no `report.json`: one of those numbers with no report is jbang's, not RESTest's ([the
 numbers RESTest does not choose](../command-line.md#numbers-restest-does-not-choose)).
 
-**With a RESTest of your own build** installed by `./mvnw install` at the same version, jbang runs
-those jars rather than Maven Central's, with the libraries their build names. Remove
+**If you have run `./mvnw install`** in a checkout of RESTest at the same version, which puts its
+modules into `~/.m2/repository`, jbang runs those jars rather than Maven Central's, with the libraries
+their build names; the build this chapter gives, `./mvnw package`, puts nothing there. Remove
 `~/.m2/repository/es/us/isa/restest/`, which jbang fills again from Maven Central.
 
 `jbang app uninstall restest` removes the command. `~/.jbang` holds jbang's Javas, and
@@ -138,9 +139,20 @@ Java 21.0.13 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 ```
 
 A run reads its document and its other files from a folder, and writes its report into it. Inside
-the container that folder is `/work`, and it has to be lent from your machine. These lines write a
-small script, `restest`, into a folder for your own commands, and put that folder on the `PATH`; the
-script runs the image with that, and the rest a run needs, every time:
+the container that folder is `/work`, and it has to be lent from your machine: `-v "$PWD:/work"`
+lends the folder you are in. What you would give `restest` then goes after the image's name:
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/isa-group/restest:2.4.0 run openapi.yaml --url https://api.example.com --budget 30s
+```
+
+That reads `openapi.yaml` from the folder you are in and leaves `restest-out/`, with the report, in
+it. Without `-v`, what the run finds still appears on the screen, but the report is written inside
+the container, and goes with it when `--rm` removes it; nor can a document on your disk be read.
+
+Typing all of that each time is long, and a run may need more of it. These lines write a small
+script, `restest`, into a folder for your own commands, and put that folder on the `PATH`; the script
+runs the image with the folder you are in, and the rest a run needs, every time:
 
 ```bash
 mkdir -p ~/.local/bin
@@ -260,7 +272,7 @@ Then:
 ```bash
 git clone --branch v2.4.0 https://github.com/isa-group/RESTest.git
 cd RESTest
-./mvnw -q install -DskipTests
+./mvnw -q package -DskipTests
 ```
 
 `./mvnw` is Maven, the build tool, which the checkout carries so that you need not install it. The
@@ -315,7 +327,7 @@ from that shell find it too.
   ```bash
   git fetch --tags
   git checkout v2.4.0
-  ./mvnw -q clean install -DskipTests
+  ./mvnw -q clean package -DskipTests
   ```
 
   with the new version in place of `2.4.0`. `clean` throws away what the last build left behind, so
