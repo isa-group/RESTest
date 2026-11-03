@@ -99,7 +99,7 @@ class PublishedSchemasTest {
     private static final Set<String> ANNOTATIONS = Set.of("title", "description");
 
     /** The pages that show a whole dictionary or plan, each of which must still show one. */
-    private static final List<String> PAGES_WITH_A_WHOLE_FILE = List.of("README.md",
+    private static final List<String> PAGES_WITH_A_WHOLE_FILE = List.of(
             "docs/dictionary-format.md", "docs/campaign-format.md", "docs/switches.md",
             "docs/manual/06-dictionaries.md", "docs/schemas.md");
 

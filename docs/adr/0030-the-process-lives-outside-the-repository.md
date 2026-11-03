@@ -1,7 +1,7 @@
 # ADR-0030: The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on
 
-**Status:** Accepted
-**Date:** 2026-10-09
+**Status:** Accepted, amended on 3 November 2026
+**Date:** 2026-10-09 (amended 2026-11-03)
 
 ## Context
 
@@ -98,3 +98,17 @@ built, and states its rules in `AGENTS.md`.**
   install something it cannot reach.
 - **Keeping `CLAUDE.md` as the rules file.** It works for one agent; `AGENTS.md` works for most, and
   the one-line `CLAUDE.md` keeps Claude Code reading the same rules.
+
+## Amendment (3 November 2026): the list of what is out of scope leaves the design
+
+Point 6 kept in `docs/DESIGN.md` a section called "Out of scope": a list of directions RESTest might
+take one day, each beside the seam it would use, and the three open questions ADR-0017 raised about
+them. The section is gone. The design now describes what is built, and its extension points are the
+interfaces of `restest-core` that have implementations; five of the seams the list relied on had no
+code at all. A list of what might be built later says what comes next, which this record already
+keeps out of the repository.
+
+Nothing else changes. What the tool does not do yet is in `docs/known-limitations.md`, something
+large still starts with an issue, and the open questions are still argued in ADR-0017. The section as
+it last stood is at commit
+[`f2c9f6f8`](https://github.com/isa-group/RESTest/blob/f2c9f6f849cfc5b91532d462e05aed68edc4bc41/docs/DESIGN.md#out-of-scope).

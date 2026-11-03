@@ -90,18 +90,19 @@ class SourceTreeRulesTest {
      * The files allowed to name the benchmark platform RESTest is measured on, and nothing else in
      * the repository may.
      *
-     * <p>The one decision record that explains the relationship - what the platform is, why the
-     * project is measured on it, and where the code that drives it lives. It is prose written for a
-     * person. Anywhere else, the name is the first sign of the coupling this project has decided not
-     * to have.
+     * <p>The decision record that explains the relationship - what the platform is, why the project
+     * is measured on it, and where the code that drives it lives - and the design's section on
+     * evaluation, which says where the package the platform builds RESTest from can be found, so
+     * that others can use it. Both are prose written for a person. Anywhere else, the name is the
+     * first sign of the coupling this project has decided not to have.
      */
     private static final List<String> BENCHMARK_MAY_BE_NAMED_IN = List.of(
-            "docs/adr/0011-evaluation-harness.md");
+            "docs/adr/0011-evaluation-harness.md", "docs/DESIGN.md");
 
     /**
      * The platform RESTest is measured against lives in a repository of its own, and this one must
      * know nothing about it. This test searches every file the repository contains and fails if the
-     * platform's name appears outside the one document that explains the relationship.
+     * platform's name appears outside the documents that explain the relationship.
      *
      * <p>Checked as text rather than as a compiled dependency, because the danger is not only a
      * compiled reference. A path, a property name, a build property pinning the platform's version

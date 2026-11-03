@@ -1,7 +1,7 @@
 # ADR-0011: The evaluation harness lives in `evaluation/`, outside the Maven build
 
-**Status:** Accepted, amended at M1.9 and on 9 October 2026
-**Date:** 2026-09-11 (amended 2026-09-16 and 2026-10-09)
+**Status:** Accepted, amended at M1.9, on 9 October 2026 and on 3 November 2026
+**Date:** 2026-09-11 (amended 2026-09-16, 2026-10-09 and 2026-11-03)
 
 > The title, the Decision and the Consequences below are as originally accepted, with every
 > superseded statement struck through and marked where it stands. The M1.9 amendment is the current
@@ -232,3 +232,13 @@ evaluation harness, `isa-group/restgym-restest2`, and never edited by hand.
 
 Nothing else changes. This record stays the one document of the repository that names the platform
 or either repository; `AGENTS.md` points here for where they are.
+
+## Amendment (3 November 2026)
+
+**The design names the platform and the official package, in its section on evaluation.**
+
+`docs/DESIGN.md` says that RESTest is measured on RESTgym and links to
+[`isa-group/restest4restgym`](https://github.com/isa-group/restest4restgym), so that anybody comparing
+tools on the platform can find the package and include RESTest. The test that keeps the name out of
+the repository lists that page beside this record. Nothing else changes: the tool still depends on
+neither, the harness is still named only here, and the name still appears nowhere else.

@@ -163,7 +163,7 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 | What the tool does not do yet | `docs/known-limitations.md` |
 | The JSON Schemas of a dictionary and a plan, which a test holds to RESTest's reader | `schemas/`, `docs/schemas.md` |
 | The skill that teaches a coding agent to use RESTest, which a test holds to the tool, and the page for coding agents that ends with it | `skills/restest/SKILL.md`, `docs/for-coding-agents.md` |
-| Architecture, glossary, quality gates, what is out of scope | `docs/DESIGN.md` |
+| Architecture, glossary, quality gates, extension points | `docs/DESIGN.md` |
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |
 | How a release is made and what it carries: the image, the archives and their launchers, the Homebrew formula, the modules on Maven Central, and the jbang catalog | `docs/ci.md`, `docs/adr/0032-how-a-release-is-published.md`, `docs/adr/0040-homebrew.md`, `docs/adr/0044-maven-central.md`, `docs/adr/0045-jbang.md`, `Dockerfile`, `dist/` |

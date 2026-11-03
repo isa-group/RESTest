@@ -41,8 +41,7 @@ what a run does. What it does is described in `README.md` and `docs/`, and how i
 `docs/DESIGN.md`.
 
 The repository does not keep a plan of what comes next. Before starting something large, open an
-issue to talk about it. What is out of scope — the list under "Out of scope" in `docs/DESIGN.md` —
-is not started without explicit approval, even where it looks easy.
+issue to talk about it.
 
 ## The loop
 
