@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="456" viewBox="0 0 1200 456">
+<defs><marker id="head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8a919c"/></marker></defs>
+<rect x="0.5" y="0.5" width="1199" height="455" rx="20" fill="#ffffff" stroke="#dde1e6"/>
+<rect x="52.5" y="36" width="330" height="200" rx="10" fill="#ffffff" stroke="#dde1e6" stroke-width="1.5"/>
+<rect x="52.5" y="36" width="330" height="6" rx="3" fill="#0b62c4"/>
+<text x="217.5" y="89.8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="600" fill="#14171c" text-anchor="middle">Plan</text>
+<text x="217.5" y="122.0" font-family="ui-monospace, SF Mono, Menlo, Consolas, monospace" font-size="17" font-weight="normal" fill="#0b62c4" text-anchor="middle">--campaign</text>
+<text x="217.5" y="163.8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">Which operations a run may touch,</text>
+<text x="217.5" y="185.9" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">where its values come from, and</text>
+<text x="217.5" y="208.1" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">how much of it pushes at the API</text>
+<line x1="217.5" y1="244" x2="217.5" y2="290" stroke="#8a919c" stroke-width="2.5" marker-end="url(#head)"/>
+<rect x="435.0" y="36" width="330" height="200" rx="10" fill="#ffffff" stroke="#dde1e6" stroke-width="1.5"/>
+<rect x="435.0" y="36" width="330" height="6" rx="3" fill="#0b62c4"/>
+<text x="600.0" y="89.8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="600" fill="#14171c" text-anchor="middle">Dictionaries</text>
+<text x="600.0" y="122.0" font-family="ui-monospace, SF Mono, Menlo, Consolas, monospace" font-size="17" font-weight="normal" fill="#0b62c4" text-anchor="middle">--dictionary</text>
+<text x="600.0" y="163.8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">Values you know are good:</text>
+<text x="600.0" y="185.9" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">identifiers that exist,</text>
+<text x="600.0" y="208.1" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">names the API holds</text>
+<line x1="600.0" y1="244" x2="600.0" y2="290" stroke="#8a919c" stroke-width="2.5" marker-end="url(#head)"/>
+<rect x="817.5" y="36" width="330" height="200" rx="10" fill="#ffffff" stroke="#dde1e6" stroke-width="1.5"/>
+<rect x="817.5" y="36" width="330" height="6" rx="3" fill="#0b62c4"/>
+<text x="982.5" y="89.8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="600" fill="#14171c" text-anchor="middle">Settings</text>
+<text x="982.5" y="122.0" font-family="ui-monospace, SF Mono, Menlo, Consolas, monospace" font-size="17" font-weight="normal" fill="#0b62c4" text-anchor="middle">--set</text>
+<text x="982.5" y="163.8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">How the tool behaves: requests</text>
+<text x="982.5" y="185.9" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">in flight, waiting, a rate to keep,</text>
+<text x="982.5" y="208.1" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="normal" fill="#4a515c" text-anchor="middle">switches that turn things off</text>
+<line x1="982.5" y1="244" x2="982.5" y2="290" stroke="#8a919c" stroke-width="2.5" marker-end="url(#head)"/>
+<rect x="30.5" y="296" width="1139.0" height="124" rx="16" fill="#f5f6f8" stroke="#b9bec6" stroke-width="1.5" stroke-dasharray="6 6"/>
+<rect x="52.5" y="316" width="330" height="84" rx="10" fill="#14171c"/>
+<text x="217.5" y="366.1" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="23" font-weight="normal" fill="#ffffff" text-anchor="middle">Choose what to send</text>
+<line x1="388.5" y1="358.0" x2="427.0" y2="358.0" stroke="#8a919c" stroke-width="2.5" marker-end="url(#head)"/>
+<rect x="435.0" y="316" width="330" height="84" rx="10" fill="#14171c"/>
+<text x="600.0" y="366.1" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="23" font-weight="normal" fill="#ffffff" text-anchor="middle">Fill in the values</text>
+<line x1="771.0" y1="358.0" x2="809.5" y2="358.0" stroke="#8a919c" stroke-width="2.5" marker-end="url(#head)"/>
+<rect x="817.5" y="316" width="330" height="84" rx="10" fill="#14171c"/>
+<text x="982.5" y="366.1" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif" font-size="23" font-weight="normal" fill="#ffffff" text-anchor="middle">Send and judge</text>
+</svg>

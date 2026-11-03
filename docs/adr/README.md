@@ -63,7 +63,7 @@ so records written from now on cite none.
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted, amended twice on 29 October 2026 |
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted, not yet built (14 October 2026) |
-| [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9 and on 9 October 2026 |
+| [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the Maven build — amended at M1.9: in a repository of its own, so `evaluation/` was never created | Accepted, amended at M1.9, on 9 October 2026 and on 3 November 2026 |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.8, M2.1a and M2.1b, and on 17, 26 and 29 October 2026 |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted, amended at M1.11, M2.7a, M2.4, M2.10a, M9.1, M9.3, M10.1 and M10.3, and on 10, 12, 13 and 25 October 2026 |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 and on 10, 17, 19 and 22 October 2026 |
@@ -82,7 +82,7 @@ so records written from now on cite none.
 | [0027](0027-changing-one-thing-in-an-accepted-request.md) | A request the API accepted is sent again with one thing changed, and says what it broke | Accepted, amended at M10.2, M8.5 and M10.4-M10.7, and on 12, 13, 15 and 17 October 2026 |
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 and 13 October 2026 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 and 25 October 2026 |
-| [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted |
+| [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted, amended on 3 November 2026 |
 | [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
 | [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13, 23, 27 and 30 October and 1 November 2026 |
 | [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place | Accepted, amended on 13 October 2026 |

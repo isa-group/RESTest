@@ -1,20 +1,8 @@
-# RESTest — design
+# RESTest Design
 
-What RESTest is, how it is put together, and which rules the build enforces. Written for
-somebody arriving at the repository for the first time, including readers who do not program in
-Java.
-
-Individual decisions and the reasoning behind them live in [`docs/adr/`](adr/), and the rules every
-contributor follows in [`AGENTS.md`](../AGENTS.md). Continuous integration and the architecture rules
-are described in [`docs/ci.md`](ci.md).
-
----
-
-## What it is
-
-A black-box testing tool for REST APIs. Its only mandatory input is an OpenAPI specification; the
-address of the API is taken from it unless one is given. From those it generates test cases,
-executes them, and reports the failures it finds.
+RESTest is a black-box testing tool for REST APIs. Its only mandatory input is an OpenAPI
+specification; the address of the API is taken from it unless one is given. From those it generates
+test cases, executes them, and reports the failures it finds.
 
 The design target is deliberately narrow and deliberately hard: **an unknown API, no human
 configuration, a fixed time budget.** Everything below follows from those three constraints.
@@ -33,9 +21,7 @@ does not declare — and what they find is reported on the screen, in `report.js
 drawn from it, `report.html`, with a `curl` command that repeats it; each rule can be switched off. What a user sees of all this is in
 [`docs/`](README.md); how it is built is the rest of this page.
 
-From version 2.0 on, RESTest is a rewrite rather than a refactor of RESTest 1.x. The reasoning is
-recorded in [ADR-0002](adr/0002-rewrite-not-refactor.md); no source files carry over, though ideas,
-the IDL grammar and the test corpus do.
+From version 2.0 on, RESTest is a rewrite rather than a refactor of RESTest 1.x.
 
 ## Scope
 
@@ -99,23 +85,171 @@ enforcement is listed under [Quality gates](#quality-gates).
 
 ## Architecture
 
+![RESTest's parts as blocks: the command line on top; RESTest Core under it, with the domain model, the interfaces and the event stream; and under that the six parts, specification, generation, execution, oracles, reports and store, each above what is built into it](images/architecture-blocks.svg)
+
 Eight production modules, each with a `module-info.java`, plus one unpublished verification module.
 Dependencies point inwards, towards `restest-core`, and [ADR-0004](adr/0004-module-structure.md)
 explains why that is compiled rather than conventional.
 
-```
-restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy
-                  dependencies beyond a streaming JSON reader and writer and a YAML reader.
-restest-spec      the only module allowed to reference the third-party OAS parser.
-restest-gen       generation phases, value providers, scheduler.
-restest-exec      HTTP engine.
-restest-store     interaction store.
-restest-oracles   oracles and fault classification.
-restest-report    event listeners producing output.
-restest-cli       command line. The only module allowed to terminate the process.
+### Components and interfaces
 
-restest-arch-tests   architecture rules. No main sources, never published.
+The diagram below shows the modules, the interfaces through which they meet, and what comes in and
+goes out of a run. Each square box is a module. A rounded box marked ○ is an interface of
+`restest-core`: a solid line joins it to the module that provides it, and a dashed arrow comes to it
+from the module that needs it. A dashed arrow with the name of a class on it is a plain dependency on
+that class. A slanted box is a file, a stadium is somebody outside RESTest, and the hexagon is the API
+under test.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#ffffff", "primaryBorderColor": "#0b62c4", "primaryTextColor": "#14171c", "lineColor": "#5c6470", "clusterBkg": "#f5f6f8", "clusterBorder": "#b9bec6", "edgeLabelBackground": "#ffffff"}}}%%
+flowchart TB
+  user(["Person, CI job<br>or coding agent"])
+  inSettings[/"settings, key"/]
+
+  subgraph restest["RESTest"]
+    cli["restest-cli"]
+
+    ISpec(["○ SpecificationParser"])
+    IStore(["○ InteractionStore"])
+    IEngine(["○ HttpEngine"])
+
+    spec["restest-spec"]
+    store["restest-store"]
+    exec["restest-exec"]
+    gen["restest-gen"]
+    core["restest-core"]
+
+    IListener(["○ RunListener"])
+
+    report["restest-report"]
+    subgraph oracles["restest-oracles"]
+      listener["OracleListener"]
+      IOracle(["○ Oracle"])
+      rules["eight rules"]
+    end
+  end
+
+  inDoc[/"OpenAPI document"/]
+  inPlan[/"dictionaries, plan"/]
+  api{{"API under test"}}
+  outStore[/"run.sqlite"/]
+  outReports[/"console, report.json, report.html"/]
+
+  user -- "restest run<br>(exit code)" --> cli
+  inSettings -.-> cli
+
+  cli -.-> ISpec & IStore & IEngine
+  ISpec --- spec
+  IStore --- store
+  IEngine --- exec
+  cli -. "Scheduler" .-> gen
+  cli -. "EventStream" .-> core
+
+  inDoc -.-> spec
+  inPlan -.-> gen
+
+  core -.-> IListener
+  IListener --- gen
+  IListener --- report
+  IListener --- listener
+  listener -.-> IOracle
+  IOracle --- rules
+  listener -. "EventStream" .-> core
+
+  exec -- HTTP --> api
+  store -.-> outStore
+  report -.-> outReports
+
+  classDef iface fill:#ffffff,stroke:#0b62c4,color:#0b62c4,font-size:13px
+  classDef file fill:#f0f2f5,stroke:#b9bec6,color:#2b3038
+  classDef outside fill:#ffffff,stroke:#b9bec6,color:#14171c
+  classDef part fill:#ffffff,stroke:#b9bec6,color:#14171c,font-size:13px
+  class ISpec,IStore,IEngine,IListener,IOracle iface
+  class inSettings,inDoc,inPlan,outStore,outReports file
+  class user,api outside
+  class listener,rules part
 ```
+
+`restest-oracles` is drawn with two of its parts because it both needs `Oracle` and provides it: its
+`OracleListener` puts every reply to the rules, and its eight rules are the implementations. Every
+module also depends on `restest-core` for the domain model; the diagram leaves those arrows out.
+
+### The modules
+
+#### restest-core
+
+The language every other module speaks. It holds the model of an API (`ApiModel`, `Operation`,
+`Parameter` and the schemas), what a run sends and sees (`TestCase`, `HttpRequestRecord`,
+`Interaction`), the faults (`Finding`, with its kind and severity), the settings, and the keys a run
+is handed (`Credential`, and `CredentialedEngine`, which adds a key to a request as it leaves). It
+also holds `EventStream`, which hands every `RunEvent` of a run to its listeners in order.
+
+It defines the six interfaces the other modules provide — `SpecificationParser`, `HttpEngine`,
+`InteractionStore`, `RunListener`, `Oracle` and `ValueProvider` — and needs `RunListener` itself,
+for the event stream. It has no network and no OpenAPI parser; its only third-party libraries are a
+streaming JSON reader and writer and a YAML reader, behind `io.restest.core.json`.
+
+#### restest-spec
+
+Reads an OpenAPI document — 2.0 by conversion, 3.0 and 3.1 — into the model of `restest-core`. Its
+`SwaggerSpecificationParser` provides `SpecificationParser`, and its converters turn the parser
+library's types into RESTest's own, so that nothing outside this module sees them: it is the only
+module allowed to reference `io.swagger`. A part of the document it cannot read is named, and the
+operations it affects are set aside, never the whole run
+([ADR-0007](adr/0007-specification-parser-boundary.md)).
+
+#### restest-gen
+
+Decides what to send next and builds it. The `Scheduler` chooses the next operation, first in the
+opening lap and then by drawing; the `RandomTestCaseGenerator` builds the request for a draw by the
+plan's strategies: a request meant to be accepted, one thing changed in a request the API accepted,
+a series around a thing the run created, or a value nobody sensible would send. The values come from
+its `ValueProvider`s: the document's own values and examples, dictionaries, what the API has
+returned, and values made up to fit the schema. It reads the plan and the dictionaries.
+
+It provides `RunListener` with `AcceptedRequests` and `ObservedValues`, which remember what the API
+accepted and returned so that the next request can use it. The library that makes strings match a
+regular expression is confined here.
+
+#### restest-exec
+
+Sends requests and captures what goes over the wire. Its `OkHttpEngine` provides `HttpEngine`: it
+sends on virtual threads without blocking the request loop, keeps as many requests in flight as the
+API can take, keeps to a rate when given one, holds back when the API says to wait, and counts the
+time in which nothing was in flight, which a run reports as idle
+([ADR-0009](adr/0009-non-blocking-engine.md)).
+
+#### restest-store
+
+Keeps a run, when `--store` asks for it. Its `SqliteInteractionStore` provides `InteractionStore`:
+one run, one SQLite file.
+
+#### restest-oracles
+
+Judges every reply. `OracleListener` provides `RunListener`: it puts each request and reply to the
+rules and announces each fault on the event stream. The eight rules provide `Oracle`, and `Oracles`
+lists them, each beside the switch that turns it off. The JSON Schema validator a reply's body is
+checked with is confined here ([ADR-0014](adr/0014-response-conformance.md)).
+
+#### restest-report
+
+Writes what a run found. `ConsoleReport`, `JsonReport` and `HtmlReport` provide `RunListener`; the
+page is written from the JSON report's own text, so that it shows nothing `report.json` does not
+hold.
+
+#### restest-cli
+
+The command line. `RunCommand` reads the settings from every place they can come from, builds every
+other part and subscribes the listeners; `RunLoop` drives the run until the budget runs out, asking
+the `Scheduler` for each request, handing it to the `HttpEngine` and announcing what came back; and
+`ExitCode` says how the run ended. It needs `SpecificationParser`, `HttpEngine` and
+`InteractionStore`, and uses `Scheduler` and `EventStream` directly. It is the only module allowed to
+end the process or to read the environment.
+
+#### restest-arch-tests
+
+The architecture rules and the checks that hold the documentation to the tool. It has no main
+sources, depends on every module at test scope and is never published ([`docs/ci.md`](ci.md)).
 
 ### Execution pipeline
 
@@ -141,25 +275,22 @@ database inside the request loop. The store is for looking back; the event strea
 
 ## Extension points
 
-These are architectural requirements rather than features, and they are the whole of what
-"extensible" means here. A seam is known to be real rather than assumed when something is built on
-it. So far two are: the non-blocking engine, with its idle-time accounting, and `Oracle`, with the
-eight rules a run judges requests by. The other four are design constraints the rest of the code keeps
-room for, and RESTest has no code for them yet; the items under [Out of
-scope](#out-of-scope) name which of them each would use.
+The interfaces of `restest-core` are where RESTest is meant to be extended. Each is implemented
+outside `restest-core`, by the modules the table names.
 
 There are deliberately **no abstractions for particular kinds of extension** — no provider interface
 named after any technology, and no dependency on any model library.
 [ADR-0008](adr/0008-extension-points-no-ai-abstractions.md) sets out why: open formats and a generic
 interface outlast a specific integration.
 
-| Seam | What it is for |
-|---|---|
-| **Non-blocking engine** | Computation never stalls the request loop, and idle time is reported on every run, so a regression is visible rather than inferred. |
-| **`ExternalDataProvider`** | Lets anything outside the tool supply input values — a dictionary committed beside the specification, a corporate test-data service, a script in any language. Asynchronous and out-of-process, so a slow provider cannot stall the run. |
-| **`ConstraintSource` / `FlowSource`** | The constraint model is mutable and per-operation rather than parsed once and frozen, so new dependencies and new operation flows can arrive *while the loop is running*. |
-| **`Oracle` / `CorpusOracle`** | `Oracle` judges a single interaction; `CorpusOracle` judges a queryable *set* — a whole run, one operation's slice, a sliding window. The second is what invariant- and relation-based techniques need, and retrofitting it would mean rewriting the oracle engine. |
-| **`FeedbackListener`** | Observes every interaction and may return scheduling hints: operation weights, parameter weights, budget shifts. |
+| Interface | What it is for | Implemented by |
+|---|---|---|
+| **`Oracle`** | Judges one request and the reply to it, and names each fault it finds. | The eight rules of `restest-oracles`. They are also declared as a service, and `Oracles.discovered()` finds anybody's, but a run applies only RESTest's own, each behind its switch. |
+| **`HttpEngine`** | Sends a request without blocking the request loop, and counts the time nothing was in flight, so that a regression shows on every run rather than being inferred. | `OkHttpEngine` in `restest-exec`, which `CredentialedEngine` in `restest-core` wraps to add a key to each request and hide it in what comes back. |
+| **`RunListener`** | Hears every event of a run, in order, away from the request loop. | The three reports, `OracleListener`, and the parts of `restest-gen` that learn from the replies. |
+| **`ValueProvider`** | Offers a value for one place in a request. | The sources of `restest-gen`: the document's values and examples, dictionaries, what the API returned, and values made up to fit. |
+| **`SpecificationParser`** | Reads an OpenAPI document into RESTest's own model. | `SwaggerSpecificationParser` in `restest-spec`. |
+| **`InteractionStore`** | Keeps every request and reply of a run. | `SqliteInteractionStore` in `restest-store`. |
 
 ## Quality gates
 
@@ -191,24 +322,18 @@ how to reproduce it locally.
 The quality gates above answer "does the tool work". They do not answer "is it any good", which
 needs a comparison against other tools on the same APIs with the same budget.
 
-That comparison runs on a public benchmark infrastructure that executes testing tools against a
-fixed set of instrumented APIs and computes comparable metrics. Comparability with published results
-is exactly what it provides, which is why it is used rather than a private benchmark of our own. A
-campaign pins the exact version of both the benchmark and the tool, so it can be re-run months later
-and get the same numbers.
+That comparison runs on [RESTgym](https://github.com/restgym/restgym), a public infrastructure that
+runs testing tools against a fixed set of instrumented APIs and computes comparable metrics.
+Comparability with published results is exactly what it provides, which is why it is used rather than
+a private benchmark of our own. A campaign pins the exact version of both the benchmark and the tool,
+so it can be re-run months later and get the same numbers.
 
-Two boundaries make that a measurement rather than a dependency, and both are enforced rather than
-intended:
-
-- **The harness is not in this repository at all.** It lives in a repository of its own, which
-  packages the tool for the benchmark and drives the campaigns. Deleting it changes nothing here.
-- **Nothing here references the benchmark.** No dictionaries shipped by it, no thresholds derived
-  from its verification rules, no assumptions about its layout. A test fails the build if the
-  platform's name appears in any file of this repository other than the one decision record that
-  explains the relationship.
-
-A tool that has absorbed assumptions from the benchmark it is measured on is both worse engineering
-and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reasoning and the layout.
+RESTgym builds RESTest from [RESTest for RESTgym](https://github.com/isa-group/restest4restgym), a
+public repository with what the platform asks of a tool it evaluates — a Dockerfile, the entry point
+that runs RESTest, the platform's configuration and the instructions — for one version of RESTest.
+Anybody comparing tools on RESTgym can use it to include RESTest. The tool depends on neither: what
+the package uses is what any user has, `--url`, `--budget` and the reports
+([ADR-0011](adr/0011-evaluation-harness.md)).
 
 Fault reports count by the WFC codes rather than by a taxonomy of our own, for the same reason: a
 fault count is only meaningful next to somebody else's fault count. Two kinds the catalogue has no
@@ -228,10 +353,13 @@ no switch yet. A test holds that page to the tool.
 
 ## Related tools
 
+We are grateful to the authors of every tool below, and of the research published with them. Their
+work made REST API testing a field with shared ideas, open tools and results that can be compared,
+and RESTest is part of it because of them.
+
 This section maps the REST API testing landscape for readers new to the field: the tools most often
-compared with RESTest in academic evaluations and benchmarks, one paragraph each, followed by a
-[comparison table](#comparison) whose columns are explained above it. The terms it uses — stateless
-and stateful testing, black-box and white-box — are in the [glossary](#glossary). The descriptions
+compared with RESTest in academic evaluations and benchmarks, one paragraph each. The terms it uses
+— stateless and stateful testing, black-box and white-box — are in the [glossary](#glossary). The descriptions
 of RESTler, EvoMaster, Schemathesis, RestTestGen and CATS were corrected on 10 October 2026 where
 their code no longer agreed: RESTler at commit `6d984dee`, EvoMaster at release 6.2.0 and its
 development branch at commit `b72feb25`, Schemathesis 4.30.1, RestTestGen v25.12 (commit
@@ -320,64 +448,6 @@ configurable pipeline. Limited stateful support is available via hand-written te
 configurations. From version 2.0 on, RESTest is a ground-up rewrite; the reasoning is in
 [ADR-0002](adr/0002-rewrite-not-refactor.md).
 
-### Comparison
-
-The columns *stateless techniques* and *stateful techniques* name the core algorithmic strategy, not
-every configuration option. **OAS** — specification versions the tool accepts. **BB/WB** — B =
-black-box only; B+W = black-box and white-box modes both available. The last row shows RESTest
-as it is now.
-
-| Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
-|---|---|---|---|---|---|---|---|
-| [AutoRestTest](https://github.com/selab-gatech/autoresttest) | Python | 3.0.x | B | Tabular reinforcement learning over operation, parameter and value choices; mutation | Property-level dependency graph from name similarity, scored at run time | Language-model value pools, response-derived, random | 5xx detection |
-| [EvoMaster](https://github.com/WebFuzzing/EvoMaster) | Kotlin/Java | 2.0, 3.0.x, 3.1.x | B+W | Evolutionary (MIO) in white box, random sampling in black box | Sequences from the path hierarchy with identifiers chained from replies; resource dependencies in white box | Evolutionary, random, examples, reply values | 5xx detection, HTTP semantics, schema validation, security (37 WFC categories on its development branch) |
-| [RESTler](https://github.com/microsoft/restler-fuzzer) | Python, F# | 2.0, 3.0 | B | Grammar-based fuzzing guided by replies | Producer-consumer chains (spec-inferred), extended breadth first | Fixed dictionary per type or parameter name; identifiers from replies | 5xx detection, resource-state checkers (use after delete, leakage, hierarchy) |
-| [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x, 3.2 | B | Property-based (Hypothesis), shrinking | OAS link following, links inferred from names and `Location` headers | Examples, boundary values, random within the schema, invalid values from a mutated schema (on by default), values from replies | 5xx detection; status code, content type, header and schema conformance; HTTP semantics (unsupported method, `Allow`, missing required header); use after free, resource not available after creation; invalid data accepted or valid data refused; ignored authentication; WFC codes |
-| [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 3.0 | B | Random, IDL-constrained; mutation of requests that worked | Operation Dependency Graph ordering; create-then-read and update-then-read sequences in the mass-assignment strategy only | Random, example-based, IDL-constrained | Status code classification |
-| [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x, 3.1.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | `DELETE` after `POST`; read after delete | Fuzzing patterns, boundary values | Status codes, schema validation |
-| [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
-| [RESTest 1.x](https://github.com/isa-group/RESTest/tree/v1.x) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
-| **RESTest** (this tool, 2.0 on) | Java | 2.0, 3.0.x, 3.1.x | B | Random with a plan of weighted sources; mutation of accepted requests; shape fuzzing | Identifier reuse from replies, by name and by the resource a path names; one-question series around a thing the run created: read after delete, delete twice, write under a deleted thing, the same PUT twice, reading around a read, the same creation twice | Document samples, dictionaries, response-derived, random, format-aware | Server errors, replies off their schema, status codes and content types the document does not declare, a 501 to a declared operation, invalid data accepted, no reply in time; WFC codes, and two of its own; errors and warnings |
-
-## Out of scope
-
-Nothing here is started without explicit approval,
-even where it looks easy. Each entry names the seam it will use, so none of them requires
-re-architecting — which is the point of listing them at all.
-
-| Item | Seam |
-|---|---|
-| External value generators, including model-based ones | `ExternalDataProvider`, out-of-process |
-| Refining values from the API's own error messages | `ExternalDataProvider` + `FeedbackListener` |
-| **Inferring inter-parameter dependencies** and injecting them as IDL during the run | `ConstraintSource` |
-| **Semantic oracles inferred from request/response corpora** | `CorpusOracle` + store + offline re-check |
-| Semantic oracles inferred from the specification | `CorpusOracle` |
-| Metamorphic relations | `CorpusOracle` |
-| Failure deduplication and clustering | Interaction store + an event-stream listener |
-| Predicting whether a request will be accepted before sending it | `FeedbackListener` |
-| Search-based or reinforcement-learning scheduling | `FeedbackListener` |
-| Surrogate coverage goals for black-box search | `FeedbackListener` |
-| Security oracles (injection, server-side request forgery, authorisation bypass) | `Oracle` + WFC codes |
-| Flow discovery from execution traces | `FlowSource` |
-
-Three of these rows have an open question against them, all raised by
-[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) after studying AutoRestTest, and all of the
-same kind: each would have a run learn from what it has already seen.
-
-- Whether the choice of which operation to call next may be steered by counters over what each
-  operation has been answering. *Its narrowest version — withdrawing budget from operations whose
-  recent answers all say the request can never work as asked, with no reward and no learning rate —
-  was approved during the work on 2.0 and set aside before it was built, once its list was narrowed to the answers
-  that do not depend on what the tool sends; the reward-shaped version stays here.*
-- Whether the choice among inferred dependency candidates may be scored by what the API answered.
-- Whether a warm-up may read the *text* of an error reply rather than only its status code.
-
-None is taken here, and none is started without explicit approval. What each would cost, and how
-narrow a version of it would still be worth having, is argued under
-[Open questions](adr/0017-what-we-take-from-autoresttest.md#open-questions) in ADR-0017; its
-[M9.4 amendment](adr/0017-what-we-take-from-autoresttest.md#amendment-m94) records why the narrowest
-version of the first was set aside.
-
 ## Stack
 
 Versions are pinned here and in the root POM, and the container image's two base images in the
@@ -418,3 +488,7 @@ Standards:
 Read [`CONTRIBUTING.md`](../CONTRIBUTING.md) first. In short: work targets `master`, one change per
 branch per pull request, English throughout, and a design question with more than one defensible
 answer becomes an ADR rather than a silent choice in the code.
+
+Individual decisions and the reasoning behind them live in [`docs/adr/`](adr/), and the rules every
+contributor follows in [`AGENTS.md`](../AGENTS.md). Continuous integration and the architecture rules
+are described in [`docs/ci.md`](ci.md).

@@ -344,7 +344,7 @@ connections cut with nothing sent back, were not reported. Both APIs also answer
 run changes its exit code; a run whose only fault is one operation that hangs now ends with `1`
 where it ended with `0`.
 
-**It is not one of the security oracles [`docs/DESIGN.md`](../DESIGN.md#out-of-scope) keeps out of
+**It is not one of the security oracles [`docs/DESIGN.md`](https://github.com/isa-group/RESTest/blob/f2c9f6f849cfc5b91532d462e05aed68edc4bc41/docs/DESIGN.md#out-of-scope) keeps out of
 scope**, although the catalogue numbers it among its security kinds. Those send requests made to
 attack an API — an injection, a forged request, a bypassed authorisation. This rule sends nothing and
 judges an outcome every run already records.

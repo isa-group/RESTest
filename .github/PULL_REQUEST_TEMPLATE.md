@@ -77,4 +77,3 @@ you decided not to act on, and why. If a decision is expensive to reverse, it ne
 - [ ] Targets `master`
 - [ ] English throughout, including comments and test names
 - [ ] The hard rules in `AGENTS.md` hold
-- [ ] Nothing from "Out of scope" in `docs/DESIGN.md` without explicit approval

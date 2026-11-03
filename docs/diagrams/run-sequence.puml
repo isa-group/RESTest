@@ -1,0 +1,73 @@
+@startuml run-sequence
+' The order in which a run calls on each part of RESTest, from the command
+' line to the exit code.
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam defaultFontColor #14171C
+skinparam ArrowColor #5C6470
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+skinparam roundCorner 10
+skinparam sequence {
+  ParticipantBackgroundColor #FFFFFF
+  ParticipantBorderColor #0B62C4
+  ActorBackgroundColor #FFFFFF
+  ActorBorderColor #14171C
+  LifeLineBorderColor #B9BEC6
+  GroupBorderColor #B9BEC6
+  GroupBackgroundColor #F5F6F8
+}
+skinparam note {
+  BackgroundColor #F0F2F5
+  BorderColor #B9BEC6
+}
+hide footbox
+
+actor "User" as user
+participant "Command line, run loop\n//restest-cli//" as cli
+participant "Specification reader\n//restest-spec//" as spec
+participant "Generator, scheduler\n//restest-gen//" as gen
+participant "HTTP engine\n//restest-exec//" as exec
+participant "API under test" as api
+participant "Event stream\n//restest-core//" as events
+participant "Oracles\n//restest-oracles//" as oracles
+participant "Reports\n//restest-report//" as reports
+
+user -> cli : restest run <document> --budget 30s
+cli -> spec : parse(document)
+spec --> cli : model of the API, and what it cannot test
+cli -> gen : read dictionaries and plan, build the generator
+cli -> events : subscribe oracles, reports, the generator's memory\n(and the store, with --store)
+cli -> events : publish RunStarted, DocumentRead
+
+loop until the budget runs out
+  cli -> gen : next step
+  alt opening lap: every operation once, in five steps
+    gen --> cli : the request likeliest to be accepted
+  else after it
+    gen --> cli : a test case: accepted, one thing changed,\npushing, or the next step of a series
+  end
+  cli -> events : publish TestCasePlanned
+  cli -> exec : sendAsync(test case)
+  exec -> api : HTTP request
+  api --> exec : reply
+  exec --> cli : interaction
+  cli -> gen : heard(test case, interaction)
+  cli -> events : publish InteractionCompleted
+  events -> oracles : on(InteractionCompleted)
+  oracles -> oracles : each of the eight rules judges it
+  oracles -> events : publish FaultFound
+  events -> reports : on(FaultFound): print it, count it
+  events -> gen : on(InteractionCompleted): remember\nidentifiers and accepted requests
+end
+note over cli, api
+  Up to sixteen requests are in flight at once: the loop never waits
+  for a reply before sending the next request, and handles each reply
+  the moment it arrives.
+end note
+
+cli -> events : publish RunFinished
+events -> reports : on(RunFinished): summary,\nreport.json, report.html
+cli --> user : exit code
+@enduml

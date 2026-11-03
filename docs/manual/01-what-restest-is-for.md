@@ -49,18 +49,44 @@ than a fault in the API. Either way, somebody who knows the API should look at i
 
 ## How it goes about it
 
-You give RESTest a time budget, a minute by default, and it uses all of it. Before anything is left
-to chance it sends every operation once, with the request it thinks most likely to be accepted. Then
-it keeps sending, and mixes several kinds of request:
+You give RESTest a time budget, a minute by default, and it uses all of it, reading the document
+included.
 
-- requests built to be **accepted**, from the values the document states, from values invented to
-  fit what the document says, from values you hand it, and from what the API has already returned —
-  an identifier the API handed back is a better guess than an invented number;
-- requests that **push** at the API with values nobody sensible would send: an empty word, a number
-  too large to hold, text where a number belongs;
-- requests that take one the API **accepted** and send it again with exactly **one thing changed**,
-  which is where the failures an ordinary request never reaches tend to be;
-- short **series** about something a run created: delete it and read it again, create it twice.
+1. **It reads the document**, and sets aside what it cannot test — a file upload the API insists on,
+   say — naming each operation and the reason, so that `no faults found` is never read as covering
+   an operation that was never tried.
+2. **It sends every operation once**, with the request it thinks most likely to be accepted, before
+   anything is left to chance: lists first, then creations, reads of one thing, changes and
+   deletions, each step waiting for the answers to the one before so that an identifier just handed
+   back can be used by the next ([the first round of a
+   run](../campaign-format.md#the-first-round-of-a-run)).
+3. **Then, until the budget runs out, it draws requests**, and mixes several kinds:
+   - nearly half are built to be **accepted**, from the values the document states, from values
+     invented to fit what the document says, from values you hand it, and from what the API has
+     already returned — an identifier the API handed back is a better guess than an invented number;
+   - nearly a third take a request the API **accepted** and send it again with exactly **one thing
+     changed**, which gets past every check the API makes but one, and is where the failures an
+     ordinary request never reaches tend to be; until the API has accepted something that can be
+     changed, such a draw builds a request meant to be accepted instead, so fewer requests than that
+     are sent this way ([changing one
+     thing](../campaign-format.md#changing-one-thing-in-a-request-that-worked));
+   - about one in seven may turn a creation into the first step of a short **series** about the
+     thing created — delete it and read it again, create it twice — and builds an ordinary request
+     when what it drew is not a creation
+     ([series](../campaign-format.md#series-of-requests-around-a-thing-the-run-created));
+   - a tenth **push** at the API with values nobody sensible would send — an empty word, a number one
+     past the largest 32-bit integer, text where a number belongs — since an API that falls over on
+     one of those has a fault whatever was sent ([how much of a run
+     pushes](../campaign-format.md#how-much-of-a-run-pushes-at-the-api)).
+4. **It judges every reply**, for the eight kinds of fault above.
+
+The share of the budget in which RESTest had nothing in flight is reported as *idle*, and kept as
+close to nothing as possible.
+
+Because a run learns from the API's replies, running the same command twice makes two similar runs
+rather than the same one, even with the same seed. Chapter 3 shows how to keep every request and
+reply of the run you had, and [getting the seed back](../switches.md#getting-the-seed-back) has the
+files that make a run repeatable from its seed.
 
 Chapter 5 says how to change that mix, and which operations a run may touch.
 
@@ -73,6 +99,11 @@ from writes, chapter 5 shows how to keep it to the requests that change nothing.
 
 ## When it is useful
 
+- **With a coding agent**, which is where RESTest helps most. While the agent develops an API,
+  RESTest checks that what it builds keeps the promises of its document, and serves as its sensor:
+  each fault comes with the request that shows it, which points the agent, and you, at what is
+  wrong, and sending that request again checks the fix. [RESTest and coding
+  agents](../for-coding-agents.md) says how to ask an agent for it.
 - **Before a release**, to find the requests that make an API fall over.
 - **In continuous integration**, as a check that goes red when a change breaks the API, and, if you
   ask, when the document stops matching it. Chapter 9 shows how.
