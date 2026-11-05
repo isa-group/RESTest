@@ -4,7 +4,7 @@ One page per subject. The [README](../README.md) at the root of the repository i
 makes a first run, and [the manual](manual/README.md) is read from beginning to end. These pages are
 what to look things up in afterwards.
 
-## Using RESTest
+## Reference
 
 | Page | What it covers |
 |---|---|

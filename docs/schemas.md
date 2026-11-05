@@ -86,9 +86,9 @@ Schema validation errors were encountered.
 
 A plan has one place where a validator says more than one thing. A line of `sources:` is written
 one of three ways — `source:`, `dictionary:` or `weighted:` — and a validator, given a line that is
-none of them, tries all three and says why each does not fit. The plan `restest run --print-campaign
-> plan.yaml` writes is valid; with its `fuzzing` strategy's `- source: random` changed to
-`- source: exmaple`,
+none of them, tries all three and says why each does not fit. The plan
+`restest run --print-campaign > plan.yaml` writes is valid; with its `fuzzing` strategy's
+`- source: random` changed to `- source: exmaple`,
 
 ```bash
 check-jsonschema --schemafile schemas/campaign.schema.json plan.yaml
