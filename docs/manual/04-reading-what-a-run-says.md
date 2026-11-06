@@ -107,10 +107,22 @@ Read it from the top:
 
 `report.html`, beside `report.json`, is the same run as a page to open in a browser: from what a
 build kept, from an e-mail, on a laptop with no network. It is one file, needs nothing beside it,
-fetches nothing, and shows nothing that `report.json` does not hold. The clinic's first run, from
-[chapter 3](03-a-first-run.md#the-first-run), opens like this:
+fetches nothing, and shows nothing that `report.json` does not hold. Here is the clinic as the [Web
+Fuzzing Dataset](https://github.com/WebFuzzing/Dataset) builds it, as an image for Apple silicon as well
+as Intel and AMD, tested by RESTest 2.4.0 for the minute it takes when no `--budget` is given, with
+nothing but its document. To make such a run yourself:
 
-![The top of report.html for a run of the clinic: under the header and the menu, four cards counting the replies by class of status code, the errors and the warnings by kind, and the operations by what was found on them](images/the-page.png)
+```bash
+docker run -d --name clinic -p 9967:8080 webfuzzing/wfd-petclinic-rest:FINAL@sha256:88331a1fdf244ae7bbbf5a7f3f434d17b9b8c0b3f839d193007851d213e90a88
+restest run http://localhost:9967/petclinic/v3/api-docs
+```
+
+The page opens like this:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/clinic-run/summary-dark.png">
+  <img src="images/clinic-run/summary-light.png" alt="The top of report.html for a one-minute run of the clinic: under the header and the menu, four cards counting the replies by class of status code, the errors and the warnings by kind, and the operations by what was found on them, then the timeline of the run">
+</picture>
 
 From the top:
 
@@ -124,10 +136,22 @@ From the top:
   a search. Open one to see how its replies divided and, for each kind of fault found on it, the
   first request of that kind written out whole and the reply to it. **Copy curl** copies the command
   that sends the request again; **Copy as issue** copies a title, the request, the reply and the
-  command, in Markdown, ready for an issue tracker.
+  command, in Markdown, ready for an issue tracker. Here one is open at its first kind of fault:
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/clinic-run/fault-dark.png">
+    <img src="images/clinic-run/fault-light.png" alt="An operation opened in report.html: how its replies divided by class of status code, a button for each kind of fault found on it, and the first fault of the first kind written out whole, the request beside the reply, with Copy curl and Copy as issue above them">
+  </picture>
+
 - **What was found**: each kind of fault, with its number in the catalogue testing tools share —
   point at the number, or reach it with the keyboard, to read what it means — what to look at, in
-  which classes of status code it came back, and the operations it was found on.
+  which classes of status code it came back, and the operations it was found on:
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/clinic-run/found-dark.png">
+    <img src="images/clinic-run/found-light.png" alt="What was found in report.html for the same run: each kind of fault, errors first, with its number in the catalogue, what to look at, the classes of status code it came back in, how many times and on how many operations">
+  </picture>
+
 - **What could not be tested or read**: operations no request went to, replies no check could judge,
   parts of the document that could not be read, and keys the document asks for that nobody gave.
 - **How it was run**: the number the run ended with and what it means, as [chapter
@@ -142,7 +166,10 @@ report.html=false` ([the settings](../settings.md#report)).
 
 `report.json` holds all of it for a program to read. [`jq`](https://jqlang.org/), a small
 command-line tool for JSON, answers most questions in one line. These assume the report of the last
-run is in `restest-out/`.
+run is in `restest-out/`; the answers shown are those of an earlier run of the clinic, so yours will
+differ. To try them without running RESTest, put the report of the run pictured above,
+[`docs/manual/images/clinic-run/report.json`](images/clinic-run/report.json), in place of
+`restest-out/report.json`.
 
 **Which operations broke, and how often?**
 
