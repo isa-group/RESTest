@@ -109,8 +109,15 @@ Read it from the top:
 build kept, from an e-mail, on a laptop with no network. It is one file, needs nothing beside it,
 fetches nothing, and shows nothing that `report.json` does not hold. Here is the clinic as the [Web
 Fuzzing Dataset](https://github.com/WebFuzzing/Dataset) builds it, as an image for Apple silicon as well
-as Intel and AMD, `webfuzzing/wfd-petclinic-rest`, tested by RESTest 2.4.0 for the minute it takes when
-no `--budget` is given, with nothing but its document. The page opens like this:
+as Intel and AMD, tested by RESTest 2.4.0 for the minute it takes when no `--budget` is given, with
+nothing but its document. To make such a run yourself:
+
+```bash
+docker run -d --name clinic -p 9967:8080 webfuzzing/wfd-petclinic-rest:FINAL@sha256:88331a1fdf244ae7bbbf5a7f3f434d17b9b8c0b3f839d193007851d213e90a88
+restest run http://localhost:9967/petclinic/v3/api-docs
+```
+
+The page opens like this:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/clinic-run/summary-dark.png">

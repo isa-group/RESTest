@@ -435,11 +435,17 @@ run to being a whole default run of such a version, not of a snapshot, that chap
 1. Build RESTest as the release will be (`./mvnw -q package -DskipTests && dist/assemble.sh
    target/dist`); it is then `target/dist/restest-<v>/bin/restest`.
 2. **The manual's run.** Start the clinic as the Web Fuzzing Dataset builds it, which runs natively
-   on Apple silicon as well as on Intel and AMD, unlike the image chapter 3 uses:
-   `docker run -d --name clinic -e AUTH_PORT=8081 -p 9967:8080 webfuzzing/wfd-petclinic-rest:FINAL`.
-   Once it answers, run `restest run http://localhost:9967/petclinic/v3/api-docs` with no other
-   option and no `RESTEST_` variable set. Copy its `restest-out/report.json` into
-   `docs/manual/images/clinic-run/`, and change the version chapter 4 names.
+   on Apple silicon as well as on Intel and AMD, unlike the image chapter 3 uses, pinned to the image
+   the kept run was made with:
+
+   ```bash
+   docker run -d --name clinic -p 9967:8080 webfuzzing/wfd-petclinic-rest:FINAL@sha256:88331a1fdf244ae7bbbf5a7f3f434d17b9b8c0b3f839d193007851d213e90a88
+   ```
+
+   Once `curl -s http://localhost:9967/petclinic/api/pettypes` prints a list of pet types, run
+   `restest run http://localhost:9967/petclinic/v3/api-docs` with no other option and no `RESTEST_`
+   variable set. Copy its `restest-out/report.json` into `docs/manual/images/clinic-run/`, and change
+   the version chapter 4 names.
 3. **Its pictures**, from its `report.html` in Chrome, 1280 pixels wide at a device pixel ratio of 2
    (Developer Tools' device toolbar), so that they are 2560 pixels wide and sharp on any screen, once
    light and once dark (Rendering, "Emulate CSS media feature prefers-color-scheme"), each saved as
