@@ -9,13 +9,13 @@ the skill that teaches it.
 
 ## Asking your agent
 
-One sentence is enough:
+Two sentences are enough:
 
 ```
-Use RESTest to test the REST APIs you develop: https://github.com/isa-group/RESTest/blob/master/docs/for-coding-agents.md
+Use RESTest to test the REST APIs you develop in this project. Follow the setup and usage instructions at https://isa-group.github.io/restest-site/docs/for-coding-agents/
 ```
 
-With [the skill installed](#installing-the-skill), the address can go. Say it once in a
+With [the skill installed](#installing-the-skill), the second can go. Say it once in a
 conversation, or put it in the file of instructions your agent reads in every session, such as
 `AGENTS.md` or `CLAUDE.md`, so that it holds while you develop. To have an API tested and nothing
 changed, ask for a test or a report, and name the API.
