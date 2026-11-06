@@ -70,6 +70,10 @@ Use the template, and fill in every section. Four carry the most weight:
 
 Titles say what became possible, not what was edited.
 
+A pull request that changes how `report.html` looks, or the kinds of fault a run reports, says so in
+its description: the pictures of the report in the manual and the README are made again for the next
+release ([`docs/ci.md`](docs/ci.md#the-pictures-of-the-report)).
+
 ## Review
 
 Continuous integration must be green ([`docs/ci.md`](docs/ci.md) says what it checks). A maintainer

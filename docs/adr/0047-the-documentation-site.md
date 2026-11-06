@@ -50,6 +50,11 @@ leads to it on GitHub at that tag. The one thing here that names the site's part
   - every page has a title, a line starting with `# `, and none starts with front matter.
 - **Held here by `DocumentedLinksTest`**: every Markdown link, and the heading it names, leads
   somewhere; a page's own title is no such heading, since the site shows it above the page instead.
+- **Held here by `DocumentedRunTest`**: the run the manual pictures, in
+  `docs/manual/images/clinic-run/`, is a whole default run of a version numbered as a release, not
+  a snapshot, with its six pictures: `report.json`, and `summary-`, `fault-` and `found-`, each
+  `-light.png` and `-dark.png`. The site's first page shows them and takes its figures and faults from the run's
+  `report.json`; a version without the folder, such as 2.4.0, has a first page without them.
 - **Checked only by the site's own build**, which names the file: links in raw HTML (`src`, `srcset`,
   `href`), reference-style links, links that leave the repository, a link to a heading the site
   names differently from GitHub, such as one with the same words as the page's title, and two files
