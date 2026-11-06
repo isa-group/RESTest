@@ -59,6 +59,9 @@ leads to it on GitHub at that tag. The one thing here that names the site's part
   since the site's header shows the logo already; a `<picture>` with a source for a dark colour scheme
   follows the theme the reader picks; and whatever GitHub draws, Mermaid diagrams included, the site
   has to draw too, which is the site's work rather than a rule for the pages.
+- **Held here by `DocumentedSkillTest`**: the README tells a coding agent what the page for coding
+  agents tells it, in the first block of code under "Asking your agent", which the site's first page
+  takes from that page and shows under "Coding agent".
 - **Between the two repositories:** the site's file `restest-version` holds the tag the site
   documents, with its `v` (`v2.4.0`), the only form it reads; and the site's `llms.txt` opens with
   "The documentation of RESTest 2.4.0,", the sentence the workflow of §5 waits for.

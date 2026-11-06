@@ -54,7 +54,8 @@ import org.junit.jupiter.api.io.TempDir;
  * RESTest has, every setting one it knows, every exit code one the page about the command line
  * explains, the line it finds a run's summary by one a run prints, and every key of the report it
  * reads one the page about the report, itself held to the tool by {@link DocumentedReportTest},
- * explains at that place in the file.
+ * explains at that place in the file. And the README asks an agent for a run in the same words as
+ * the page, which the documentation's website shows on its first page too.
  */
 class DocumentedSkillTest {
 
@@ -185,6 +186,36 @@ class DocumentedSkillTest {
                         + "teaches the others: copy the skill's text, below its heading, to the end "
                         + "of the page", PAGE, SKILL)
                 .endsWith(body);
+    }
+
+    @Test
+    @DisplayName("the README asks a coding agent in the words the page for coding agents gives")
+    void the_readme_asks_as_the_page_does() {
+        assertThat(firstBlockUnder(page("README.md"), "### From a coding agent"))
+                .describedAs("what the README tells an agent under \"From a coding agent\" is what %s "
+                        + "tells it under \"Asking your agent\", which the website's first page shows "
+                        + "too: change the two together", PAGE)
+                .isNotEmpty()
+                .isEqualTo(firstBlockUnder(page(PAGE), "## Asking your agent"));
+    }
+
+    /** The text of the first block of code after a heading of a page; empty when there is none. */
+    static String firstBlockUnder(String page, String heading) {
+        List<String> lines = page.lines().toList();
+        int at = lines.indexOf(heading);
+        if (at < 0) {
+            return "";
+        }
+        while (++at < lines.size() && !lines.get(at).startsWith("```")) {
+            if (lines.get(at).startsWith("#")) {
+                return "";
+            }
+        }
+        StringBuilder block = new StringBuilder();
+        while (++at < lines.size() && !lines.get(at).startsWith("```")) {
+            block.append(lines.get(at)).append('\n');
+        }
+        return block.toString();
     }
 
     @Test
