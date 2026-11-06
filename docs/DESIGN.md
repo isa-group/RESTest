@@ -307,8 +307,8 @@ how to reproduce it locally.
 - **Documentation held to the tool**: the reference pages that list the command line, the settings,
   the switches, the keys of `report.json` and the kinds of fault are checked against the tool on
   every build, every relative link is checked to lead somewhere, the pages are held to the shape the
-  documentation's website reads, and the JSON Schemas of a dictionary and a plan are held to
-  RESTest's readers.
+  documentation's website reads, the run the manual pictures is held to being a whole default run of
+  a version numbered as a release, and the JSON Schemas of a dictionary and a plan are held to RESTest's readers.
 - **Mutation testing** on the oracles — deliberately corrupt our own code and
   check that the tests notice. "Our tool finds bugs" is more credible when our own oracle logic has
   a measured score.

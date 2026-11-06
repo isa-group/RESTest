@@ -109,7 +109,7 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 | What Maven Central gets | `dist/central.sh`, on the `ubuntu-latest` / Java 25 row and in `release.yml` | a module's Javadoc or sources that do not build; a file Central asks for missing, or a POM without a name; a module whose POM would name a library at another version than `restest-cli` runs with; a program depending on `restest-cli` getting any jar but those the release archive carries |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
 | How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs, in `release.yml` and, through `check-homebrew.sh`, in `homebrew.yml` | the image, a launcher or Homebrew's command failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` from a launcher or the image when there is no Java it can use — and anything but `0` from Homebrew's command, which brings its Java — and `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan, without the skill for coding agents, or without `THIRD-PARTY.txt`; Homebrew's formula failing `brew style` or, once a release is published, `brew audit --strict --online`, failing to install or its own test, or installing anything but the archive as it is |
-| Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedSkillTest`, `DocumentedLinksTest`, `DocumentationSiteTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; the skill for coding agents giving a command, an option, a setting, an exit code or a key of `report.json` RESTest does not have, or finding a run's summary by a line a run does not print, with a heading agents cannot read, a link into the repository, or a copy at the end of `docs/for-coding-agents.md` that differs from it; a relative link that leads nowhere, or to a page's own title; a page the documentation's website could not build: the manual's index without its numbered list of chapters, a chapter missing from it or one not starting with its link, a section of `docs/README.md` without a table of pages, a page that is no entry of either index, a page with no title, or with front matter |
+| Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedSkillTest`, `DocumentedLinksTest`, `DocumentationSiteTest`, `DocumentedRunTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; the skill for coding agents giving a command, an option, a setting, an exit code or a key of `report.json` RESTest does not have, or finding a run's summary by a line a run does not print, with a heading agents cannot read, a link into the repository, or a copy at the end of `docs/for-coding-agents.md` that differs from it; a relative link that leads nowhere, or to a page's own title; a page the documentation's website could not build: the manual's index without its numbered list of chapters, a chapter missing from it or one not starting with its link, a section of `docs/README.md` without a table of pages, a page that is no entry of either index, a page with no title, or with front matter; the run the manual pictures, and the website's first page shows, made by a snapshot build, cut short, given another time than the default minute, given a plan, settings or values, without one of its six pictures, or by a version chapter 4 does not name |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
 ### Coverage
@@ -394,7 +394,10 @@ The steps of every release, in order, each taken by a maintainer:
    and the pages that name the version to install — the README's installation section and chapters 2
    and 9 of the manual — with output from the image and the archive built from that commit, and, for
    chapter 2's Homebrew and jbang sections, what `check-homebrew` and `check-jbang` print in that pull
-   request's run of `release.yml`.
+   request's run of `release.yml`; and [the pictures of the report](#the-pictures-of-the-report),
+   made again if `git diff --stat v<previous> -- restest-report/src/main/resources/io/restest/report/report.html
+   restest-core/src/main/java/io/restest/core/oracle/FaultCategory.java` lists either file, or a pull
+   request since the previous release says the page or the kinds of fault changed.
 3. **The tag**, pushed once that pull request is merged and the documentation site builds from
    `master` as it now is: start the site's workflow by hand in `isa-group/restest-site` (Actions →
    Site → Run workflow, from `main`) and wait until it is green — its weekly run is older than that
@@ -419,6 +422,37 @@ The steps of every release, in order, each taken by a maintainer:
 8. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
    the `$id` of both schemas to the next release, since the schemas on `master` name the release
    being prepared; `PublishedSchemasTest` requires them to be no older than that snapshot.
+
+### The pictures of the report
+
+The manual and the README show what `report.html` looks like with pictures of two real runs, and the
+documentation site's first page shows the manual's, with figures it reads from that run's
+`report.json`. They are made again when a release changes how the page looks, or the kinds of fault
+a run reports. That happens in the pull request that prepares the release, with the archive built
+from it, so that they show a version numbered as a release: `DocumentedRunTest` holds the manual's
+run to being a whole default run of such a version, not of a snapshot, that chapter 4 names.
+
+1. Build RESTest as the release will be (`./mvnw -q package -DskipTests && dist/assemble.sh
+   target/dist`); it is then `target/dist/restest-<v>/bin/restest`.
+2. **The manual's run.** Start the clinic as [chapter 3](manual/03-a-first-run.md) of the manual
+   does, and run `restest run http://localhost:9966/petclinic/v3/api-docs` with no other option and
+   no `RESTEST_` variable set. Copy its `restest-out/report.json` into
+   `docs/manual/images/clinic-run/`, and change the version chapter 4 names.
+3. **Its pictures**, from its `report.html` in Chrome, 1280 pixels wide at a device pixel ratio of 1
+   (Developer Tools' device toolbar), once light and once dark (Rendering, "Emulate CSS media feature
+   prefers-color-scheme"), each saved as
+   `<view>-light.png` and `<view>-dark.png` in the same folder:
+   - `summary`: the page from its top to the end of the timeline;
+   - `fault`: the operation where the first kind under "What was found" was first written out,
+     opened with that kind chosen, from its row to the end of what opened — `jq -r '.findings[] | select(.category.title
+     == "<that kind>") | .operation' report.json | head -1` names it;
+   - `found`: the section "What was found".
+4. **The README's**: the pet shop's ten-second run that [the README](../README.md#your-first-run)
+   gives, and the top of its page to the end of the timeline, as
+   `docs/images/petstore-report-light.png` and `-dark.png`.
+
+Developer Tools' "Capture node screenshot" takes one element, and "Capture full size screenshot" the
+whole page, to cut.
 
 ### Homebrew
 
