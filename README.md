@@ -149,6 +149,9 @@ the faults, the plan, dictionaries, the JSON Schemas of a dictionary and a plan,
 switches, coding agents and the known limitations — and, for working on RESTest itself, the design,
 continuous integration and the decision records.
 
+The same pages, for the latest release and with search, are at
+https://isa-group.github.io/restest-site/docs/.
+
 ## Acknowledgements
 
 RESTest names the faults it finds by the catalogue of

@@ -1,0 +1,137 @@
+# Moves the documentation site, isa-group/restest-site, on to a release once it is published, so that
+# https://isa-group.github.io/restest-site/docs/ documents the version people install. ADR-0047 says
+# why it is shaped this way; docs/ci.md says how to use it.
+#
+#   version          checks the tag, and that it is a published release rather than a draft
+#   push             writes the tag into the site's restest-version, never over a higher version
+#   check-published  waits until the site, which rebuilds itself on that commit, documents the version
+#
+# Started by hand from master with a tag, it moves the site on to a release already published, one
+# made before this workflow existed included, and is how a failed run is repeated.
+#
+# Every action is pinned to a commit SHA, with the version in a trailing comment, for the reasons
+# ci.yml gives.
+name: Documentation site
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The published release the site is to document, such as v2.5.0
+        required: true
+
+# One run at a time, never cancelled half-way, so that two never both read the site's version before
+# either writes.
+concurrency:
+  group: documentation-site
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Check the release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.what.outputs.tag }}
+      version: ${{ steps.what.outputs.version }}
+    steps:
+      # The tag reaches the script through the environment and is checked before it is used: never
+      # pasted into a script, where a name chosen to be a command would run. The whole value is
+      # matched, not each of its lines: a tag given by hand could hold a newline, and with it a second
+      # line of the job's outputs. A draft is no release for the site, which reads the tag's files.
+      - name: Work out which release
+        id: what
+        env:
+          TAG: ${{ inputs.tag || github.event.release.tag_name || '' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::$TAG is not a version tag such as v2.5.0"; exit 1; }
+          draft=$(gh release view "$TAG" --repo isa-group/RESTest --json isDraft --jq .isDraft) \
+            || draft=missing
+          [ "$draft" = false ] \
+            || { echo "::error::$TAG is not a published release of RESTest"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  # The deploy key writes to isa-group/restest-site and nothing else. It is kept in the environment
+  # restest-site, which only master and version tags may use, so a workflow pushed to another branch
+  # cannot read it. While it is loaded, this job checks out nothing of RESTest and runs only git.
+  push:
+    name: Write the version into the site
+    needs: version
+    runs-on: ubuntu-latest
+    environment: restest-site
+    outputs:
+      pushed: ${{ steps.write.outputs.pushed }}
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - name: Check out the site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: isa-group/restest-site
+          ssh-key: ${{ secrets.RESTEST_SITE_KEY }}
+          path: site
+
+      # restest-version holds one tag with its v, such as v2.4.0, the only form the site reads. The
+      # versions are compared without the v, which sort -V would otherwise rank above any number. A
+      # lower version is never written over a higher one; the same one is not written again. A push
+      # made with a deploy key, unlike one made with the workflow's own token, starts the site's
+      # workflow, which builds the site from the new tag and publishes it.
+      - name: Write the version, never over a higher one
+        id: write
+        working-directory: site
+        run: |
+          current=$(tr -d '[:space:]' 2> /dev/null < restest-version || true)
+          highest=$(printf '%s\n' "${current#v}" "${TAG#v}" | sort -V | tail -n 1)
+          if [ "$highest" != "${TAG#v}" ]; then
+            echo "::notice::The site documents RESTest $current, higher than $TAG, and is left as it is"
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$current" = "$TAG" ]; then
+            echo "::notice::The site documents RESTest $TAG already"
+            echo "pushed=already" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          printf '%s\n' "$TAG" > restest-version
+          git add restest-version
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet --message "restest-version $TAG"
+          git push --quiet origin HEAD
+          echo "pushed=yes" >> "$GITHUB_OUTPUT"
+
+  # Also when the site held this very version already, which is how a run whose check failed is made
+  # again; not when it held a higher one.
+  check-published:
+    name: Check that the site documents it
+    needs: [version, push]
+    if: needs.push.outputs.pushed == 'yes' || needs.push.outputs.pushed == 'already'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      PUBLISHED: https://isa-group.github.io/restest-site/llms.txt
+    steps:
+      # The site builds and publishes itself within a few minutes of the push, and GitHub Pages'
+      # servers may keep the file they had for ten minutes more. The sentence is the one the site's
+      # llms.txt opens with. Should the site fail to build the version, its own run says why.
+      - name: Wait until the site documents the new version
+        run: |
+          for _ in $(seq 30); do
+            if curl -fsSL "$PUBLISHED" | grep -qF "The documentation of RESTest $VERSION,"; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::After fifteen minutes $PUBLISHED does not document RESTest $VERSION; the site's own run, in isa-group/restest-site, says why"
+          exit 1

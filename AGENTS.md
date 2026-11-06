@@ -167,6 +167,7 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 | Why the tool is shaped as it is, one decision per file | `docs/adr/` |
 | Continuous integration and how to reproduce it | `docs/ci.md` |
 | How a release is made and what it carries: the image, the archives and their launchers, the Homebrew formula, the modules on Maven Central, and the jbang catalog | `docs/ci.md`, `docs/adr/0032-how-a-release-is-published.md`, `docs/adr/0040-homebrew.md`, `docs/adr/0044-maven-central.md`, `docs/adr/0045-jbang.md`, `Dockerfile`, `dist/` |
+| The documentation as a website, for the latest release, and the shape of `docs/` it reads, which a test holds | `isa-group/restest-site`, `docs/adr/0047-the-documentation-site.md`, `.github/workflows/documentation-site.yml`, `DocumentationSiteTest` in `restest-arch-tests` |
 | How a change is proposed and reviewed | `CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md` |
 | The documents the evaluation platform may be named in | `BENCHMARK_MAY_BE_NAMED_IN` in `restest-arch-tests/src/test/java/io/restest/arch/SourceTreeRulesTest.java` |
 

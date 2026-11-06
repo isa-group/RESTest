@@ -83,7 +83,7 @@ so records written from now on cite none.
 | [0028](0028-sequences-over-things-a-run-creates.md) | A creation may start a short series about the thing it made, and each series asks one question | Accepted, amended at M11.2 and on 12 and 13 October 2026 |
 | [0029](0029-the-key-an-api-asks-for.md) | A key is handed over by the person running the tool, sent where the document says, and hidden in everything the run writes | Accepted, amended at M12.1c and on 10 and 25 October 2026 |
 | [0030](0030-the-process-lives-outside-the-repository.md) | The process RESTest is built with lives outside the repository, and AGENTS.md is the contract it relies on | Accepted, amended on 3 November 2026 |
-| [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted |
+| [0031](0031-the-manual-is-markdown-only.md) | The manual is the Markdown GitHub shows, and a release carries no PDF of it | Accepted, amended on 5 November 2026 |
 | [0032](0032-how-a-release-is-published.md) | A release is a draft until its image and archives are checked, and RESTest starts through the archive's launcher | Accepted, amended on 13, 23, 27 and 30 October and 1 November 2026 |
 | [0033](0033-a-dictionary-file-is-written-by-operation-and-place.md) | A dictionary file is written by operation and place | Accepted, amended on 13 October 2026 |
 | [0034](0034-version-2-of-the-plans-format.md) | Version 2 of the plan's format: a strategy says its kind, a source has two forms, a group is a map of weights | Accepted |
@@ -99,3 +99,4 @@ so records written from now on cite none.
 | [0044](0044-maven-central.md) | RESTest's modules are on Maven Central as `es.us.isa.restest`, uploaded with a release and published there by a person; their POMs name exactly what the archive carries, and their Java code is no part of the promise | Accepted |
 | [0045](0045-jbang.md) | RESTest is run with jbang from a catalog of the ISA group's own, whose alias names RESTest on Maven Central and is written once a release is published | Accepted |
 | [0046](0046-a-skill-for-coding-agents.md) | A skill in the open format of agent skills teaches a coding agent to use RESTest; it ships with every release as the JSON Schemas do, ends the page for coding agents word for word, and is held to the tool by a test | Accepted |
+| [0047](0047-the-documentation-site.md) | The documentation is a website, built from a released version's files as they are by a repository of its own, and moved on to each release once it is published; a test holds the pages to the shape the site reads | Accepted |

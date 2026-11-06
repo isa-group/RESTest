@@ -60,3 +60,11 @@ or by hand, and a release carries none.
   has no release workflow yet to put it in.
 - **One HTML page instead of a PDF.** The same pipeline with a different output, and a documentation
   site would make it redundant.
+
+## Amendment (5 November 2026): a second rendering after all
+
+**The documentation is also a website**, built from these same files at a release's tag, as §3 left
+room for ([ADR-0047](0047-the-documentation-site.md)). The manual so has two renderings, GitHub's
+and the site's, and whatever GitHub draws the site has to draw too. A test holds the pages to the
+shape the site reads, and the site is built every week from `master`, so that the second rendering
+is checked before a release rather than after it.

@@ -51,7 +51,7 @@ import org.junit.jupiter.api.Test;
 class DocumentedLinksTest {
 
     /** A link written the Markdown way, an image included: its target, up to the closing bracket. */
-    private static final Pattern LINK = Pattern.compile("\\]\\(([^)\\s]+)\\)");
+    static final Pattern LINK = Pattern.compile("\\]\\(([^)\\s]+)\\)");
 
     /** A target that names a scheme - {@code https:}, {@code mailto:} - and so leaves the repository. */
     static final Pattern ANOTHER_SITE = Pattern.compile("^[A-Za-z][A-Za-z0-9+.-]*:.*");
@@ -117,15 +117,7 @@ class DocumentedLinksTest {
     /** The targets of a page's links, leaving out what is shown as code rather than as a link. */
     static List<String> linksIn(Path page) {
         List<String> targets = new ArrayList<>();
-        boolean inCode = false;
-        for (String line : lines(page)) {
-            if (line.startsWith("```")) {
-                inCode = !inCode;
-                continue;
-            }
-            if (inCode) {
-                continue;
-            }
+        for (String line : outsideCode(lines(page))) {
             Matcher link = LINK.matcher(line);
             while (link.find()) {
                 targets.add(link.group(1));
@@ -138,30 +130,49 @@ class DocumentedLinksTest {
      * The names GitHub gives a page's headings, which is what a link to one of them ends with: the
      * heading's words in lower case, punctuation taken out and spaces turned into hyphens, with a
      * number after any heading that has the same name as one before it.
+     *
+     * <p>The page's title, its first {@code # } heading, is counted but is no place to link to: the
+     * documentation's website shows a title above its page rather than as one of its headings, so
+     * there is no heading of that name there, and the website refuses a link to one.
      */
     private static Set<String> anchorsOf(Path page) {
         Set<String> anchors = new HashSet<>();
         Map<String, Integer> seen = new HashMap<>();
-        boolean inCode = false;
-        for (String line : lines(page)) {
-            if (line.startsWith("```")) {
-                inCode = !inCode;
-                continue;
-            }
+        boolean titled = false;
+        for (String line : outsideCode(lines(page))) {
             Matcher heading = HEADING.matcher(line);
-            if (inCode || !heading.matches()) {
+            if (!heading.matches()) {
                 continue;
             }
             String anchor = heading.group(1).trim().toLowerCase(Locale.ROOT)
                     .replaceAll("[^\\p{L}\\p{N} _-]", "")
                     .replace(' ', '-');
             int times = seen.merge(anchor, 1, Integer::sum);
+            if (!titled && line.startsWith("# ")) {
+                titled = true;
+                continue;
+            }
             anchors.add(times == 1 ? anchor : anchor + "-" + (times - 1));
         }
         return anchors;
     }
 
-    private static List<String> lines(Path page) {
+    /** A page's lines, whatever line endings it was written with. */
+    static List<String> lines(Path page) {
         return RepositoryRoot.read(page).replace("\r\n", "\n").lines().toList();
+    }
+
+    /** The lines that are not inside a fenced block of code, nor the fences themselves. */
+    static List<String> outsideCode(List<String> lines) {
+        List<String> outside = new ArrayList<>();
+        boolean inCode = false;
+        for (String line : lines) {
+            if (line.startsWith("```")) {
+                inCode = !inCode;
+            } else if (!inCode) {
+                outside.add(line);
+            }
+        }
+        return outside;
     }
 }

@@ -2,16 +2,18 @@
 
 What runs, how to reproduce it locally, how to add a rule, and how a release is made. The decisions
 behind it are in ADR-0003 (Java versions), ADR-0004 (module boundaries), ADR-0032 (releases),
-ADR-0040 (Homebrew), ADR-0044 (Maven Central) and ADR-0045 (jbang).
+ADR-0040 (Homebrew), ADR-0044 (Maven Central), ADR-0045 (jbang) and ADR-0047 (the documentation
+site).
 
-Four workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
+Five workflows. `ci.yml` builds and tests every change; `release.yml` makes a release from a version
 tag, uploading RESTest's modules to Maven Central with it, and rehearses it on a pull request that
 touches how RESTest is packaged ([Releases](#releases)); `homebrew.yml` writes the Homebrew formula
-into its tap once a release is published ([Homebrew](#homebrew)), and `jbang.yml` the release's
-version into RESTest's jbang catalog ([jbang](#jbang)). `ci.yml`'s triggers are pull
-requests against `master`, pushes to it, and manual dispatch. A push to a `feat/*` branch with no open pull request runs
-nothing, which is deliberate: a branch under active development would otherwise spend nine runners
-per commit.
+into its tap once a release is published ([Homebrew](#homebrew)), `jbang.yml` the release's version
+into RESTest's jbang catalog ([jbang](#jbang)), and `documentation-site.yml` the release's tag into
+the documentation site ([The documentation site](#the-documentation-site)). `ci.yml`'s triggers are
+pull requests against `master`, pushes to it, and manual dispatch. A push to a `feat/*` branch with
+no open pull request runs nothing, which is deliberate: a branch under active development would
+otherwise spend nine runners per commit.
 
 ## The matrix
 
@@ -107,7 +109,7 @@ itself, in its first stage, and needs nothing the smoke run built, so the two ru
 | What Maven Central gets | `dist/central.sh`, on the `ubuntu-latest` / Java 25 row and in `release.yml` | a module's Javadoc or sources that do not build; a file Central asks for missing, or a POM without a name; a module whose POM would name a library at another version than `restest-cli` runs with; a program depending on `restest-cli` getting any jar but those the release archive carries |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
 | How RESTest starts | `check-restest.sh`, in the `smoke` and `image` jobs, in `release.yml` and, through `check-homebrew.sh`, in `homebrew.yml` | the image, a launcher or Homebrew's command failing to start, saying the wrong version, or answering with a number other than RESTest's own: `2` for a wrong option, `3` when nothing answers, `127` from a launcher or the image when there is no Java it can use — and anything but `0` from Homebrew's command, which brings its Java — and `143` when `docker stop` ends a run in the image; the image, or a release's folder, without the JSON Schemas of a dictionary and a plan, without the skill for coding agents, or without `THIRD-PARTY.txt`; Homebrew's formula failing `brew style` or, once a release is published, `brew audit --strict --online`, failing to install or its own test, or installing anything but the archive as it is |
-| Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedSkillTest`, `DocumentedLinksTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; the skill for coding agents giving a command, an option, a setting, an exit code or a key of `report.json` RESTest does not have, or finding a run's summary by a line a run does not print, with a heading agents cannot read, a link into the repository, or a copy at the end of `docs/for-coding-agents.md` that differs from it; a relative link that leads nowhere |
+| Documentation held to the tool | `DocumentedCommandLineTest`, `DocumentedSettingsTest`, `DocumentedSwitchesTest`, `DocumentedReportTest`, `DocumentedSkillTest`, `DocumentedLinksTest`, `DocumentationSiteTest` | a reference page that disagrees with the tool: the command line, its options and exit codes against the help; the settings template against `--print-settings`; a switch, a file of settings or a plan on the switches page the tool does not have or does not accept; a key of `report.json`, a kind of fault, its title, severity or advice, or a reason a reply was not checked, against what a run writes and the code; the skill for coding agents giving a command, an option, a setting, an exit code or a key of `report.json` RESTest does not have, or finding a run's summary by a line a run does not print, with a heading agents cannot read, a link into the repository, or a copy at the end of `docs/for-coding-agents.md` that differs from it; a relative link that leads nowhere, or to a page's own title; a page the documentation's website could not build: the manual's index without its numbered list of chapters, a chapter missing from it or one not starting with its link, a section of `docs/README.md` without a table of pages, a page that is no entry of either index, a page with no title, or with front matter |
 | Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; a seed meaning a different run there than it does here; and a key left in `RESTEST_AUTH` failing to reach an API that refuses every request without it, or being written into any file the run leaves behind — the one place the variable is read from a real environment rather than handed to the command by a test. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
 ### Coverage
@@ -393,7 +395,11 @@ The steps of every release, in order, each taken by a maintainer:
    and 9 of the manual — with output from the image and the archive built from that commit, and, for
    chapter 2's Homebrew and jbang sections, what `check-homebrew` and `check-jbang` print in that pull
    request's run of `release.yml`.
-3. **The tag**, pushed once that pull request is merged; then, when the run asks, approve the
+3. **The tag**, pushed once that pull request is merged and the documentation site builds from
+   `master` as it now is: start the site's workflow by hand in `isa-group/restest-site` (Actions →
+   Site → Run workflow, from `main`) and wait until it is green — its weekly run is older than that
+   pull request. A tag the site cannot build leaves it unable to publish anything until the site is
+   changed ([The documentation site](#the-documentation-site)). Then, when the run asks, approve the
    `central` job (*Review deployments*).
 4. **The draft**: its notes written and read.
 5. **Maven Central**: on the Portal's [Deployments](https://central.sonatype.com/publishing/deployments)
@@ -404,9 +410,10 @@ The steps of every release, in order, each taken by a maintainer:
 7. **From outside**: the README's installation commands, run against the published release with no
    one signed in to GitHub or to the registry, and
    `https://repo1.maven.org/maven2/es/us/isa/restest/restest-cli/<v>/` answering. Publishing the
-   release has started `homebrew.yml` and `jbang.yml` (below), which install RESTest from the tap on
-   macOS and Linux, and run it from the catalog on Linux, macOS and Windows, once each has written
-   there; check that both runs are green, and that
+   release has started `homebrew.yml`, `jbang.yml` and `documentation-site.yml` (below), which
+   install RESTest from the tap on macOS and Linux, run it from the catalog on Linux, macOS and
+   Windows, once each has written there, and wait until the documentation site names the new
+   version; check that the three runs are green, and that
    `jbang --fresh restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json version` says
    the new version (`--fresh`, since jbang keeps a catalog it has read for twelve hours).
 8. **The pull request that moves `master` on**: every `pom.xml` to the next version's snapshot, and
@@ -627,6 +634,47 @@ Central gets among the libraries.
 `restest@isa-group`, which the documentation never gives, reaches GitLab and Bitbucket when GitHub
 does not answer. On 1 November 2026 the name `isa-group` was taken on GitLab by somebody not known,
 and on Bitbucket by a workspace holding the ISA group's own old projects.
+
+### The documentation site
+
+`https://isa-group.github.io/restest-site/docs/` publishes this repository's documentation, at the
+latest release, with search, and `/llms.txt` beside it lists the Markdown of every page in its menu,
+for coding agents.
+The site is the repository `isa-group/restest-site`. Before each build it reads the Markdown under
+`docs/`, `README.md`, `AGENTS.md` and `CONTRIBUTING.md` at the tag its one-line file
+`restest-version` names, with its `v` (`v2.4.0`), and every week it is also built from `master`,
+without publishing it. `.github/workflows/documentation-site.yml` writes a release's tag into that file
+once the release is published. [ADR-0047](adr/0047-the-documentation-site.md) says why it is done this
+way, and what in the pages the site relies on.
+
+| Job | Where | What it does |
+|---|---|---|
+| `version` | Linux | Checks the tag, and that it is a published release rather than a draft |
+| `push` | Linux | Writes the tag into the site's `restest-version` — never over a higher version, and not again when it is there — with the deploy key of the environment `restest-site`; the push starts the site's own workflow, which builds the site from that tag and publishes it |
+| `check-published` | Linux | Once `push` wrote the tag, or found it there already: waits up to fifteen minutes until the site's `llms.txt` names the version |
+
+Starting it by hand — Actions → Documentation site → Run workflow, from `master`, with a tag — moves
+the site on to a release already published, and is how a failed run is repeated: a run that finds the
+tag in `restest-version` already checks the site again. When `check-published` fails after a push, the
+site's own run, in `isa-group/restest-site`, says why; running this one again does not change it.
+
+A tag never changes, so a release whose pages the site cannot build leaves the site unable to build
+at all: the site is then changed until it builds that tag. `restest-version` is never put back to an
+earlier version, and the site publishes nothing new meanwhile; the step before every tag
+([Releases](#releases)) is there so that this does not happen. `DocumentationSiteTest` holds every
+pull request to the shape of `docs/` the site reads; what only the site checks is listed in ADR-0047.
+
+**Set up once**, by an owner of the organisation, before the workflow first runs:
+
+1. In this repository's settings, create the environment `restest-site`, whose deployment branches
+   and tags are `master` and `v*` only. An environment the workflow names that does not exist yet is
+   created without those limits, so it comes first.
+2. Make an SSH key with no passphrase (`ssh-keygen -t ed25519 -N '' -f restest-site`), add its public
+   half to `isa-group/restest-site` as a deploy key with write access, and its private half to the
+   environment — not to the repository's secrets — as `RESTEST_SITE_KEY`. Then delete both files.
+   Should the site's `main` be protected one day, the key has to be allowed past that protection.
+3. Run the workflow by hand with the release the site documents already: `push` finds the tag there,
+   and `check-published` is green.
 
 ## Dependency updates
 
