@@ -434,18 +434,21 @@ run to being a whole default run of such a version, not of a snapshot, that chap
 
 1. Build RESTest as the release will be (`./mvnw -q package -DskipTests && dist/assemble.sh
    target/dist`); it is then `target/dist/restest-<v>/bin/restest`.
-2. **The manual's run.** Start the clinic as [chapter 3](manual/03-a-first-run.md) of the manual
-   does, and run `restest run http://localhost:9966/petclinic/v3/api-docs` with no other option and
-   no `RESTEST_` variable set. Copy its `restest-out/report.json` into
+2. **The manual's run.** Start the clinic as the Web Fuzzing Dataset builds it, which runs natively
+   on Apple silicon as well as on Intel and AMD, unlike the image chapter 3 uses:
+   `docker run -d --name clinic -e AUTH_PORT=8081 -p 9967:8080 webfuzzing/wfd-petclinic-rest:FINAL`.
+   Once it answers, run `restest run http://localhost:9967/petclinic/v3/api-docs` with no other
+   option and no `RESTEST_` variable set. Copy its `restest-out/report.json` into
    `docs/manual/images/clinic-run/`, and change the version chapter 4 names.
-3. **Its pictures**, from its `report.html` in Chrome, 1280 pixels wide at a device pixel ratio of 1
-   (Developer Tools' device toolbar), once light and once dark (Rendering, "Emulate CSS media feature
-   prefers-color-scheme"), each saved as
+3. **Its pictures**, from its `report.html` in Chrome, 1280 pixels wide at a device pixel ratio of 2
+   (Developer Tools' device toolbar), so that they are 2560 pixels wide and sharp on any screen, once
+   light and once dark (Rendering, "Emulate CSS media feature prefers-color-scheme"), each saved as
    `<view>-light.png` and `<view>-dark.png` in the same folder:
    - `summary`: the page from its top to the end of the timeline;
    - `fault`: the operation where the first kind under "What was found" was first written out,
-     opened with that kind chosen, from its row to the end of what opened — `jq -r '.findings[] | select(.category.title
-     == "<that kind>") | .operation' report.json | head -1` names it;
+     opened with that kind chosen, from its row to the end of what opened —
+     `jq -r '.findings[] | select(.category.title == "<that kind>") | .operation' report.json | head -1`
+     names it;
    - `found`: the section "What was found".
 4. **The README's**: the pet shop's ten-second run that [the README](../README.md#your-first-run)
    gives, and the top of its page to the end of the timeline, as

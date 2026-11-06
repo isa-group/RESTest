@@ -107,18 +107,15 @@ Read it from the top:
 
 `report.html`, beside `report.json`, is the same run as a page to open in a browser: from what a
 build kept, from an e-mail, on a laptop with no network. It is one file, needs nothing beside it,
-fetches nothing, and shows nothing that `report.json` does not hold. Here is the clinic tested for
-the minute RESTest takes when no `--budget` is given, with nothing but its document — `restest run
-http://localhost:9966/petclinic/v3/api-docs` — by RESTest 2.4.0. The page opens like this:
+fetches nothing, and shows nothing that `report.json` does not hold. Here is the clinic as the [Web
+Fuzzing Dataset](https://github.com/WebFuzzing/Dataset) builds it, as an image for Apple silicon as well
+as Intel and AMD, `webfuzzing/wfd-petclinic-rest`, tested by RESTest 2.4.0 for the minute it takes when
+no `--budget` is given, with nothing but its document. The page opens like this:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/clinic-run/summary-dark.png">
   <img src="images/clinic-run/summary-light.png" alt="The top of report.html for a one-minute run of the clinic: under the header and the menu, four cards counting the replies by class of status code, the errors and the warnings by kind, and the operations by what was found on them, then the timeline of the run">
 </picture>
-
-The clinic ran in emulation, on a Mac with Apple silicon, as [chapter 3](03-a-first-run.md#a-practice-api)
-says it does there: it answered slowly until it had warmed up, which is why the first half of the
-timeline holds so few of the requests.
 
 From the top:
 
