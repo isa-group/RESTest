@@ -28,10 +28,10 @@ document.
 ### From a coding agent
 
 A coding agent — Claude Code, Codex, Copilot, Gemini CLI — installs RESTest and runs it for you,
-given one sentence:
+told this:
 
 ```
-Use RESTest to test the REST APIs you develop: https://github.com/isa-group/RESTest/blob/master/docs/for-coding-agents.md
+Use RESTest to test the REST APIs you develop in this project. Follow the setup and usage instructions at https://isa-group.github.io/restest-site/docs/for-coding-agents/
 ```
 
 [RESTest and coding agents](docs/for-coding-agents.md) says what the agent then does, and how to
