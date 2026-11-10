@@ -168,7 +168,32 @@ of its own. Whether you may test an API at all is not something any tool can che
   `http.server` does unless its `protocol_version` is `HTTP/1.1`. Over plain HTTP, RESTest opens a
   new connection for the next request. Over HTTPS, it sends the next request on the connection the
   API has closed, and that request is counted under `no reply`, although it reached nobody. An API
-  that answers in HTTP/1.1 is not affected.
+  that answers in HTTP/1.1 does not lose requests this way; a fast one can lose them as the next
+  entry says.
+- **Against a fast API that closes the connection after most replies, a run nearly stops about every
+  half minute, and the requests it could not send are counted under `no reply`.** An API answering
+  in HTTP/1.1 may close the connection after a reply and say so with `Connection: close`, as many
+  servers do after a `400` or a `500`. RESTest then opens a new connection for the next request:
+  against an API that answers in a millisecond or two, thousands a second. A connection RESTest lets
+  go before the API has hung up keeps one of the machine's local ports for half a minute or more, and
+  once none is left the next requests fail on the machine itself, before they reach the API, until
+  ports come free again. They are counted under `no reply`, though the API never saw them, no fault is
+  reported for them, and the run slows down for them as it would for an API that stopped answering.
+  On macOS, which by default has 16,384 such ports and keeps each for 30 seconds, a three-minute run
+  against each of two such APIs, answering more than six thousand requests a second until the ports
+  ran out, lost 13% and 20% of its requests this way: the first after 17 to 19 seconds, then for
+  up to fifteen seconds every half minute. What you can do:
+  - read those `no reply` as the machine's, not the API's; the operations the run reached and the
+    faults it found are reported as in any run;
+  - see the stretches in the timeline of `report.html`, or as `noReply` in `report.json`'s
+    [`timeline`](report.md#timeline); a run stored with `--store` records the reason for each request,
+    `BindException: Can't assign requested address` on macOS, but against such an API a minute stored
+    takes about half a gigabyte;
+  - keep the run below what the ports allow with `engine.mostRequestsPerMinute`
+    ([the settings](settings.md#five-things-worth-knowing)): the machine's local ports, divided by the
+    seconds each is kept, times sixty, which is 32,768 a minute on macOS by default. That costs most of
+    the run: at 30,000 a minute, a three-minute run against those two APIs would have sent about an
+    eighth of the requests they answered without it.
 - **With redirections followed, a request the next address sits on is reported on the operation.**
   With `engine.followRedirects` on, which it is not by default, an operation that sends the request
   on to another address that takes it and never answers is reported as `F312`, and the `curl`

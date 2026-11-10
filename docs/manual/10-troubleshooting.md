@@ -218,6 +218,11 @@ allows so many requests a minute keeps to them with `--set engine.mostRequestsPe
 `--set checks.noReplyInTime=false` stops. An API that is simply slow gets longer to answer with
 `--set engine.readTimeout=2m`. [Chapter 7](07-settings.md) has more.
 
+Thousands of `no reply` against an API that answers fast and keeps well may be the machine rather
+than the API: when it closes the connection after most replies, RESTest can run out of local ports,
+for up to fifteen seconds every half minute, and one request at a time does not help.
+[The known limitations](../known-limitations.md#what-a-run-says) say how to tell.
+
 ## The API asks the run to wait
 
 The summary's first line gives, after the idle share, how much of it was `waiting as the API asked`,
