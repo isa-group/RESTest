@@ -325,6 +325,31 @@ class ToldToWaitTest {
     }
 
     @Test
+    @DisplayName("a wait that lasts to the end of the run is the last: what is heard once the time is "
+            + "up begins none, whenever its request went out")
+    void nothing_heard_once_the_time_is_up_begins_a_wait() {
+        ToldToWait waits = watching(SETTINGS);
+        waits.settled(READ, reply(429, START, "Retry-After", "7200"));
+        assertThat(waits.mayBeSent(READ)).isFalse();
+
+        // The time is up, and with it the wait. A request sent at that very moment is refused in
+        // the same words, and the first refusals of two other operations arrive with it and after.
+        clock.at(DEADLINE);
+        assertThat(waits.settled(READ, reply(429, DEADLINE, "Retry-After", "7200"))).isEmpty();
+        assertThat(waits.settled(CREATE, reply(429, DEADLINE.minusMillis(5)))).isEmpty();
+        clock.at(DEADLINE.plusMillis(1));
+        assertThat(waits.settled(LIST, reply(503, DEADLINE.minusMillis(5), "Retry-After", "5")))
+                .isEmpty();
+        waits.stoppedSending();
+
+        Waited said = summary(waits);
+        assertThat(said.operations())
+                .describedAs("one wait, an hour long, and nothing begun once the time was up")
+                .containsExactly(new Waited.ForOperation(READ, 1, 1, Duration.ofHours(1), 1));
+        assertThat(said.wholeApi()).isEqualTo(new Waited.WholeApi(0, Duration.ZERO));
+    }
+
+    @Test
     @DisplayName("the soonest wait is the one that ends first, the whole API's included")
     void the_soonest_wait() {
         ToldToWait waits = watching(SETTINGS);

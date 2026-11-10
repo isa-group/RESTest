@@ -24,16 +24,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.http.Fault;
 import io.restest.core.exec.EngineSettings;
+import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionOutcome;
+import io.restest.core.execution.Payload;
 import io.restest.core.model.HttpMethod;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,6 +54,14 @@ import org.junit.jupiter.api.Test;
  * stopped at the first one would lose both the finding and the rest of the run.
  */
 class EngineFaultsTest {
+
+    /**
+     * Many times more than a computer holds back for one connection, between what it keeps to send
+     * and what the other side keeps unread, when that side keeps little: measured, under a megabyte
+     * on macOS and under three on Linux. Sent within the same machine, it takes hundredths of a
+     * second.
+     */
+    private static final int LARGER_THAN_HELD_BACK = 32 * 1024 * 1024;
 
     private static WireMockServer api;
 
@@ -167,23 +179,44 @@ class EngineFaultsTest {
     /**
      * The API answers, and sends the engine on to another address, where no connection can be made
      * in time. What failed is the second address, not the API, which did reply.
+     *
+     * <p>The first address has to answer before the engine stops waiting for it; otherwise the wait
+     * that ran out is the one for its reply, and the engine rightly says so. How fast it answers is
+     * therefore taken out of the test. It answers the moment it takes the connection, before it
+     * reads a byte, and the request carries a body far larger than a computer holds back for one
+     * connection: the engine cannot finish sending it until the first address reads it, which that
+     * address does only once it has answered. By the time the engine waits for a reply, the reply
+     * is there, however long the first address took to give it; what is left to time is sending the
+     * body, which takes hundredths of a second and is given ten for each part and a minute in all.
      */
     @Test
     @DisplayName("a redirection to an address that cannot be reached in time is a wait for a "
             + "connection, though the first address answered")
     void a_redirection_nowhere_is_a_wait_for_a_connection() throws Exception {
-        try (ServerSocket silent = new ServerSocket(0)) {
-            api.stubFor(get(urlEqualTo("/moved")).willReturn(aResponse().withStatus(302)
-                    .withHeader("Location",
-                            "https://127.0.0.1:" + silent.getLocalPort() + "/there")));
+        try (ServerSocket silent = new ServerSocket(0);
+                ServerSocket answersFirst = new ServerSocket()) {
+            // Little kept unread on this side, so that the body is many times what both sides
+            // hold back together - but not so little that it slows the body down.
+            answersFirst.setReceiveBufferSize(64 * 1024);
+            answersFirst.bind(new InetSocketAddress(0));
+            Thread server = Thread.ofVirtual().start(() -> answerBeforeReading(answersFirst,
+                    "HTTP/1.1 302 Found\r\n"
+                            + "Location: https://127.0.0.1:" + silent.getLocalPort() + "/there\r\n"
+                            + "Content-Length: 0\r\n"
+                            + "Connection: close\r\n"
+                            + "\r\n"));
             try (OkHttpEngine engine = new OkHttpEngine(EngineSettings.defaults()
                     .withReadTimeout(Duration.ofMillis(300)).withFollowRedirects(true))) {
-                Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/moved"),
-                        Requests.get(api.baseUrl() + "/moved"));
+                Interaction interaction = engine.send(Requests.testCase(HttpMethod.POST, "/moved"),
+                        new HttpRequestRecord(HttpMethod.POST,
+                                "http://localhost:" + answersFirst.getLocalPort() + "/moved",
+                                List.of(), Optional.of(Payload.of(new byte[LARGER_THAN_HELD_BACK],
+                                        "application/octet-stream"))));
 
                 assertThat(waitOf(interaction))
                         .contains(InteractionOutcome.TransportFailure.Wait.CONNECTION);
             }
+            server.join(Duration.ofSeconds(5));
         }
     }
 
@@ -333,6 +366,25 @@ class EngineFaultsTest {
                 Thread.sleep(100);
             }
         } catch (IOException | InterruptedException e) {
+            // The client hanging up is how this test is meant to end; nothing to do.
+        }
+    }
+
+    /**
+     * Answers one request with what it is given the moment it takes the connection, before reading
+     * any of the request, and then reads whatever is sent until the client hangs up.
+     */
+    private static void answerBeforeReading(ServerSocket socket, String answer) {
+        try (Socket connection = socket.accept()) {
+            OutputStream out = connection.getOutputStream();
+            out.write(answer.getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            InputStream in = connection.getInputStream();
+            byte[] read = new byte[64 * 1024];
+            while (in.read(read) != -1) {
+                // Read only so that the request can be sent in full.
+            }
+        } catch (IOException e) {
             // The client hanging up is how this test is meant to end; nothing to do.
         }
     }
