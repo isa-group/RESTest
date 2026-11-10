@@ -17,7 +17,7 @@ brew install isa-group/tap/restest
 
 `isa-group/tap` is RESTest's own *tap*, the place Homebrew reads how to install it from, and Homebrew
 fetches it the first time. With the Java and what that Java needs, the first installation keeps
-about 625 MB on macOS and 823 MB on Ubuntu 24.04. On a Linux whose C library is older than
+about 628 MB on macOS and 824 MB on Ubuntu 24.04. On a Linux whose C library is older than
 Homebrew's, Homebrew brings its own, and a compiler with it, and the total comes to some 1.5 GB.
 Homebrew lists what it installs as it goes. Then:
 
@@ -27,7 +27,7 @@ restest version
 
 ```
 RESTest 2.5.0
-Java 21.0.12.1 (Homebrew), Mac OS X 26.6.2 aarch64
+Java 21.0.13.0.3 (Homebrew), Mac OS X 26.7.2 aarch64
 ```
 
 The `restest` Homebrew installs always runs on that Java 21, whatever `JAVA_HOME` says; for RESTest on
@@ -55,18 +55,18 @@ restest version
 
 ```
 RESTest 2.5.0
-Java 27 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
+Java 27.0.1.0.2 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
 ```
 
 and on Windows, in the command prompt or in PowerShell:
 
 ```
 RESTest 2.5.0
-Java 27 (Eclipse Adoptium), Windows Server 2025 10.0 amd64
+Java 27.0.1.0.2 (Eclipse Adoptium), Windows Server 2025 10.0 amd64
 ```
 
 Those are machines with no Java, where jbang downloads two into `~/.jbang`: a Java 17 for jbang
-itself, and the newest Java for RESTest, some 600 MB together, as well as RESTest's libraries, 37 MB,
+itself, and the newest Java for RESTest, some 640 MB together, as well as RESTest's libraries, 37 MB,
 into `~/.m2/repository`. On a machine with a JDK 21 or later — a JDK, which jbang looks for, not a
 plain Java runtime — jbang downloads the libraries alone and runs RESTest on that Java. With
 `JBANG_DEFAULT_JAVA_VERSION` set to `21` before the first jbang command of all — `export` it in a
