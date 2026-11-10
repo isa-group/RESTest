@@ -55,7 +55,7 @@ jbang app install restest@https://isa-group.github.io/jbang-catalog/jbang-catalo
 the folder you are in as `/work`:
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/isa-group/restest:2.4.0 version
+docker run --rm -v "$PWD:/work" ghcr.io/isa-group/restest:2.5.0 version
 ```
 
 Homebrew and jbang leave `restest` as a command on your `PATH`, and `restest version` says which
