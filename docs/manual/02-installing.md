@@ -26,7 +26,7 @@ restest version
 ```
 
 ```
-RESTest 2.4.0
+RESTest 2.5.0
 Java 21.0.12.1 (Homebrew), Mac OS X 26.6.2 aarch64
 ```
 
@@ -54,14 +54,14 @@ restest version
 ```
 
 ```
-RESTest 2.4.0
+RESTest 2.5.0
 Java 27 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
 ```
 
 and on Windows, in the command prompt or in PowerShell:
 
 ```
-RESTest 2.4.0
+RESTest 2.5.0
 Java 27 (Eclipse Adoptium), Windows Server 2025 10.0 amd64
 ```
 
@@ -130,11 +130,11 @@ The image holds RESTest and the Java it runs on, for Intel and AMD processors an
 as Apple silicon. The first command downloads it, about 145 MB:
 
 ```bash
-docker run --rm ghcr.io/isa-group/restest:2.4.0 version
+docker run --rm ghcr.io/isa-group/restest:2.5.0 version
 ```
 
 ```
-RESTest 2.4.0
+RESTest 2.5.0
 Java 21.0.13 (Eclipse Adoptium), Linux 7.0.14-linuxkit aarch64
 ```
 
@@ -143,7 +143,7 @@ the container that folder is `/work`, and it has to be lent from your machine: `
 lends the folder you are in. What you would give `restest` then goes after the image's name:
 
 ```bash
-docker run --rm -v "$PWD:/work" ghcr.io/isa-group/restest:2.4.0 run openapi.yaml --url https://api.example.com --budget 30s
+docker run --rm -v "$PWD:/work" ghcr.io/isa-group/restest:2.5.0 run openapi.yaml --url https://api.example.com --budget 30s
 ```
 
 That reads `openapi.yaml` from the folder you are in and leaves `restest-out/`, with the report, in
@@ -156,7 +156,7 @@ runs the image with the folder you are in, and the rest a run needs, every time:
 
 ```bash
 mkdir -p ~/.local/bin
-printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.4.0 "$@"' > ~/.local/bin/restest
+printf '%s\n' '#!/bin/sh' 'exec docker run --rm -v "$PWD:/work" --user "$(id -u):$(id -g)" -e RESTEST_AUTH --add-host=host.docker.internal:host-gateway ghcr.io/isa-group/restest:2.5.0 "$@"' > ~/.local/bin/restest
 chmod +x ~/.local/bin/restest
 export PATH="$HOME/.local/bin:$PATH"
 ```
@@ -209,17 +209,17 @@ found, install a current Java — [Eclipse Temurin](https://adoptium.net/) is on
 open a new terminal.
 
 Every release carries an archive with RESTest and every library it runs with, in two forms,
-`restest-2.4.0.tgz` and `restest-2.4.0.zip`, on its [page on
-GitHub](https://github.com/isa-group/RESTest/releases/tag/v2.4.0). Download one and unpack it:
+`restest-2.5.0.tgz` and `restest-2.5.0.zip`, on its [page on
+GitHub](https://github.com/isa-group/RESTest/releases/tag/v2.5.0). Download one and unpack it:
 
 ```bash
-curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.4.0/restest-2.4.0.tgz
-tar -xzf restest-2.4.0.tgz
-restest-2.4.0/bin/restest version
+curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.5.0/restest-2.5.0.tgz
+tar -xzf restest-2.5.0.tgz
+restest-2.5.0/bin/restest version
 ```
 
 ```
-RESTest 2.4.0
+RESTest 2.5.0
 Java 25.0.4.1 (Eclipse Adoptium), Mac OS X 27.0.1 aarch64
 ```
 
@@ -227,13 +227,13 @@ The release also carries `checksums_sha256.txt`, which says whether the archive 
 Downloaded beside it,
 
 ```bash
-curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.4.0/checksums_sha256.txt
+curl -fLO https://github.com/isa-group/RESTest/releases/download/v2.5.0/checksums_sha256.txt
 sha256sum --ignore-missing -c checksums_sha256.txt
 ```
 
-answers `restest-2.4.0.tgz: OK`; on macOS, write `shasum -a 256` in place of `sha256sum`.
+answers `restest-2.5.0.tgz: OK`; on macOS, write `shasum -a 256` in place of `sha256sum`.
 
-The folder `restest-2.4.0` holds `bin/`, with the command, `lib/`, with the libraries, `schemas/`,
+The folder `restest-2.5.0` holds `bin/`, with the command, `lib/`, with the libraries, `schemas/`,
 with the JSON Schemas of a dictionary and a plan ([chapter 6](06-dictionaries.md)), `skills/`, with
 the skill that teaches a coding agent to use RESTest ([RESTest and coding
 agents](../for-coding-agents.md)), and the licences.
@@ -241,11 +241,11 @@ It can live anywhere. This line puts its `bin/` on the `PATH`, which makes `rest
 from any folder:
 
 ```bash
-export PATH="$PWD/restest-2.4.0/bin:$PATH"
+export PATH="$PWD/restest-2.5.0/bin:$PATH"
 ```
 
-On Windows, unpack `restest-2.4.0.zip` and run `restest-2.4.0\bin\restest.cmd` from the ordinary
-command prompt, or `restest-2.4.0/bin/restest` from Git Bash.
+On Windows, unpack `restest-2.5.0.zip` and run `restest-2.5.0\bin\restest.cmd` from the ordinary
+command prompt, or `restest-2.5.0/bin/restest` from Git Bash.
 
 When the command finds no Java it can use, it says so and ends with `127`:
 
@@ -272,7 +272,7 @@ git version 2.54.0 (Apple Git-157)
 Then:
 
 ```bash
-git clone --branch v2.4.0 https://github.com/isa-group/RESTest.git
+git clone --branch v2.5.0 https://github.com/isa-group/RESTest.git
 cd RESTest
 ./mvnw -q package -DskipTests
 ```
@@ -282,7 +282,7 @@ first build downloads everything RESTest is built from and takes a few minutes; 
 than one. `-q` keeps it quiet, so it prints nothing when it works, and `-DskipTests` leaves out
 RESTest's own tests, which take longer than the build and which you do not need to use the tool.
 
-`--branch v2.4.0` fetches the release; without it, `git clone` fetches what is being built next, whose
+`--branch v2.5.0` fetches the release; without it, `git clone` fetches what is being built next, whose
 version ends in `-SNAPSHOT`. `./restest`, at the root of the checkout, runs what was built, and this
 line puts the checkout on the `PATH`, which makes it `restest`, from any folder:
 
@@ -321,18 +321,18 @@ from that shell find it too.
 - **Homebrew:** `brew upgrade restest` installs the latest release.
 - **jbang:** nothing: it runs the latest release within twelve hours of it, or at once after
   `jbang --fresh restest@https://isa-group.github.io/jbang-catalog/jbang-catalog.json version`.
-- **Docker:** change `2.4.0` in the script to the version you want.
+- **Docker:** change `2.5.0` in the script to the version you want.
 - **The archive:** download and unpack the new one, and point the `PATH` at its `bin/`.
 - **The source:** from the root of the checkout, fetch the new release's tag, move to it, and build
   again:
 
   ```bash
   git fetch --tags
-  git checkout v2.4.0
+  git checkout v2.5.0
   ./mvnw -q clean package -DskipTests
   ```
 
-  with the new version in place of `2.4.0`. `clean` throws away what the last build left behind, so
+  with the new version in place of `2.5.0`. `clean` throws away what the last build left behind, so
   that the jars of the version you had are not found beside the ones of the version you now have.
 
 The [next chapter](03-a-first-run.md) starts a practice API and runs RESTest against it.
