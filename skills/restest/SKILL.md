@@ -15,10 +15,9 @@ It finds faults and repairs nothing. Use it in one of two ways:
 Either way, work in two passes: a quick one now, a deeper one if the user wants it. Reading or
 explaining an OpenAPI document is no reason to run it. Commands are for a POSIX shell.
 
-RESTest's documentation is at `https://isa-group.github.io/restest-site/docs/`, and
-`https://isa-group.github.io/restest-site/llms.txt` lists the Markdown of every page in its menu.
-Read the page you need when this file does not say enough: it describes the latest release, which
-may not be the version you run.
+RESTest's documentation is at `https://restest.org/docs/`, and `https://restest.org/llms.txt` lists
+the Markdown of every page in its menu. Read the page you need when this file does not say enough:
+it describes the latest release, which may not be the version you run.
 
 ## Install or update RESTest
 

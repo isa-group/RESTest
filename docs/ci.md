@@ -680,9 +680,8 @@ and on Bitbucket by a workspace holding the ISA group's own old projects.
 
 ### The documentation site
 
-`https://isa-group.github.io/restest-site/docs/` publishes this repository's documentation, at the
-latest release, with search, and `/llms.txt` beside it lists the Markdown of every page in its menu,
-for coding agents.
+`https://restest.org/docs/` publishes this repository's documentation, at the latest release, with
+search, and `/llms.txt` beside it lists the Markdown of every page in its menu, for coding agents.
 The site is the repository `isa-group/restest-site`. Before each build it reads the Markdown under
 `docs/`, `README.md`, `AGENTS.md` and `CONTRIBUTING.md` at the tag its one-line file
 `restest-version` names, with its `v` (`v2.4.0`), and every week it is also built from `master`,

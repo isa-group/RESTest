@@ -31,7 +31,7 @@ A coding agent — Claude Code, Codex, Copilot, Gemini CLI — installs RESTest 
 told this:
 
 ```
-Use RESTest to test the REST APIs you develop in this project. Follow the setup and usage instructions at https://isa-group.github.io/restest-site/docs/for-coding-agents/
+Use RESTest to test the REST APIs you develop in this project. Follow the setup and usage instructions at https://restest.org/docs/for-coding-agents/
 ```
 
 [RESTest and coding agents](docs/for-coding-agents.md) says what the agent then does, and how to
@@ -150,7 +150,7 @@ switches, coding agents and the known limitations — and, for working on RESTes
 continuous integration and the decision records.
 
 The same pages, for the latest release and with search, are at
-https://isa-group.github.io/restest-site/docs/.
+https://restest.org/docs/.
 
 ## Acknowledgements
 
