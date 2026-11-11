@@ -1,6 +1,6 @@
-# Moves the documentation site, isa-group/restest-site, on to a release once it is published, so that
-# https://isa-group.github.io/restest-site/docs/ documents the version people install. ADR-0047 says
-# why it is shaped this way; docs/ci.md says how to use it.
+# Moves the documentation site, isa-group/restest-site, on to a release once it is published, so
+# that https://restest.org/docs/ documents the version people install. ADR-0047 says why it is
+# shaped this way; docs/ci.md says how to use it.
 #
 #   version          checks the tag, and that it is a published release rather than a draft
 #   push             writes the tag into the site's restest-version, never over a higher version
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.version.outputs.version }}
-      PUBLISHED: https://isa-group.github.io/restest-site/llms.txt
+      PUBLISHED: https://restest.org/llms.txt
     steps:
       # The site builds and publishes itself within a few minutes of the push, and GitHub Pages'
       # servers may keep the file they had for ten minutes more. The sentence is the one the site's
