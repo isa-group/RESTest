@@ -10,7 +10,7 @@
 
 # RESTest
 
-RESTest is a black-box testing tool for REST APIs. Give it an OpenAPI document and the address of
+RESTest is an experimental black-box testing tool for REST APIs. Give it an OpenAPI document and the address of
 the API it describes; RESTest invents requests from the document, sends them for as long as you
 allow, checks every reply against what the document promised, and reports what it found wrong —
 each fault with a `curl` command that sends the same request again.
@@ -151,6 +151,22 @@ continuous integration and the decision records.
 
 The same pages, for the latest release and with search, are at
 https://restest.org/docs/.
+
+## Use of Generative AI 
+
+Since version 2.0, RESTest has been developed using AI. Its code is written by AI agents, mostly Claude, under the guidance of domain-experts. The initial prototype was purely experimental, focusing exclusively on testing effectiveness. Development has since focused on adding basic performance, usability and security features. As a result, the codebase may contain common issues associated with AI-generated code, such as code smells, redundancies, and anti-patterns. Next versions will prioritise maintainability, mostly code quality, and further usability and security improvements. 
+
+The AI-assisted development process is itself experimental. The development workflow, agent configurations, and supporting tools are maintained separately from this repository. They evolve across versions and remain deliberately simple. They should not be regarded as a mature, validated or generally applicable methodology for agentic software development. 
+
+Every change undergoes AI-agent code reviews, including dedicated cybersecurity checks. Manual validation focuses on generated artifacts and evaluations using independent tools against public benchmarks of open-source REST APIs. Changes must also pass automated tests, architectural constraints, and code coverage and mutation testing thresholds. Despite these safeguards, RESTest may still contain bugs, which will be addressed as they are revealed.
+
+## Disclaimer 
+
+RESTest is a research prototype, not a commercial product. It is provided "as is", without warranty
+of any kind, as stated in its [license](LICENSE). RESTest sends real HTTP requests, including
+requests that create, modify or delete data. Users are responsible for the effects of running
+RESTest against a target API, including any unintended data loss. Always run RESTest against a
+disposable test environment, never against an API containing valuable data. When RESTest is used by AI agents, never provide real API keys or other sensitive credentials. 
 
 ## Acknowledgements
 
