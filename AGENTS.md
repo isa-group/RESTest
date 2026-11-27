@@ -177,6 +177,9 @@ docker build --tag restest . && docker run --rm restest version   # the containe
 - Write the test first when the behaviour is specified; write it alongside when exploring.
 - When a design question has more than one defensible answer, write an ADR rather than deciding
   silently in the code.
-- Say what you chose and why in the pull request's "Decisions taken" section.
+- Say what a change must do as numbered acceptance criteria, one line each: what a person can see,
+  then the test that checks it. They go in the pull request's "Evidence".
+- A choice that could have gone the other way gets one sentence with its reason, in the pull
+  request's "What changed in the code".
 - If a change turns out to be bigger than it looked, split it and say so — do not deliver half of it
   silently.

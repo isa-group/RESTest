@@ -66,7 +66,8 @@ Use the template, and fill in every section. Four carry the most weight:
 - **Try it yourself** — copy-paste commands from a clean checkout, with the real output. They must
   work on a laptop with only Java and git installed. Run them before you paste them.
 - **How it works** — three paragraphs at most, written for someone who does not program in Java.
-- **Evidence** — real numbers: tests, overhead, the smoke run, idle time.
+- **Evidence** — the acceptance criteria, one line each with the test that checks it; then real
+  numbers: tests, overhead, the smoke run, idle time.
 
 Titles say what became possible, not what was edited.
 
@@ -79,7 +80,7 @@ release ([`docs/ci.md`](docs/ci.md#the-pictures-of-the-report)).
 Continuous integration must be green ([`docs/ci.md`](docs/ci.md) says what it checks). A maintainer
 then reads the pull request against the rules in `AGENTS.md`, the decision records it touches and the
 template's sections, runs the "Try it yourself" commands, and asks for changes or merges. A finding
-you disagree with is answered in "Decisions taken", not ignored.
+you disagree with is answered in the pull request's conversation, with the reason, not ignored.
 
 ## Hard rules
 
@@ -93,8 +94,8 @@ gate). If a rule is wrong, change it deliberately, in its own pull request, with
 
 If a choice has more than one defensible answer and would be expensive to reverse — a dependency
 that will spread, a module boundary, a file format — write an ADR (`docs/adr/README.md`) as part of
-the same change. Ordinary implementation choices belong in the pull request's "Decisions taken"
-section, not in an ADR.
+the same change. An ordinary implementation choice gets one sentence in the pull request's "What
+changed in the code", not an ADR.
 
 ## Running things
 

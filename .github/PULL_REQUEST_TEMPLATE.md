@@ -49,10 +49,20 @@ A small diagram is welcome when it replaces a paragraph.
 
 ## What changed in the code
 
-<!-- For the code reviewer: files, key classes, design decisions, anything left for later. -->
+<!--
+For the code reviewer: files, key classes, anything left for later. A choice that could have gone
+the other way gets one sentence with its reason. A choice that is expensive to reverse needs an ADR.
+-->
 
 ## Evidence
 
+<!--
+Acceptance criteria first: what the change had to do, numbered, one line each. Say what a person
+can see, then the test that checks it. Commands go in "Try it yourself". A fix usually has one; a
+large change, three to six.
+-->
+
+- [ ] AC1. <!-- what a person can see --> — <!-- the test that checks it -->
 - [ ] Tests: <!-- N added, all green --> — <!-- CI run link -->
 - [ ] Architecture tests: <!-- unchanged / N added --> — none weakened
 - [ ] Mutation score (if oracles or constraints were touched): <!-- X% (previous Y%) -->
@@ -60,13 +70,6 @@ A small diagram is welcome when it replaces a paragraph.
 - [ ] Smoke run, two containerised APIs: operations covered <!-- X (previous Y) -->, unique faults <!-- Z (previous W) -->
 - [ ] Idle time: <!-- X% of budget -->
 - [ ] Artefact: <!-- report file, terminal transcript, or table of results -->
-
-## Decisions taken
-
-<!--
-Anything you chose that could reasonably have gone the other way, including any reviewer finding
-you decided not to act on, and why. If a decision is expensive to reverse, it needs an ADR instead.
--->
 
 ## Open questions
 
