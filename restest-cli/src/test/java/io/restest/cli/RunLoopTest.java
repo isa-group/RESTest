@@ -63,6 +63,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -122,6 +123,9 @@ class RunLoopTest {
 
     /** Whether the runs here leave alone what the API asks to be left alone, as by default. */
     private boolean waitWhenToldTo = true;
+
+    /** When the time of the latest run here is up, once it has begun. */
+    private volatile Instant deadline;
 
     @AfterEach
     void stopTheEngine() {
@@ -235,6 +239,37 @@ class RunLoopTest {
 
         assertThat(heard.completed.get()).isEqualTo((int) outcome.sent());
         assertThat(heard.planned.get()).isEqualTo((int) outcome.sent());
+    }
+
+    @Test
+    @DisplayName("a request whose turn came before the time was up, and which waited for the reports "
+            + "until after it, is not sent")
+    void a_request_that_waited_past_the_deadline_is_not_sent() {
+        // The reports fall behind with the first announcement and catch up only once the time is
+        // up, so the loop, allowed one announcement waiting, is pausing for them - a request's
+        // turn decided and a slot in hand - when the deadline passes.
+        AtomicReference<Instant> caughtUp = new AtomicReference<>();
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(1), WORK_AHEAD, 1, WITHOUT_A_FIRST_ROUND,
+                events -> events.subscribe(event -> {
+                    Duration behind = Duration.between(Instant.now(), deadline.plusMillis(200));
+                    if (behind.isPositive()) {
+                        try {
+                            Thread.sleep(behind);
+                        } catch (InterruptedException stopped) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    caughtUp.compareAndSet(null, Instant.now());
+                }));
+
+        assertThat(outcome.sent())
+                .describedAs("the premise: it sent, then paused for the reports until the time was "
+                        + "up, rather than going on sending")
+                .isBetween(1L, (long) WORK_AHEAD);
+        assertThat(caughtUp.get()).isAfter(deadline);
+        assertThat(engine.lastSent.get())
+                .describedAs("nothing went once the time was up: %s", outcome)
+                .isBefore(deadline);
     }
 
     @Test
@@ -1241,6 +1276,7 @@ class RunLoopTest {
             setUp.accept(events);
             Scheduler scheduler = new Scheduler(generator(), schedule, Instant.now().plus(budget),
                     InstantSource.system(), events::publish);
+            deadline = scheduler.deadline();
             return RunLoop.run(scheduler, "https://api.example", workAhead, announcementsAllowed,
                     mostRequests, PATIENT, GRACE, stop,
                     RefusedOpeningLap.watching(watchTheLap), obeying(scheduler), engine, events);
@@ -1358,6 +1394,9 @@ class RunLoopTest {
         private final java.util.Queue<Map.Entry<String, Long>> everyAnswer =
                 new java.util.concurrent.ConcurrentLinkedQueue<>();
 
+        /** When the latest request was asked for, by the clock the run's deadline is told by. */
+        private final AtomicReference<Instant> lastSent = new AtomicReference<>(Instant.MIN);
+
         /** Every hold the loop asked for. */
         private final List<Duration> holds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
@@ -1473,6 +1512,7 @@ class RunLoopTest {
             sent.incrementAndGet();
             String operation = testCase.operation().value();
             Instant sentAt = Instant.now();
+            lastSent.accumulateAndGet(sentAt, (one, other) -> other.isAfter(one) ? other : one);
             everySend.add(Map.entry(operation, System.nanoTime()));
             firstSent.putIfAbsent(operation, System.nanoTime());
             if (testCase.sequence().isPresent()) {

@@ -60,14 +60,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * <p>What to send next, and when the time is up, it does not decide. It asks the {@link Scheduler},
  * which holds the deadline and the order the operations go in, and does what it is told: send a
- * request for this operation, wait for the answers still owed, or stop. What it does decide for
- * itself is to stop early on its own evidence - a round in which nothing could be sent, a run in
- * which nothing is answered, whether because nothing is there or because RESTest itself is losing
- * the requests on the way, and a run whose whole first round the API refused with 401, which
- * {@link RefusedOpeningLap} keeps watch for. The one waiting it does on the scheduler's behalf is
- * at the start of a run, where the first round goes in steps and each step waits for the answers
- * to the one before - and even that wait has a limit, so one request the API never answers costs
- * the run that limit once rather than the whole budget.
+ * request for this operation, wait for the answers still owed, or stop. A request it was told to
+ * send, and could not send before the deadline because it first waited for room or for the reports
+ * to catch up, is not sent after it. What it does decide for itself is to stop early on its own
+ * evidence - a round in which nothing could be sent, a run in which nothing is answered, whether
+ * because nothing is there or because RESTest itself is losing the requests on the way, and a run
+ * whose whole first round the API refused with 401, which {@link RefusedOpeningLap} keeps watch
+ * for. The one waiting it does on the scheduler's behalf is at the start of a run, where the first
+ * round goes in steps and each step waits for the answers to the one before - and even that wait
+ * has a limit, so one request the API never answers costs the run that limit once rather than the
+ * whole budget.
  *
  * <p>Some requests are steps of a short series about a thing the run has just created. The loop
  * hands what came back to every one of them to the scheduler the moment it arrives, before the slot
@@ -355,6 +357,15 @@ final class RunLoop {
                             }
                             slots.release();
                             sleepUntil(Instant.now().plus(untilItsTurn), deadline, stop);
+                        }
+                        // The time may have run out since the scheduler said to send: while the
+                        // loop waited for the reports to catch up, a wait that ends at the deadline
+                        // and not before, or in the moment since. Either way the request is not
+                        // sent, as the scheduler would say if asked now, and the slot goes back
+                        // unused.
+                        if (!Instant.now().isBefore(deadline)) {
+                            slots.release();
+                            break deciding;
                         }
                         Operation operation = send.operation();
                         // An operation the API asked to be left alone has its turn skipped. Asked

@@ -47,7 +47,9 @@ import java.util.Optional;
  * <p>Requests are sent several at a time and come back in any order, so an answer is weighed by
  * when its request went out. A request that went before the wait it belongs to was over had not
  * heard of that wait yet: its refusal begins no wait, and only moves the end of one still going
- * later when it says so. Any other answer of it does not shorten the next wait either.
+ * later when it says so. Any other answer of it does not shorten the next wait either. Nothing heard
+ * once the run's time is up begins or moves a wait: no wait lasts beyond the run, so one that began
+ * then would end as it began.
  *
  * <p>{@link RunLoop} tells this the moment each request settles, from the thread its answer arrived
  * on, and asks it from the thread that decides what to send: whether an operation may be sent,
@@ -152,7 +154,10 @@ final class ToldToWait {
         }
         Instant sentAt = reply.sentAt();
         synchronized (lock) {
-            if (stoppedSendingAt != null) {
+            // No wait lasts beyond the run, so one that began once its time is up would end as it
+            // began: what is heard from then on begins or moves nothing, as once the run has
+            // stopped sending, whenever its request went out.
+            if (stoppedSendingAt != null || !now.isBefore(deadline)) {
                 return Optional.empty();
             }
             everTold = true;

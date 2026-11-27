@@ -101,6 +101,9 @@ class FuzzingFindsWhatNominalMissesTest {
      */
     private static final int ANSWERS_IN = 20;
 
+    /** The seed of the two runs compared below, which reaches the empty search term. */
+    private static final String SEED = "20261110";
+
     private static WireMockServer api;
 
     @BeforeAll
@@ -132,14 +135,19 @@ class FuzzingFindsWhatNominalMissesTest {
 
         // The changes made to accepted requests switched off in both runs, so that the list of
         // awkward values is the only thing that differs between them.
-        // Larger than the other runs here: the empty search term is one of the many awkward values
-        // a run holds, drawn by chance, and a run of a few hundred requests may not reach it. With
-        // the seed the run draws for itself, what is reached differs from run to run; the size is
-        // what makes the draw reach it every time.
+        //
+        // The empty search term is one of the forty or so awkward values a run pushes with, drawn
+        // at random, so no size makes a run reach it every time: of twenty seeds, each run of this
+        // size reached it between 3 and 13 times, and one seed a build machine drew,
+        // 1749106978450864122, reached it not once. So both runs are given a seed. Here it decides
+        // alone what is sent - the one operation's replies are an empty list, with nothing in
+        // them to send back - and this one reaches the empty term six times, the first within the
+        // first two hundred requests. The size stays, so that a change to how values are drawn,
+        // which gives the seed other values, is still unlikely to miss it.
         String withAwkwardValues = runOf(1_200, directory.resolve("with"), document,
-                "--set", "mutation.violations=false");
+                "--seed", SEED, "--set", "mutation.violations=false");
         String withoutThem = runOf(1_200, directory.resolve("without"), document,
-                "--campaign", plan(directory, NEVER_PUSHES).toString(),
+                "--seed", SEED, "--campaign", plan(directory, NEVER_PUSHES).toString(),
                 "--set", "mutation.violations=false");
 
         assertThat(withAwkwardValues)
